@@ -11,8 +11,11 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
+from data_pipeline import config
 from data_pipeline import demo_inputs
 from data_pipeline.validators import ValidationError, validate_payload
+
+print(f"[CONFIG] Data mode: {config.ACTIVE_MODE}")
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +24,8 @@ OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 def main() -> int:
     payload = demo_inputs.build_demo_payload()
+    payload["metadata"]["data_mode"] = config.ACTIVE_MODE
+    payload["metadata"]["data_sources"] = config.SOURCE_LABELS
     total_revised, graded_starters = _run_agents(payload["matchups"])
     _update_archive_postgame_labels(payload)
     payload["agent_workflow"] = _build_agent_workflow(

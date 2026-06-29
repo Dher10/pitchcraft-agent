@@ -47,3 +47,9 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
+
+# data cache snapshots (raw and processed are gitignored, .gitkeep files kept)
+data_cache/raw/*
+data_cache/processed/*
+!data_cache/raw/.gitkeep
+!data_cache/processed/.gitkeep

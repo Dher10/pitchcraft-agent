@@ -2,13 +2,13 @@
   "metadata": {
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.2.0",
-    "data_mode": "cached_demo",
+    "data_mode": "demo_cached",
     "generated_at": "2026-06-28T09:00:00-05:00",
     "last_updated_label": "Demo data generated for capstone submission",
     "data_sources": [
-      "MLB public schedule/probable pitchers",
-      "Baseball Savant / Statcast-style pitch data",
-      "Cached demo snapshots"
+      "MLB public schedule/probable pitchers (optional)",
+      "Baseball Savant / Statcast-style pitch data (optional)",
+      "Cached demo snapshots (always available)"
     ]
   },
   "featured_matchup_id": "matchup_001",
