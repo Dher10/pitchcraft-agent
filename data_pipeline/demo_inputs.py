@@ -954,13 +954,21 @@ DISCLAIMERS: Any = [
   "Any internal Stuff or Strength signals are PitchCraft-specific and are not official Stuff+ metrics."
 ]
 
+GENERATED_MATCHUP_FIELDS = ("report", "critic_review", "data_confidence")
+
+
 def build_demo_payload() -> dict[str, Any]:
   """Return a fresh v0.2.0 demo payload assembled from structured constants."""
-  return deepcopy({
-    "metadata": METADATA,
+  matchups = deepcopy(MATCHUPS)
+  for matchup in matchups:
+    for field in GENERATED_MATCHUP_FIELDS:
+      matchup.pop(field, None)
+
+  return {
+    "metadata": deepcopy(METADATA),
     "featured_matchup_id": FEATURED_MATCHUP_ID,
-    "matchups": MATCHUPS,
-    "archive": ARCHIVE,
-    "agent_workflow": AGENT_WORKFLOW,
-    "disclaimers": DISCLAIMERS,
-  })
+    "matchups": matchups,
+    "archive": deepcopy(ARCHIVE),
+    "agent_workflow": deepcopy(AGENT_WORKFLOW),
+    "disclaimers": deepcopy(DISCLAIMERS),
+  }
