@@ -1,48 +1,58 @@
-import type { Starter } from "@/lib/types";
+﻿import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
+import ZoneDiagram from "@/components/ZoneDiagram";
 
 interface StarterCardProps {
   starter: Starter;
+  side: "away" | "home";
+  mode: "pregame" | "postgame";
+  starterLine?: StarterLine;
+  locations?: PitchLocation[];
 }
 
-export default function StarterCard({ starter }: StarterCardProps) {
-  const summary = starter.season_summary;
-  const profile = starter.pitching_profile;
+const sideLabel = {
+  away: "AWAY",
+  home: "HOME",
+};
+
+export default function StarterCard({
+  starter,
+  side,
+  mode,
+  starterLine,
+  locations = [],
+}: StarterCardProps) {
+  if (mode === "postgame" && starterLine) {
+    return <PostgameStarter starter={starter} side={side} starterLine={starterLine} />;
+  }
+
+  const bio = [
+    `Age ${starter.bio.age}`,
+    starter.bio.height,
+    `${starter.bio.weight} lb`,
+    `B/T ${starter.bio.bats}/${starter.bio.throws}`,
+    starter.bio.mlb_service,
+    starter.bio.accolades.join(", "),
+  ].filter(Boolean);
 
   return (
-    <article className="rounded-lg border border-[#E5E8EC] bg-white p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1B3A5B]">
-            {starter.team} starter
-          </p>
-          <h3 className="mt-3 font-display text-3xl font-black leading-tight text-[#0F1722]">
-            {starter.name}
-          </h3>
-          <p className="mt-2 text-sm font-semibold text-[#5B6573]">
-            {starter.throws} · {profile.style_label}
-          </p>
-        </div>
-      </div>
-
-      <dl className="mt-6 grid grid-cols-3 gap-3">
-        <Stat label="ERA" value={summary.era} />
-        <Stat label="WHIP" value={summary.whip} />
-        <Stat label="K" value={String(summary.strikeouts)} />
+    <article className="rounded-xl border border-neutral-200 bg-white p-4">
+      <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
+        {starter.team} - {sideLabel[side]}
+      </p>
+      <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
+      <p className="mt-2 text-xs leading-5 text-neutral-500">{bio.join(" - ")}</p>
+      <p className="mt-3 text-sm font-semibold text-neutral-800">
+        {starter.throws} - {starter.pitching_profile.style_label}
+      </p>
+      <dl className="mt-4 grid grid-cols-3 gap-2 text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
+        <Stat label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
+        <Stat label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={starter.season_summary.whip} />
+        <Stat label="K" title="Strikeouts." value={starter.season_summary.strikeouts} />
       </dl>
-
-      <dl className="mt-5 grid gap-3 text-sm">
-        <Detail label="Primary pitch" value={profile.primary_pitch} />
-        <Detail label="Put-away pitch" value={profile.putaway_pitch} />
-        <Detail label="Command" value={profile.command_label} />
-        <Detail label="Swing/miss" value={profile.swing_miss_label} />
-        <Detail label="Contact risk" value={profile.contact_risk_label} />
-      </dl>
-
-      <div className="mt-5 rounded-md bg-[#F7F8FA] p-4">
-        <p className="text-sm font-bold text-[#0F1722]">
-          {starter.recent_form.label}
-        </p>
-        <p className="mt-1 text-sm leading-6 text-[#5B6573]">
+      <div className="my-4 border-t border-neutral-200" />
+      <div className="flex items-center justify-between gap-4">
+        <ZoneDiagram locations={locations} />
+        <p className="text-sm leading-6 text-neutral-600">
           {starter.recent_form.last_three_starts_summary}
         </p>
       </div>
@@ -50,24 +60,55 @@ export default function StarterCard({ starter }: StarterCardProps) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function PostgameStarter({
+  starter,
+  side,
+  starterLine,
+}: {
+  starter: Starter;
+  side: "away" | "home";
+  starterLine: StarterLine;
+}) {
   return (
-    <div className="rounded-md border border-[#E5E8EC] p-3">
-      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5B6573]">
-        {label}
+    <article className="rounded-xl border border-neutral-200 bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
+            {starter.team} - {sideLabel[side]}
+          </p>
+          <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
+        </div>
+        <span className={`rounded-full px-3 py-1.5 text-2xl font-bold ${gradeClass(starterLine.pitchcraft_grade)}`}>
+          {starterLine.pitchcraft_grade}
+        </span>
+      </div>
+      <dl className="mt-4 grid grid-cols-4 gap-2 text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
+        <Stat label="IP" title="Innings pitched." value={starterLine.innings_pitched} />
+        <Stat label="ER" title="Earned runs allowed." value={starterLine.earned_runs} />
+        <Stat label="K" title="Strikeouts." value={starterLine.strikeouts} />
+        <Stat label="BB" title="Walks allowed." value={starterLine.walks} />
+      </dl>
+      <p className="mt-4 text-sm leading-6 text-neutral-600">{starterLine.grade_explanation}</p>
+    </article>
+  );
+}
+
+function Stat({ label, title, value }: { label: string; title: string; value: string | number }) {
+  return (
+    <div className="rounded-lg bg-neutral-50 p-2">
+      <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+        <span title={title} className="cursor-help border-b border-dotted border-neutral-400">
+          {label}
+        </span>
       </dt>
-      <dd className="tabular mt-2 font-display text-2xl font-black text-[#0F1722]">
-        {value}
-      </dd>
+      <dd className="mt-1 font-bold text-neutral-900">{value}</dd>
     </div>
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-[#E5E8EC] pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-[#5B6573]">{label}</dt>
-      <dd className="text-right font-semibold text-[#0F1722]">{value}</dd>
-    </div>
-  );
+function gradeClass(grade: string) {
+  if (grade.startsWith("A")) return "bg-green-100 text-green-800";
+  if (grade.startsWith("B")) return "bg-slate-100 text-slate-700";
+  if (grade.startsWith("C")) return "bg-amber-100 text-amber-800";
+  return "bg-red-100 text-red-800";
 }

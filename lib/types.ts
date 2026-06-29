@@ -1,20 +1,8 @@
-export type MatchupStatus = "upcoming" | "final" | "demo";
-export type CriticCheckStatus =
-  | "supported"
-  | "unsupported"
-  | "revised"
-  | "not_present"
-  | "warning";
-export type ConfidenceLevel =
-  | "live_confirmed"
-  | "partial"
-  | "demo_cached"
-  | "limited";
-export type CallResult =
-  | "held_up"
-  | "partially_held_up"
-  | "did_not_hold_up"
-  | "unclear";
+﻿export type MatchupStatus = "upcoming" | "final" | "demo";
+export type CriticCheckStatus = "supported" | "unsupported" | "revised" | "not_present" | "warning";
+export type ConfidenceLevel = "live_confirmed" | "partial" | "demo_cached" | "limited";
+export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
+export type AgentStatus = "completed" | "not_applicable" | "pending";
 
 export interface PitchCraftData {
   metadata: Metadata;
@@ -40,9 +28,10 @@ export interface Matchup {
   status: MatchupStatus;
   is_featured: boolean;
   game: Game;
-  teams: Teams;
-  starters: Starters;
+  teams: { home: Team; away: Team };
+  starters: { away_starter: Starter; home_starter: Starter };
   charts: Charts;
+  pitch_locations: PitchLocations;
   report: Report;
   critic_review: CriticReview;
   postgame: Postgame | null;
@@ -57,11 +46,6 @@ export interface Game {
   broadcast_note: string;
   home_team_id: string;
   away_team_id: string;
-}
-
-export interface Teams {
-  home: Team;
-  away: Team;
 }
 
 export interface Team {
@@ -81,9 +65,14 @@ export interface OffenseProfile {
   recent_form: string;
 }
 
-export interface Starters {
-  away_starter: Starter;
-  home_starter: Starter;
+export interface StarterBio {
+  age: number;
+  height: string;
+  weight: number;
+  bats: string;
+  throws: string;
+  mlb_service: string;
+  accolades: string[];
 }
 
 export interface Starter {
@@ -91,6 +80,7 @@ export interface Starter {
   name: string;
   team: string;
   throws: string;
+  bio: StarterBio;
   season_summary: SeasonSummary;
   pitching_profile: PitchingProfile;
   recent_form: RecentForm;
@@ -119,34 +109,51 @@ export interface RecentForm {
   last_three_starts_summary: string;
 }
 
-export interface Charts {
-  pitch_mix: PitchMixDatum[];
-  velocity_by_pitch: VelocityDatum[];
-  strength_profile: StrengthDatum[];
+export interface PitchUsage {
+  overall: number;
+  vs_lhh: number;
+  vs_rhh: number;
 }
 
-export interface PitchMixDatum {
+export interface PitchMixRow {
   pitch: string;
-  away_starter_usage: number;
-  home_starter_usage: number;
+  away_starter: PitchUsage;
+  home_starter: PitchUsage;
 }
 
-export interface VelocityDatum {
+export interface VelocityRow {
   pitch: string;
   away_starter_velocity: number | null;
   home_starter_velocity: number | null;
 }
 
-export interface StrengthDatum {
+export interface StrengthRow {
   dimension: string;
   away_starter: number;
   home_starter: number;
 }
 
-export interface Report {
-  headline: string;
-  short_summary: string[];
-  sections: ReportSection[];
+export interface Charts {
+  pitch_mix: PitchMixRow[];
+  velocity_by_pitch: VelocityRow[];
+  strength_profile: StrengthRow[];
+}
+
+export interface PitchLocation {
+  pitch: string;
+  x: number;
+  y: number;
+}
+
+export interface PitchLocationsByHand {
+  vs_lhh: PitchLocation[];
+  vs_rhh: PitchLocation[];
+}
+
+export interface PitchLocations {
+  note: string;
+  away_starter: PitchLocationsByHand;
+  home_starter: PitchLocationsByHand;
 }
 
 export interface ReportSection {
@@ -155,11 +162,10 @@ export interface ReportSection {
   bullets?: string[];
 }
 
-export interface CriticReview {
-  status: string;
-  summary: string;
-  checks: CriticCheck[];
-  revision_notes: string[];
+export interface Report {
+  headline: string;
+  short_summary: string[];
+  sections: ReportSection[];
 }
 
 export interface CriticCheck {
@@ -168,22 +174,11 @@ export interface CriticCheck {
   evidence: string;
 }
 
-export interface Postgame {
-  final_score: FinalScore;
-  starter_lines: StarterLines;
-  starter_duel_winner: string;
-  call_check: CallCheck[];
-}
-
-export interface FinalScore {
-  home_team_runs: number;
-  away_team_runs: number;
-  winning_team: string;
-}
-
-export interface StarterLines {
-  away_starter: StarterLine;
-  home_starter: StarterLine;
+export interface CriticReview {
+  status: string;
+  summary: string;
+  checks: CriticCheck[];
+  revision_notes: string[];
 }
 
 export interface StarterLine {
@@ -195,12 +190,21 @@ export interface StarterLine {
   home_runs_allowed: number;
   pitchcraft_grade: string;
   grade_explanation: string;
+  plan_vs_execution: string;
+  what_to_watch_next: string;
 }
 
-export interface CallCheck {
+export interface CallCheckItem {
   pregame_note: string;
   result: CallResult;
   postgame_evidence: string;
+}
+
+export interface Postgame {
+  final_score: { home_team_runs: number; away_team_runs: number; winning_team: string };
+  starter_lines: { away_starter: StarterLine; home_starter: StarterLine };
+  starter_duel_winner: string;
+  call_check: CallCheckItem[];
 }
 
 export interface DataConfidence {
@@ -221,13 +225,13 @@ export interface ArchiveItem {
   grade_label: string | null;
 }
 
-export interface AgentWorkflow {
-  description: string;
-  steps: WorkflowStep[];
+export interface AgentStep {
+  agent: string;
+  status: AgentStatus;
+  output: string;
 }
 
-export interface WorkflowStep {
-  agent: string;
-  status: string;
-  output: string;
+export interface AgentWorkflow {
+  description: string;
+  steps: AgentStep[];
 }

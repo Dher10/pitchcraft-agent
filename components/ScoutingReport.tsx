@@ -1,53 +1,67 @@
-import type { Report } from "@/lib/types";
+﻿import type { ReportSection, Starter, Team } from "@/lib/types";
 
 interface ScoutingReportProps {
-  report: Report;
+  awayStarter: Starter;
+  homeStarter: Starter;
+  awayOpponent: Team;
+  homeOpponent: Team;
+  awaySection?: ReportSection;
+  homeSection?: ReportSection;
 }
 
-export default function ScoutingReport({ report }: ScoutingReportProps) {
+export default function ScoutingReport({
+  awayStarter,
+  homeStarter,
+  awayOpponent,
+  homeOpponent,
+  awaySection,
+  homeSection,
+}: ScoutingReportProps) {
   return (
-    <section className="rounded-lg border border-[#E5E8EC] bg-white p-5 sm:p-7">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1B3A5B]">
-        Scouting Report
-      </p>
-      <h2 className="mt-3 font-display text-3xl font-black leading-tight text-[#0F1722]">
-        {report.headline}
-      </h2>
-      <ul className="mt-6 grid gap-3 md:grid-cols-3">
-        {report.short_summary.map((item) => (
-          <li
-            key={item}
-            className="rounded-md border border-[#E5E8EC] bg-[#F7F8FA] p-4 text-sm leading-6 text-[#0F1722]"
-          >
-            {item}
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-7 grid gap-5">
-        {report.sections.map((section) => (
-          <article key={section.title} className="border-t border-[#E5E8EC] pt-5">
-            <h3 className="font-display text-xl font-bold text-[#0F1722]">
-              {section.title}
-            </h3>
-            {section.body ? (
-              <p className="mt-2 max-w-4xl text-base leading-8 text-[#5B6573]">
-                {section.body}
-              </p>
-            ) : null}
-            {section.bullets ? (
-              <ul className="mt-3 grid gap-2 text-base leading-7 text-[#5B6573]">
-                {section.bullets.map((bullet) => (
-                  <li key={bullet} className="flex gap-3">
-                    <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[#1B3A5B]" />
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </article>
-        ))}
-      </div>
+    <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <ReportCard
+        title={`${awayStarter.name} vs ${awayOpponent.abbreviation}`}
+        section={awaySection}
+        offense={awayOpponent}
+      />
+      <ReportCard
+        title={`${homeStarter.name} vs ${homeOpponent.abbreviation}`}
+        section={homeSection}
+        offense={homeOpponent}
+      />
     </section>
+  );
+}
+
+function ReportCard({ title, section, offense }: { title: string; section?: ReportSection; offense: Team }) {
+  return (
+    <article className="rounded-xl border border-neutral-200 bg-white p-4">
+      <h3 className="font-bold text-neutral-900">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">
+        {section?.body ?? offense.offense_profile.summary_label}
+      </p>
+      <dl className="mt-4 grid grid-cols-3 gap-2 text-xs" style={{ fontVariantNumeric: "tabular-nums" }}>
+        <Metric label="OPS" value={offense.offense_profile.ops_vs_hand} />
+        <Metric label="K" value={offense.offense_profile.k_rate_vs_hand} />
+        <Metric label="BB" value={offense.offense_profile.bb_rate_vs_hand} />
+      </dl>
+      <p className="mt-3 text-xs text-neutral-500">
+        vs {offense.offense_profile.vs_pitcher_hand} - {offense.offense_profile.recent_form}
+      </p>
+    </article>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  const title = label === "OPS" ? "On-base plus slugging." : label === "K" ? "Strikeout rate." : "Walk rate.";
+  return (
+    <div className="rounded-lg bg-neutral-50 p-2">
+      <dt className="font-semibold text-neutral-500">
+        <span title={title} className="cursor-help border-b border-dotted border-neutral-400">
+          {label}
+        </span>
+      </dt>
+      <dd className="mt-1 font-bold text-neutral-900">{value}</dd>
+    </div>
   );
 }
