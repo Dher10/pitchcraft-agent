@@ -31,6 +31,15 @@ BATTER_HAND_SPLITS = ("overall", "vs_lhh", "vs_rhh")
 PITCH_LOCATION_SPLITS = ("vs_lhh", "vs_rhh")
 
 POSTGAME_STARTER_LINE_REQUIRED_KEYS = (
+    "name",
+    "innings_pitched",
+    "hits_allowed",
+    "earned_runs",
+    "unearned_runs",
+    "strikeouts",
+    "walks",
+    "home_runs_allowed",
+    "game_score",
     "pitchcraft_grade",
     "grade_explanation",
     "plan_vs_execution",

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ArchiveItem, Matchup } from "@/lib/types";
 
@@ -6,9 +6,17 @@ interface GameCarouselProps {
   matchups: Matchup[];
   archive: ArchiveItem[];
   featuredId: string;
+  selectedId: string;
+  onSelect: (matchupId: string) => void;
 }
 
-export default function GameCarousel({ matchups, archive, featuredId }: GameCarouselProps) {
+export default function GameCarousel({
+  matchups,
+  archive,
+  featuredId,
+  selectedId,
+  onSelect,
+}: GameCarouselProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -18,13 +26,14 @@ export default function GameCarousel({ matchups, archive, featuredId }: GameCaro
       <div className="flex snap-x gap-3 overflow-x-auto pb-2">
         {matchups.map((matchup) => {
           const isFeatured = matchup.id === featuredId;
+          const isSelected = matchup.id === selectedId;
           return (
             <button
               key={matchup.id}
               type="button"
-              onClick={() => undefined}
+              onClick={() => onSelect(matchup.id)}
               className={`min-w-[250px] snap-start rounded-xl border bg-white p-4 text-left transition hover:border-neutral-400 ${
-                isFeatured ? "border-blue-700" : "border-neutral-200"
+                isSelected ? "border-blue-700" : "border-neutral-200"
               }`}
             >
               <div className="flex items-center justify-between gap-2">

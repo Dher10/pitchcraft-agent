@@ -746,44 +746,50 @@
           "away_starter": {
             "name": "Demo Pitcher C",
             "innings_pitched": "4.2",
+            "hits_allowed": 7,
             "earned_runs": 4,
+            "unearned_runs": 0,
             "strikeouts": 5,
             "walks": 4,
             "home_runs_allowed": 1,
-            "pitchcraft_grade": "C",
-            "grade_explanation": "Flashed swing-and-misses but lost efficiency because of walks and one damaging mistake.",
-            "plan_vs_execution": "The plan was to climb the ladder with the fastball and finish with the curveball. He fell behind too often and had to come back over the heart of the plate.",
-            "what_to_watch_next": "Whether he can throw a first-pitch strike more consistently in his next outing."
+            "game_score": 35,
+            "pitchcraft_grade": "C-",
+            "grade_explanation": "A Game Score of 35 reflects a rough outing - the hits and walks piled up and shortened his night.",
+            "plan_vs_execution": "The plan was to use the four-seam fastball to reach curveball counts, but 4 walks kept him from controlling the sequence.",
+            "what_to_watch_next": "The next checkpoint is tightening strike-zone control before traffic builds."
           },
           "home_starter": {
             "name": "Demo Pitcher D",
             "innings_pitched": "6.2",
+            "hits_allowed": 5,
             "earned_runs": 2,
+            "unearned_runs": 0,
             "strikeouts": 6,
             "walks": 1,
             "home_runs_allowed": 0,
-            "pitchcraft_grade": "A-",
-            "grade_explanation": "Controlled contact, limited walks, and worked deep enough to give the team a strong start.",
-            "plan_vs_execution": "Wanted to work the cutter to both edges and bury the changeup against righties. He executed it almost exactly.",
-            "what_to_watch_next": "Whether he keeps the walk rate this low against deeper, more patient lineups."
+            "game_score": 61,
+            "pitchcraft_grade": "B",
+            "grade_explanation": "A Game Score of 61 reflects a solid, above-average start - he worked deep, limited walks, and kept the damage in check.",
+            "plan_vs_execution": "The plan was to command the cutter and finish with the changeup; 1 walk and 2 earned runs show the execution mostly matched it.",
+            "what_to_watch_next": "The next checkpoint is repeating that walk suppression deep into another start."
           }
         },
         "starter_duel_winner": "Demo Pitcher D",
         "call_check": [
           {
-            "pregame_note": "Pitcher D needed to limit walks against a patient lineup.",
+            "pregame_note": "Demo Pitcher D needed his command edge to limit free passes.",
             "result": "held_up",
-            "postgame_evidence": "Issued only one walk over 6.2 innings."
+            "postgame_evidence": "He issued 1 walk over 6.2 innings."
           },
           {
-            "pregame_note": "Pitcher C carried elevated walk risk.",
+            "pregame_note": "Demo Pitcher C carried elevated walk risk.",
             "result": "held_up",
-            "postgame_evidence": "Walked four and exited before completing the fifth inning."
+            "postgame_evidence": "He walked 4 batters and exited after 4.2 innings."
           },
           {
-            "pregame_note": "Pitcher C had swing-and-miss upside.",
+            "pregame_note": "Demo Pitcher C had swing-and-miss upside from the scouting profile.",
             "result": "partially_held_up",
-            "postgame_evidence": "Recorded five strikeouts but could not work efficiently."
+            "postgame_evidence": "He recorded 5 strikeouts, but the full line landed at a Game Score of 35."
           }
         ]
       },
@@ -895,7 +901,7 @@
       "featured": false,
       "starter_summary": "Demo Pitcher C vs Demo Pitcher D",
       "result_label": "BOS 5 - NYY 3",
-      "grade_label": "Starter Duel: Demo Pitcher D, A-"
+      "grade_label": "Starter Duel: Demo Pitcher D, B"
     },
     {
       "id": "matchup_003",
@@ -963,8 +969,8 @@
       },
       {
         "agent": "Postgame Grader Agent",
-        "status": "not_applicable",
-        "output": "Featured game has not been completed."
+        "status": "completed",
+        "output": "Graded 2 completed starter(s) with Bill James Game Score."
       }
     ]
   },

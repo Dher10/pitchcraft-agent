@@ -10,7 +10,7 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from agents import critic, data_scout, matchup_analyst, report_writer
+from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
 from data_pipeline import demo_inputs
 from data_pipeline.validators import ValidationError, validate_payload
 
@@ -21,8 +21,13 @@ OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 def main() -> int:
     payload = demo_inputs.build_demo_payload()
-    total_revised = _run_agents(payload["matchups"])
-    payload["agent_workflow"] = _build_agent_workflow(len(payload["matchups"]), total_revised)
+    total_revised, graded_starters = _run_agents(payload["matchups"])
+    _update_archive_postgame_labels(payload)
+    payload["agent_workflow"] = _build_agent_workflow(
+        len(payload["matchups"]),
+        total_revised,
+        graded_starters,
+    )
     matchup_ids = [matchup["id"] for matchup in payload["matchups"]]
 
     print("PitchCraft demo JSON generator")
@@ -41,8 +46,9 @@ def main() -> int:
     return 0
 
 
-def _run_agents(matchups: list[dict[str, Any]]) -> int:
+def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
     total_revised = 0
+    graded_starters = 0
     for matchup_input in matchups:
         packet = data_scout.run(matchup_input)
         available_count = sum(1 for available in packet["availability"].values() if available)
@@ -68,10 +74,61 @@ def _run_agents(matchups: list[dict[str, Any]]) -> int:
         matchup_input["critic_review"] = critic_review
         matchup_input["data_confidence"] = packet["data_confidence"]
 
-    return total_revised
+        if matchup_input["status"] == "final":
+            postgame = postgame_grader.run(matchup_input)
+            matchup_input["postgame"] = postgame
+            graded_starters += len(postgame["starter_lines"])
+            al = postgame["starter_lines"]["away_starter"]
+            hl = postgame["starter_lines"]["home_starter"]
+            print(
+                f"[AGENT] Postgame Grader: {matchup_input['id']} -> "
+                f"{al['name']} GS {al['game_score']} ({al['pitchcraft_grade']}), "
+                f"{hl['name']} GS {hl['game_score']} ({hl['pitchcraft_grade']}), "
+                f"duel {postgame['starter_duel_winner']}"
+            )
+        else:
+            matchup_input["postgame"] = None
+
+    return total_revised, graded_starters
 
 
-def _build_agent_workflow(matchup_count: int, total_revised: int) -> dict[str, Any]:
+def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
+    matchups_by_id = {matchup["id"]: matchup for matchup in payload["matchups"]}
+    for row in payload["archive"]:
+        matchup = matchups_by_id.get(row["id"])
+        postgame = matchup.get("postgame") if matchup else None
+        if not postgame:
+            continue
+        winner = postgame["starter_duel_winner"]
+        winner_line = next(
+            line
+            for line in postgame["starter_lines"].values()
+            if line["name"] == winner
+        )
+        row["grade_label"] = f"Starter Duel: {winner}, {winner_line['pitchcraft_grade']}"
+
+
+def _build_agent_workflow(
+    matchup_count: int,
+    total_revised: int,
+    graded_starters: int,
+) -> dict[str, Any]:
+    postgame_step = (
+        {
+            "agent": "Postgame Grader Agent",
+            "status": "completed",
+            "output": (
+                f"Graded {graded_starters} completed starter(s) with Bill James Game Score."
+            ),
+        }
+        if graded_starters
+        else {
+            "agent": "Postgame Grader Agent",
+            "status": "not_applicable",
+            "output": "Featured game has not been completed.",
+        }
+    )
+
     return {
         "description": (
             "PitchCraft uses a multi-agent workflow to convert matchup data into a "
@@ -100,11 +157,7 @@ def _build_agent_workflow(matchup_count: int, total_revised: int) -> dict[str, A
                     f"Verified claims. {total_revised} claim(s) revised across all matchups."
                 ),
             },
-            {
-                "agent": "Postgame Grader Agent",
-                "status": "not_applicable",
-                "output": "Featured game has not been completed.",
-            },
+            postgame_step,
         ],
     }
 

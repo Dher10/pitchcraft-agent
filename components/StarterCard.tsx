@@ -1,4 +1,4 @@
-﻿import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
+import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
 import ZoneDiagram from "@/components/ZoneDiagram";
 
 interface StarterCardProps {
@@ -78,9 +78,20 @@ function PostgameStarter({
           </p>
           <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
         </div>
-        <span className={`rounded-full px-3 py-1.5 text-2xl font-bold ${gradeClass(starterLine.pitchcraft_grade)}`}>
-          {starterLine.pitchcraft_grade}
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
+            <span
+              title="Game Score (Bill James): a 0-100 rating of a single start. ~50 is average, 65+ is very good."
+              className="cursor-help"
+            >
+              Game Score
+            </span>{" "}
+            {starterLine.game_score}
+          </span>
+          <span className={`rounded-full px-3 py-1.5 text-2xl font-bold ${gradeClass(starterLine.pitchcraft_grade)}`}>
+            {starterLine.pitchcraft_grade}
+          </span>
+        </div>
       </div>
       <dl className="mt-4 grid grid-cols-4 gap-2 text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
         <Stat label="IP" title="Innings pitched." value={starterLine.innings_pitched} />
@@ -108,7 +119,7 @@ function Stat({ label, title, value }: { label: string; title: string; value: st
 
 function gradeClass(grade: string) {
   if (grade.startsWith("A")) return "bg-green-100 text-green-800";
-  if (grade.startsWith("B")) return "bg-slate-100 text-slate-700";
+  if (grade.startsWith("B")) return "bg-blue-100 text-blue-800";
   if (grade.startsWith("C")) return "bg-amber-100 text-amber-800";
   return "bg-red-100 text-red-800";
 }

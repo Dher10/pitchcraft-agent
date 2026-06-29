@@ -209,7 +209,7 @@ def _validate_final_postgame(matchup: Mapping[str, Any], label: str, record: Any
     for slot in STARTER_SLOTS:
         line = starter_lines.get(slot)
         record(
-            f"{label}: postgame.starter_lines.{slot} includes grade and follow-up fields",
+            f"{label}: postgame.starter_lines.{slot} includes raw line, Game Score, grade, and follow-up fields",
             isinstance(line, Mapping)
             and all(key in line for key in POSTGAME_STARTER_LINE_REQUIRED_KEYS),
             _missing_keys(line, POSTGAME_STARTER_LINE_REQUIRED_KEYS),

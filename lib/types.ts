@@ -1,4 +1,4 @@
-﻿export type MatchupStatus = "upcoming" | "final" | "demo";
+export type MatchupStatus = "upcoming" | "final" | "demo";
 export type CriticCheckStatus = "supported" | "unsupported" | "revised" | "not_present" | "warning";
 export type ConfidenceLevel = "live_confirmed" | "partial" | "demo_cached" | "limited";
 export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
@@ -184,10 +184,13 @@ export interface CriticReview {
 export interface StarterLine {
   name: string;
   innings_pitched: string;
+  hits_allowed: number;
   earned_runs: number;
+  unearned_runs: number;
   strikeouts: number;
   walks: number;
   home_runs_allowed: number;
+  game_score: number;
   pitchcraft_grade: string;
   grade_explanation: string;
   plan_vs_execution: string;

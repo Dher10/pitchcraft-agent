@@ -800,46 +800,24 @@ MATCHUPS: Any = [
         "away_starter": {
           "name": "Demo Pitcher C",
           "innings_pitched": "4.2",
+          "hits_allowed": 7,
           "earned_runs": 4,
+          "unearned_runs": 0,
           "strikeouts": 5,
           "walks": 4,
-          "home_runs_allowed": 1,
-          "pitchcraft_grade": "C",
-          "grade_explanation": "Flashed swing-and-misses but lost efficiency because of walks and one damaging mistake.",
-          "plan_vs_execution": "The plan was to climb the ladder with the fastball and finish with the curveball. He fell behind too often and had to come back over the heart of the plate.",
-          "what_to_watch_next": "Whether he can throw a first-pitch strike more consistently in his next outing."
+          "home_runs_allowed": 1
         },
         "home_starter": {
           "name": "Demo Pitcher D",
           "innings_pitched": "6.2",
+          "hits_allowed": 5,
           "earned_runs": 2,
+          "unearned_runs": 0,
           "strikeouts": 6,
           "walks": 1,
-          "home_runs_allowed": 0,
-          "pitchcraft_grade": "A-",
-          "grade_explanation": "Controlled contact, limited walks, and worked deep enough to give the team a strong start.",
-          "plan_vs_execution": "Wanted to work the cutter to both edges and bury the changeup against righties. He executed it almost exactly.",
-          "what_to_watch_next": "Whether he keeps the walk rate this low against deeper, more patient lineups."
+          "home_runs_allowed": 0
         }
-      },
-      "starter_duel_winner": "Demo Pitcher D",
-      "call_check": [
-        {
-          "pregame_note": "Pitcher D needed to limit walks against a patient lineup.",
-          "result": "held_up",
-          "postgame_evidence": "Issued only one walk over 6.2 innings."
-        },
-        {
-          "pregame_note": "Pitcher C carried elevated walk risk.",
-          "result": "held_up",
-          "postgame_evidence": "Walked four and exited before completing the fifth inning."
-        },
-        {
-          "pregame_note": "Pitcher C had swing-and-miss upside.",
-          "result": "partially_held_up",
-          "postgame_evidence": "Recorded five strikeouts but could not work efficiently."
-        }
-      ]
+      }
     },
     "data_confidence": {
       "level": "demo_cached",
@@ -872,7 +850,7 @@ ARCHIVE: Any = [
     "featured": False,
     "starter_summary": "Demo Pitcher C vs Demo Pitcher D",
     "result_label": "BOS 5 - NYY 3",
-    "grade_label": "Starter Duel: Demo Pitcher D, A-"
+    "grade_label": "Starter Duel: Demo Pitcher D, B"
   },
   {
     "id": "matchup_003",
