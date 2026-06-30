@@ -166,6 +166,48 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         return []
 
 
+def fetch_pitcher_season_stats(pitcher_id: int, season: int = 2026) -> dict[str, Any]:
+    """
+    Fetch season pitching stats for a pitcher from the MLB Stats API.
+
+    Returns {} on any error so Statcast counts can remain the fallback.
+    """
+
+    url = (
+        f"https://statsapi.mlb.com/api/v1/people/{pitcher_id}/stats"
+        f"?stats=season&group=pitching&season={season}"
+    )
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "PitchCraft-Capstone/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            data = json.loads(response.read())
+        splits = data.get("stats", [{}])[0].get("splits", [])
+        if not splits:
+            return {}
+        stat = splits[0].get("stat", {})
+        result = {
+            "era": stat.get("era", "N/A"),
+            "whip": stat.get("whip", "N/A"),
+            "innings": stat.get("inningsPitched", "N/A"),
+            "strikeouts": stat.get("strikeOuts"),
+            "walks": stat.get("baseOnBalls"),
+            "home_runs_allowed": stat.get("homeRuns"),
+        }
+        print(
+            f"[LIVE] Season stats fetched: ERA {result['era']}, "
+            f"WHIP {result['whip']}, IP {result['innings']}, "
+            f"K {result['strikeouts']}, BB {result['walks']}, "
+            f"HR {result['home_runs_allowed']}"
+        )
+        return result
+    except Exception as exc:
+        print(f"[LIVE] Season stats fetch failed for id={pitcher_id}: {exc}")
+        return {}
+
+
 def fetch_pitcher_statcast(
     pitcher_id: int,
     pitcher_name: str,
@@ -185,6 +227,28 @@ def fetch_pitcher_statcast(
         if not processed["pitch_mix"]:
             print(f"[LIVE] No usable pitch mix for {pitcher_name}")
             return None
+        statcast_summary = processed["season_summary"]
+        mlb_stats = fetch_pitcher_season_stats(pitcher_id)
+        if mlb_stats:
+            processed["season_summary"] = {
+                "era": mlb_stats.get("era", "N/A"),
+                "whip": mlb_stats.get("whip", "N/A"),
+                "innings": mlb_stats.get("innings", "N/A"),
+                "strikeouts": mlb_stats.get("strikeouts")
+                or statcast_summary["strikeouts"],
+                "walks": mlb_stats.get("walks") or statcast_summary["walks"],
+                "home_runs_allowed": mlb_stats.get("home_runs_allowed")
+                or statcast_summary["home_runs_allowed"],
+            }
+        else:
+            processed["season_summary"] = {
+                "era": "N/A",
+                "whip": "N/A",
+                "innings": "N/A",
+                "strikeouts": statcast_summary["strikeouts"],
+                "walks": statcast_summary["walks"],
+                "home_runs_allowed": statcast_summary["home_runs_allowed"],
+            }
         return processed
     except Exception as exc:
         print(f"[LIVE] Statcast fetch failed for {pitcher_name}: {exc}")
