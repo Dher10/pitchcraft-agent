@@ -2,9 +2,9 @@
   "metadata": {
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.2.0",
-    "data_mode": "demo_cached",
+    "data_mode": "fetched_snapshot",
     "generated_at": "2026-06-28T09:00:00-05:00",
-    "last_updated_label": "Demo data generated for capstone submission",
+    "last_updated_label": "Live data fetched 2026-06-29",
     "data_sources": [
       "MLB public schedule/probable pitchers (optional)",
       "Baseball Savant / Statcast-style pitch data (optional)",
@@ -19,8 +19,8 @@
       "status": "upcoming",
       "is_featured": true,
       "game": {
-        "title": "San Francisco Giants vs Los Angeles Dodgers",
-        "venue": "Oracle Park",
+        "title": "Chicago White Sox vs Baltimore Orioles",
+        "venue": "Oriole Park at Camden Yards",
         "start_time_local": "7:15 PM",
         "timezone": "America/Los_Angeles",
         "broadcast_note": "Demo matchup for capstone",
@@ -30,8 +30,8 @@
       "teams": {
         "home": {
           "id": "sf",
-          "name": "San Francisco Giants",
-          "abbreviation": "SF",
+          "name": "Baltimore Orioles",
+          "abbreviation": "BAL",
           "record": "45-39",
           "offense_profile": {
             "summary_label": "Balanced offense with moderate swing-and-miss risk",
@@ -44,8 +44,8 @@
         },
         "away": {
           "id": "lad",
-          "name": "Los Angeles Dodgers",
-          "abbreviation": "LAD",
+          "name": "Chicago White Sox",
+          "abbreviation": "CWS",
           "record": "51-33",
           "offense_profile": {
             "summary_label": "Power-heavy offense with strong fastball damage potential",
@@ -60,8 +60,8 @@
       "starters": {
         "away_starter": {
           "id": "pitcher_a",
-          "name": "Demo Pitcher A",
-          "team": "LAD",
+          "name": "Sean Burke",
+          "team": "CWS",
           "throws": "RHP",
           "bio": {
             "age": 27,
@@ -75,20 +75,20 @@
             ]
           },
           "season_summary": {
-            "era": "3.42",
-            "whip": "1.16",
-            "innings": "92.1",
-            "strikeouts": 97,
-            "walks": 28,
-            "home_runs_allowed": 11
+            "era": "live",
+            "whip": "live",
+            "innings": "live",
+            "strikeouts": 93,
+            "walks": 31,
+            "home_runs_allowed": 12
           },
           "pitching_profile": {
-            "style_label": "Power fastball-slider starter",
-            "primary_pitch": "Four-seam fastball",
-            "putaway_pitch": "Slider",
-            "command_label": "Average command",
-            "swing_miss_label": "Above-average swing-and-miss",
-            "contact_risk_label": "Moderate contact risk"
+            "style_label": "Four-seam-Curveball starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Curveball",
+            "command_label": "See live data",
+            "swing_miss_label": "See live data",
+            "contact_risk_label": "See live data"
           },
           "recent_form": {
             "label": "Trending stable",
@@ -97,8 +97,8 @@
         },
         "home_starter": {
           "id": "pitcher_b",
-          "name": "Demo Pitcher B",
-          "team": "SF",
+          "name": "Shane Baz",
+          "team": "BAL",
           "throws": "LHP",
           "bio": {
             "age": 31,
@@ -112,20 +112,20 @@
             ]
           },
           "season_summary": {
-            "era": "3.88",
-            "whip": "1.24",
-            "innings": "86.0",
-            "strikeouts": 81,
-            "walks": 31,
+            "era": "live",
+            "whip": "live",
+            "innings": "live",
+            "strikeouts": 86,
+            "walks": 33,
             "home_runs_allowed": 9
           },
           "pitching_profile": {
-            "style_label": "Command-oriented sinker-changeup starter",
-            "primary_pitch": "Sinker",
-            "putaway_pitch": "Changeup",
-            "command_label": "Solid command",
-            "swing_miss_label": "Average swing-and-miss",
-            "contact_risk_label": "Low-to-moderate contact risk"
+            "style_label": "Four-seam-Curveball starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Curveball",
+            "command_label": "See live data",
+            "swing_miss_label": "See live data",
+            "contact_risk_label": "See live data"
           },
           "recent_form": {
             "label": "Slight volatility",
@@ -138,94 +138,112 @@
           {
             "pitch": "Four-seam",
             "away_starter": {
-              "overall": 42,
-              "vs_lhh": 38,
-              "vs_rhh": 45
+              "overall": 36.9,
+              "vs_lhh": 40.0,
+              "vs_rhh": 32.0
             },
             "home_starter": {
-              "overall": 18,
-              "vs_lhh": 15,
-              "vs_rhh": 20
-            }
-          },
-          {
-            "pitch": "Slider",
-            "away_starter": {
-              "overall": 28,
-              "vs_lhh": 20,
-              "vs_rhh": 34
-            },
-            "home_starter": {
-              "overall": 12,
-              "vs_lhh": 18,
-              "vs_rhh": 9
-            }
-          },
-          {
-            "pitch": "Sinker",
-            "away_starter": {
-              "overall": 8,
-              "vs_lhh": 10,
-              "vs_rhh": 6
-            },
-            "home_starter": {
-              "overall": 39,
-              "vs_lhh": 44,
-              "vs_rhh": 36
-            }
-          },
-          {
-            "pitch": "Changeup",
-            "away_starter": {
-              "overall": 10,
-              "vs_lhh": 20,
-              "vs_rhh": 3
-            },
-            "home_starter": {
-              "overall": 24,
-              "vs_lhh": 12,
-              "vs_rhh": 30
+              "overall": 33.6,
+              "vs_lhh": 40.1,
+              "vs_rhh": 24.4
             }
           },
           {
             "pitch": "Curveball",
             "away_starter": {
-              "overall": 12,
-              "vs_lhh": 12,
-              "vs_rhh": 12
+              "overall": 21.1,
+              "vs_lhh": 26.6,
+              "vs_rhh": 12.2
             },
             "home_starter": {
-              "overall": 7,
-              "vs_lhh": 11,
-              "vs_rhh": 5
+              "overall": 33.1,
+              "vs_lhh": 36.5,
+              "vs_rhh": 28.2
+            }
+          },
+          {
+            "pitch": "Slider",
+            "away_starter": {
+              "overall": 17.5,
+              "vs_lhh": 7.9,
+              "vs_rhh": 33.0
+            },
+            "home_starter": {
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0
+            }
+          },
+          {
+            "pitch": "Sinker",
+            "away_starter": {
+              "overall": 15.1,
+              "vs_lhh": 11.9,
+              "vs_rhh": 20.2
+            },
+            "home_starter": {
+              "overall": 7.5,
+              "vs_lhh": 1.6,
+              "vs_rhh": 16.0
+            }
+          },
+          {
+            "pitch": "Cutter",
+            "away_starter": {
+              "overall": 6.1,
+              "vs_lhh": 8.3,
+              "vs_rhh": 2.4
+            },
+            "home_starter": {
+              "overall": 17.9,
+              "vs_lhh": 8.6,
+              "vs_rhh": 31.4
+            }
+          },
+          {
+            "pitch": "Changeup",
+            "away_starter": {
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0
+            },
+            "home_starter": {
+              "overall": 7.8,
+              "vs_lhh": 13.1,
+              "vs_rhh": 0.2
             }
           }
         ],
         "velocity_by_pitch": [
           {
-            "pitch": "Four-seam",
-            "away_starter_velocity": 95.4,
-            "home_starter_velocity": null
+            "pitch": "Curveball",
+            "away_starter_velocity": 79.6,
+            "home_starter_velocity": 85.3
           },
           {
-            "pitch": "Slider",
-            "away_starter_velocity": 86.7,
-            "home_starter_velocity": 82.1
+            "pitch": "Cutter",
+            "away_starter_velocity": 90.5,
+            "home_starter_velocity": 89.5
+          },
+          {
+            "pitch": "Four-seam",
+            "away_starter_velocity": 94.5,
+            "home_starter_velocity": 96.1
           },
           {
             "pitch": "Sinker",
-            "away_starter_velocity": 93.1,
-            "home_starter_velocity": 91.8
+            "away_starter_velocity": 94.5,
+            "home_starter_velocity": 95.2
+          },
+          {
+            "pitch": "Slider",
+            "away_starter_velocity": 86.9,
+            "home_starter_velocity": null
           },
           {
             "pitch": "Changeup",
-            "away_starter_velocity": 84.8,
-            "home_starter_velocity": 83.5
-          },
-          {
-            "pitch": "Curveball",
-            "away_starter_velocity": 79.2,
-            "home_starter_velocity": 76.9
+            "away_starter_velocity": null,
+            "home_starter_velocity": 88.4
           }
         ],
         "strength_profile": [
@@ -262,35 +280,55 @@
           "vs_lhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.5,
-              "y": 0.18
+              "x": 0.452,
+              "y": 0.466
             },
             {
-              "pitch": "Changeup",
-              "x": 0.72,
-              "y": 0.7
+              "pitch": "Curveball",
+              "x": 0.492,
+              "y": 0.627
             },
             {
               "pitch": "Slider",
-              "x": 0.3,
-              "y": 0.74
+              "x": 0.552,
+              "y": 0.7
+            },
+            {
+              "pitch": "Sinker",
+              "x": 0.397,
+              "y": 0.497
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.523,
+              "y": 0.512
             }
           ],
           "vs_rhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.5,
-              "y": 0.18
-            },
-            {
-              "pitch": "Slider",
-              "x": 0.74,
-              "y": 0.72
+              "x": 0.512,
+              "y": 0.448
             },
             {
               "pitch": "Curveball",
-              "x": 0.46,
-              "y": 0.8
+              "x": 0.495,
+              "y": 0.576
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.644,
+              "y": 0.628
+            },
+            {
+              "pitch": "Sinker",
+              "x": 0.314,
+              "y": 0.573
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.532,
+              "y": 0.436
             }
           ]
         },
@@ -298,69 +336,93 @@
           "vs_lhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.5,
-              "y": 0.2
+              "x": 0.526,
+              "y": 0.479
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.561,
+              "y": 0.689
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.521,
+              "y": 0.499
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.464,
+              "y": 0.707
             },
             {
               "pitch": "Sinker",
-              "x": 0.5,
-              "y": 0.74
-            },
-            {
-              "pitch": "Slider",
-              "x": 0.3,
-              "y": 0.72
+              "x": 0.379,
+              "y": 0.574
             }
           ],
           "vs_rhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.5,
-              "y": 0.2
+              "x": 0.64,
+              "y": 0.459
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.696,
+              "y": 0.751
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.644,
+              "y": 0.608
             },
             {
               "pitch": "Sinker",
-              "x": 0.5,
-              "y": 0.74
-            },
-            {
-              "pitch": "Changeup",
-              "x": 0.7,
-              "y": 0.7
+              "x": 0.491,
+              "y": 0.579
             }
           ]
         }
       },
       "postgame": null,
+      "data_confidence": {
+        "level": "fetched_snapshot",
+        "lineup_status": "not_required_for_demo",
+        "pitch_data_status": "fetched_snapshot",
+        "notes": [
+          "Live snapshot fetched 2026-06-29.",
+          "If live fetching fails, PitchCraft falls back to cached demo data."
+        ]
+      },
       "report": {
-        "headline": "Power fastball-slider starter against Command-oriented sinker-changeup starter",
+        "headline": "Four-seam-Curveball starter against Four-seam-Curveball starter",
         "short_summary": [
-          "Demo Pitcher A brings this strength: Above-average swing-and-miss ability.",
-          "Demo Pitcher B brings this strength: Solid command supports strike-zone control.",
-          "The early what to watch is whether Demo Pitcher A can land the slider early in counts."
+          "Sean Burke brings this strength: Recent form is trending in the right direction.",
+          "Shane Baz brings this strength: Four-seam to set up, Curveball to finish.",
+          "The early what to watch is whether Sean can Burke land the curveball early in counts."
         ],
         "sections": [
           {
             "title": "Today's Matchup Summary",
-            "body": "This matchup features Power fastball-slider starter against Command-oriented sinker-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
+            "body": "This matchup features Four-seam-Curveball starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
           },
           {
-            "title": "Demo Pitcher A vs San Francisco Giants",
-            "body": "Demo Pitcher A's four-seam-slider combination gives him above-average swing-and-miss, but the opposing lineup has elevated swing-and-miss risk."
+            "title": "Sean Burke vs Baltimore Orioles",
+            "body": "Sean Burke's four-seam-curveball combination gives him see live data, but the opposing lineup has elevated swing-and-miss risk."
           },
           {
-            "title": "Demo Pitcher B vs Los Angeles Dodgers",
-            "body": "Demo Pitcher B needs to keep the command edge visible and use the changeup to manage contact. His margin is low-to-moderate contact risk against a lineup with .768 OPS; the pressure point is that the opposing lineup has strong OPS against this pitcher's hand."
+            "title": "Shane Baz vs Chicago White Sox",
+            "body": "Shane Baz needs to avoid predictable counts and use the curveball to disrupt timing. His margin is see live data against a lineup with .768 OPS; the pressure point is that the opposing lineup has strong OPS against this pitcher's hand."
           },
           {
             "title": "Arsenal Scout",
-            "body": "The main contrast is Four-seam fastball to set up, Slider to finish versus Sinker to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Sinker, a scouting note for matchup fit and each pressure point."
+            "body": "The main contrast is Four-seam to set up, Curveball to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Four-seam against Four-seam, a scouting note for matchup fit and each pressure point."
           },
           {
             "title": "Three Things to Watch",
             "bullets": [
-              "Can Demo Pitcher A land the slider early in counts?",
-              "Can Demo Pitcher B keep the ball low?",
+              "Can Sean Burke land the curveball early in counts?",
+              "Can Shane Baz keep the ball in the zone?",
               "Which lineup forces more deep counts by the third inning?"
             ]
           },
@@ -375,29 +437,29 @@
         "summary": "The critic checked 6 claims. 0 revised. The report was corrected where the data did not back it up.",
         "checks": [
           {
-            "claim": "Demo Pitcher A's primary pitch is Four-seam.",
+            "claim": "Sean Burke's primary pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Pitch mix shows 42% Four-seam usage."
+            "evidence": "Pitch mix shows 36% Four-seam usage."
           },
           {
-            "claim": "Demo Pitcher A's put-away pitch is Slider.",
+            "claim": "Sean Burke's put-away pitch is Curveball.",
             "status": "supported",
-            "evidence": "Put-away pitch usage at 28% supports this claim."
+            "evidence": "Put-away pitch usage at 21% supports this claim."
           },
           {
-            "claim": "Demo Pitcher B's primary pitch is Sinker.",
+            "claim": "Shane Baz's primary pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Pitch mix shows 39% Sinker usage."
+            "evidence": "Pitch mix shows 33% Four-seam usage."
           },
           {
-            "claim": "Demo Pitcher B's put-away pitch is Changeup.",
+            "claim": "Shane Baz's put-away pitch is Curveball.",
             "status": "supported",
-            "evidence": "Put-away pitch usage at 24% supports this claim."
+            "evidence": "Put-away pitch usage at 33% supports this claim."
           },
           {
-            "claim": "Demo Pitcher B's command label is supported.",
-            "status": "supported",
-            "evidence": "Command signal is 74 in the strength profile."
+            "claim": "The report makes a command claim.",
+            "status": "not_present",
+            "evidence": "No command claim requiring correction was found."
           },
           {
             "claim": "The report predicts the winner.",
@@ -408,15 +470,6 @@
         "revision_notes": [
           "Kept the report focused on matchup fit rather than outcome prediction.",
           "Avoided claiming official Stuff+."
-        ]
-      },
-      "data_confidence": {
-        "level": "demo_cached",
-        "lineup_status": "not_required_for_demo",
-        "pitch_data_status": "cached",
-        "notes": [
-          "This demo uses cached data to guarantee stable judging.",
-          "Live data integration can be added after the capstone."
         ]
       }
     },
@@ -886,10 +939,10 @@
     {
       "id": "matchup_001",
       "date": "2026-06-28",
-      "title": "Giants vs Dodgers",
+      "title": "CWS vs BAL",
       "status": "upcoming",
       "featured": true,
-      "starter_summary": "Demo Pitcher A vs Demo Pitcher B",
+      "starter_summary": "Sean Burke vs Shane Baz",
       "result_label": "Pregame report available",
       "grade_label": null
     },

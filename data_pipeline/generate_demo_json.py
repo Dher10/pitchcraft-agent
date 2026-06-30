@@ -13,9 +13,23 @@ if __package__ in (None, ""):
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
 from data_pipeline import config
 from data_pipeline import demo_inputs
+from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.validators import ValidationError, validate_payload
 
+def _load_live_snapshot() -> dict[str, Any] | None:
+    try:
+        return load_processed("live_matchup")
+    except Exception as exc:
+        print(f"[CONFIG] Live snapshot unavailable: {exc} - using demo data")
+        return None
+
+
 print(f"[CONFIG] Data mode: {config.ACTIVE_MODE}")
+_live = _load_live_snapshot()
+if _live:
+    print(f"[CONFIG] Live snapshot found: {_live.get('fetched_date')} - using live data")
+else:
+    print("[CONFIG] No live snapshot - using demo data")
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +40,9 @@ def main() -> int:
     payload = demo_inputs.build_demo_payload()
     payload["metadata"]["data_mode"] = config.ACTIVE_MODE
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
+    _apply_live_snapshot(payload)
     total_revised, graded_starters = _run_agents(payload["matchups"])
+    _apply_live_confidence(payload)
     _update_archive_postgame_labels(payload)
     payload["agent_workflow"] = _build_agent_workflow(
         len(payload["matchups"]),
@@ -95,6 +111,90 @@ def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
             matchup_input["postgame"] = None
 
     return total_revised, graded_starters
+
+
+def _apply_live_snapshot(payload: dict[str, Any]) -> None:
+    if not _live:
+        return
+
+    for matchup in payload["matchups"]:
+        if matchup["id"] != "matchup_001":
+            continue
+
+        fg = _live["featured_game"]
+        away = _live["away_starter"]
+        home = _live["home_starter"]
+
+        matchup["game"]["title"] = f"{fg['away_team']} vs {fg['home_team']}"
+        matchup["game"]["venue"] = fg.get("venue", matchup["game"]["venue"])
+
+        matchup["teams"]["away"]["name"] = fg["away_team"]
+        matchup["teams"]["away"]["abbreviation"] = fg["away_team_abbr"]
+        matchup["teams"]["home"]["name"] = fg["home_team"]
+        matchup["teams"]["home"]["abbreviation"] = fg["home_team_abbr"]
+
+        matchup["starters"]["away_starter"]["name"] = away["name"]
+        matchup["starters"]["away_starter"]["team"] = fg["away_team_abbr"]
+        matchup["starters"]["away_starter"]["season_summary"].update(
+            away["season_summary"]
+        )
+        matchup["starters"]["away_starter"]["pitching_profile"].update(
+            away["pitching_profile"]
+        )
+
+        matchup["starters"]["home_starter"]["name"] = home["name"]
+        matchup["starters"]["home_starter"]["team"] = fg["home_team_abbr"]
+        matchup["starters"]["home_starter"]["season_summary"].update(
+            home["season_summary"]
+        )
+        matchup["starters"]["home_starter"]["pitching_profile"].update(
+            home["pitching_profile"]
+        )
+
+        matchup["charts"]["pitch_mix"] = _live["combined_charts"]["pitch_mix"]
+        matchup["charts"]["velocity_by_pitch"] = _live["combined_charts"][
+            "velocity_by_pitch"
+        ]
+
+        matchup["pitch_locations"]["away_starter"] = {
+            "vs_lhh": away["pitch_locations"]["vs_lhh"],
+            "vs_rhh": away["pitch_locations"]["vs_rhh"],
+        }
+        matchup["pitch_locations"]["home_starter"] = {
+            "vs_lhh": home["pitch_locations"]["vs_lhh"],
+            "vs_rhh": home["pitch_locations"]["vs_rhh"],
+        }
+
+        matchup["data_confidence"] = {"level": "fetched_snapshot"}
+
+        if payload["archive"]:
+            payload["archive"][0]["title"] = (
+                f"{fg['away_team_abbr']} vs {fg['home_team_abbr']}"
+            )
+            payload["archive"][0]["starter_summary"] = (
+                f"{away['name']} vs {home['name']}"
+            )
+        break
+
+    payload["metadata"]["data_mode"] = "fetched_snapshot"
+    payload["metadata"]["last_updated_label"] = (
+        f"Live data fetched {_live['fetched_date']}"
+    )
+
+
+def _apply_live_confidence(payload: dict[str, Any]) -> None:
+    if not _live:
+        return
+
+    for matchup in payload["matchups"]:
+        if matchup["id"] == "matchup_001":
+            matchup["data_confidence"]["level"] = "fetched_snapshot"
+            matchup["data_confidence"]["pitch_data_status"] = "fetched_snapshot"
+            matchup["data_confidence"]["notes"] = [
+                f"Live snapshot fetched {_live['fetched_date']}.",
+                "If live fetching fails, PitchCraft falls back to cached demo data.",
+            ]
+            break
 
 
 def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
