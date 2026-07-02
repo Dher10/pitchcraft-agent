@@ -38,12 +38,17 @@ def run(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, Any]
     )
 
     revised_count = sum(1 for check in checks if check["status"] == "revised")
+    if revised_count == 0:
+        summary = f"The critic checked {len(checks)} claims and found them supported by the data."
+    else:
+        summary = (
+            f"The critic checked {len(checks)} claims and revised {revised_count} "
+            "where the data did not back them up."
+        )
+
     return {
         "status": "reviewed",
-        "summary": (
-            f"The critic checked {len(checks)} claims. {revised_count} revised. "
-            "The report was corrected where the data did not back it up."
-        ),
+        "summary": summary,
         "checks": checks,
         "revision_notes": revision_notes,
     }
@@ -204,4 +209,3 @@ def _report_locations(report: dict[str, Any]) -> list[tuple[str, str]]:
         for bullet_index, bullet in enumerate(section.get("bullets", [])):
             locations.append((f"sections[{index}].bullets[{bullet_index}]", bullet))
     return locations
-

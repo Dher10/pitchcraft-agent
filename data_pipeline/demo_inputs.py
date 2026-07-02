@@ -489,7 +489,9 @@ MATCHUPS: Any = [
         "pitching_profile": {
           "style_label": "High-velocity fastball-curveball starter",
           "primary_pitch": "Four-seam fastball",
-          "putaway_pitch": "Curveball",
+          # Intentional QA mismatch: the scouting profile claims a changeup put-away pitch,
+          # but the pitch mix does not fully support it, so the critic revises the claim.
+          "putaway_pitch": "Changeup",
           "command_label": "Below-average command",
           "swing_miss_label": "Above-average swing-and-miss",
           "contact_risk_label": "Elevated contact risk"

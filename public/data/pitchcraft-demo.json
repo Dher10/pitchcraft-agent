@@ -75,12 +75,12 @@
             ]
           },
           "season_summary": {
-            "era": "live",
-            "whip": "live",
-            "innings": "live",
-            "strikeouts": 93,
-            "walks": 31,
-            "home_runs_allowed": 12
+            "era": "3.69",
+            "whip": "1.22",
+            "innings": "92.2",
+            "strikeouts": 95,
+            "walks": 33,
+            "home_runs_allowed": 11
           },
           "pitching_profile": {
             "style_label": "Four-seam-Curveball starter",
@@ -112,11 +112,11 @@
             ]
           },
           "season_summary": {
-            "era": "live",
-            "whip": "live",
-            "innings": "live",
-            "strikeouts": 86,
-            "walks": 33,
+            "era": "4.19",
+            "whip": "1.37",
+            "innings": "101.0",
+            "strikeouts": 87,
+            "walks": 39,
             "home_runs_allowed": 9
           },
           "pitching_profile": {
@@ -138,35 +138,35 @@
           {
             "pitch": "Four-seam",
             "away_starter": {
-              "overall": 36.9,
-              "vs_lhh": 40.0,
-              "vs_rhh": 32.0
+              "overall": 37.4,
+              "vs_lhh": 40.4,
+              "vs_rhh": 32.5
             },
             "home_starter": {
               "overall": 33.6,
-              "vs_lhh": 40.1,
-              "vs_rhh": 24.4
+              "vs_lhh": 40.0,
+              "vs_rhh": 24.2
             }
           },
           {
             "pitch": "Curveball",
             "away_starter": {
-              "overall": 21.1,
-              "vs_lhh": 26.6,
-              "vs_rhh": 12.2
+              "overall": 21.5,
+              "vs_lhh": 27.0,
+              "vs_rhh": 12.4
             },
             "home_starter": {
               "overall": 33.1,
-              "vs_lhh": 36.5,
-              "vs_rhh": 28.2
+              "vs_lhh": 36.6,
+              "vs_rhh": 28.1
             }
           },
           {
             "pitch": "Slider",
             "away_starter": {
-              "overall": 17.5,
-              "vs_lhh": 7.9,
-              "vs_rhh": 33.0
+              "overall": 17.0,
+              "vs_lhh": 7.4,
+              "vs_rhh": 32.6
             },
             "home_starter": {
               "overall": 0,
@@ -177,27 +177,27 @@
           {
             "pitch": "Sinker",
             "away_starter": {
-              "overall": 15.1,
-              "vs_lhh": 11.9,
-              "vs_rhh": 20.2
+              "overall": 15.0,
+              "vs_lhh": 12.0,
+              "vs_rhh": 20.0
             },
             "home_starter": {
-              "overall": 7.5,
-              "vs_lhh": 1.6,
-              "vs_rhh": 16.0
+              "overall": 7.6,
+              "vs_lhh": 1.5,
+              "vs_rhh": 16.5
             }
           },
           {
             "pitch": "Cutter",
             "away_starter": {
-              "overall": 6.1,
-              "vs_lhh": 8.3,
-              "vs_rhh": 2.4
+              "overall": 6.0,
+              "vs_lhh": 8.2,
+              "vs_rhh": 2.3
             },
             "home_starter": {
               "overall": 17.9,
-              "vs_lhh": 8.6,
-              "vs_rhh": 31.4
+              "vs_lhh": 8.8,
+              "vs_rhh": 31.1
             }
           },
           {
@@ -208,42 +208,42 @@
               "vs_rhh": 0
             },
             "home_starter": {
-              "overall": 7.8,
-              "vs_lhh": 13.1,
-              "vs_rhh": 0.2
+              "overall": 7.7,
+              "vs_lhh": 13.0,
+              "vs_rhh": 0.1
             }
           }
         ],
         "velocity_by_pitch": [
           {
             "pitch": "Curveball",
-            "away_starter_velocity": 79.6,
+            "away_starter_velocity": 79.7,
             "home_starter_velocity": 85.3
           },
           {
             "pitch": "Cutter",
-            "away_starter_velocity": 90.5,
-            "home_starter_velocity": 89.5
+            "away_starter_velocity": 90.6,
+            "home_starter_velocity": 89.6
           },
           {
             "pitch": "Four-seam",
-            "away_starter_velocity": 94.5,
+            "away_starter_velocity": 94.6,
             "home_starter_velocity": 96.1
           },
           {
             "pitch": "Sinker",
-            "away_starter_velocity": 94.5,
+            "away_starter_velocity": 94.6,
             "home_starter_velocity": 95.2
           },
           {
             "pitch": "Slider",
-            "away_starter_velocity": 86.9,
+            "away_starter_velocity": 86.8,
             "home_starter_velocity": null
           },
           {
             "pitch": "Changeup",
             "away_starter_velocity": null,
-            "home_starter_velocity": 88.4
+            "home_starter_velocity": 88.3
           }
         ],
         "strength_profile": [
@@ -280,13 +280,13 @@
           "vs_lhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.452,
+              "x": 0.455,
               "y": 0.466
             },
             {
               "pitch": "Curveball",
-              "x": 0.492,
-              "y": 0.627
+              "x": 0.474,
+              "y": 0.622
             },
             {
               "pitch": "Slider",
@@ -300,30 +300,30 @@
             },
             {
               "pitch": "Cutter",
-              "x": 0.523,
+              "x": 0.513,
               "y": 0.512
             }
           ],
           "vs_rhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.512,
-              "y": 0.448
+              "x": 0.511,
+              "y": 0.449
             },
             {
               "pitch": "Curveball",
-              "x": 0.495,
+              "x": 0.497,
               "y": 0.576
             },
             {
               "pitch": "Slider",
-              "x": 0.644,
-              "y": 0.628
+              "x": 0.638,
+              "y": 0.632
             },
             {
               "pitch": "Sinker",
               "x": 0.314,
-              "y": 0.573
+              "y": 0.579
             },
             {
               "pitch": "Cutter",
@@ -336,23 +336,23 @@
           "vs_lhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.526,
-              "y": 0.479
+              "x": 0.524,
+              "y": 0.473
             },
             {
               "pitch": "Curveball",
-              "x": 0.561,
+              "x": 0.564,
               "y": 0.689
             },
             {
               "pitch": "Cutter",
-              "x": 0.521,
-              "y": 0.499
+              "x": 0.503,
+              "y": 0.507
             },
             {
               "pitch": "Changeup",
-              "x": 0.464,
-              "y": 0.707
+              "x": 0.46,
+              "y": 0.701
             },
             {
               "pitch": "Sinker",
@@ -363,23 +363,23 @@
           "vs_rhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.64,
-              "y": 0.459
+              "x": 0.627,
+              "y": 0.466
             },
             {
               "pitch": "Curveball",
-              "x": 0.696,
+              "x": 0.69,
               "y": 0.751
             },
             {
               "pitch": "Cutter",
-              "x": 0.644,
-              "y": 0.608
+              "x": 0.651,
+              "y": 0.607
             },
             {
               "pitch": "Sinker",
-              "x": 0.491,
-              "y": 0.579
+              "x": 0.492,
+              "y": 0.586
             }
           ]
         }
@@ -434,12 +434,12 @@
       },
       "critic_review": {
         "status": "reviewed",
-        "summary": "The critic checked 6 claims. 0 revised. The report was corrected where the data did not back it up.",
+        "summary": "The critic checked 6 claims and found them supported by the data.",
         "checks": [
           {
             "claim": "Sean Burke's primary pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Pitch mix shows 36% Four-seam usage."
+            "evidence": "Pitch mix shows 37% Four-seam usage."
           },
           {
             "claim": "Sean Burke's put-away pitch is Curveball.",
@@ -543,7 +543,7 @@
           "pitching_profile": {
             "style_label": "High-velocity fastball-curveball starter",
             "primary_pitch": "Four-seam fastball",
-            "putaway_pitch": "Curveball",
+            "putaway_pitch": "Changeup",
             "command_label": "Below-average command",
             "swing_miss_label": "Above-average swing-and-miss",
             "contact_risk_label": "Elevated contact risk"
@@ -808,7 +808,7 @@
             "game_score": 35,
             "pitchcraft_grade": "C-",
             "grade_explanation": "A Game Score of 35 reflects a rough outing - the hits and walks piled up and shortened his night.",
-            "plan_vs_execution": "The plan was to use the four-seam fastball to reach curveball counts, but 4 walks kept him from controlling the sequence.",
+            "plan_vs_execution": "The plan was to use the four-seam fastball to reach changeup counts, but 4 walks kept him from controlling the sequence.",
             "what_to_watch_next": "The next checkpoint is tightening strike-zone control before traffic builds."
           },
           "home_starter": {
@@ -851,7 +851,7 @@
         "short_summary": [
           "Demo Pitcher C brings this strength: Above-average swing-and-miss ability.",
           "Demo Pitcher D brings this strength: Plus command supports strike-zone control.",
-          "The early what to watch is whether Demo Pitcher C can land the curveball early in counts."
+          "The early what to watch is whether Demo Pitcher C can land the changeup early in counts."
         ],
         "sections": [
           {
@@ -860,7 +860,7 @@
           },
           {
             "title": "Demo Pitcher C vs Boston Red Sox",
-            "body": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss, but the opposing lineup applies consistent pressure."
+            "body": "Demo Pitcher C's four-seam-changeup combination gives him above-average swing-and-miss, but the opposing lineup applies consistent pressure."
           },
           {
             "title": "Demo Pitcher D vs New York Yankees",
@@ -868,12 +868,12 @@
           },
           {
             "title": "Arsenal Scout",
-            "body": "The main contrast is Four-seam fastball to set up, Curveball to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point."
+            "body": "The main contrast is Four-seam fastball to set up, Changeup to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point."
           },
           {
             "title": "Three Things to Watch",
             "bullets": [
-              "Can Demo Pitcher C land the curveball early in counts?",
+              "Can Demo Pitcher C land the changeup early in counts?",
               "Can Demo Pitcher D keep the ball in the zone?",
               "Which lineup forces more deep counts by the third inning?"
             ]
@@ -886,7 +886,7 @@
       },
       "critic_review": {
         "status": "reviewed",
-        "summary": "The critic checked 6 claims. 0 revised. The report was corrected where the data did not back it up.",
+        "summary": "The critic checked 6 claims and revised 1 where the data did not back them up.",
         "checks": [
           {
             "claim": "Demo Pitcher C's primary pitch is Four-seam.",
@@ -894,9 +894,9 @@
             "evidence": "Pitch mix shows 48% Four-seam usage."
           },
           {
-            "claim": "Demo Pitcher C's put-away pitch is Curveball.",
-            "status": "supported",
-            "evidence": "Put-away pitch usage at 26% supports this claim."
+            "claim": "Demo Pitcher C's put-away pitch is Changeup.",
+            "status": "revised",
+            "evidence": "Changeup usage is only 12%. Revised to reflect the higher-usage put-away pitch."
           },
           {
             "claim": "Demo Pitcher D's primary pitch is Cutter.",
@@ -920,6 +920,7 @@
           }
         ],
         "revision_notes": [
+          "Changeup usage is only 12%. Revised to reflect the higher-usage put-away pitch.",
           "Kept the report focused on matchup fit rather than outcome prediction.",
           "Avoided claiming official Stuff+."
         ]
@@ -1018,7 +1019,7 @@
       {
         "agent": "Critic / Fact-check Agent",
         "status": "completed",
-        "output": "Verified claims. 0 claim(s) revised across all matchups."
+        "output": "Verified claims. 1 claim(s) revised across all matchups."
       },
       {
         "agent": "Postgame Grader Agent",
