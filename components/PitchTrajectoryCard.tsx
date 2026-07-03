@@ -1,3 +1,6 @@
+import TeamBadge from "@/components/TeamBadge";
+import { getPitchColor } from "@/components/ZoneDiagram";
+import { getTeamColor } from "@/lib/teamColors";
 import type { PitchFamily } from "@/lib/types";
 
 interface PitchTrajectoryCardProps {
@@ -8,20 +11,9 @@ interface PitchTrajectoryCardProps {
   hBreak: number;
   vBreak: number;
   throwsHand: "L" | "R";
+  team: string;
   description: string;
 }
-
-const familyClasses: Record<PitchFamily, string> = {
-  Fastball: "bg-red-50 text-red-700 ring-red-200",
-  Breaking: "bg-blue-50 text-blue-700 ring-blue-200",
-  Offspeed: "bg-amber-50 text-amber-700 ring-amber-200",
-};
-
-const familyStroke: Record<PitchFamily, string> = {
-  Fastball: "#D85A30",
-  Breaking: "#378ADD",
-  Offspeed: "#A855F7",
-};
 
 export default function PitchTrajectoryCard({
   pitchName,
@@ -31,6 +23,7 @@ export default function PitchTrajectoryCard({
   hBreak,
   vBreak,
   throwsHand,
+  team,
   description,
 }: PitchTrajectoryCardProps) {
   const velo = typeof velocity === "number" ? velocity : Number.parseFloat(String(velocity));
@@ -42,25 +35,26 @@ export default function PitchTrajectoryCard({
   const endY = clamp(140 - vBreak * 2.3, 74, 170);
   const controlX = 75 + xOffset * 0.45;
   const controlY = 82;
-  const stroke = familyStroke[family];
+  const stroke = getPitchColor(pitchName);
+  const teamColor = getTeamColor(team);
 
   return (
     <aside className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <h4 className="text-base font-bold text-neutral-900">{pitchName}</h4>
-            <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${familyClasses[family]}`}>
-              {family}
-            </span>
-          </div>
-          <p className="mt-1 text-xs font-semibold text-neutral-500">{throwsHand}HP shape</p>
+        <div className="flex items-center gap-2">
+          <h4 className="text-base font-bold text-neutral-900">{pitchName}</h4>
+          <span
+            className="rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide"
+            style={{ background: teamColor.bg, color: teamColor.ink }}
+          >
+            {family}
+          </span>
         </div>
-        <div className="text-right text-xs font-semibold text-neutral-500" style={{ fontVariantNumeric: "tabular-nums" }}>
-          <p>{formatVelocity(velocity)}</p>
-          <p>{usagePct}% usage</p>
-        </div>
+        <TeamBadge abbreviation={team} size={20} fontSize={7.5} />
       </div>
+      <p className="mt-1 font-mono text-[10.5px] text-neutral-400">
+        {throwsHand}HP shape &middot; {formatVelocity(velocity)} &middot; {usagePct}% usage
+      </p>
 
       <svg
         role="img"
@@ -109,12 +103,12 @@ export default function PitchTrajectoryCard({
 function Meter({ label, value, percent, color }: { label: string; value: string; percent: number; color: string }) {
   return (
     <div>
-      <div className="flex items-center justify-between text-xs font-semibold text-neutral-500">
+      <div className="flex items-center justify-between font-mono text-[9px] font-semibold uppercase tracking-wide text-neutral-400">
         <span>{label}</span>
-        <span style={{ fontVariantNumeric: "tabular-nums" }}>{value}</span>
+        <span className="text-neutral-700" style={{ fontVariantNumeric: "tabular-nums" }}>{value}</span>
       </div>
-      <div className="mt-1 h-2.5 rounded-full bg-neutral-200">
-        <div className="h-2.5 rounded-full" style={{ width: `${percent}%`, backgroundColor: color }} />
+      <div className="mt-1 h-[5px] rounded-full bg-neutral-200">
+        <div className="h-[5px] rounded-full" style={{ width: `${percent}%`, backgroundColor: color }} />
       </div>
     </div>
   );

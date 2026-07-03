@@ -1,4 +1,6 @@
-﻿import type { ReportSection, Starter, Team } from "@/lib/types";
+import StatTile from "@/components/StatTile";
+import TeamBadge from "@/components/TeamBadge";
+import type { ReportSection, Starter, Team } from "@/lib/types";
 
 interface ScoutingReportProps {
   awayStarter: Starter;
@@ -20,11 +22,13 @@ export default function ScoutingReport({
   return (
     <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
       <ReportCard
+        team={awayStarter.team}
         title={`${awayStarter.name} vs ${awayOpponent.abbreviation}`}
         section={awaySection}
         offense={awayOpponent}
       />
       <ReportCard
+        team={homeStarter.team}
         title={`${homeStarter.name} vs ${homeOpponent.abbreviation}`}
         section={homeSection}
         offense={homeOpponent}
@@ -33,35 +37,34 @@ export default function ScoutingReport({
   );
 }
 
-function ReportCard({ title, section, offense }: { title: string; section?: ReportSection; offense: Team }) {
+function ReportCard({
+  team,
+  title,
+  section,
+  offense,
+}: {
+  team: string;
+  title: string;
+  section?: ReportSection;
+  offense: Team;
+}) {
   return (
     <article className="rounded-xl border border-neutral-200 bg-white p-4">
-      <h3 className="font-bold text-neutral-900">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">
+      <div className="flex items-center gap-2.5">
+        <TeamBadge abbreviation={team} size={22} />
+        <h3 className="text-[15px] font-bold leading-tight text-neutral-900">{title}</h3>
+      </div>
+      <p className="mt-3 text-[13px] leading-6 text-neutral-600">
         {section?.body ?? offense.offense_profile.summary_label}
       </p>
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-xs" style={{ fontVariantNumeric: "tabular-nums" }}>
-        <Metric label="OPS" value={offense.offense_profile.ops_vs_hand} />
-        <Metric label="K" value={offense.offense_profile.k_rate_vs_hand} />
-        <Metric label="BB" value={offense.offense_profile.bb_rate_vs_hand} />
+      <dl className="mt-3.5 grid grid-cols-3 gap-2">
+        <StatTile label="OPS" title="On-base plus slugging." value={offense.offense_profile.ops_vs_hand} />
+        <StatTile label="K%" title="Strikeout rate." value={offense.offense_profile.k_rate_vs_hand} />
+        <StatTile label="BB%" title="Walk rate." value={offense.offense_profile.bb_rate_vs_hand} />
       </dl>
-      <p className="mt-3 text-xs text-neutral-500">
-        vs {offense.offense_profile.vs_pitcher_hand} - {offense.offense_profile.recent_form}
+      <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
+        vs {offense.offense_profile.vs_pitcher_hand} &middot; {offense.offense_profile.recent_form}
       </p>
     </article>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  const title = label === "OPS" ? "On-base plus slugging." : label === "K" ? "Strikeout rate." : "Walk rate.";
-  return (
-    <div className="rounded-lg bg-neutral-50 p-2">
-      <dt className="font-semibold text-neutral-500">
-        <span title={title} className="cursor-help border-b border-dotted border-neutral-400">
-          {label}
-        </span>
-      </dt>
-      <dd className="mt-1 font-bold text-neutral-900">{value}</dd>
-    </div>
   );
 }

@@ -1,5 +1,8 @@
 import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
+import StatTile from "@/components/StatTile";
+import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram from "@/components/ZoneDiagram";
+import { getTeamColor } from "@/lib/teamColors";
 
 interface StarterCardProps {
   starter: Starter;
@@ -35,31 +38,34 @@ export default function StarterCard({
   ].filter(Boolean);
 
   const throwsHand = normalizeThrows(starter.throws);
+  const teamColor = getTeamColor(starter.team);
 
   return (
-    <article className="rounded-xl border border-neutral-200 bg-white p-4">
+    <article
+      className="rounded-xl border border-neutral-200 border-t-[3px] bg-white p-4"
+      style={{ borderTopColor: teamColor.bg }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
-            {starter.team} - {sideLabel[side]}
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+            {starter.team} &middot; {sideLabel[side]}
           </p>
-          <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
+          <h3 className="mt-2 text-xl font-bold leading-tight text-neutral-900">{starter.name}</h3>
         </div>
-        <PitcherSilhouette throwsHand={throwsHand} />
+        <TeamBadge abbreviation={starter.team} size={42} />
       </div>
-      <p className="mt-2 text-xs leading-5 text-neutral-500">{bio.join(" - ")}</p>
-      <p className="mt-3 text-sm font-semibold text-neutral-800">
-        {throwsHand}HP - {starter.pitching_profile.style_label}
+      <p className="mt-2 text-[11px] leading-5 text-neutral-500">{bio.join(" · ")}</p>
+      <p className="mt-1 text-[12px] font-semibold text-neutral-700">
+        {throwsHand}HP &middot; {starter.pitching_profile.style_label}
       </p>
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
-        <Stat label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
-        <Stat label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={starter.season_summary.whip} />
-        <Stat label="K" title="Strikeouts." value={starter.season_summary.strikeouts} />
+      <dl className="mt-4 grid grid-cols-3 gap-2">
+        <StatTile label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
+        <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={starter.season_summary.whip} />
+        <StatTile label="K" title="Strikeouts." value={starter.season_summary.strikeouts} />
       </dl>
-      <div className="my-4 border-t border-neutral-200" />
-      <div className="flex items-center justify-between gap-4">
-        <ZoneDiagram locations={locations} />
-        <p className="text-sm leading-6 text-neutral-600">
+      <div className="mt-4 flex items-center gap-3.5">
+        <ZoneDiagram locations={locations} width={64} height={76} />
+        <p className="text-[13px] leading-5 text-neutral-600">
           {starter.recent_form.last_three_starts_summary}
         </p>
       </div>
@@ -76,62 +82,40 @@ function PostgameStarter({
   side: "away" | "home";
   starterLine: StarterLine;
 }) {
+  const teamColor = getTeamColor(starter.team);
+
   return (
-    <article className="rounded-xl border border-neutral-200 bg-white p-4">
+    <article
+      className="rounded-xl border border-neutral-200 border-t-[3px] bg-white p-4"
+      style={{ borderTopColor: teamColor.bg }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
-            {starter.team} - {sideLabel[side]}
-          </p>
-          <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+              {starter.team} &middot; {sideLabel[side]}
+            </span>
+            <span className="rounded-md bg-neutral-100 px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide text-neutral-500">
+              Game Score {starterLine.game_score}
+            </span>
+          </div>
+          <h3 className="mt-2 text-xl font-bold leading-tight text-neutral-900">{starter.name}</h3>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
-            <span
-              title="Game Score (Bill James): a 0-100 rating of a single start. ~50 is average, 65+ is very good."
-              className="cursor-help"
-            >
-              Game Score
-            </span>{" "}
-            {starterLine.game_score}
-          </span>
-          <span className={`rounded-full px-3 py-1.5 text-2xl font-bold ${gradeClass(starterLine.pitchcraft_grade)}`}>
-            {starterLine.pitchcraft_grade}
-          </span>
-        </div>
+        <span
+          className={`flex shrink-0 items-center justify-center rounded-full font-mono text-base font-bold ring-2 ${gradeClass(starterLine.pitchcraft_grade)}`}
+          style={{ width: 44, height: 44 }}
+        >
+          {starterLine.pitchcraft_grade}
+        </span>
       </div>
-      <dl className="mt-4 grid grid-cols-4 gap-2 text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
-        <Stat label="IP" title="Innings pitched." value={starterLine.innings_pitched} />
-        <Stat label="ER" title="Earned runs allowed." value={starterLine.earned_runs} />
-        <Stat label="K" title="Strikeouts." value={starterLine.strikeouts} />
-        <Stat label="BB" title="Walks allowed." value={starterLine.walks} />
+      <dl className="mt-4 grid grid-cols-4 gap-1.5">
+        <StatTile label="IP" title="Innings pitched." value={starterLine.innings_pitched} align="center" />
+        <StatTile label="ER" title="Earned runs allowed." value={starterLine.earned_runs} align="center" />
+        <StatTile label="K" title="Strikeouts." value={starterLine.strikeouts} align="center" />
+        <StatTile label="BB" title="Walks allowed." value={starterLine.walks} align="center" />
       </dl>
-      <p className="mt-4 text-sm leading-6 text-neutral-600">{starterLine.grade_explanation}</p>
+      <p className="mt-3.5 text-[13px] leading-6 text-neutral-600">{starterLine.grade_explanation}</p>
     </article>
-  );
-}
-
-function PitcherSilhouette({ throwsHand }: { throwsHand: "L" | "R" }) {
-  return (
-    <div className="flex shrink-0 items-center gap-2" aria-hidden="true">
-      <svg
-        viewBox="0 0 100 100"
-        width="56"
-        height="56"
-        className="text-neutral-500 opacity-20"
-        style={{ transform: throwsHand === "L" ? "scaleX(-1)" : undefined }}
-      >
-        <circle cx="42" cy="16" r="8" fill="currentColor" />
-        <path
-          d="M40 25 C33 28 29 36 31 45 L35 58 L20 75 C17 78 18 84 22 86 C25 88 29 87 32 84 L49 64 C51 61 51 58 49 54 L45 44 L55 49 L71 70 C74 74 80 75 83 72 C86 69 86 64 83 60 L64 36 C61 32 57 30 52 29 L57 18 L72 12 C76 10 78 6 76 3 C74 0 70 0 66 2 L49 10 C46 12 44 15 43 18 Z"
-          fill="currentColor"
-        />
-        <path
-          d="M34 37 L16 29 C12 27 8 29 7 33 C6 36 8 40 12 42 L31 51 Z"
-          fill="currentColor"
-        />
-      </svg>
-    </div>
   );
 }
 
@@ -139,22 +123,9 @@ function normalizeThrows(raw: string): "L" | "R" {
   return raw?.toUpperCase().startsWith("L") ? "L" : "R";
 }
 
-function Stat({ label, title, value }: { label: string; title: string; value: string | number }) {
-  return (
-    <div className="rounded-lg bg-neutral-50 p-2">
-      <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-        <span title={title} className="cursor-help border-b border-dotted border-neutral-400">
-          {label}
-        </span>
-      </dt>
-      <dd className="mt-1 font-bold text-neutral-900">{value}</dd>
-    </div>
-  );
-}
-
 function gradeClass(grade: string) {
-  if (grade.startsWith("A")) return "bg-green-100 text-green-800";
-  if (grade.startsWith("B")) return "bg-blue-100 text-blue-800";
-  if (grade.startsWith("C")) return "bg-amber-100 text-amber-800";
-  return "bg-red-100 text-red-800";
+  if (grade.startsWith("A")) return "bg-green-100 text-green-800 ring-green-200";
+  if (grade.startsWith("B")) return "bg-blue-100 text-blue-800 ring-blue-200";
+  if (grade.startsWith("C")) return "bg-amber-100 text-amber-800 ring-amber-200";
+  return "bg-red-100 text-red-800 ring-red-200";
 }

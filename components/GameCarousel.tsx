@@ -1,5 +1,7 @@
 "use client";
 
+import TeamBadge from "@/components/TeamBadge";
+import { getTeamColor } from "@/lib/teamColors";
 import type { ArchiveItem, Matchup } from "@/lib/types";
 
 interface GameCarouselProps {
@@ -19,40 +21,58 @@ export default function GameCarousel({
 }: GameCarouselProps) {
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-500">Games</h2>
-        <span className="text-xs text-neutral-500">{archive.length} archived</span>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="font-mono text-[11px] font-semibold uppercase tracking-widest text-neutral-400">Games</h2>
+        <span className="text-xs text-neutral-400">{archive.length} archived</span>
       </div>
-      <div className="flex snap-x gap-3 overflow-x-auto pb-2">
+      <div className="flex snap-x gap-3.5 overflow-x-auto pb-2">
         {matchups.map((matchup) => {
           const isFeatured = matchup.id === featuredId;
           const isSelected = matchup.id === selectedId;
+          const awayColor = getTeamColor(matchup.teams.away.abbreviation);
+          const homeColor = getTeamColor(matchup.teams.home.abbreviation);
           return (
             <button
               key={matchup.id}
               type="button"
               onClick={() => onSelect(matchup.id)}
-              className={`min-w-[250px] snap-start rounded-xl border bg-white p-4 text-left transition hover:border-neutral-400 ${
-                isSelected ? "border-blue-700" : "border-neutral-200"
+              className={`min-w-[230px] snap-start overflow-hidden rounded-xl border bg-white text-left transition hover:-translate-y-0.5 hover:shadow-lg ${
+                isSelected
+                  ? "border-blue-600 shadow-[0_4px_16px_-8px_rgba(37,99,235,0.35)]"
+                  : isFeatured
+                    ? "border-blue-200 shadow-[0_4px_16px_-8px_rgba(37,99,235,0.28)]"
+                    : "border-neutral-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
               }`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <DateBadge date={matchup.date} />
-                <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${statusClass(matchup.status, isFeatured)}`}>
-                  {isFeatured ? "recommended" : matchup.status}
-                </span>
+              <div
+                className="h-1"
+                style={{ background: `linear-gradient(90deg, ${awayColor.bg} 0 50%, ${homeColor.bg} 50% 100%)` }}
+              />
+              <div className="px-3.5 pb-4 pt-3">
+                <div className="flex items-center justify-between gap-2">
+                  <DateBadge date={matchup.date} />
+                  <span className={`rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide ${statusClass(matchup.status, isFeatured)}`}>
+                    {isFeatured ? "recommended" : matchup.status}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <TeamBadge abbreviation={matchup.teams.away.abbreviation} size={26} />
+                  <p className="font-semibold text-neutral-900">
+                    {matchup.teams.away.abbreviation}
+                    <span className="mx-1 font-normal text-neutral-400">@</span>
+                    {matchup.teams.home.abbreviation}
+                  </p>
+                  <TeamBadge abbreviation={matchup.teams.home.abbreviation} size={26} />
+                </div>
+                <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
+                  {matchup.status === "final" && matchup.postgame
+                    ? `${matchup.teams.away.abbreviation} ${matchup.postgame.final_score.away_team_runs} - ${matchup.teams.home.abbreviation} ${matchup.postgame.final_score.home_team_runs}`
+                    : matchup.game.start_time_local}
+                </p>
+                <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-neutral-600">
+                  {matchup.report.headline}
+                </p>
               </div>
-              <p className="mt-3 font-bold text-neutral-900">
-                {matchup.teams.away.abbreviation} @ {matchup.teams.home.abbreviation}
-              </p>
-              <p className="mt-1 text-sm text-neutral-500">
-                {matchup.status === "final" && matchup.postgame
-                  ? `${matchup.teams.away.abbreviation} ${matchup.postgame.final_score.away_team_runs} - ${matchup.teams.home.abbreviation} ${matchup.postgame.final_score.home_team_runs}`
-                  : matchup.game.start_time_local}
-              </p>
-              <p className="mt-3 line-clamp-2 text-sm leading-5 text-neutral-600">
-                {matchup.report.headline}
-              </p>
             </button>
           );
         })}
@@ -64,12 +84,12 @@ export default function GameCarousel({
 function DateBadge({ date }: { date: string }) {
   const today = new Date().toISOString().slice(0, 10);
   const label = date === today ? "Today" : date;
-  return <span className="text-xs font-medium text-neutral-500">{label}</span>;
+  return <span className="font-mono text-[11px] font-medium text-neutral-400">{label}</span>;
 }
 
 function statusClass(status: Matchup["status"], featured: boolean) {
-  if (featured) return "bg-blue-100 text-blue-700";
+  if (featured) return "bg-blue-600 text-white";
   if (status === "final") return "bg-green-100 text-green-800";
-  if (status === "upcoming") return "bg-neutral-100 text-neutral-600";
-  return "bg-neutral-100 text-neutral-600";
+  if (status === "upcoming") return "border border-neutral-200 bg-neutral-100 text-neutral-500";
+  return "border border-neutral-200 bg-neutral-100 text-neutral-500";
 }

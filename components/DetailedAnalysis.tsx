@@ -3,6 +3,7 @@
 import { useState } from "react";
 import PitchTrajectoryCard from "@/components/PitchTrajectoryCard";
 import StrengthProfile from "@/components/StrengthProfile";
+import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram, { getPitchColor } from "@/components/ZoneDiagram";
 import { describePitchMovement } from "@/lib/pitchDescriptions";
 import type { Matchup, PitchFamily, PitchLocationsByHand } from "@/lib/types";
@@ -55,14 +56,17 @@ function PitcherAttack({
   return (
     <article className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="font-bold text-neutral-900">How {starter.name} attacks</h3>
+        <div className="flex items-center gap-2.5">
+          <TeamBadge abbreviation={starter.team} size={22} />
+          <h3 className="font-bold text-neutral-900">How {starter.name} attacks</h3>
+        </div>
         <div className="flex w-fit rounded-lg border border-neutral-200 bg-white p-1">
           {(["vs_lhh", "vs_rhh"] as BatterHand[]).map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => setHand(option)}
-              className={`rounded-md px-3 py-1.5 text-xs font-bold uppercase ${
+              className={`rounded-md px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wide ${
                 hand === option ? "bg-blue-700 text-white" : "text-neutral-500"
               }`}
               title={option === "vs_lhh" ? "Versus left-handed hitters." : "Versus right-handed hitters."}
@@ -85,22 +89,23 @@ function PitcherAttack({
                 onClick={() => setSelectedPitch(row.pitch)}
                 onFocus={() => setSelectedPitch(row.pitch)}
                 onMouseEnter={() => setSelectedPitch(row.pitch)}
-                className={`w-full rounded-lg border bg-white p-3 text-left transition ${
-                  isSelected ? "border-blue-500 shadow-sm" : "border-neutral-200 hover:border-neutral-300"
+                className={`w-full rounded-lg border p-2.5 text-left transition ${
+                  isSelected ? "border-blue-200 bg-blue-50" : "border-neutral-100 bg-white hover:border-neutral-200"
                 }`}
               >
-                <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[13px] sm:text-sm">
-                  <span className="flex min-w-[8rem] flex-1 items-center gap-2 font-bold leading-5 text-neutral-800">
-                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: getPitchColor(row.pitch) }} />
-                    <span>{row.pitch}</span>
-                  </span>
-                  <span className="shrink-0 text-neutral-500" style={{ fontVariantNumeric: "tabular-nums" }}>
-                    {rowUsage}%
-                  </span>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold leading-4 text-neutral-700">
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: getPitchColor(row.pitch) }} />
+                  <span>{row.pitch}</span>
                 </span>
-                <span className="mt-2 block h-3 rounded-full bg-neutral-200">
+                <span
+                  className="mt-1.5 block font-mono text-sm font-semibold text-neutral-900"
+                  style={{ fontVariantNumeric: "tabular-nums" }}
+                >
+                  {rowUsage}%
+                </span>
+                <span className="mt-1.5 block h-[5px] rounded-full bg-neutral-200">
                   <span
-                    className="block h-3 rounded-full"
+                    className="block h-[5px] rounded-full"
                     style={{ width: `${rowUsage}%`, backgroundColor: getPitchColor(row.pitch) }}
                   />
                 </span>
@@ -117,6 +122,7 @@ function PitcherAttack({
             hBreak={hBreak}
             vBreak={vBreak}
             throwsHand={throwsHand}
+            team={starter.team}
             description={describePitchMovement({ family, velocity: selectedVelocity ?? "N/A", hBreak, vBreak })}
           />
         ) : null}
@@ -127,15 +133,13 @@ function PitcherAttack({
           </p>
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {matchup.charts.velocity_by_pitch.map((row) => {
-          const value = row[velocityKey];
-          return (
-            <span key={`${side}-velo-${row.pitch}`} className="rounded-full bg-white px-3 py-1 text-xs text-neutral-600">
-              {row.pitch}: {value === null ? "N/A" : `${value} mph`}
-            </span>
-          );
-        })}
+      <div className="mt-4 border-t border-neutral-200 pt-3 font-mono text-[10px] text-neutral-400">
+        {matchup.charts.velocity_by_pitch
+          .map((row) => {
+            const value = row[velocityKey];
+            return `${row.pitch} ${value === null ? "N/A" : `${value} mph`}`;
+          })
+          .join("  ·  ")}
       </div>
     </article>
   );

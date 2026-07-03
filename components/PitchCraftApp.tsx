@@ -22,7 +22,7 @@ export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftApp
     data.matchups[0];
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex max-w-3xl flex-col gap-7 px-4 py-10">
       <Hero />
       <GameCarousel
         matchups={data.matchups}

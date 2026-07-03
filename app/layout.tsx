@@ -1,10 +1,19 @@
-﻿import type { Metadata as NextMetadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata as NextMetadata } from "next";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-sans",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  display: "swap",
+  variable: "--font-mono",
 });
 
 export const metadata: NextMetadata = {
@@ -18,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.className}>
-      <body className="min-h-screen bg-neutral-50 text-neutral-900 antialiased">
+    <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
+      <body className="min-h-screen bg-neutral-100 font-sans text-neutral-900 antialiased">
         {children}
       </body>
     </html>
