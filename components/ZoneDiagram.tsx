@@ -24,8 +24,8 @@ export function getPitchColor(pitch: string) {
 
 export default function ZoneDiagram({
   locations,
-  width = 120,
-  height = 142,
+  width = 150,
+  height = 178,
 }: ZoneDiagramProps) {
   return (
     <svg

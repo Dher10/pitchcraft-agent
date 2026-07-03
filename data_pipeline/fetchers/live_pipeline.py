@@ -145,8 +145,10 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
                     {
                         "game_pk": game.get("gamePk"),
                         "away_team": away.get("team", {}).get("name", "Unknown"),
+                        "away_team_id": away.get("team", {}).get("id"),
                         "away_team_abbr": _team_abbreviation(away.get("team", {})),
                         "home_team": home.get("team", {}).get("name", "Unknown"),
+                        "home_team_id": home.get("team", {}).get("id"),
                         "home_team_abbr": _team_abbreviation(home.get("team", {})),
                         "away_pitcher_name": away_pp.get("fullName"),
                         "away_pitcher_id": away_pp.get("id"),
@@ -208,6 +210,53 @@ def fetch_pitcher_season_stats(pitcher_id: int, season: int = 2026) -> dict[str,
         return {}
 
 
+def fetch_team_splits(team_id: int, season: int = 2026) -> dict[str, Any]:
+    """
+    Fetch team hitting splits vs LHP and vs RHP for the season.
+
+    Returns {"vl": {...}, "vr": {...}} each with ops, avg, strikeouts, walks,
+    plate_appearances, k_rate, and bb_rate. Returns {} on failure.
+    """
+
+    url = (
+        f"https://statsapi.mlb.com/api/v1/teams/{team_id}/stats"
+        f"?stats=statSplits&sitCodes=vl,vr&group=hitting&season={season}"
+    )
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "PitchCraft-Capstone/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            data = json.loads(response.read())
+        out = {}
+        for stats_entry in data.get("stats", []):
+            for split in stats_entry.get("splits", []):
+                code = split.get("split", {}).get("code")
+                if code in ("vl", "vr"):
+                    stat = split.get("stat", {})
+                    plate_appearances = stat.get("plateAppearances")
+                    strikeouts = stat.get("strikeOuts", 0)
+                    walks = stat.get("baseOnBalls", 0)
+                    out[code] = {
+                        "ops": stat.get("ops"),
+                        "avg": stat.get("avg"),
+                        "strikeouts": strikeouts,
+                        "walks": walks,
+                        "plate_appearances": plate_appearances,
+                        "k_rate": round(strikeouts / plate_appearances * 100, 1)
+                        if plate_appearances
+                        else None,
+                        "bb_rate": round(walks / plate_appearances * 100, 1)
+                        if plate_appearances
+                        else None,
+                    }
+        return out
+    except Exception as exc:
+        print(f"[LIVE] Team splits fetch failed for team {team_id}: {exc}")
+        return {}
+
+
 def fetch_pitcher_statcast(
     pitcher_id: int,
     pitcher_name: str,
@@ -249,6 +298,7 @@ def fetch_pitcher_statcast(
                 "walks": statcast_summary["walks"],
                 "home_runs_allowed": statcast_summary["home_runs_allowed"],
             }
+        update_pitching_profile_labels(processed)
         return processed
     except Exception as exc:
         print(f"[LIVE] Statcast fetch failed for {pitcher_name}: {exc}")
@@ -313,6 +363,13 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
     pitch_mix = pitch_mix[:5]
     top_pitch_names = {row["pitch"] for row in pitch_mix}
     velocity_rows = [row for row in velocity_rows if row["pitch"] in top_pitch_names]
+    kept_names = [row["pitch"] for row in pitch_mix]
+    movement = compute_movement(df, kept_names)
+    throws = (
+        df["p_throws"].dropna().iloc[0]
+        if "p_throws" in df.columns and len(df["p_throws"].dropna()) > 0
+        else "R"
+    )
 
     pitch_locations = {"vs_lhh": [], "vs_rhh": []}
     for entry in pitch_mix:
@@ -340,8 +397,10 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
 
     return {
         "name": pitcher_name,
+        "throws": throws,
         "pitch_mix": pitch_mix,
         "velocity_by_pitch": velocity_rows,
+        "movement": movement,
         "pitch_locations": pitch_locations,
         "season_summary": {
             "era": "live",
@@ -355,20 +414,61 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
             "style_label": f"{top}-{second} starter",
             "primary_pitch": top,
             "putaway_pitch": second,
-            "command_label": "See live data",
-            "swing_miss_label": "See live data",
-            "contact_risk_label": "See live data",
+            "command_label": derive_command_label(walks),
+            "swing_miss_label": derive_swing_miss_label(strikeouts, total),
+            "contact_risk_label": derive_contact_risk_label(home_runs),
         },
     }
 
 
-def pick_featured_game(games: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Return the first game with both probable pitchers available."""
+def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
+    """
+    For each pitch type, compute median horizontal and vertical movement in inches.
 
-    for game in games:
-        if game["away_pitcher_id"] and game["home_pitcher_id"]:
-            return game
-    return None
+    Pitch families are mapped for frontend color and copy. Empty or sparse movement
+    data falls back to zeroes so the JSON shape remains stable.
+    """
+
+    family_map = {
+        "Four-seam": "Fastball",
+        "Sinker": "Fastball",
+        "Cutter": "Fastball",
+        "Slider": "Breaking",
+        "Curveball": "Breaking",
+        "Sweeper": "Breaking",
+        "Slurve": "Breaking",
+        "Changeup": "Offspeed",
+        "Splitter": "Offspeed",
+        "Forkball": "Offspeed",
+        "Knuckleball": "Offspeed",
+        "Screwball": "Offspeed",
+        "Eephus": "Offspeed",
+    }
+    result = {}
+    for name in pitch_types_kept:
+        codes = [code for code, display_name in PITCH_NAME_MAP.items() if display_name == name]
+        if "pfx_x" in df.columns and "pfx_z" in df.columns:
+            sub = df[df["pitch_type"].isin(codes)].dropna(subset=["pfx_x", "pfx_z"])
+        else:
+            sub = []
+        if len(sub) >= 3:
+            h_break = round(float(sub["pfx_x"].median()) * 12, 1)
+            v_break = round(float(sub["pfx_z"].median()) * 12, 1)
+        else:
+            h_break, v_break = 0.0, 0.0
+        result[name] = {
+            "h_break": h_break,
+            "v_break": v_break,
+            "family": family_map.get(name, "Fastball"),
+        }
+    return result
+
+
+def pick_featured_games(games: list[dict[str, Any]], max_games: int = 3) -> list[dict[str, Any]]:
+    """Return up to max_games where both probable pitchers are known."""
+
+    eligible = [game for game in games if game["away_pitcher_id"] and game["home_pitcher_id"]]
+    return eligible[:max_games]
 
 
 def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None:
@@ -378,33 +478,67 @@ def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None
     if not games:
         return None
 
-    featured = pick_featured_game(games)
-    if not featured:
+    candidates = pick_featured_games(games, 5)
+    if not candidates:
         print("[LIVE] No game with both probable pitchers found")
         return None
 
-    print(f"[LIVE] Featured: {featured['away_team']} @ {featured['home_team']}")
-    print(
-        "[LIVE] Starters: "
-        f"{featured['away_pitcher_name']} vs {featured['home_pitcher_name']}"
-    )
+    live_games = []
+    skipped_games = []
+    for featured in candidates:
+        if len(live_games) >= 3:
+            break
 
-    away_data = fetch_pitcher_statcast(
-        featured["away_pitcher_id"],
-        featured["away_pitcher_name"],
-    )
-    home_data = fetch_pitcher_statcast(
-        featured["home_pitcher_id"],
-        featured["home_pitcher_name"],
-    )
+        print(f"[LIVE] Candidate: {featured['away_team']} @ {featured['home_team']}")
+        print(
+            "[LIVE] Starters: "
+            f"{featured['away_pitcher_name']} vs {featured['home_pitcher_name']}"
+        )
 
-    if not away_data or not home_data:
-        print("[LIVE] Statcast fetch incomplete - falling back to demo")
+        away_data = fetch_pitcher_statcast(
+            featured["away_pitcher_id"],
+            featured["away_pitcher_name"],
+        )
+        home_data = fetch_pitcher_statcast(
+            featured["home_pitcher_id"],
+            featured["home_pitcher_name"],
+        )
+
+        if not away_data or not home_data:
+            skipped = (
+                f"{featured['away_team_abbr']} @ {featured['home_team_abbr']} "
+                f"({featured['away_pitcher_name']} vs {featured['home_pitcher_name']})"
+            )
+            skipped_games.append(skipped)
+            print(f"[LIVE] Skipping {skipped} - insufficient pitch data")
+            continue
+
+        away_splits = fetch_team_splits(featured["away_team_id"])
+        home_splits = fetch_team_splits(featured["home_team_id"])
+        live_games.append(
+            {
+                "featured_game": featured,
+                "away_starter": away_data,
+                "home_starter": home_data,
+                "combined_charts": {
+                    "pitch_mix": _combine_pitch_mix(away_data, home_data),
+                    "velocity_by_pitch": _combine_velocity(away_data, home_data),
+                },
+                "away_team_splits": away_splits,
+                "home_team_splits": home_splits,
+            }
+        )
+
+    if not live_games:
+        print("[LIVE] No live games had sufficient Statcast data - falling back to demo")
         return None
 
+    primary = live_games[0]
     snapshot = {
         "data_mode": "fetched_snapshot",
         "fetched_date": target_date or date.today().isoformat(),
+        "live_games": live_games,
+        "skipped_games": skipped_games,
         "games_today": [
             {
                 "away": game["away_team_abbr"],
@@ -415,19 +549,65 @@ def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None
             }
             for game in games
         ],
-        "featured_game": featured,
-        "away_starter": away_data,
-        "home_starter": home_data,
-        "combined_charts": {
-            "pitch_mix": _combine_pitch_mix(away_data, home_data),
-            "velocity_by_pitch": _combine_velocity(away_data, home_data),
-        },
+        "featured_game": primary["featured_game"],
+        "away_starter": primary["away_starter"],
+        "home_starter": primary["home_starter"],
+        "combined_charts": primary["combined_charts"],
+        "away_team_splits": primary["away_team_splits"],
+        "home_team_splits": primary["home_team_splits"],
     }
     return snapshot
 
-
 def _usage_pct(part: int, total: int) -> float:
     return round(part / total * 100, 1) if total > 0 else 0
+
+
+def derive_swing_miss_label(strikeouts: int, total_pitches: int) -> str:
+    if total_pitches == 0:
+        return "Limited swing-and-miss data available"
+    if strikeouts >= 80:
+        return "Above-average swing-and-miss ability"
+    if strikeouts >= 40:
+        return "Moderate swing-and-miss ability"
+    return "Limited swing-and-miss data available"
+
+
+def derive_command_label(walks: int, innings_str: str | None = None) -> str:
+    if walks <= 25:
+        return "Solid command this season"
+    if walks <= 40:
+        return "Average command this season"
+    return "Below-average command this season"
+
+
+def derive_contact_risk_label(home_runs: int) -> str:
+    if home_runs <= 8:
+        return "Limited hard contact allowed"
+    if home_runs <= 15:
+        return "Moderate contact risk"
+    return "Elevated contact risk"
+
+
+def update_pitching_profile_labels(processed: dict[str, Any]) -> None:
+    season = processed.get("season_summary", {})
+    profile = processed.get("pitching_profile", {})
+    strikeouts = _safe_int(season.get("strikeouts"))
+    walks = _safe_int(season.get("walks"))
+    home_runs = _safe_int(season.get("home_runs_allowed"))
+    total_pitches = sum(
+        _safe_int(row.get("away_starter", {}).get("overall"))
+        for row in processed.get("pitch_mix", [])
+    )
+    profile["command_label"] = derive_command_label(walks, season.get("innings"))
+    profile["swing_miss_label"] = derive_swing_miss_label(strikeouts, total_pitches)
+    profile["contact_risk_label"] = derive_contact_risk_label(home_runs)
+
+
+def _safe_int(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _combine_pitch_mix(
@@ -501,6 +681,9 @@ def main() -> int:
         f"{snapshot['featured_game']['away_team']} @ "
         f"{snapshot['featured_game']['home_team']}"
     )
+    print(f"[LIVE] Live games processed: {len(snapshot['live_games'])}")
+    if snapshot.get("skipped_games"):
+        print(f"[LIVE] Skipped games: {', '.join(snapshot['skipped_games'])}")
     print(
         f"[LIVE] Away: {snapshot['away_starter']['name']} - "
         f"top pitch: {away_top['pitch']} {away_top['away_starter']['overall']}%"

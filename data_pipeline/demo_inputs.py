@@ -70,7 +70,7 @@ MATCHUPS: Any = [
         "id": "pitcher_a",
         "name": "Demo Pitcher A",
         "team": "LAD",
-        "throws": "RHP",
+        "throws": "R",
         "bio": {
           "age": 27,
           "height": "6-3",
@@ -107,7 +107,7 @@ MATCHUPS: Any = [
         "id": "pitcher_b",
         "name": "Demo Pitcher B",
         "team": "SF",
-        "throws": "LHP",
+        "throws": "L",
         "bio": {
           "age": 31,
           "height": "6-1",
@@ -236,6 +236,23 @@ MATCHUPS: Any = [
           "home_starter_velocity": 76.9
         }
       ],
+      # Illustrative movement values for the non-live fallback matchup.
+      "pitch_movement": {
+        "away_starter": {
+          "Four-seam": {"h_break": 7.8, "v_break": 16.2, "family": "Fastball"},
+          "Slider": {"h_break": -3.6, "v_break": 0.4, "family": "Breaking"},
+          "Sinker": {"h_break": 13.2, "v_break": 6.5, "family": "Fastball"},
+          "Changeup": {"h_break": 11.8, "v_break": 6.1, "family": "Offspeed"},
+          "Curveball": {"h_break": -5.9, "v_break": -10.8, "family": "Breaking"}
+        },
+        "home_starter": {
+          "Four-seam": {"h_break": 6.9, "v_break": 15.1, "family": "Fastball"},
+          "Slider": {"h_break": -4.4, "v_break": -0.6, "family": "Breaking"},
+          "Sinker": {"h_break": 14.3, "v_break": 5.7, "family": "Fastball"},
+          "Changeup": {"h_break": 12.5, "v_break": 5.4, "family": "Offspeed"},
+          "Curveball": {"h_break": -7.2, "v_break": -12.4, "family": "Breaking"}
+        }
+      },
       "strength_profile": [
         {
           "dimension": "Stuff",
@@ -468,7 +485,7 @@ MATCHUPS: Any = [
         "id": "pitcher_c",
         "name": "Demo Pitcher C",
         "team": "NYY",
-        "throws": "RHP",
+        "throws": "R",
         "bio": {
           "age": 24,
           "height": "6-5",
@@ -505,7 +522,7 @@ MATCHUPS: Any = [
         "id": "pitcher_d",
         "name": "Demo Pitcher D",
         "team": "BOS",
-        "throws": "LHP",
+        "throws": "L",
         "bio": {
           "age": 29,
           "height": "6-2",
@@ -634,6 +651,23 @@ MATCHUPS: Any = [
           "home_starter_velocity": 90.7
         }
       ],
+      # Illustrative demo-only movement values for the completed matchup.
+      "pitch_movement": {
+        "away_starter": {
+          "Four-seam": {"h_break": 8.4, "v_break": 17.1, "family": "Fastball"},
+          "Cutter": {"h_break": -2.1, "v_break": 8.0, "family": "Fastball"},
+          "Curveball": {"h_break": -6.5, "v_break": -12.6, "family": "Breaking"},
+          "Changeup": {"h_break": 12.2, "v_break": 5.8, "family": "Offspeed"},
+          "Sinker": {"h_break": 14.6, "v_break": 6.7, "family": "Fastball"}
+        },
+        "home_starter": {
+          "Four-seam": {"h_break": 7.1, "v_break": 15.6, "family": "Fastball"},
+          "Cutter": {"h_break": -2.8, "v_break": 7.4, "family": "Fastball"},
+          "Curveball": {"h_break": -7.4, "v_break": -11.7, "family": "Breaking"},
+          "Changeup": {"h_break": 11.1, "v_break": 5.2, "family": "Offspeed"},
+          "Sinker": {"h_break": 13.1, "v_break": 6.2, "family": "Fastball"}
+        }
+      },
       "strength_profile": [
         {
           "dimension": "Stuff",

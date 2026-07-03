@@ -34,15 +34,22 @@ export default function StarterCard({
     starter.bio.accolades.join(", "),
   ].filter(Boolean);
 
+  const throwsHand = normalizeThrows(starter.throws);
+
   return (
     <article className="rounded-xl border border-neutral-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
-        {starter.team} - {sideLabel[side]}
-      </p>
-      <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
+            {starter.team} - {sideLabel[side]}
+          </p>
+          <h3 className="mt-2 text-2xl font-bold text-neutral-900">{starter.name}</h3>
+        </div>
+        <PitcherSilhouette throwsHand={throwsHand} />
+      </div>
       <p className="mt-2 text-xs leading-5 text-neutral-500">{bio.join(" - ")}</p>
       <p className="mt-3 text-sm font-semibold text-neutral-800">
-        {starter.throws} - {starter.pitching_profile.style_label}
+        {throwsHand}HP - {starter.pitching_profile.style_label}
       </p>
       <dl className="mt-4 grid grid-cols-3 gap-2 text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
         <Stat label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
@@ -102,6 +109,34 @@ function PostgameStarter({
       <p className="mt-4 text-sm leading-6 text-neutral-600">{starterLine.grade_explanation}</p>
     </article>
   );
+}
+
+function PitcherSilhouette({ throwsHand }: { throwsHand: "L" | "R" }) {
+  return (
+    <div className="flex shrink-0 items-center gap-2" aria-hidden="true">
+      <svg
+        viewBox="0 0 100 100"
+        width="56"
+        height="56"
+        className="text-neutral-500 opacity-20"
+        style={{ transform: throwsHand === "L" ? "scaleX(-1)" : undefined }}
+      >
+        <circle cx="42" cy="16" r="8" fill="currentColor" />
+        <path
+          d="M40 25 C33 28 29 36 31 45 L35 58 L20 75 C17 78 18 84 22 86 C25 88 29 87 32 84 L49 64 C51 61 51 58 49 54 L45 44 L55 49 L71 70 C74 74 80 75 83 72 C86 69 86 64 83 60 L64 36 C61 32 57 30 52 29 L57 18 L72 12 C76 10 78 6 76 3 C74 0 70 0 66 2 L49 10 C46 12 44 15 43 18 Z"
+          fill="currentColor"
+        />
+        <path
+          d="M34 37 L16 29 C12 27 8 29 7 33 C6 36 8 40 12 42 L31 51 Z"
+          fill="currentColor"
+        />
+      </svg>
+    </div>
+  );
+}
+
+function normalizeThrows(raw: string): "L" | "R" {
+  return raw?.toUpperCase().startsWith("L") ? "L" : "R";
 }
 
 function Stat({ label, title, value }: { label: string; title: string; value: string | number }) {

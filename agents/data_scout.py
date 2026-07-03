@@ -14,6 +14,7 @@ SECTION_CHECKS = (
     ("pitch_mix", ("charts", "pitch_mix")),
     ("velocity", ("charts", "velocity_by_pitch")),
     ("strength", ("charts", "strength_profile")),
+    ("pitch_movement", ("charts", "pitch_movement")),
     ("pitch_locations", ("pitch_locations",)),
 )
 
@@ -28,29 +29,34 @@ def run(matchup_input: dict[str, Any]) -> dict[str, Any]:
 
     packet = deepcopy(matchup_input)
     status = packet.get("status")
-    lineup_status = "final" if status == "final" else "not_required_for_demo"
-    notes = (
-        [
-            "Completed demo game used to show the postgame grading flow.",
-            "Grades are PitchCraft-specific and explainable, not official metrics.",
-        ]
-        if status == "final"
-        else [
-            "This demo uses cached data to guarantee stable judging.",
-            "Live data integration can be added after the capstone.",
-        ]
-    )
+    existing_confidence = packet.get("data_confidence")
+    if isinstance(existing_confidence, dict) and existing_confidence.get("level") == "fetched_snapshot":
+        data_confidence = existing_confidence
+    else:
+        lineup_status = "final" if status == "final" else "not_required_for_demo"
+        notes = (
+            [
+                "Completed demo game used to show the postgame grading flow.",
+                "Grades are PitchCraft-specific and explainable, not official metrics.",
+            ]
+            if status == "final"
+            else [
+                "This demo uses cached data to guarantee stable judging.",
+                "Live data integration can be added after the capstone.",
+            ]
+        )
+        data_confidence = {
+            "level": "demo_cached",
+            "lineup_status": lineup_status,
+            "pitch_data_status": "cached",
+            "notes": notes,
+        }
 
     packet["availability"] = {
         label: _has_path(packet, path)
         for label, path in SECTION_CHECKS
     }
-    packet["data_confidence"] = {
-        "level": "demo_cached",
-        "lineup_status": lineup_status,
-        "pitch_data_status": "cached",
-        "notes": notes,
-    }
+    packet["data_confidence"] = data_confidence
     return packet
 
 

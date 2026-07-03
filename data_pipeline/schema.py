@@ -26,7 +26,7 @@ MATCHUP_REQUIRED_KEYS = (
 
 TEAM_SIDES = ("home", "away")
 STARTER_SLOTS = ("away_starter", "home_starter")
-CHART_KEYS = ("pitch_mix", "velocity_by_pitch", "strength_profile")
+CHART_KEYS = ("pitch_mix", "velocity_by_pitch", "strength_profile", "pitch_movement")
 BATTER_HAND_SPLITS = ("overall", "vs_lhh", "vs_rhh")
 PITCH_LOCATION_SPLITS = ("vs_lhh", "vs_rhh")
 

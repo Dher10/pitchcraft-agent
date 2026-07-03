@@ -50,15 +50,25 @@ def run(findings: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, An
             {"title": "Three Things to Watch", "bullets": findings["three_things_to_watch"]},
             {
                 "title": "Data Confidence Note",
-                "body": (
-                    "This report is based on cached demo data for the capstone. Live lineup "
-                    "confirmation is not required for this version."
-                ),
+                "body": _confidence_note(matchup_input),
             },
         ],
     }
     _enforce_language_rules(report)
     return report
+
+
+def _confidence_note(matchup_input: dict[str, Any]) -> str:
+    confidence = matchup_input.get("data_confidence", {})
+    if confidence.get("level") == "fetched_snapshot":
+        return (
+            "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, "
+            "and season offense splits. Lineups can still change before first pitch."
+        )
+    return (
+        "This report is based on cached demo data for the capstone. Live lineup "
+        "confirmation is not required for this version."
+    )
 
 
 def _first(values: list[str], fallback: str) -> str:

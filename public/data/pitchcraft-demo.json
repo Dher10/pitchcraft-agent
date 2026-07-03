@@ -4,7 +4,7 @@
     "version": "0.2.0",
     "data_mode": "fetched_snapshot",
     "generated_at": "2026-06-28T09:00:00-05:00",
-    "last_updated_label": "Live data fetched 2026-06-29",
+    "last_updated_label": "Live data fetched 2026-07-02",
     "data_sources": [
       "MLB public schedule/probable pitchers (optional)",
       "Baseball Savant / Statcast-style pitch data (optional)",
@@ -15,54 +15,54 @@
   "matchups": [
     {
       "id": "matchup_001",
-      "date": "2026-06-28",
+      "date": "2026-07-02",
       "status": "upcoming",
       "is_featured": true,
       "game": {
-        "title": "Chicago White Sox vs Baltimore Orioles",
-        "venue": "Oriole Park at Camden Yards",
-        "start_time_local": "7:15 PM",
+        "title": "Pittsburgh Pirates vs Philadelphia Phillies",
+        "venue": "Citizens Bank Park",
+        "start_time_local": "2026-07-02T16:35:00Z",
         "timezone": "America/Los_Angeles",
         "broadcast_note": "Demo matchup for capstone",
-        "home_team_id": "sf",
-        "away_team_id": "lad"
+        "home_team_id": "143",
+        "away_team_id": "134"
       },
       "teams": {
         "home": {
-          "id": "sf",
-          "name": "Baltimore Orioles",
-          "abbreviation": "BAL",
+          "id": "143",
+          "name": "Philadelphia Phillies",
+          "abbreviation": "PHI",
           "record": "45-39",
           "offense_profile": {
-            "summary_label": "Balanced offense with moderate swing-and-miss risk",
+            "summary_label": "Real season split vs RHP",
             "vs_pitcher_hand": "RHP",
-            "ops_vs_hand": ".721",
-            "k_rate_vs_hand": "22.8%",
-            "bb_rate_vs_hand": "8.7%",
-            "recent_form": "Stable"
+            "ops_vs_hand": ".724",
+            "k_rate_vs_hand": "23.5%",
+            "bb_rate_vs_hand": "7.5%",
+            "recent_form": "Season split"
           }
         },
         "away": {
-          "id": "lad",
-          "name": "Chicago White Sox",
-          "abbreviation": "CWS",
+          "id": "134",
+          "name": "Pittsburgh Pirates",
+          "abbreviation": "PIT",
           "record": "51-33",
           "offense_profile": {
-            "summary_label": "Power-heavy offense with strong fastball damage potential",
-            "vs_pitcher_hand": "LHP",
-            "ops_vs_hand": ".768",
-            "k_rate_vs_hand": "20.5%",
-            "bb_rate_vs_hand": "9.4%",
-            "recent_form": "Hot"
+            "summary_label": "Real season split vs RHP",
+            "vs_pitcher_hand": "RHP",
+            "ops_vs_hand": ".785",
+            "k_rate_vs_hand": "23.1%",
+            "bb_rate_vs_hand": "10.0%",
+            "recent_form": "Season split"
           }
         }
       },
       "starters": {
         "away_starter": {
-          "id": "pitcher_a",
-          "name": "Sean Burke",
-          "team": "CWS",
-          "throws": "RHP",
+          "id": "683003",
+          "name": "Jared Jones",
+          "team": "PIT",
+          "throws": "R",
           "bio": {
             "age": 27,
             "height": "6-3",
@@ -75,20 +75,20 @@
             ]
           },
           "season_summary": {
-            "era": "3.69",
-            "whip": "1.22",
-            "innings": "92.2",
-            "strikeouts": 95,
-            "walks": 33,
-            "home_runs_allowed": 11
+            "era": "5.28",
+            "whip": "1.38",
+            "innings": "29.0",
+            "strikeouts": 31,
+            "walks": 11,
+            "home_runs_allowed": 5
           },
           "pitching_profile": {
-            "style_label": "Four-seam-Curveball starter",
+            "style_label": "Four-seam-Slider starter",
             "primary_pitch": "Four-seam",
-            "putaway_pitch": "Curveball",
-            "command_label": "See live data",
-            "swing_miss_label": "See live data",
-            "contact_risk_label": "See live data"
+            "putaway_pitch": "Slider",
+            "command_label": "Solid command this season",
+            "swing_miss_label": "Limited swing-and-miss data available",
+            "contact_risk_label": "Limited hard contact allowed"
           },
           "recent_form": {
             "label": "Trending stable",
@@ -96,36 +96,36 @@
           }
         },
         "home_starter": {
-          "id": "pitcher_b",
-          "name": "Shane Baz",
-          "team": "BAL",
-          "throws": "LHP",
+          "id": "660604",
+          "name": "Alan Rangel",
+          "team": "PHI",
+          "throws": "R",
           "bio": {
             "age": 31,
             "height": "6-1",
             "weight": 200,
             "bats": "L",
-            "throws": "L",
+            "throws": "R",
             "mlb_service": "9 yrs",
             "accolades": [
               "2023 All-Star"
             ]
           },
           "season_summary": {
-            "era": "4.19",
-            "whip": "1.37",
-            "innings": "101.0",
-            "strikeouts": 87,
-            "walks": 39,
-            "home_runs_allowed": 9
+            "era": "3.38",
+            "whip": "1.31",
+            "innings": "16.0",
+            "strikeouts": 17,
+            "walks": 6,
+            "home_runs_allowed": 1
           },
           "pitching_profile": {
-            "style_label": "Four-seam-Curveball starter",
-            "primary_pitch": "Four-seam",
-            "putaway_pitch": "Curveball",
-            "command_label": "See live data",
-            "swing_miss_label": "See live data",
-            "contact_risk_label": "See live data"
+            "style_label": "Changeup-Four-seam starter",
+            "primary_pitch": "Changeup",
+            "putaway_pitch": "Four-seam",
+            "command_label": "Solid command this season",
+            "swing_miss_label": "Limited swing-and-miss data available",
+            "contact_risk_label": "Limited hard contact allowed"
           },
           "recent_form": {
             "label": "Slight volatility",
@@ -138,114 +138,124 @@
           {
             "pitch": "Four-seam",
             "away_starter": {
-              "overall": 37.4,
-              "vs_lhh": 40.4,
-              "vs_rhh": 32.5
+              "overall": 38.4,
+              "vs_lhh": 39.8,
+              "vs_rhh": 36.4
             },
             "home_starter": {
-              "overall": 33.6,
-              "vs_lhh": 40.0,
-              "vs_rhh": 24.2
-            }
-          },
-          {
-            "pitch": "Curveball",
-            "away_starter": {
-              "overall": 21.5,
-              "vs_lhh": 27.0,
-              "vs_rhh": 12.4
-            },
-            "home_starter": {
-              "overall": 33.1,
-              "vs_lhh": 36.6,
-              "vs_rhh": 28.1
+              "overall": 34.9,
+              "vs_lhh": 35.2,
+              "vs_rhh": 34.4
             }
           },
           {
             "pitch": "Slider",
             "away_starter": {
-              "overall": 17.0,
-              "vs_lhh": 7.4,
-              "vs_rhh": 32.6
+              "overall": 32.8,
+              "vs_lhh": 23.5,
+              "vs_rhh": 46.0
             },
             "home_starter": {
-              "overall": 0,
-              "vs_lhh": 0,
-              "vs_rhh": 0
-            }
-          },
-          {
-            "pitch": "Sinker",
-            "away_starter": {
-              "overall": 15.0,
-              "vs_lhh": 12.0,
-              "vs_rhh": 20.0
-            },
-            "home_starter": {
-              "overall": 7.6,
-              "vs_lhh": 1.5,
-              "vs_rhh": 16.5
-            }
-          },
-          {
-            "pitch": "Cutter",
-            "away_starter": {
-              "overall": 6.0,
-              "vs_lhh": 8.2,
-              "vs_rhh": 2.3
-            },
-            "home_starter": {
-              "overall": 17.9,
-              "vs_lhh": 8.8,
+              "overall": 14.5,
+              "vs_lhh": 6.4,
               "vs_rhh": 31.1
             }
           },
           {
             "pitch": "Changeup",
             "away_starter": {
-              "overall": 0,
-              "vs_lhh": 0,
-              "vs_rhh": 0
+              "overall": 18.3,
+              "vs_lhh": 23.1,
+              "vs_rhh": 11.4
             },
             "home_starter": {
-              "overall": 7.7,
-              "vs_lhh": 13.0,
-              "vs_rhh": 0.1
+              "overall": 35.5,
+              "vs_lhh": 41.6,
+              "vs_rhh": 23.0
+            }
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter": {
+              "overall": 10.5,
+              "vs_lhh": 13.5,
+              "vs_rhh": 6.2
+            },
+            "home_starter": {
+              "overall": 15.1,
+              "vs_lhh": 16.8,
+              "vs_rhh": 11.5
             }
           }
         ],
         "velocity_by_pitch": [
           {
-            "pitch": "Curveball",
-            "away_starter_velocity": 79.7,
-            "home_starter_velocity": 85.3
+            "pitch": "Changeup",
+            "away_starter_velocity": 93.4,
+            "home_starter_velocity": 80.8
           },
           {
-            "pitch": "Cutter",
-            "away_starter_velocity": 90.6,
-            "home_starter_velocity": 89.6
+            "pitch": "Curveball",
+            "away_starter_velocity": 85.6,
+            "home_starter_velocity": 73.3
           },
           {
             "pitch": "Four-seam",
-            "away_starter_velocity": 94.6,
-            "home_starter_velocity": 96.1
-          },
-          {
-            "pitch": "Sinker",
-            "away_starter_velocity": 94.6,
-            "home_starter_velocity": 95.2
+            "away_starter_velocity": 98.6,
+            "home_starter_velocity": 92.8
           },
           {
             "pitch": "Slider",
-            "away_starter_velocity": 86.8,
-            "home_starter_velocity": null
-          },
-          {
-            "pitch": "Changeup",
-            "away_starter_velocity": null,
-            "home_starter_velocity": 88.3
+            "away_starter_velocity": 90.1,
+            "home_starter_velocity": 84.4
           }
         ],
+        "pitch_movement": {
+          "away_starter": {
+            "Four-seam": {
+              "h_break": -8.3,
+              "v_break": 16.1,
+              "family": "Fastball"
+            },
+            "Slider": {
+              "h_break": 3.5,
+              "v_break": 1.8,
+              "family": "Breaking"
+            },
+            "Changeup": {
+              "h_break": -11.5,
+              "v_break": 3.6,
+              "family": "Offspeed"
+            },
+            "Curveball": {
+              "h_break": 6.5,
+              "v_break": -10.6,
+              "family": "Breaking"
+            }
+          },
+          "home_starter": {
+            "Changeup": {
+              "h_break": -10.3,
+              "v_break": 12.5,
+              "family": "Offspeed"
+            },
+            "Four-seam": {
+              "h_break": -3.4,
+              "v_break": 20.0,
+              "family": "Fastball"
+            },
+            "Curveball": {
+              "h_break": -2.3,
+              "v_break": -18.3,
+              "family": "Breaking"
+            },
+            "Slider": {
+              "h_break": 6.2,
+              "v_break": 5.4,
+              "family": "Breaking"
+            }
+          }
+        },
         "strength_profile": [
           {
             "dimension": "Stuff",
@@ -280,106 +290,91 @@
           "vs_lhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.455,
-              "y": 0.466
-            },
-            {
-              "pitch": "Curveball",
-              "x": 0.474,
-              "y": 0.622
+              "x": 0.458,
+              "y": 0.456
             },
             {
               "pitch": "Slider",
-              "x": 0.552,
-              "y": 0.7
+              "x": 0.544,
+              "y": 0.707
             },
             {
-              "pitch": "Sinker",
-              "x": 0.397,
-              "y": 0.497
+              "pitch": "Changeup",
+              "x": 0.448,
+              "y": 0.751
             },
             {
-              "pitch": "Cutter",
-              "x": 0.513,
-              "y": 0.512
+              "pitch": "Curveball",
+              "x": 0.453,
+              "y": 0.679
             }
           ],
           "vs_rhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.511,
-              "y": 0.449
-            },
-            {
-              "pitch": "Curveball",
-              "x": 0.497,
-              "y": 0.576
+              "x": 0.588,
+              "y": 0.521
             },
             {
               "pitch": "Slider",
-              "x": 0.638,
-              "y": 0.632
+              "x": 0.528,
+              "y": 0.628
             },
             {
-              "pitch": "Sinker",
-              "x": 0.314,
-              "y": 0.579
+              "pitch": "Changeup",
+              "x": 0.551,
+              "y": 0.838
             },
             {
-              "pitch": "Cutter",
-              "x": 0.532,
-              "y": 0.436
+              "pitch": "Curveball",
+              "x": 0.558,
+              "y": 0.868
             }
           ]
         },
         "home_starter": {
           "vs_lhh": [
             {
+              "pitch": "Changeup",
+              "x": 0.445,
+              "y": 0.608
+            },
+            {
               "pitch": "Four-seam",
-              "x": 0.524,
-              "y": 0.473
+              "x": 0.618,
+              "y": 0.481
             },
             {
               "pitch": "Curveball",
-              "x": 0.564,
-              "y": 0.689
+              "x": 0.47,
+              "y": 0.497
             },
             {
-              "pitch": "Cutter",
-              "x": 0.503,
-              "y": 0.507
-            },
-            {
-              "pitch": "Changeup",
-              "x": 0.46,
-              "y": 0.701
-            },
-            {
-              "pitch": "Sinker",
-              "x": 0.379,
-              "y": 0.574
+              "pitch": "Slider",
+              "x": 0.639,
+              "y": 0.623
             }
           ],
           "vs_rhh": [
             {
+              "pitch": "Changeup",
+              "x": 0.378,
+              "y": 0.808
+            },
+            {
               "pitch": "Four-seam",
-              "x": 0.627,
-              "y": 0.466
+              "x": 0.571,
+              "y": 0.558
             },
             {
               "pitch": "Curveball",
-              "x": 0.69,
-              "y": 0.751
+              "x": 0.671,
+              "y": 0.484
             },
             {
-              "pitch": "Cutter",
-              "x": 0.651,
-              "y": 0.607
-            },
-            {
-              "pitch": "Sinker",
-              "x": 0.492,
-              "y": 0.586
+              "pitch": "Slider",
+              "x": 0.634,
+              "y": 0.646
             }
           ]
         }
@@ -387,48 +382,48 @@
       "postgame": null,
       "data_confidence": {
         "level": "fetched_snapshot",
-        "lineup_status": "not_required_for_demo",
+        "lineup_status": "probable_pitchers",
         "pitch_data_status": "fetched_snapshot",
         "notes": [
-          "Live snapshot fetched 2026-06-29.",
+          "Live snapshot fetched 2026-07-02 for matchup_001.",
           "If live fetching fails, PitchCraft falls back to cached demo data."
         ]
       },
       "report": {
-        "headline": "Four-seam-Curveball starter against Four-seam-Curveball starter",
+        "headline": "Four-seam-Slider starter against Changeup-Four-seam starter",
         "short_summary": [
-          "Sean Burke brings this strength: Recent form is trending in the right direction.",
-          "Shane Baz brings this strength: Four-seam to set up, Curveball to finish.",
-          "The early what to watch is whether Sean can Burke land the curveball early in counts."
+          "Jared Jones brings this strength: Solid command this season supports strike-zone control.",
+          "Alan Rangel brings this strength: Solid command this season supports strike-zone control.",
+          "The early what to watch is whether Jared can Jones land the slider early in counts."
         ],
         "sections": [
           {
             "title": "Today's Matchup Summary",
-            "body": "This matchup features Four-seam-Curveball starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
+            "body": "This matchup features Four-seam-Slider starter against Changeup-Four-seam starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
           },
           {
-            "title": "Sean Burke vs Baltimore Orioles",
-            "body": "Sean Burke's four-seam-curveball combination gives him see live data, but the opposing lineup has elevated swing-and-miss risk."
+            "title": "Jared Jones vs Philadelphia Phillies",
+            "body": "Jared Jones's four-seam-slider combination gives him limited swing-and-miss data available. This lineup is roughly average against RHP pitching (.724 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach."
           },
           {
-            "title": "Shane Baz vs Chicago White Sox",
-            "body": "Shane Baz needs to avoid predictable counts and use the curveball to disrupt timing. His margin is see live data against a lineup with .768 OPS; the pressure point is that the opposing lineup has strong OPS against this pitcher's hand."
+            "title": "Alan Rangel vs Pittsburgh Pirates",
+            "body": "Alan Rangel needs to keep the command edge visible and use the four-seam to manage contact. This lineup hits well against RHP pitching (.785 OPS), so Alan Rangel cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Alan Rangel needs efficient strikes."
           },
           {
             "title": "Arsenal Scout",
-            "body": "The main contrast is Four-seam to set up, Curveball to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Four-seam against Four-seam, a scouting note for matchup fit and each pressure point."
+            "body": "The main contrast is Four-seam to set up, Slider to finish versus Changeup to set up, Four-seam to finish. The primary pitch contrast is Four-seam against Changeup, a scouting note for matchup fit and each pressure point."
           },
           {
             "title": "Three Things to Watch",
             "bullets": [
-              "Can Sean Burke land the curveball early in counts?",
-              "Can Shane Baz keep the ball in the zone?",
+              "Can Jared Jones land the slider early in counts?",
+              "Can Alan Rangel keep the ball low?",
               "Which lineup forces more deep counts by the third inning?"
             ]
           },
           {
             "title": "Data Confidence Note",
-            "body": "This report is based on cached demo data for the capstone. Live lineup confirmation is not required for this version."
+            "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch."
           }
         ]
       },
@@ -437,24 +432,492 @@
         "summary": "The critic checked 6 claims and found them supported by the data.",
         "checks": [
           {
-            "claim": "Sean Burke's primary pitch is Four-seam.",
+            "claim": "Jared Jones's primary pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Pitch mix shows 37% Four-seam usage."
+            "evidence": "Pitch mix shows 38% Four-seam usage."
           },
           {
-            "claim": "Sean Burke's put-away pitch is Curveball.",
+            "claim": "Jared Jones's put-away pitch is Slider.",
             "status": "supported",
-            "evidence": "Put-away pitch usage at 21% supports this claim."
+            "evidence": "Put-away pitch usage at 32% supports this claim."
           },
           {
-            "claim": "Shane Baz's primary pitch is Four-seam.",
+            "claim": "Alan Rangel's primary pitch is Changeup.",
             "status": "supported",
-            "evidence": "Pitch mix shows 33% Four-seam usage."
+            "evidence": "Pitch mix shows 35% Changeup usage."
           },
           {
-            "claim": "Shane Baz's put-away pitch is Curveball.",
+            "claim": "Alan Rangel's put-away pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Put-away pitch usage at 33% supports this claim."
+            "evidence": "Put-away pitch usage at 34% supports this claim."
+          },
+          {
+            "claim": "Jared Jones's command label is supported.",
+            "status": "supported",
+            "evidence": "Command signal is 63 in the strength profile."
+          },
+          {
+            "claim": "The report predicts the winner.",
+            "status": "not_present",
+            "evidence": "No win prediction or betting language found."
+          }
+        ],
+        "revision_notes": [
+          "Kept the report focused on matchup fit rather than outcome prediction.",
+          "Avoided claiming official Stuff+."
+        ]
+      }
+    },
+    {
+      "id": "matchup_live_2",
+      "date": "2026-07-02",
+      "status": "upcoming",
+      "is_featured": false,
+      "game": {
+        "title": "Cincinnati Reds vs Milwaukee Brewers",
+        "venue": "American Family Field",
+        "start_time_local": "2026-07-02T18:10:00Z",
+        "timezone": "America/Los_Angeles",
+        "broadcast_note": "Demo matchup for capstone",
+        "home_team_id": "158",
+        "away_team_id": "113"
+      },
+      "teams": {
+        "home": {
+          "id": "158",
+          "name": "Milwaukee Brewers",
+          "abbreviation": "MIL",
+          "record": "45-39",
+          "offense_profile": {
+            "summary_label": "Real season split vs RHP",
+            "vs_pitcher_hand": "RHP",
+            "ops_vs_hand": ".757",
+            "k_rate_vs_hand": "20.9%",
+            "bb_rate_vs_hand": "10.8%",
+            "recent_form": "Season split"
+          }
+        },
+        "away": {
+          "id": "113",
+          "name": "Cincinnati Reds",
+          "abbreviation": "CIN",
+          "record": "51-33",
+          "offense_profile": {
+            "summary_label": "Real season split vs RHP",
+            "vs_pitcher_hand": "RHP",
+            "ops_vs_hand": ".682",
+            "k_rate_vs_hand": "25.1%",
+            "bb_rate_vs_hand": "9.4%",
+            "recent_form": "Season split"
+          }
+        }
+      },
+      "starters": {
+        "away_starter": {
+          "id": "695505",
+          "name": "Chase Burns",
+          "team": "CIN",
+          "throws": "R",
+          "bio": {
+            "age": 27,
+            "height": "6-3",
+            "weight": 215,
+            "bats": "R",
+            "throws": "R",
+            "mlb_service": "5 yrs",
+            "accolades": [
+              "2x All-Star"
+            ]
+          },
+          "season_summary": {
+            "era": "2.40",
+            "whip": "1.08",
+            "innings": "97.2",
+            "strikeouts": 116,
+            "walks": 31,
+            "home_runs_allowed": 12
+          },
+          "pitching_profile": {
+            "style_label": "Four-seam-Slider starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Slider",
+            "command_label": "Average command this season",
+            "swing_miss_label": "Above-average swing-and-miss ability",
+            "contact_risk_label": "Moderate contact risk"
+          },
+          "recent_form": {
+            "label": "Trending stable",
+            "last_three_starts_summary": "Has worked into the sixth inning in two of his last three starts."
+          }
+        },
+        "home_starter": {
+          "id": "694819",
+          "name": "Jacob Misiorowski",
+          "team": "MIL",
+          "throws": "R",
+          "bio": {
+            "age": 31,
+            "height": "6-1",
+            "weight": 200,
+            "bats": "L",
+            "throws": "R",
+            "mlb_service": "9 yrs",
+            "accolades": [
+              "2023 All-Star"
+            ]
+          },
+          "season_summary": {
+            "era": "1.47",
+            "whip": "0.78",
+            "innings": "104.0",
+            "strikeouts": 156,
+            "walks": 27,
+            "home_runs_allowed": 7
+          },
+          "pitching_profile": {
+            "style_label": "Four-seam-Cutter starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Cutter",
+            "command_label": "Average command this season",
+            "swing_miss_label": "Above-average swing-and-miss ability",
+            "contact_risk_label": "Limited hard contact allowed"
+          },
+          "recent_form": {
+            "label": "Slight volatility",
+            "last_three_starts_summary": "Has limited hard contact, but walk totals have increased recently."
+          }
+        }
+      },
+      "charts": {
+        "pitch_mix": [
+          {
+            "pitch": "Four-seam",
+            "away_starter": {
+              "overall": 56.3,
+              "vs_lhh": 58.6,
+              "vs_rhh": 52.8
+            },
+            "home_starter": {
+              "overall": 63.2,
+              "vs_lhh": 63.3,
+              "vs_rhh": 63.2
+            }
+          },
+          {
+            "pitch": "Slider",
+            "away_starter": {
+              "overall": 37.2,
+              "vs_lhh": 31.0,
+              "vs_rhh": 47.0
+            },
+            "home_starter": {
+              "overall": 11.1,
+              "vs_lhh": 7.2,
+              "vs_rhh": 16.3
+            }
+          },
+          {
+            "pitch": "Changeup",
+            "away_starter": {
+              "overall": 6.3,
+              "vs_lhh": 10.3,
+              "vs_rhh": 0.2
+            },
+            "home_starter": {
+              "overall": 2.2,
+              "vs_lhh": 3.8,
+              "vs_rhh": 0.3
+            }
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter": {
+              "overall": 0.1,
+              "vs_lhh": 0.2,
+              "vs_rhh": 0.0
+            },
+            "home_starter": {
+              "overall": 9.9,
+              "vs_lhh": 11.6,
+              "vs_rhh": 7.8
+            }
+          },
+          {
+            "pitch": "Cutter",
+            "away_starter": {
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0
+            },
+            "home_starter": {
+              "overall": 13.5,
+              "vs_lhh": 14.2,
+              "vs_rhh": 12.5
+            }
+          }
+        ],
+        "velocity_by_pitch": [
+          {
+            "pitch": "Changeup",
+            "away_starter_velocity": 90.1,
+            "home_starter_velocity": 92.5
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter_velocity": 83.8,
+            "home_starter_velocity": 87.4
+          },
+          {
+            "pitch": "Four-seam",
+            "away_starter_velocity": 97.9,
+            "home_starter_velocity": 100.2
+          },
+          {
+            "pitch": "Slider",
+            "away_starter_velocity": 90.7,
+            "home_starter_velocity": 92.7
+          },
+          {
+            "pitch": "Cutter",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 95.9
+          }
+        ],
+        "pitch_movement": {
+          "away_starter": {
+            "Four-seam": {
+              "h_break": -3.8,
+              "v_break": 18.8,
+              "family": "Fastball"
+            },
+            "Slider": {
+              "h_break": 2.8,
+              "v_break": 0.7,
+              "family": "Breaking"
+            },
+            "Changeup": {
+              "h_break": -15.1,
+              "v_break": 10.1,
+              "family": "Offspeed"
+            },
+            "Curveball": {
+              "h_break": 0.0,
+              "v_break": 0.0,
+              "family": "Breaking"
+            }
+          },
+          "home_starter": {
+            "Four-seam": {
+              "h_break": -11.0,
+              "v_break": 15.7,
+              "family": "Fastball"
+            },
+            "Cutter": {
+              "h_break": 1.4,
+              "v_break": 7.2,
+              "family": "Fastball"
+            },
+            "Slider": {
+              "h_break": 3.0,
+              "v_break": 6.2,
+              "family": "Breaking"
+            },
+            "Curveball": {
+              "h_break": 6.1,
+              "v_break": -8.3,
+              "family": "Breaking"
+            },
+            "Changeup": {
+              "h_break": -16.0,
+              "v_break": 4.7,
+              "family": "Offspeed"
+            }
+          }
+        },
+        "strength_profile": [
+          {
+            "dimension": "Stuff",
+            "away_starter": 78,
+            "home_starter": 66
+          },
+          {
+            "dimension": "Command",
+            "away_starter": 63,
+            "home_starter": 74
+          },
+          {
+            "dimension": "Whiff",
+            "away_starter": 80,
+            "home_starter": 62
+          },
+          {
+            "dimension": "Contact Risk",
+            "away_starter": 58,
+            "home_starter": 70
+          },
+          {
+            "dimension": "Recent Form",
+            "away_starter": 72,
+            "home_starter": 61
+          }
+        ]
+      },
+      "pitch_locations": {
+        "note": "x,y are 0-1 within the plot area. The strike zone is drawn by the frontend at a fixed inset (~0.25-0.75). 0,0 is top-left (up and inside to a RHB).",
+        "away_starter": {
+          "vs_lhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.462,
+              "y": 0.471
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.62,
+              "y": 0.811
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.355,
+              "y": 0.74
+            }
+          ],
+          "vs_rhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.559,
+              "y": 0.459
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.702,
+              "y": 0.768
+            }
+          ]
+        },
+        "home_starter": {
+          "vs_lhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.49,
+              "y": 0.468
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.661,
+              "y": 0.641
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.538,
+              "y": 0.572
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.484,
+              "y": 0.709
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.39,
+              "y": 0.685
+            }
+          ],
+          "vs_rhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.599,
+              "y": 0.502
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.644,
+              "y": 0.641
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.666,
+              "y": 0.638
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.631,
+              "y": 0.766
+            }
+          ]
+        }
+      },
+      "postgame": null,
+      "data_confidence": {
+        "level": "fetched_snapshot",
+        "lineup_status": "probable_pitchers",
+        "pitch_data_status": "fetched_snapshot",
+        "notes": [
+          "Live snapshot fetched 2026-07-02 for matchup_live_2.",
+          "If live fetching fails, PitchCraft falls back to cached demo data."
+        ]
+      },
+      "report": {
+        "headline": "Four-seam-Slider starter against Four-seam-Cutter starter",
+        "short_summary": [
+          "Chase Burns brings this strength: Above-average swing-and-miss ability.",
+          "Jacob Misiorowski brings this strength: Above-average swing-and-miss ability.",
+          "The early what to watch is whether Chase can Burns land the slider early in counts."
+        ],
+        "sections": [
+          {
+            "title": "Today's Matchup Summary",
+            "body": "This matchup features Four-seam-Slider starter against Four-seam-Cutter starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
+          },
+          {
+            "title": "Chase Burns vs Milwaukee Brewers",
+            "body": "Chase Burns's four-seam-slider combination gives him above-average swing-and-miss ability. This lineup hits well against RHP pitching (.757 OPS), so Chase Burns cannot live over the middle. They draw walks at an above-average rate, so Chase Burns needs efficient strikes."
+          },
+          {
+            "title": "Jacob Misiorowski vs Cincinnati Reds",
+            "body": "Jacob Misiorowski needs to avoid predictable counts and use the cutter to manage contact. This lineup has struggled against RHP pitching (.682 OPS), which gives Jacob Misiorowski an edge if he gets ahead. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Jacob Misiorowski needs efficient strikes."
+          },
+          {
+            "title": "Arsenal Scout",
+            "body": "The main contrast is Four-seam to set up, Slider to finish versus Four-seam to set up, Cutter to finish. The primary pitch contrast is Four-seam against Four-seam, a scouting note for matchup fit and each pressure point."
+          },
+          {
+            "title": "Three Things to Watch",
+            "bullets": [
+              "Can Chase Burns land the slider early in counts?",
+              "Can Jacob Misiorowski keep the ball in the zone?",
+              "Which lineup forces more deep counts by the third inning?"
+            ]
+          },
+          {
+            "title": "Data Confidence Note",
+            "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch."
+          }
+        ]
+      },
+      "critic_review": {
+        "status": "reviewed",
+        "summary": "The critic checked 6 claims and revised 1 where the data did not back them up.",
+        "checks": [
+          {
+            "claim": "Chase Burns's primary pitch is Four-seam.",
+            "status": "supported",
+            "evidence": "Pitch mix shows 56% Four-seam usage."
+          },
+          {
+            "claim": "Chase Burns's put-away pitch is Slider.",
+            "status": "supported",
+            "evidence": "Put-away pitch usage at 37% supports this claim."
+          },
+          {
+            "claim": "Jacob Misiorowski's primary pitch is Four-seam.",
+            "status": "supported",
+            "evidence": "Pitch mix shows 63% Four-seam usage."
+          },
+          {
+            "claim": "Jacob Misiorowski's put-away pitch is Cutter.",
+            "status": "revised",
+            "evidence": "Cutter usage is only 13%. Revised to reflect the higher-usage put-away pitch."
           },
           {
             "claim": "The report makes a command claim.",
@@ -468,6 +931,530 @@
           }
         ],
         "revision_notes": [
+          "Cutter usage is only 13%. Revised to reflect the higher-usage put-away pitch.",
+          "Kept the report focused on matchup fit rather than outcome prediction.",
+          "Avoided claiming official Stuff+."
+        ]
+      }
+    },
+    {
+      "id": "matchup_live_3",
+      "date": "2026-07-02",
+      "status": "upcoming",
+      "is_featured": false,
+      "game": {
+        "title": "Miami Marlins vs Colorado Rockies",
+        "venue": "Coors Field",
+        "start_time_local": "2026-07-02T19:10:00Z",
+        "timezone": "America/Los_Angeles",
+        "broadcast_note": "Demo matchup for capstone",
+        "home_team_id": "115",
+        "away_team_id": "146"
+      },
+      "teams": {
+        "home": {
+          "id": "115",
+          "name": "Colorado Rockies",
+          "abbreviation": "COL",
+          "record": "45-39",
+          "offense_profile": {
+            "summary_label": "Real season split vs RHP",
+            "vs_pitcher_hand": "RHP",
+            "ops_vs_hand": ".762",
+            "k_rate_vs_hand": "21.7%",
+            "bb_rate_vs_hand": "9.0%",
+            "recent_form": "Season split"
+          }
+        },
+        "away": {
+          "id": "146",
+          "name": "Miami Marlins",
+          "abbreviation": "MIA",
+          "record": "51-33",
+          "offense_profile": {
+            "summary_label": "Real season split vs RHP",
+            "vs_pitcher_hand": "RHP",
+            "ops_vs_hand": ".726",
+            "k_rate_vs_hand": "20.7%",
+            "bb_rate_vs_hand": "9.0%",
+            "recent_form": "Season split"
+          }
+        }
+      },
+      "starters": {
+        "away_starter": {
+          "id": "687473",
+          "name": "Ryan Gusto",
+          "team": "MIA",
+          "throws": "R",
+          "bio": {
+            "age": 27,
+            "height": "6-3",
+            "weight": 215,
+            "bats": "R",
+            "throws": "R",
+            "mlb_service": "5 yrs",
+            "accolades": [
+              "2x All-Star"
+            ]
+          },
+          "season_summary": {
+            "era": "5.55",
+            "whip": "1.60",
+            "innings": "24.1",
+            "strikeouts": 22,
+            "walks": 10,
+            "home_runs_allowed": 3
+          },
+          "pitching_profile": {
+            "style_label": "Four-seam-Changeup starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Changeup",
+            "command_label": "Solid command this season",
+            "swing_miss_label": "Limited swing-and-miss data available",
+            "contact_risk_label": "Limited hard contact allowed"
+          },
+          "recent_form": {
+            "label": "Trending stable",
+            "last_three_starts_summary": "Has worked into the sixth inning in two of his last three starts."
+          }
+        },
+        "home_starter": {
+          "id": "547179",
+          "name": "Michael Lorenzen",
+          "team": "COL",
+          "throws": "R",
+          "bio": {
+            "age": 31,
+            "height": "6-1",
+            "weight": 200,
+            "bats": "L",
+            "throws": "R",
+            "mlb_service": "9 yrs",
+            "accolades": [
+              "2023 All-Star"
+            ]
+          },
+          "season_summary": {
+            "era": "6.91",
+            "whip": "1.81",
+            "innings": "86.0",
+            "strikeouts": 67,
+            "walks": 32,
+            "home_runs_allowed": 13
+          },
+          "pitching_profile": {
+            "style_label": "Four-seam-Changeup starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Changeup",
+            "command_label": "Average command this season",
+            "swing_miss_label": "Moderate swing-and-miss ability",
+            "contact_risk_label": "Moderate contact risk"
+          },
+          "recent_form": {
+            "label": "Slight volatility",
+            "last_three_starts_summary": "Has limited hard contact, but walk totals have increased recently."
+          }
+        }
+      },
+      "charts": {
+        "pitch_mix": [
+          {
+            "pitch": "Four-seam",
+            "away_starter": {
+              "overall": 26.5,
+              "vs_lhh": 25.4,
+              "vs_rhh": 28.2
+            },
+            "home_starter": {
+              "overall": 19.4,
+              "vs_lhh": 22.4,
+              "vs_rhh": 16.4
+            }
+          },
+          {
+            "pitch": "Changeup",
+            "away_starter": {
+              "overall": 20.4,
+              "vs_lhh": 26.8,
+              "vs_rhh": 10.7
+            },
+            "home_starter": {
+              "overall": 18.9,
+              "vs_lhh": 26.6,
+              "vs_rhh": 10.9
+            }
+          },
+          {
+            "pitch": "Sinker",
+            "away_starter": {
+              "overall": 13.9,
+              "vs_lhh": 8.5,
+              "vs_rhh": 22.1
+            },
+            "home_starter": {
+              "overall": 17.3,
+              "vs_lhh": 12.6,
+              "vs_rhh": 22.1
+            }
+          },
+          {
+            "pitch": "Sweeper",
+            "away_starter": {
+              "overall": 12.9,
+              "vs_lhh": 6.7,
+              "vs_rhh": 22.1
+            },
+            "home_starter": {
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0
+            }
+          },
+          {
+            "pitch": "Cutter",
+            "away_starter": {
+              "overall": 10.5,
+              "vs_lhh": 13.4,
+              "vs_rhh": 6.0
+            },
+            "home_starter": {
+              "overall": 13.9,
+              "vs_lhh": 14.2,
+              "vs_rhh": 13.7
+            }
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter": {
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0
+            },
+            "home_starter": {
+              "overall": 13.3,
+              "vs_lhh": 14.8,
+              "vs_rhh": 11.7
+            }
+          }
+        ],
+        "velocity_by_pitch": [
+          {
+            "pitch": "Changeup",
+            "away_starter_velocity": 87.1,
+            "home_starter_velocity": 84.7
+          },
+          {
+            "pitch": "Cutter",
+            "away_starter_velocity": 89.1,
+            "home_starter_velocity": 90.4
+          },
+          {
+            "pitch": "Four-seam",
+            "away_starter_velocity": 93.9,
+            "home_starter_velocity": 94.1
+          },
+          {
+            "pitch": "Sinker",
+            "away_starter_velocity": 92.7,
+            "home_starter_velocity": 93.5
+          },
+          {
+            "pitch": "Sweeper",
+            "away_starter_velocity": 82.3,
+            "home_starter_velocity": null
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 82.7
+          }
+        ],
+        "pitch_movement": {
+          "away_starter": {
+            "Four-seam": {
+              "h_break": -5.5,
+              "v_break": 18.2,
+              "family": "Fastball"
+            },
+            "Changeup": {
+              "h_break": -13.1,
+              "v_break": 3.8,
+              "family": "Offspeed"
+            },
+            "Sinker": {
+              "h_break": -15.2,
+              "v_break": 8.4,
+              "family": "Fastball"
+            },
+            "Sweeper": {
+              "h_break": 14.0,
+              "v_break": -0.2,
+              "family": "Breaking"
+            },
+            "Cutter": {
+              "h_break": 4.4,
+              "v_break": 10.0,
+              "family": "Fastball"
+            }
+          },
+          "home_starter": {
+            "Four-seam": {
+              "h_break": -10.0,
+              "v_break": 13.7,
+              "family": "Fastball"
+            },
+            "Changeup": {
+              "h_break": -14.2,
+              "v_break": 8.2,
+              "family": "Offspeed"
+            },
+            "Sinker": {
+              "h_break": -15.7,
+              "v_break": 8.3,
+              "family": "Fastball"
+            },
+            "Cutter": {
+              "h_break": -0.6,
+              "v_break": 6.5,
+              "family": "Fastball"
+            },
+            "Curveball": {
+              "h_break": 0.1,
+              "v_break": -9.2,
+              "family": "Breaking"
+            }
+          }
+        },
+        "strength_profile": [
+          {
+            "dimension": "Stuff",
+            "away_starter": 78,
+            "home_starter": 66
+          },
+          {
+            "dimension": "Command",
+            "away_starter": 63,
+            "home_starter": 74
+          },
+          {
+            "dimension": "Whiff",
+            "away_starter": 80,
+            "home_starter": 62
+          },
+          {
+            "dimension": "Contact Risk",
+            "away_starter": 58,
+            "home_starter": 70
+          },
+          {
+            "dimension": "Recent Form",
+            "away_starter": 72,
+            "home_starter": 61
+          }
+        ]
+      },
+      "pitch_locations": {
+        "note": "x,y are 0-1 within the plot area. The strike zone is drawn by the frontend at a fixed inset (~0.25-0.75). 0,0 is top-left (up and inside to a RHB).",
+        "away_starter": {
+          "vs_lhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.424,
+              "y": 0.482
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.425,
+              "y": 0.633
+            },
+            {
+              "pitch": "Sinker",
+              "x": 0.465,
+              "y": 0.606
+            },
+            {
+              "pitch": "Sweeper",
+              "x": 0.647,
+              "y": 0.673
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.565,
+              "y": 0.489
+            }
+          ],
+          "vs_rhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.477,
+              "y": 0.466
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.336,
+              "y": 0.607
+            },
+            {
+              "pitch": "Sinker",
+              "x": 0.364,
+              "y": 0.58
+            },
+            {
+              "pitch": "Sweeper",
+              "x": 0.74,
+              "y": 0.691
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.502,
+              "y": 0.45
+            }
+          ]
+        },
+        "home_starter": {
+          "vs_lhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.493,
+              "y": 0.537
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.404,
+              "y": 0.717
+            },
+            {
+              "pitch": "Sinker",
+              "x": 0.485,
+              "y": 0.593
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.567,
+              "y": 0.547
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.473,
+              "y": 0.711
+            }
+          ],
+          "vs_rhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.616,
+              "y": 0.507
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.513,
+              "y": 0.725
+            },
+            {
+              "pitch": "Sinker",
+              "x": 0.469,
+              "y": 0.592
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.619,
+              "y": 0.583
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.566,
+              "y": 0.727
+            }
+          ]
+        }
+      },
+      "postgame": null,
+      "data_confidence": {
+        "level": "fetched_snapshot",
+        "lineup_status": "probable_pitchers",
+        "pitch_data_status": "fetched_snapshot",
+        "notes": [
+          "Live snapshot fetched 2026-07-02 for matchup_live_3.",
+          "If live fetching fails, PitchCraft falls back to cached demo data."
+        ]
+      },
+      "report": {
+        "headline": "Four-seam-Changeup starter against Four-seam-Changeup starter",
+        "short_summary": [
+          "Ryan Gusto brings this strength: Solid command this season supports strike-zone control.",
+          "Michael Lorenzen brings this strength: Four-seam to set up, Changeup to finish.",
+          "The early what to watch is whether Ryan can Gusto land the changeup early in counts."
+        ],
+        "sections": [
+          {
+            "title": "Today's Matchup Summary",
+            "body": "This matchup features Four-seam-Changeup starter against Four-seam-Changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
+          },
+          {
+            "title": "Ryan Gusto vs Colorado Rockies",
+            "body": "Ryan Gusto's four-seam-changeup combination gives him limited swing-and-miss data available. This lineup hits well against RHP pitching (.762 OPS), so Ryan Gusto cannot live over the middle. They draw walks at an above-average rate, so Ryan Gusto needs efficient strikes."
+          },
+          {
+            "title": "Michael Lorenzen vs Miami Marlins",
+            "body": "Michael Lorenzen needs to avoid predictable counts and use the changeup to disrupt timing. This lineup is roughly average against RHP pitching (.726 OPS), with no glaring weakness to attack. They draw walks at an above-average rate, so Michael Lorenzen needs efficient strikes."
+          },
+          {
+            "title": "Arsenal Scout",
+            "body": "The main contrast is Four-seam to set up, Changeup to finish versus Four-seam to set up, Changeup to finish. The primary pitch contrast is Four-seam against Four-seam, a scouting note for matchup fit and each pressure point."
+          },
+          {
+            "title": "Three Things to Watch",
+            "bullets": [
+              "Can Ryan Gusto land the changeup early in counts?",
+              "Can Michael Lorenzen keep the ball in the zone?",
+              "Which lineup forces more deep counts by the third inning?"
+            ]
+          },
+          {
+            "title": "Data Confidence Note",
+            "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch."
+          }
+        ]
+      },
+      "critic_review": {
+        "status": "reviewed",
+        "summary": "The critic checked 6 claims and revised 2 where the data did not back them up.",
+        "checks": [
+          {
+            "claim": "Ryan Gusto's primary pitch is Four-seam.",
+            "status": "revised",
+            "evidence": "Four-seam usage is only 26%. Primary pitch revised to reflect actual usage."
+          },
+          {
+            "claim": "Ryan Gusto's put-away pitch is Changeup.",
+            "status": "supported",
+            "evidence": "Put-away pitch usage at 20% supports this claim."
+          },
+          {
+            "claim": "Michael Lorenzen's primary pitch is Four-seam.",
+            "status": "revised",
+            "evidence": "Four-seam usage is only 19%. Primary pitch revised to reflect actual usage."
+          },
+          {
+            "claim": "Michael Lorenzen's put-away pitch is Changeup.",
+            "status": "supported",
+            "evidence": "Put-away pitch usage at 18% supports this claim."
+          },
+          {
+            "claim": "Ryan Gusto's command label is supported.",
+            "status": "supported",
+            "evidence": "Command signal is 63 in the strength profile."
+          },
+          {
+            "claim": "The report predicts the winner.",
+            "status": "not_present",
+            "evidence": "No win prediction or betting language found."
+          }
+        ],
+        "revision_notes": [
+          "Four-seam usage is only 26%. Primary pitch revised to reflect actual usage.",
+          "Four-seam usage is only 19%. Primary pitch revised to reflect actual usage.",
           "Kept the report focused on matchup fit rather than outcome prediction.",
           "Avoided claiming official Stuff+."
         ]
@@ -522,7 +1509,7 @@
           "id": "pitcher_c",
           "name": "Demo Pitcher C",
           "team": "NYY",
-          "throws": "RHP",
+          "throws": "R",
           "bio": {
             "age": 24,
             "height": "6-5",
@@ -557,7 +1544,7 @@
           "id": "pitcher_d",
           "name": "Demo Pitcher D",
           "team": "BOS",
-          "throws": "LHP",
+          "throws": "L",
           "bio": {
             "age": 29,
             "height": "6-2",
@@ -686,6 +1673,62 @@
             "home_starter_velocity": 90.7
           }
         ],
+        "pitch_movement": {
+          "away_starter": {
+            "Four-seam": {
+              "h_break": 8.4,
+              "v_break": 17.1,
+              "family": "Fastball"
+            },
+            "Cutter": {
+              "h_break": -2.1,
+              "v_break": 8.0,
+              "family": "Fastball"
+            },
+            "Curveball": {
+              "h_break": -6.5,
+              "v_break": -12.6,
+              "family": "Breaking"
+            },
+            "Changeup": {
+              "h_break": 12.2,
+              "v_break": 5.8,
+              "family": "Offspeed"
+            },
+            "Sinker": {
+              "h_break": 14.6,
+              "v_break": 6.7,
+              "family": "Fastball"
+            }
+          },
+          "home_starter": {
+            "Four-seam": {
+              "h_break": 7.1,
+              "v_break": 15.6,
+              "family": "Fastball"
+            },
+            "Cutter": {
+              "h_break": -2.8,
+              "v_break": 7.4,
+              "family": "Fastball"
+            },
+            "Curveball": {
+              "h_break": -7.4,
+              "v_break": -11.7,
+              "family": "Breaking"
+            },
+            "Changeup": {
+              "h_break": 11.1,
+              "v_break": 5.2,
+              "family": "Offspeed"
+            },
+            "Sinker": {
+              "h_break": 13.1,
+              "v_break": 6.2,
+              "family": "Fastball"
+            }
+          }
+        },
         "strength_profile": [
           {
             "dimension": "Stuff",
@@ -860,11 +1903,11 @@
           },
           {
             "title": "Demo Pitcher C vs Boston Red Sox",
-            "body": "Demo Pitcher C's four-seam-changeup combination gives him above-average swing-and-miss, but the opposing lineup applies consistent pressure."
+            "body": "Demo Pitcher C's four-seam-changeup combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack."
           },
           {
             "title": "Demo Pitcher D vs New York Yankees",
-            "body": "Demo Pitcher D needs to keep the command edge visible and use the changeup to manage contact. His margin is low contact risk against a lineup with .756 OPS; the pressure point is that the opposing lineup has strong OPS against this pitcher's hand."
+            "body": "Demo Pitcher D needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.756 OPS), so Demo Pitcher D cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher D needs efficient strikes."
           },
           {
             "title": "Arsenal Scout",
@@ -940,10 +1983,10 @@
     {
       "id": "matchup_001",
       "date": "2026-06-28",
-      "title": "CWS vs BAL",
+      "title": "PIT vs PHI",
       "status": "upcoming",
       "featured": true,
-      "starter_summary": "Sean Burke vs Shane Baz",
+      "starter_summary": "Jared Jones vs Alan Rangel",
       "result_label": "Pregame report available",
       "grade_label": null
     },
@@ -1004,7 +2047,7 @@
       {
         "agent": "Data Scout Agent",
         "status": "completed",
-        "output": "Loaded cached data for 2 matchups."
+        "output": "Loaded cached data for 4 matchups."
       },
       {
         "agent": "Matchup Analyst Agent",
@@ -1019,7 +2062,7 @@
       {
         "agent": "Critic / Fact-check Agent",
         "status": "completed",
-        "output": "Verified claims. 1 claim(s) revised across all matchups."
+        "output": "Verified claims. 4 claim(s) revised across all matchups."
       },
       {
         "agent": "Postgame Grader Agent",

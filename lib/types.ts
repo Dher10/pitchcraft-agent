@@ -1,6 +1,6 @@
 export type MatchupStatus = "upcoming" | "final" | "demo";
 export type CriticCheckStatus = "supported" | "unsupported" | "revised" | "not_present" | "warning";
-export type ConfidenceLevel = "live_confirmed" | "partial" | "demo_cached" | "limited";
+export type ConfidenceLevel = "live_confirmed" | "fetched_snapshot" | "partial" | "demo_cached" | "limited";
 export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
 export type AgentStatus = "completed" | "not_applicable" | "pending";
 
@@ -133,10 +133,22 @@ export interface StrengthRow {
   home_starter: number;
 }
 
+export type PitchFamily = "Fastball" | "Breaking" | "Offspeed";
+
+export interface PitchMovement {
+  h_break: number;
+  v_break: number;
+  family: PitchFamily;
+}
+
 export interface Charts {
   pitch_mix: PitchMixRow[];
   velocity_by_pitch: VelocityRow[];
   strength_profile: StrengthRow[];
+  pitch_movement: {
+    away_starter: Record<string, PitchMovement>;
+    home_starter: Record<string, PitchMovement>;
+  };
 }
 
 export interface PitchLocation {

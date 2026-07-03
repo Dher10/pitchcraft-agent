@@ -127,14 +127,20 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
                 isinstance(starter, Mapping) and "bio" in starter,
                 "bio missing",
             )
+            record(
+                f"{label}: {slot}.throws is L or R",
+                isinstance(starter, Mapping) and starter.get("throws") in ("L", "R"),
+                f"found {starter.get('throws')!r}" if isinstance(starter, Mapping) else "starter missing",
+            )
 
     charts = matchup.get("charts")
     record(
-        f"{label}: charts include pitch mix, velocity, and strength",
+        f"{label}: charts include pitch mix, velocity, strength, and movement",
         has_nested_keys(charts, CHART_KEYS),
         _missing_keys(charts, CHART_KEYS),
     )
     _validate_pitch_mix(charts, label, record)
+    _validate_pitch_movement(charts, label, record)
 
     pitch_locations = matchup.get("pitch_locations")
     record(
@@ -169,6 +175,16 @@ def _validate_pitch_mix(charts: Any, label: str, record: Any) -> None:
                 _missing_keys(starter_mix, BATTER_HAND_SPLITS),
             )
 
+
+def _validate_pitch_movement(charts: Any, label: str, record: Any) -> None:
+    pitch_movement = charts.get("pitch_movement") if isinstance(charts, Mapping) else None
+    for slot in STARTER_SLOTS:
+        movement = pitch_movement.get(slot) if isinstance(pitch_movement, Mapping) else None
+        record(
+            f"{label}: charts.pitch_movement.{slot} is an object",
+            isinstance(movement, Mapping),
+            f"found {type(movement).__name__}",
+        )
 
 def _validate_pitch_locations(pitch_locations: Any, label: str, record: Any) -> None:
     if not isinstance(pitch_locations, Mapping):
