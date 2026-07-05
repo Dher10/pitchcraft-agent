@@ -6,7 +6,7 @@
 
 **Live demo:** https://pitchcraft-agent.vercel.app
 **Repository:** https://github.com/Dher10/pitchcraft-agent
-**Video:** [YouTube link goes here before submitting]
+**Video:** https://youtu.be/OgVPu8rFIgs
 
 ---
 
