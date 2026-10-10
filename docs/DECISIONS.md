@@ -1,0 +1,26 @@
+# PitchCraft v2 — Decision log
+
+Append-only. Never edit or delete a decision. To change one, append a new decision and mark the old one `Superseded by Dxx`. Owner approval is required for every new or superseding decision.
+
+| # | Date | Decision | Why | Status |
+|---|---|---|---|---|
+| D1 | 2026-10-10 | Missing data: the game is always shown. When a sample is thin, the report says so **per dimension** (arsenal, strikeout, control), not with one global warning. | Skipping silently leaves the fan wondering why their game is missing. A per-dimension flag lets the report talk about what does exist. | Closed |
+| D2 | 2026-10-10 | Guardrail: the LLM writes, code checks verify. On failure (technical or content), one informed retry that includes the error. On a second failure, publish the rules-based report. Log every attempt. | The eval protects the user, not only measures. One retry avoids burning quota. The rules writer already exists and does not invent. | Closed |
+| D3 | 2026-10-10 | Every report shows its origin. Proposed copy: *AI-written*, *Rules-based*, *Limited data*. | Transparency with the user; responsible AI practice. | Closed (final copy pending) |
+| D4 | 2026-10-10 | Phase 0 definition of done is a set of Gherkin scenarios (9, in `PLAN.md`). | Verifiable criteria instead of "looks fine". | Closed |
+| D5 | 2026-10-10 | Users are the general public without deep baseball knowledge. Scouts and analysts are out. | Scouts already have better tools. Usefulness is judged through a casual fan's eyes. | Closed |
+| D6 | 2026-10-10 | Bilingual as a product goal: v2 ships in English, Spanish in v2.1. No user-facing strings hardcoded in agents; writer and eval take language as a parameter. | Bilingual doubles the measurement work and puts the Nov 15 milestone at risk. | Closed |
+| D7 | 2026-10-10 | Postseason layer built only from available data: series context, draft year and round, MLB debut, birthplace. Every item is a cited claim. "Hometown connection" is out of v2. | In the postseason fans have no team and connect through stories. Nothing invented. A thin sample can be part of the story. | Open: what makes the postseason text different is undefined |
+| D8 | 2026-10-10 | Daily monitoring: append-only log per day plus a quality page on the site. Weekly human review of 3–5 live reports. | Keep history and catch production drops. Separate from the frozen offline set, which makes the ship decision. | Closed |
+| D9 | 2026-10-10 | $0 infrastructure: GitHub Actions (daily cron) + Vercel. Writer on Gemini (Google AI Studio free tier). Judge from a different model family via GitHub Models free tier. Provider swappable by env var. | No servers or AWS. A cross-family judge reduces self-preference. | Closed. Risk: Statcast from cloud runners |
+| D10 | 2026-10-10 | Two-step rollout: v2.0-a live with the rules writer before Oct 25; v2.0-b with the LLM writer behind the eval on Nov 15. | The postseason ends before the LLM writer can pass the eval. This way the product runs live this year and produces the baseline. | Closed |
+| D11 | 2026-10-10 | Sample thresholds per dimension. Proposal: arsenal 100 pitches; strikeout ~70 batters faced; control needs a larger sample than strikeout. Labels use rates, not counts. | FanGraphs and Baseball Prospectus guidance on stabilization. v1 uses counts and has no minimums. | Proposed: validate against real 2026 distributions in Phase 0 |
+| D12 | 2026-10-10 | PitchCraft has its own Notion space, outside the owner's professional HQ. | Material used by development agents lives there; keeps the HQ light. | Closed |
+| D13 | 2026-10-10 | The repo is the source of truth for PRD, eval spec, decisions, plan and status. Notion keeps a full mirror for the owner, synced after repo changes. Changes enter `DECISIONS.md` first, then Notion. | All agents must read the same docs, and work must continue in any tool (Claude Code, Codex). Notion stays readable from anywhere. | Closed |
+
+| D14 | 2026-10-10 | Same repo for v2. v1 is frozen with the tag `v1.0.0-kaggle`. All v2 work happens on branch `v2`; `main` keeps serving v1 on Vercel until v2.0-a is merged. Agents never commit to `main`. | Keeps the evolution in one history, keeps every existing link (CV, site, Kaggle, Vercel) working, and protects the live demo while v2 is built. | Closed |
+
+## Sources for D11
+
+- [FanGraphs: strikeout rate after 70 batters faced](https://fantasy.fangraphs.com/looking-at-strikeout-rate-changes-after-70-batters-faced)
+- [Baseball Prospectus: Should I worry about my favorite pitcher?](https://www.baseballprospectus.com/news/article/20516/baseball-therapy-should-i-worry-about-my-favorite-pitcher/)
