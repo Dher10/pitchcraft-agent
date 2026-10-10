@@ -6,7 +6,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`) done; P0.4 analysis written, not approved.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.7 `[auto]`, then P0.8, P0.9 (owner's order). P0.5 is skipped until the owner decides on `docs/thresholds-proposal.md`. Stop before P1.0.
+- **Next task:** `PLAN.md` → P0.8 `[auto]`, then P0.9 (owner's order). P0.5 is skipped until the owner decides on `docs/thresholds-proposal.md`. Stop before P1.0.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
@@ -25,6 +25,14 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.7 no hardcoded season (Claude Code, auto lane)
+
+- Removed `season=2026` (three fetchers) and `season_start="2026-03-20"` (two): they now default to `None`. The season is the year of `as_of` (today when `as_of` is None); its regular-season dates come from `season_dates(season)`, which reads `/api/v1/seasons/{year}?sportId=1` (2026: 03-25 to 09-27; 2025: 03-18 to 09-28), is cached for the run, and raises on failure without being cached, so callers report the data as unavailable instead of guessing. An explicit `season_start` is still honored. The remaining 2026 strings are demo data (`demo_inputs.py`) and a docstring example.
+- Pitcher Statcast starts on opening day and returns None (logged) when `as_of` is before it. Team splits end at the last day of the regular season even for an October `as_of`, which keeps a team-season at 7 monthly requests (D23); checked live: NYY with `as_of=2026-10-05` gives the full-season 1963 / 4034 PA, .733 / .714 OPS, with 2 new requests (the other months were cached).
+- `build_live_snapshot(target_date, as_of=None)` and the CLI (`live_pipeline.py [target_date] [as_of]`) now pass `as_of` to every pitcher and team fetch and record it in the snapshot (`as_of`, None by default). I did not derive `as_of` from `target_date` on my own: that would move daily live runs to the Savant path and refetch the current month each day, against D23's "once". The historical case builder (P2.4) passes it explicitly. This corrects my earlier note that wiring happened in P0.7 "and P2.4": the pipeline accepts it now, the callers that need it come later.
+- Tests: `tests/test_season_not_hardcoded.py` (24 tests, with `season_dates` stubbed in the older fetcher tests so nothing hits the network). Local run: 98 passed.
+- No change to the default live behavior; nothing to add to Pending Notion sync.
 
 ### 2026-10-10 — P0.6 starter names never split (Claude Code, auto lane)
 

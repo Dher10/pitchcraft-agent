@@ -15,6 +15,13 @@ import pytest
 from data_pipeline.fetchers import live_pipeline as lp
 
 
+@pytest.fixture(autouse=True)
+def stub_season_dates(monkeypatch):
+    """Regular-season dates come from the MLB seasons endpoint; never hit it in tests."""
+
+    monkeypatch.setattr(lp, "season_dates", lambda season: (date(season, 3, 25), date(season, 9, 27)))
+
+
 def pa_rows(team_batting: str, hand: str, events: list, game_date="2026-07-10", **extra):
     """Plate-appearance rows where `team_batting` is NYY (home, bottom) by default."""
 

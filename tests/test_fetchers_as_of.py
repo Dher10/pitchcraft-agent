@@ -31,6 +31,13 @@ class FakeResponse:
         return False
 
 
+@pytest.fixture(autouse=True)
+def stub_season_dates(monkeypatch):
+    """Regular-season dates come from the MLB seasons endpoint; never hit it in tests."""
+
+    monkeypatch.setattr(lp, "season_dates", lambda season: (date(season, 3, 25), date(season, 9, 27)))
+
+
 def install_urlopen(monkeypatch, router) -> list[str]:
     """Route every urlopen call through router(url) -> payload; return the URL log."""
 

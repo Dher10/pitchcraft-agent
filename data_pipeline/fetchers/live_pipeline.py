@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from functools import lru_cache
 import io
 import json
 import os
@@ -209,6 +210,23 @@ def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
         return json.loads(response.read())
 
 
+@lru_cache(maxsize=None)
+def season_dates(season: int) -> tuple[date, date]:
+    """
+    (first day, last day) of the regular season, from the MLB seasons endpoint.
+
+    Cached for the run; a failed lookup raises and is not cached, so callers
+    report the data as unavailable instead of guessing dates.
+    """
+
+    data = _get_json(f"https://statsapi.mlb.com/api/v1/seasons/{season}?sportId=1")
+    entry = data["seasons"][0]
+    return (
+        date.fromisoformat(entry["regularSeasonStartDate"]),
+        date.fromisoformat(entry["regularSeasonEndDate"]),
+    )
+
+
 def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
     """
     Fetch today's MLB games with probable pitchers.
@@ -265,21 +283,24 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
 
 def fetch_pitcher_season_stats(
     pitcher_id: int,
-    season: int = 2026,
+    season: int | None = None,
     as_of: str | date | None = None,
 ) -> dict[str, Any]:
     """
     Fetch season pitching stats for a pitcher from the MLB Stats API.
 
-    With `as_of`, the stats cover Jan 1 of the season through that date
-    (inclusive); `as_of` must fall in `season`. Raises ValueError otherwise.
+    `season` defaults to the year of `as_of` (today when None). With `as_of`,
+    the stats cover Jan 1 of the season through that date (inclusive); `as_of`
+    must fall in `season`. Raises ValueError otherwise.
     Returns {} on any error so Statcast counts can remain the fallback.
     """
 
+    cutoff = _parse_as_of(as_of)
+    if season is None:
+        season = cutoff.year
     if as_of is None:
         stats_query = "stats=season"
     else:
-        cutoff = _parse_as_of(as_of)
         if cutoff.year != season:
             raise ValueError(f"as_of {cutoff.isoformat()} is not in season {season}")
         stats_query = (
@@ -322,9 +343,9 @@ def fetch_pitcher_season_stats(
 
 def fetch_team_splits(
     team_id: int,
-    season: int = 2026,
+    season: int | None = None,
     as_of: str | date | None = None,
-    season_start: str = "2026-03-20",
+    season_start: str | None = None,
 ) -> dict[str, Any]:
     """
     Fetch team hitting splits vs LHP and vs RHP for the season.
@@ -332,11 +353,15 @@ def fetch_team_splits(
     Returns {"vl": {...}, "vr": {...}} each with ops, avg, strikeouts, walks,
     plate_appearances, k_rate, and bb_rate. Returns {} on failure.
 
-    With `as_of` the splits are derived from Statcast plate appearances from
-    `season_start` through that date, because the MLB API ignores startDate and
-    endDate on statSplits. `as_of` must fall in `season` (ValueError otherwise).
+    `season` defaults to the year of `as_of` (today when None). With `as_of` the
+    splits are derived from Statcast plate appearances from `season_start`
+    (default: opening day) through that date, never past the end of the regular
+    season, because the MLB API ignores startDate and endDate on statSplits.
+    `as_of` must fall in `season` (ValueError otherwise).
     """
 
+    if season is None:
+        season = _parse_as_of(as_of).year
     if as_of is not None:
         cutoff = _parse_as_of(as_of)
         if cutoff.year != season:
@@ -347,7 +372,9 @@ def fetch_team_splits(
             print(f"[LIVE] Team splits: unknown team id {team_id}")
             return {}
         try:
-            df = fetch_team_batting_statcast(code, date.fromisoformat(season_start), cutoff)
+            first_day, last_day = season_dates(season)
+            start = date.fromisoformat(season_start) if season_start else first_day
+            df = fetch_team_batting_statcast(code, start, min(cutoff, last_day))
             return derive_team_splits(df, code, cutoff)
         except SavantRequestCapExceeded:
             raise
@@ -605,7 +632,7 @@ def fetch_series_status(
 def fetch_pitcher_statcast(
     pitcher_id: int,
     pitcher_name: str,
-    season_start: str = "2026-03-20",
+    season_start: str | None = None,
     as_of: str | date | None = None,
 ) -> dict[str, Any] | None:
     """
@@ -613,13 +640,19 @@ def fetch_pitcher_statcast(
 
     Only pitches dated on or before `as_of` (default today) are used, for the
     pitch data and for the season stats, and only from regular-season and
-    postseason games (never spring training). A bad `as_of` raises ValueError.
+    postseason games (never spring training). The season is the year of
+    `as_of`; it starts at `season_start` or opening day. A bad `as_of` raises
+    ValueError.
     """
 
     cutoff = _parse_as_of(as_of)
     try:
+        start = season_start or season_dates(cutoff.year)[0].isoformat()
+        if cutoff.isoformat() < start:
+            print(f"[LIVE] Season {cutoff.year} has not started as of {cutoff.isoformat()}")
+            return None
         print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
-        df = statcast_pitcher(season_start, cutoff.isoformat(), player_id=pitcher_id)
+        df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
         if df is not None and "game_date" in df.columns:
             import pandas as pd
 
@@ -831,8 +864,16 @@ def pick_featured_games(games: list[dict[str, Any]], max_games: int = 3) -> list
     return eligible[:max_games]
 
 
-def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None:
-    """Fetch schedule and Statcast data, returning a generator-ready snapshot."""
+def build_live_snapshot(
+    target_date: str | None = None,
+    as_of: str | date | None = None,
+) -> dict[str, Any] | None:
+    """
+    Fetch schedule and Statcast data, returning a generator-ready snapshot.
+
+    `as_of` (default None = today) is the data cutoff passed to every pitcher
+    and team fetch, for historical runs.
+    """
 
     games = fetch_todays_games(target_date)
     if not games:
@@ -858,10 +899,12 @@ def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None
         away_data = fetch_pitcher_statcast(
             featured["away_pitcher_id"],
             featured["away_pitcher_name"],
+            as_of=as_of,
         )
         home_data = fetch_pitcher_statcast(
             featured["home_pitcher_id"],
             featured["home_pitcher_name"],
+            as_of=as_of,
         )
 
         if not away_data or not home_data:
@@ -873,8 +916,8 @@ def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None
             print(f"[LIVE] Skipping {skipped} - insufficient pitch data")
             continue
 
-        away_splits = fetch_team_splits(featured["away_team_id"])
-        home_splits = fetch_team_splits(featured["home_team_id"])
+        away_splits = fetch_team_splits(featured["away_team_id"], as_of=as_of)
+        home_splits = fetch_team_splits(featured["home_team_id"], as_of=as_of)
         live_games.append(
             {
                 "featured_game": featured,
@@ -897,6 +940,7 @@ def build_live_snapshot(target_date: str | None = None) -> dict[str, Any] | None
     snapshot = {
         "data_mode": "fetched_snapshot",
         "fetched_date": target_date or date.today().isoformat(),
+        "as_of": _parse_as_of(as_of).isoformat() if as_of is not None else None,
         "live_games": live_games,
         "skipped_games": skipped_games,
         "games_today": [
@@ -1026,9 +1070,10 @@ def main() -> int:
     from data_pipeline.fetchers.cache_manager import save_processed
 
     target_date = sys.argv[1] if len(sys.argv) > 1 else None
+    as_of = sys.argv[2] if len(sys.argv) > 2 else None
     print("[LIVE] PitchCraft live data pipeline starting...")
 
-    snapshot = build_live_snapshot(target_date)
+    snapshot = build_live_snapshot(target_date, as_of)
     if not snapshot:
         print("[LIVE] Pipeline failed or no data available. Demo data unchanged.")
         return 1
