@@ -71,12 +71,14 @@ def _offense_read(team: dict[str, Any], starter: dict[str, Any]) -> str:
     offense = team["offense_profile"]
     hand = offense.get("vs_pitcher_hand") or _throws_label(starter.get("throws", "R"))
     starter_name = starter["name"]
-    ops_text = offense.get("ops_vs_hand", "N/A")
-    ops = _rate_value(ops_text)
-    k_rate = _rate_value(offense.get("k_rate_vs_hand", "0"))
-    bb_rate = _rate_value(offense.get("bb_rate_vs_hand", "0"))
+    ops_text = offense.get("ops_vs_hand")
+    ops = _optional_rate(ops_text)
+    k_rate = _optional_rate(offense.get("k_rate_vs_hand"))
+    bb_rate = _optional_rate(offense.get("bb_rate_vs_hand"))
 
-    if ops >= 0.750:
+    if ops is None:
+        read = f"Season offense data against {hand} pitching is not available for this lineup yet."
+    elif ops >= 0.750:
         read = (
             f"This lineup hits well against {hand} pitching ({ops_text} OPS), "
             f"so {starter_name} cannot live over the middle."
@@ -93,9 +95,9 @@ def _offense_read(team: dict[str, Any], starter: dict[str, Any]) -> str:
         )
 
     notes = []
-    if k_rate >= 23:
+    if k_rate is not None and k_rate >= 23:
         notes.append("They also strike out often, which favors a swing-and-miss approach")
-    if bb_rate >= 9:
+    if bb_rate is not None and bb_rate >= 9:
         notes.append(f"They draw walks at an above-average rate, so {starter_name} needs efficient strikes")
     if notes:
         read = f"{read} {'; '.join(notes)}."
@@ -155,21 +157,27 @@ def _lineup_pressure_points(matchup_packet: dict[str, Any]) -> dict[str, list[st
         team = teams[side]
         offense = team["offense_profile"]
         team_points: list[str] = []
-        if _rate_value(offense["ops_vs_hand"]) > 0.750:
+        ops = _optional_rate(offense.get("ops_vs_hand"))
+        k_rate = _optional_rate(offense.get("k_rate_vs_hand"))
+        bb_rate = _optional_rate(offense.get("bb_rate_vs_hand"))
+        if ops is not None and ops > 0.750:
             team_points.append("has strong OPS against this pitcher's hand")
-        if _rate_value(offense["k_rate_vs_hand"]) > 22:
+        if k_rate is not None and k_rate > 22:
             team_points.append("has elevated swing-and-miss risk")
-        if _rate_value(offense["bb_rate_vs_hand"]) > 9:
+        if bb_rate is not None and bb_rate > 9:
             team_points.append("draws walks at an above-average rate")
         points[team["id"]] = team_points
     return points
 
 
-def _rate_value(raw_value: str) -> float:
+def _optional_rate(raw_value: str | None) -> float | None:
+    """A rate, or None when the value is unavailable (never parsed as zero)."""
+    if raw_value is None:
+        return None
     try:
         return float(str(raw_value).replace("%", ""))
-    except (TypeError, ValueError):
-        return 0.0
+    except ValueError:
+        return None
 
 
 def _style_description(profile: dict[str, Any]) -> str:

@@ -61,6 +61,16 @@ def run(findings: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, An
 def _confidence_note(matchup_input: dict[str, Any]) -> str:
     confidence = matchup_input.get("data_confidence", {})
     if confidence.get("level") == "fetched_snapshot":
+        has_offense = all(
+            matchup_input["teams"][side]["offense_profile"].get("ops_vs_hand") is not None
+            for side in ("home", "away")
+        )
+        if not has_offense:
+            return (
+                "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. "
+                "Season offense splits were not available for this game, so the lineup read makes no "
+                "offense claims. Lineups can still change before first pitch."
+            )
         return (
             "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, "
             "and season offense splits. Lineups can still change before first pitch."

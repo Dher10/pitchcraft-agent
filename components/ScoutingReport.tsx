@@ -2,6 +2,8 @@ import StatTile from "@/components/StatTile";
 import TeamBadge from "@/components/TeamBadge";
 import type { ReportSection, Starter, Team } from "@/lib/types";
 
+const UNAVAILABLE = "—";
+
 interface ScoutingReportProps {
   awayStarter: Starter;
   homeStarter: Starter;
@@ -55,15 +57,16 @@ function ReportCard({
         <h3 className="text-[15px] font-bold leading-tight text-neutral-900">{title}</h3>
       </div>
       <p className="mt-3 text-[13px] leading-6 text-neutral-600">
-        {section?.body ?? offense.offense_profile.summary_label}
+        {section?.body ?? offense.offense_profile.summary_label ?? "Offense data not available"}
       </p>
       <dl className="mt-3.5 grid grid-cols-3 gap-2">
-        <StatTile label="OPS" title="On-base plus slugging." value={offense.offense_profile.ops_vs_hand} />
-        <StatTile label="K%" title="Strikeout rate." value={offense.offense_profile.k_rate_vs_hand} />
-        <StatTile label="BB%" title="Walk rate." value={offense.offense_profile.bb_rate_vs_hand} />
+        <StatTile label="OPS" title="On-base plus slugging." value={offense.offense_profile.ops_vs_hand ?? UNAVAILABLE} />
+        <StatTile label="K%" title="Strikeout rate." value={offense.offense_profile.k_rate_vs_hand ?? UNAVAILABLE} />
+        <StatTile label="BB%" title="Walk rate." value={offense.offense_profile.bb_rate_vs_hand ?? UNAVAILABLE} />
       </dl>
       <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
-        vs {offense.offense_profile.vs_pitcher_hand} &middot; {offense.offense_profile.recent_form}
+        vs {offense.offense_profile.vs_pitcher_hand}
+        {offense.offense_profile.recent_form ? <> &middot; {offense.offense_profile.recent_form}</> : null}
       </p>
     </article>
   );

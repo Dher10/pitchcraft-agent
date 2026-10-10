@@ -52,17 +52,17 @@ export interface Team {
   id: string;
   name: string;
   abbreviation: string;
-  record: string;
+  record: string | null;
   offense_profile: OffenseProfile;
 }
 
 export interface OffenseProfile {
-  summary_label: string;
+  summary_label: string | null;
   vs_pitcher_hand: string;
-  ops_vs_hand: string;
-  k_rate_vs_hand: string;
-  bb_rate_vs_hand: string;
-  recent_form: string;
+  ops_vs_hand: string | null;
+  k_rate_vs_hand: string | null;
+  bb_rate_vs_hand: string | null;
+  recent_form: string | null;
 }
 
 export interface StarterBio {

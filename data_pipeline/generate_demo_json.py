@@ -34,6 +34,13 @@ else:
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+OFFENSE_UNAVAILABLE_FIELDS = (
+    "summary_label",
+    "ops_vs_hand",
+    "k_rate_vs_hand",
+    "bb_rate_vs_hand",
+    "recent_form",
+)
 OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 
@@ -211,6 +218,7 @@ def _apply_live_game_to_matchup(
             "id": str(fg.get("away_team_id", matchup["teams"]["away"]["id"])),
             "name": fg["away_team"],
             "abbreviation": fg["away_team_abbr"],
+            "record": None,
         }
     )
     matchup["teams"]["home"].update(
@@ -218,6 +226,7 @@ def _apply_live_game_to_matchup(
             "id": str(fg.get("home_team_id", matchup["teams"]["home"]["id"])),
             "name": fg["home_team"],
             "abbreviation": fg["home_team_abbr"],
+            "record": None,
         }
     )
 
@@ -327,21 +336,25 @@ def _apply_offense_split(
 ) -> None:
     hand = starter_hand if starter_hand in ("L", "R") else starter_hand[:1]
     split = splits.get("vl" if hand == "L" else "vr", {})
+
+    # The team profile comes from the demo template; none of it may survive
+    # unless this split provides it. Missing means None, never a demo value.
+    for field in OFFENSE_UNAVAILABLE_FIELDS:
+        offense_profile[field] = None
+    offense_profile["vs_pitcher_hand"] = f"{hand}HP"
     if not split:
-        offense_profile["vs_pitcher_hand"] = f"{hand}HP"
         return
 
     offense_profile["summary_label"] = f"Real season split vs {hand}HP"
-    offense_profile["vs_pitcher_hand"] = f"{hand}HP"
     offense_profile["ops_vs_hand"] = _format_ops(split.get("ops"))
     offense_profile["k_rate_vs_hand"] = _format_pct(split.get("k_rate"))
     offense_profile["bb_rate_vs_hand"] = _format_pct(split.get("bb_rate"))
     offense_profile["recent_form"] = "Season split"
 
 
-def _format_ops(value: Any) -> str:
+def _format_ops(value: Any) -> str | None:
     if value is None:
-        return "N/A"
+        return None
     if isinstance(value, str):
         stripped = value.strip()
         if stripped.startswith("0."):
@@ -350,9 +363,9 @@ def _format_ops(value: Any) -> str:
     return f"{float(value):.3f}".replace("0.", ".", 1)
 
 
-def _format_pct(value: Any) -> str:
+def _format_pct(value: Any) -> str | None:
     if value is None:
-        return "N/A"
+        return None
     return f"{float(value):.1f}%"
 
 

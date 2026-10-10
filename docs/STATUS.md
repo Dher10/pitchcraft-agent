@@ -4,24 +4,32 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0 and P0.1 done.
+- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`) and P0.1b done.
 - **Branch:** `v2` (D14). `main` serves v1.
 - **Next task:** `PLAN.md` → P0.2 (add `as_of` to every fetcher). Start in plan mode.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
-- **Open finding (not in any task yet):** `_apply_offense_split` in `generate_demo_json.py` returns early when a team has no split, so the live matchup keeps the demo team `offense_profile` (`summary_label`, `ops_vs_hand`, `recent_form` "Stable"/"Hot"). Same class of leak as P0.1 but on teams. Needs an owner decision on where to fix it (P0.1 follow-up, P0.8 or its own task).
-- **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live-starter fields until the generator is next run.
+- **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
+- **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
 ## Pending Notion sync
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
 - P0.1: live starters now show "Bio not available" and "Recent form not available" instead of demo text. The bio source comes with P1.5.
+- New plan task P0.1b (team `offense_profile` never inherits demo values), placed after P0.1. Done: live team offense and record show "not available" instead of demo values; when a team has no split, the report makes no offense claims and the Data Confidence Note says so.
 - P1.0 now also covers: checkout and setup-python versions without Node 20 (pinned by SHA) and runner fixed to `ubuntu-24.04`.
 
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.1b live team fields without demo values (Claude Code)
+
+- Root cause: `_apply_offense_split` returned early when a team had no split, leaving the demo template's offense fields (and `record`) on a real team; the analyst then wrote them into the report as facts. Second bug in the same path: a missing field inside a real split became the string `"N/A"`, which the analyst parsed as 0.0 and turned into "has struggled against RHP pitching (N/A OPS)".
+- Fix: unavailable is `None`. `_apply_offense_split` resets `summary_label`, `ops_vs_hand`, `k_rate_vs_hand`, `bb_rate_vs_hand`, `recent_form` to `None` and fills only what the split has; team `record` is `None` for live games; `_format_ops` / `_format_pct` return `None`. `matchup_analyst` uses `_optional_rate` (no OPS claim without OPS; K% / BB% notes and pressure points only for real values; removed the unused `_rate_value`). `report_writer._confidence_note` no longer claims offense splits when a team has none. `ScoutingReport` shows "—" and "Offense data not available". `lib/types.ts` allows `null`.
+- Tests: 5 new in `tests/test_live_starters_no_demo_fields.py` (no splits, partial split, agents without splits, one missing metric, demo regression). Written first, 4 seen failing on the old code (one showed the "N/A OPS" sentence), then passing. Local run: 15 passed. `tsc --noEmit`, `eslint` on changed files and `npm run build` clean. A split-less live payload also passes `validate_payload` (94 checks) in memory.
+- Gherkin "Live starters carry no demo fields": covered for starters (P0.1) and team fields (this task) by automated tests.
 
 ### 2026-10-10 — P0.1 live starters without demo fields (Claude Code)
 
