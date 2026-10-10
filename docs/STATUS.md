@@ -4,12 +4,13 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b and P0.2 done.
+- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`) and P0.3 done.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.3 `[auto]` (team splits by date range; start in plan mode, then auto lane).
+- **Next task:** `PLAN.md` → P0.4 `[gated]` (measure the real 2026 distribution and propose thresholds; start in plan mode, wait for approval). The auto lane stops here.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
+- **Open finding (for P0.5):** the pitcher Statcast request (`pybaseball.statcast_pitcher`, `hfGT=R|PO|S`) includes spring-training and postseason pitches, and `fetch_pitcher_statcast` does not filter `game_type`. A season-to-date sample can mix them. Confirmed in the library source; not seen in a real case yet (the pitcher I checked only had regular-season starts).
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
 ## Pending Notion sync
@@ -24,10 +25,19 @@ Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
 
+### 2026-10-10 — P0.3 team splits by date range (Claude Code, auto lane)
+
+- **Finding:** the MLB Stats API cannot give a date-bounded split by pitcher hand. `statSplits&sitCodes=vl,vr` ignores `startDate`/`endDate` (same PA 1963 / 4034 for a window ending 2026-04-05 as for the full season); `byDateRange` honors the dates but returns one total row and ignores `sitCodes` / `opposingPlayerHand`; `byDateRangeAdvanced` and `/stats` with `sitCodes` return nothing.
+- **Derived from Statcast instead.** Deviation from the approved plan: `pybaseball.statcast(team=...)` filters by *pitching* team (`player_type=pitcher` is hardcoded in the library), so it returns no batting rows for the team, and it needs one request per day (205 requests, 5.5 min per team). `fetch_team_batting_statcast` asks Savant directly with `player_type=batter&hfGT=R`, one request per calendar month (7 per team-season, never league-wide), sequential, with finished months cached trimmed under `data_cache/raw/team_batting/` (git-ignored). A month that reaches Savant's 25,000-row cap raises instead of truncating silently. `derive_team_splits` counts completed regular-season PAs by the batting team on or before `as_of`; `fetch_team_splits(..., as_of)` uses both (Savant's code for ARI is `AZ`). Without `as_of` the API path is unchanged. This replaces the `{}` that P0.2 returned.
+- **Validation (the plan's stop condition), as_of 2026-10-10 vs the API's season splits:** NYY and ARI, both hands, exact match on PA, K, BB, AVG and OPS (e.g. NYY vs RHP: 4034 PA, .714 OPS both). Mid-season check, NYY as_of 2026-07-14: last game date in the data 2026-07-12, 1235 / 2367 PA vs 1963 / 4034 for the full season.
+- Tests: 17 new in `tests/test_team_splits_as_of.py` (Savant mocked, cache in tmp_path; 13 failing and 4 erroring first); the P0.2 test that asserted `{}` was removed because the behavior it checked is replaced. Local run: 49 passed.
+- Volume (D16): 7 sequential, cached requests per team. The 40-case eval at P2.4 is at most 80 team-seasons; each team-season is cached once, and the same cached months serve any `as_of`.
+- No product behavior change (callers still use `as_of=None`); nothing to add to Pending Notion sync.
+
 ### 2026-10-10 — P0.2 `as_of` in every fetcher (Claude Code)
 
 - `as_of` is an ISO date, inclusive (data dated on or before it); `None` = today, so current behavior is unchanged. Fetchers in `live_pipeline.py`: `fetch_pitcher_statcast` (end date = `as_of`, plus a `game_date <= as_of` filter), `fetch_pitcher_season_stats` (`byDateRange` Jan 1 → `as_of`; `as_of` must be in `season`), `fetch_team_splits`, and new `fetch_series_status`. Callers (`build_live_snapshot`) are not wired yet; that comes with P0.7 and the eval dataset.
-- **Team splits (input for P0.3):** `statSplits&sitCodes=vl,vr` ignores `startDate`/`endDate` (same PA 1963 / 4034 with or without a range ending 2026-06-30), and `byDateRange` drops the vl/vr split. With `as_of` set, `fetch_team_splits` returns `{}` (unavailable) instead of leaking season-to-date numbers.
+- **Team splits (input for P0.3):** `statSplits&sitCodes=vl,vr` ignores `startDate`/`endDate` (same PA 1963 / 4034 with or without a range ending 2026-06-30), and `byDateRange` drops the vl/vr split. With `as_of` set, `fetch_team_splits` returned `{}` (unavailable) instead of leaking season-to-date numbers; P0.3 replaced that with splits derived from Statcast.
 - **Series status:** the schedule's `seriesStatus` is the standing *after each game*, not the final result (checked on the 2026 ALDS/NLDS: game 3 shows "leads 2-1" while the series ended 3-1). This corrects the planning note above ("past series status shows the final result"); that only holds when reading the series' last game. `fetch_series_status` returns the standing after the last earlier game of the same series dated ≤ `as_of` (0-0 for game 1); `{}` outside the postseason.
 - Tests: 18 new in `tests/test_fetchers_as_of.py` (network and Statcast mocked; 15 seen failing first, 3 were unchanged-behavior checks). Local run: 33 passed. Real calls with `as_of`: Burnes season stats before his first start → `{}`, through 2026-09-30 → 10.1 IP; Statcast through 2026-09-14 → 7.2 IP (his two starts, 3.0 + 4.2); series standings before games 1, 3 and 4 as expected.
 - `requirements-dev.txt` now includes `requirements.txt`: CI only installed pytest and `live_pipeline` imports pybaseball/numpy/pandas.

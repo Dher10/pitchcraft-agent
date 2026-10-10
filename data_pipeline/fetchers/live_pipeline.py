@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+import io
 import json
 import os
 import sys
@@ -12,6 +13,7 @@ from typing import Any
 
 
 PYBASEBALL_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache" / "raw" / "pybaseball"
+TEAM_BATTING_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache" / "raw" / "team_batting"
 os.environ.setdefault("PYBASEBALL_CACHE", str(PYBASEBALL_CACHE_DIR))
 
 import numpy as np
@@ -87,6 +89,39 @@ MLB_TEAM_ABBR_BY_NAME = {
     "Washington Nationals": "WSH",
 }
 
+# Statcast's own team codes where they differ from MLB_TEAM_ABBR_BY_ID.
+STATCAST_TEAM_CODE_BY_MLB_ABBR = {"ARI": "AZ"}
+
+# Savant caps a search CSV at 25,000 rows; a full chunk may be truncated.
+SAVANT_ROW_CAP = 25000
+SAVANT_BATTING_URL = (
+    "https://baseballsavant.mlb.com/statcast_search/csv?all=true&type=details"
+    "&player_type=batter&hfGT=R%7C&min_pitches=0&min_results=0&group_by=name"
+    "&sort_col=pitches&sort_order=desc"
+    "&team={team}&game_date_gt={start}&game_date_lt={end}"
+)
+TEAM_BATTING_COLUMNS = (
+    "game_date",
+    "game_type",
+    "game_pk",
+    "home_team",
+    "away_team",
+    "inning_topbot",
+    "p_throws",
+    "stand",
+    "batter",
+    "at_bat_number",
+    "events",
+)
+
+HIT_BASES = {"single": 1, "double": 2, "triple": 3, "home_run": 4}
+WALK_EVENTS = {"walk", "intent_walk"}
+STRIKEOUT_EVENTS = {"strikeout", "strikeout_double_play"}
+SAC_FLY_EVENTS = {"sac_fly", "sac_fly_double_play"}
+SAC_BUNT_EVENTS = {"sac_bunt", "sac_bunt_double_play"}
+# Not plate appearances in MLB's official stats.
+NON_PA_EVENTS = {"truncated_pa"}
+
 PITCH_NAME_MAP = {
     "FF": "Four-seam",
     "SI": "Sinker",
@@ -132,6 +167,12 @@ def _parse_as_of(as_of: str | date | None) -> date:
     if isinstance(as_of, str):
         return date.fromisoformat(as_of)
     raise ValueError(f"as_of must be an ISO date string or a date, got {as_of!r}")
+
+
+def _get_text(url: str, timeout: int = 60) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": "PitchCraft-Capstone/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return response.read().decode("utf-8-sig")
 
 
 def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
@@ -255,6 +296,7 @@ def fetch_team_splits(
     team_id: int,
     season: int = 2026,
     as_of: str | date | None = None,
+    season_start: str = "2026-03-20",
 ) -> dict[str, Any]:
     """
     Fetch team hitting splits vs LHP and vs RHP for the season.
@@ -262,17 +304,26 @@ def fetch_team_splits(
     Returns {"vl": {...}, "vr": {...}} each with ops, avg, strikeouts, walks,
     plate_appearances, k_rate, and bb_rate. Returns {} on failure.
 
-    With `as_of` it returns {} (unavailable): the MLB API ignores startDate and
-    endDate on statSplits, so any answer would include games after the cutoff.
+    With `as_of` the splits are derived from Statcast plate appearances from
+    `season_start` through that date, because the MLB API ignores startDate and
+    endDate on statSplits. `as_of` must fall in `season` (ValueError otherwise).
     """
 
     if as_of is not None:
         cutoff = _parse_as_of(as_of)
-        print(
-            f"[LIVE] Team splits for team {team_id} unavailable as of "
-            f"{cutoff.isoformat()}: the MLB API has no date-bounded splits"
-        )
-        return {}
+        if cutoff.year != season:
+            raise ValueError(f"as_of {cutoff.isoformat()} is not in season {season}")
+        mlb_abbr = MLB_TEAM_ABBR_BY_ID.get(team_id)
+        code = STATCAST_TEAM_CODE_BY_MLB_ABBR.get(mlb_abbr, mlb_abbr)
+        if not code:
+            print(f"[LIVE] Team splits: unknown team id {team_id}")
+            return {}
+        try:
+            df = fetch_team_batting_statcast(code, date.fromisoformat(season_start), cutoff)
+            return derive_team_splits(df, code, cutoff)
+        except Exception as exc:
+            print(f"[LIVE] Team splits from Statcast failed for team {team_id}: {exc}")
+            return {}
     url = (
         f"https://statsapi.mlb.com/api/v1/teams/{team_id}/stats"
         f"?stats=statSplits&sitCodes=vl,vr&group=hitting&season={season}"
@@ -310,6 +361,132 @@ def fetch_team_splits(
     except Exception as exc:
         print(f"[LIVE] Team splits fetch failed for team {team_id}: {exc}")
         return {}
+
+
+def _month_chunks(start: date, end: date) -> list[tuple[date, date]]:
+    """Split [start, end] into non-overlapping calendar-month ranges."""
+
+    chunks = []
+    cursor = start
+    while cursor <= end:
+        month_end = (cursor.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(
+            days=1
+        )
+        chunk_end = min(month_end, end)
+        chunks.append((cursor, chunk_end))
+        cursor = chunk_end + timedelta(days=1)
+    return chunks
+
+
+def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> Any:
+    """
+    Statcast pitch rows from the batting side of one team, `start` to `end`
+    inclusive, regular season only.
+
+    pybaseball.statcast(team=...) filters by pitching team, so this asks Savant
+    directly with player_type=batter, one request per calendar month (about 7
+    per season, never league-wide). Finished months are cached on disk, trimmed
+    to the columns the splits need; a month that includes today is not cached.
+    Raises RuntimeError if a month hits Savant's row cap (possible truncation).
+    """
+
+    import pandas as pd
+
+    frames = []
+    for chunk_start, chunk_end in _month_chunks(start, end):
+        cache_file = (
+            TEAM_BATTING_CACHE_DIR / f"{statcast_team}_{chunk_start}_{chunk_end}.csv"
+        )
+        if cache_file.exists():
+            frames.append(pd.read_csv(cache_file))
+            continue
+        text = _get_text(
+            SAVANT_BATTING_URL.format(
+                team=statcast_team, start=chunk_start.isoformat(), end=chunk_end.isoformat()
+            )
+        )
+        if not text.strip():
+            continue
+        chunk = pd.read_csv(io.StringIO(text))
+        if len(chunk) >= SAVANT_ROW_CAP:
+            raise RuntimeError(
+                f"Savant returned {len(chunk)} rows for {statcast_team} "
+                f"{chunk_start}..{chunk_end}: result may be truncated"
+            )
+        chunk = chunk[[c for c in TEAM_BATTING_COLUMNS if c in chunk.columns]]
+        if chunk_end < date.today():
+            TEAM_BATTING_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            chunk.to_csv(cache_file, index=False)
+        frames.append(chunk)
+    if not frames:
+        return pd.DataFrame(columns=list(TEAM_BATTING_COLUMNS))
+    return pd.concat(frames, ignore_index=True)
+
+
+def _rate3(value: float | None) -> str | None:
+    """Format like the MLB API: .750, 1.012."""
+
+    return None if value is None else f"{value:.3f}".lstrip("0")
+
+
+def _split_line(events: Any) -> dict[str, Any]:
+    plate_appearances = len(events)
+    hits = int(events.isin(HIT_BASES).sum())
+    total_bases = sum(HIT_BASES.get(event, 0) for event in events)
+    walks = int(events.isin(WALK_EVENTS).sum())
+    strikeouts = int(events.isin(STRIKEOUT_EVENTS).sum())
+    hit_by_pitch = int((events == "hit_by_pitch").sum())
+    sac_flies = int(events.isin(SAC_FLY_EVENTS).sum())
+    sac_bunts = int(events.isin(SAC_BUNT_EVENTS).sum())
+    interference = int((events == "catcher_interf").sum())
+    at_bats = (
+        plate_appearances - walks - hit_by_pitch - sac_flies - sac_bunts - interference
+    )
+    on_base_chances = at_bats + walks + hit_by_pitch + sac_flies
+    obp = (hits + walks + hit_by_pitch) / on_base_chances if on_base_chances else None
+    slg = total_bases / at_bats if at_bats else None
+    return {
+        "ops": _rate3(obp + slg) if obp is not None and slg is not None else None,
+        "avg": _rate3(hits / at_bats) if at_bats else None,
+        "strikeouts": strikeouts,
+        "walks": walks,
+        "plate_appearances": plate_appearances,
+        "k_rate": round(strikeouts / plate_appearances * 100, 1),
+        "bb_rate": round(walks / plate_appearances * 100, 1),
+    }
+
+
+def derive_team_splits(df: Any, statcast_team: str, as_of: str | date | None) -> dict[str, Any]:
+    """
+    Team hitting splits vs LHP ("vl") and RHP ("vr") from Statcast rows, same
+    shape as fetch_team_splits' API path. Counts completed regular-season plate
+    appearances by `statcast_team` dated on or before `as_of`. A hand with no
+    plate appearances is omitted; no rows at all gives {}.
+    """
+
+    import pandas as pd
+
+    cutoff = _parse_as_of(as_of)
+    if len(df) == 0:
+        return {}
+    batting = ((df["inning_topbot"] == "Top") & (df["away_team"] == statcast_team)) | (
+        (df["inning_topbot"] == "Bot") & (df["home_team"] == statcast_team)
+    )
+    keep = (
+        batting
+        & df["events"].notna()
+        & ~df["events"].isin(NON_PA_EVENTS)
+        & (pd.to_datetime(df["game_date"]).dt.date <= cutoff)
+    )
+    if "game_type" in df.columns:
+        keep &= df["game_type"] == "R"
+    plate_appearances = df[keep]
+    splits = {}
+    for code, hand in (("vl", "L"), ("vr", "R")):
+        sub = plate_appearances[plate_appearances["p_throws"] == hand]
+        if len(sub):
+            splits[code] = _split_line(sub["events"])
+    return splits
 
 
 def fetch_series_status(

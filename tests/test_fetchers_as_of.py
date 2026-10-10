@@ -187,13 +187,7 @@ def test_season_stats_reject_as_of_from_another_season():
 # --- Team splits ------------------------------------------------------------
 
 
-def test_team_splits_are_unavailable_with_as_of(monkeypatch):
-    # The MLB API ignores startDate/endDate on statSplits, so any answer would
-    # be season-to-date including games after the cutoff (see STATUS.md, P0.2).
-    urls = install_urlopen(monkeypatch, lambda url: pytest.fail("must not fetch"))
-
-    assert lp.fetch_team_splits(147, season=2026, as_of="2026-07-14") == {}
-    assert urls == []
+# With as_of the splits come from Statcast, not this API: tests/test_team_splits_as_of.py.
 
 
 def test_team_splits_without_as_of_still_fetch(monkeypatch):
