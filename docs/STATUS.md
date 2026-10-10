@@ -4,9 +4,9 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`) and P0.3b done.
+- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`) done; P0.4 analysis written, not approved.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.4 `[gated]` (measure the real 2026 distribution and propose thresholds; start in plan mode, wait for approval). The auto lane stops here.
+- **Next task:** `PLAN.md` → P0.6 `[auto]`, then P0.7, P0.8, P0.9 (owner's order). **P0.5 is skipped: it waits for the owner's decision** on `docs/thresholds-proposal.md` (P0.4 stays unticked until values are approved and recorded in `DECISIONS.md`).
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
@@ -16,6 +16,8 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- New `docs/thresholds-proposal.md` (P0.4 analysis: 2026 distribution and threshold options; a proposal, nothing approved).
+- D23 (Savant request ceiling: 210 requests, once, cached, 2 s pause) added to `DECISIONS.md`.
 - P0.1: live starters now show "Bio not available" and "Recent form not available" instead of demo text. The bio source comes with P1.5.
 - New plan task P0.1b (team `offense_profile` never inherits demo values), placed after P0.1. Done: live team offense and record show "not available" instead of demo values; when a team has no split, the report makes no offense claims and the Data Confidence Note says so.
 - P1.0 now also covers: checkout and setup-python versions without Node 20 (pinned by SHA) and runner fixed to `ubuntu-24.04`.
@@ -23,6 +25,13 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.4 threshold analysis (Claude Code, analysis only)
+
+- Wrote `docs/thresholds-proposal.md`: sources, method, the 2026 distribution of the sample before each of the 4,858 starts, and for each dimension how many starts and pitchers each threshold would flag. Nothing implemented; `DECISIONS.md` untouched; P0.4 left unticked because its acceptance needs the owner's approval and a recorded decision.
+- Measured with 27 weekly league-wide requests to the MLB Stats API (no Statcast bulk download). Start count equals the sum of final `gamesStarted`.
+- Headline: strikeout at 70 BF flags 20.5% of starts; control at 170 BF flags 41.2%; arsenal at 100 pitches flags 10.7%. Home-run rate needs 1,320 BF and no 2026 starter passed 894, so it cannot be labelled honestly in one season. The 100-pitch arsenal value has no published stabilization source (closest verified: Stuff+ at 72).
+- Open owner decisions are listed at the top of the document.
 
 ### 2026-10-10 — P0.3b pitcher game_type filter and Savant request budget (Claude Code)
 
