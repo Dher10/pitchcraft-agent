@@ -32,7 +32,7 @@ Lanes (D22): `[auto]` = plan approved once, then commit and push without asking;
 - [ ] P0.5 [gated] Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
 - [x] P0.6 [auto] Fix the name-split bug in `agents/report_writer.py` (`_watch_observation`).
 - [x] P0.7 [auto] Remove the hardcoded season year (2026, `2026-03-20`).
-- [ ] P0.8 [auto] Explicit data mode and error log instead of the silent fallback to demo.
+- [x] P0.8 [auto] Explicit data mode and error log instead of the silent fallback to demo.
 - [ ] P0.9 [auto] Hygiene: upgrade Next.js to 16.4.0 (fixes `npm audit` critical/high findings; read `node_modules/next/dist/docs/` first); delete `pitchcraftvisualpolish.bundle` (stray git bundle); pin `pybaseball==2.2.7`; move or delete `test_splits.py`. `npm audit --omit=dev` must report 0 critical and 0 high.
 
 ### Phase 0 definition of done

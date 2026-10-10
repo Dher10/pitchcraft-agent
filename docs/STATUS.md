@@ -6,16 +6,16 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`) done; P0.4 analysis written, not approved.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.8 `[auto]`, then P0.9 (owner's order). P0.5 is skipped until the owner decides on `docs/thresholds-proposal.md`. Stop before P1.0.
+- **Next task:** `PLAN.md` → P0.9 `[auto]` (last of the owner's order). P0.5 is skipped until the owner decides on `docs/thresholds-proposal.md`. Stop before P1.0.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
-- **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
 ## Pending Notion sync
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- P0.8: new data mode `demo_fallback` and `metadata.data_status` in the published JSON (live run failed or found no games: demo content, labelled as such); a live run record `live_run.json` with the errors; live matchups no longer show the demo broadcast note.
 - New `docs/thresholds-proposal.md` (P0.4 analysis: 2026 distribution and threshold options; a proposal, nothing approved).
 - D23 (Savant request ceiling: 210 requests, once, cached, 2 s pause) added to `DECISIONS.md`.
 - P0.1: live starters now show "Bio not available" and "Recent form not available" instead of demo text. The bio source comes with P1.5.
@@ -25,6 +25,17 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.8 explicit data mode and error log (Claude Code, auto lane)
+
+- What was silent: `_load_live_snapshot` swallowed exceptions and published demo; a failed `live_pipeline` run left no record, so an old `live_matchup.json` was published as "Live snapshot fetched <old date>"; `data_mode` could only be `demo_cached` or `fetched_snapshot`; a note promised "falls back to cached demo data"; live matchups kept the demo `broadcast_note`.
+- Live run record: every run of `live_pipeline.py` now writes `data_cache/processed/live_run.json` (`status`, `run_at`, `target_date`, `as_of`, game counts, `skipped_games`, `errors`). Failures are collected by `_record_error` in each fetcher (`mlb_schedule`, `mlb_season_stats`, `mlb_team_splits`, `savant_team_batting`, `mlb_series_status`, `statcast_pitcher`, `pipeline`) instead of only being printed. Status: `ok` (at least one live game; errors, if any, are listed), `failed` (nothing usable and an error), `no_games` (nothing scheduled, no error; exit 0, as the Gherkin requires), `no_usable_games` (scheduled, but none had both probables and pitch data; exit 0). Exit code 1 only for `failed`. The snapshot carries the same `run_at`.
+- Generator: `_resolve_live_input` decides the mode. Live data is used only when the latest run is `ok` and its snapshot has the same `run_at`. Modes in `metadata.data_mode`: `fetched_snapshot` (live), `demo_cached` (no live run), new `demo_fallback` (a run was attempted and failed, found no games, or its record/snapshot is unreadable or mismatched). `metadata.data_status` carries mode, reason and the run summary with errors (capped at 20, messages cut to 300 characters); the fallback label reads "Live data unavailable; showing demo data". `build_payload()` was split out of `main()` so it can be tested without writing files. `config.DATA_MODE_FALLBACK` added; `lib/types.ts` has `DataStatus` and `broadcast_note: string | null`.
+- Live matchups no longer inherit the demo `broadcast_note` (now `None`) and the "falls back to demo" note is gone. This closes the open finding about `broadcast_note`.
+- Local state change: running the pipeline once for 2026-12-25 (no games) wrote a `live_run.json` with `no_games`, so the next local generator run reports `demo_fallback` until a live run succeeds. That is the intended behavior; `data_cache/` is git-ignored.
+- Not done here (belongs to later tasks): showing the mode in the UI (P1.4 badges, P1.6 offseason state / archive for no games), and the daily job reading the record (P1.2).
+- Tests: `tests/test_data_mode.py` (20 tests: error recording per source, run status table, the Gherkin "Statcast down" and "no games" end to end with a redirected cache, stale-snapshot protection, mode resolution, fallback payload validates). 9 seen failing first. Local run: 118 passed; `tsc --noEmit`, eslint on `lib/types.ts`, `npm run build` clean; a dry `build_payload` passes `validate_payload` (94/94).
+- Gherkin "Data source failure is explicit" is covered by automated tests; "No games scheduled": exit and record covered, "site shows the season archive" is P1.6.
 
 ### 2026-10-10 — P0.7 no hardcoded season (Claude Code, auto lane)
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 import io
 import json
@@ -186,6 +186,15 @@ class SavantRequestCapExceeded(RuntimeError):
 
 _savant_run = {"requests": 0}
 
+# Failures of the current run, written to data_cache/processed/live_run.json by main().
+_run_errors: list[dict[str, Any]] = []
+
+
+def _record_error(source: str, message: str, **context: Any) -> None:
+    """Keep a failure for the run record; every fetcher still returns empty, never raises."""
+
+    _run_errors.append({"source": source, "message": str(message)[:300], **context})
+
 
 def _savant_get(url: str) -> str:
     """
@@ -277,7 +286,8 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")
         return games
     except Exception as exc:
-        print(f"[LIVE] Schedule fetch failed: {exc} - using demo data")
+        print(f"[LIVE] Schedule fetch failed: {exc}")
+        _record_error("mlb_schedule", f"{type(exc).__name__}: {exc}", date=date_str)
         return []
 
 
@@ -338,6 +348,7 @@ def fetch_pitcher_season_stats(
         return result
     except Exception as exc:
         print(f"[LIVE] Season stats fetch failed for id={pitcher_id}: {exc}")
+        _record_error("mlb_season_stats", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
         return {}
 
 
@@ -380,6 +391,9 @@ def fetch_team_splits(
             raise
         except Exception as exc:
             print(f"[LIVE] Team splits from Statcast failed for team {team_id}: {exc}")
+            _record_error(
+                "savant_team_batting", f"{type(exc).__name__}: {exc}", team_id=team_id
+            )
             return {}
     url = (
         f"https://statsapi.mlb.com/api/v1/teams/{team_id}/stats"
@@ -417,6 +431,7 @@ def fetch_team_splits(
         return out
     except Exception as exc:
         print(f"[LIVE] Team splits fetch failed for team {team_id}: {exc}")
+        _record_error("mlb_team_splits", f"{type(exc).__name__}: {exc}", team_id=team_id)
         return {}
 
 
@@ -626,6 +641,7 @@ def fetch_series_status(
         }
     except Exception as exc:
         print(f"[LIVE] Series status fetch failed for game {game_pk}: {exc}")
+        _record_error("mlb_series_status", f"{type(exc).__name__}: {exc}", game_pk=game_pk)
         return {}
 
 
@@ -695,6 +711,7 @@ def fetch_pitcher_statcast(
         return processed
     except Exception as exc:
         print(f"[LIVE] Statcast fetch failed for {pitcher_name}: {exc}")
+        _record_error("statcast_pitcher", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
         return None
 
 
@@ -867,21 +884,29 @@ def pick_featured_games(games: list[dict[str, Any]], max_games: int = 3) -> list
 def build_live_snapshot(
     target_date: str | None = None,
     as_of: str | date | None = None,
+    run_info: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     """
     Fetch schedule and Statcast data, returning a generator-ready snapshot.
 
     `as_of` (default None = today) is the data cutoff passed to every pitcher
-    and team fetch, for historical runs.
+    and team fetch, for historical runs. `run_info`, when given, is filled with
+    games_scheduled, games_live and skipped_games for the run record.
     """
 
+    info = run_info if run_info is not None else {}
     games = fetch_todays_games(target_date)
+    info.update(games_scheduled=len(games), games_live=0, skipped_games=[])
     if not games:
         return None
 
     candidates = pick_featured_games(games, 5)
     if not candidates:
         print("[LIVE] No game with both probable pitchers found")
+        info["skipped_games"] = [
+            f"{g['away_team_abbr']} @ {g['home_team_abbr']} (probable pitcher not announced)"
+            for g in games
+        ]
         return None
 
     live_games = []
@@ -932,8 +957,9 @@ def build_live_snapshot(
             }
         )
 
+    info.update(games_live=len(live_games), skipped_games=skipped_games)
     if not live_games:
-        print("[LIVE] No live games had sufficient Statcast data - falling back to demo")
+        print("[LIVE] No live games had sufficient Statcast data - no snapshot written")
         return None
 
     primary = live_games[0]
@@ -1066,17 +1092,71 @@ def _combine_velocity(
     ]
 
 
-def main() -> int:
+def _run_status(info: dict[str, Any], errors: list[dict[str, Any]]) -> str:
+    """
+    ok: at least one live game was built (errors, if any, are in the record).
+    failed: nothing usable and something went wrong.
+    no_games: nothing scheduled and nothing went wrong.
+    no_usable_games: games scheduled but none had both probable pitchers and pitch data.
+    """
+
+    if info.get("games_live"):
+        return "ok"
+    if errors:
+        return "failed"
+    if not info.get("games_scheduled"):
+        return "no_games"
+    return "no_usable_games"
+
+
+def run_live_pipeline(
+    target_date: str | None = None,
+    as_of: str | date | None = None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """
+    Run the live fetch and return (run record, snapshot or None). No file I/O.
+
+    The record always says what happened, including failures, so a failed run
+    can never be mistaken for a live one.
+    """
+
+    _run_errors.clear()
+    info: dict[str, Any] = {}
+    run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    try:
+        snapshot = build_live_snapshot(target_date, as_of, run_info=info)
+    except Exception as exc:
+        _record_error("pipeline", f"{type(exc).__name__}: {exc}")
+        snapshot = None
+    record = {
+        "status": _run_status(info, _run_errors),
+        "run_at": run_at,
+        "target_date": target_date or date.today().isoformat(),
+        "as_of": _parse_as_of(as_of).isoformat() if as_of is not None else None,
+        "games_scheduled": info.get("games_scheduled", 0),
+        "games_live": info.get("games_live", 0),
+        "skipped_games": info.get("skipped_games", []),
+        "errors": list(_run_errors),
+    }
+    if snapshot is not None:
+        snapshot["run_at"] = run_at
+    return record, snapshot
+
+
+def main_with_args(target_date: str | None, as_of: str | None) -> int:
     from data_pipeline.fetchers.cache_manager import save_processed
 
-    target_date = sys.argv[1] if len(sys.argv) > 1 else None
-    as_of = sys.argv[2] if len(sys.argv) > 2 else None
     print("[LIVE] PitchCraft live data pipeline starting...")
-
-    snapshot = build_live_snapshot(target_date, as_of)
-    if not snapshot:
-        print("[LIVE] Pipeline failed or no data available. Demo data unchanged.")
-        return 1
+    record, snapshot = run_live_pipeline(target_date, as_of)
+    save_processed("live_run", record)
+    print(
+        f"[LIVE] Run status: {record['status']} "
+        f"({record['games_live']}/{record['games_scheduled']} games, "
+        f"{len(record['errors'])} error(s))"
+    )
+    if snapshot is None:
+        print("[LIVE] No live snapshot written; the generator will not present demo data as live.")
+        return 1 if record["status"] == "failed" else 0
 
     save_processed("live_matchup", snapshot)
     away_top = snapshot["away_starter"]["pitch_mix"][0]
@@ -1098,6 +1178,12 @@ def main() -> int:
         f"top pitch: {home_top['pitch']} {home_top['away_starter']['overall']}%"
     )
     return 0
+
+
+def main() -> int:
+    target_date = sys.argv[1] if len(sys.argv) > 1 else None
+    as_of = sys.argv[2] if len(sys.argv) > 2 else None
+    return main_with_args(target_date, as_of)
 
 
 if __name__ == "__main__":

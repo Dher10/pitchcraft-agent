@@ -20,6 +20,23 @@ export interface Metadata {
   generated_at: string;
   last_updated_label: string;
   data_sources: string[];
+  data_status?: DataStatus;
+}
+
+export interface LiveRunSummary {
+  status: string;
+  run_at: string;
+  target_date: string | null;
+  as_of: string | null;
+  games_scheduled: number;
+  games_live: number;
+  errors: { source: string; message: string }[];
+}
+
+export interface DataStatus {
+  mode: string;
+  reason: string;
+  live_run: LiveRunSummary | null;
 }
 
 export interface Matchup {
@@ -43,7 +60,7 @@ export interface Game {
   venue: string;
   start_time_local: string;
   timezone: string;
-  broadcast_note: string;
+  broadcast_note: string | null;
   home_team_id: string;
   away_team_id: string;
 }

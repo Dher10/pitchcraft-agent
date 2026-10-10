@@ -17,20 +17,66 @@ from data_pipeline import demo_inputs
 from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.validators import ValidationError, validate_payload
 
-def _load_live_snapshot() -> dict[str, Any] | None:
+def _status(mode: str, reason: str, live_run: dict[str, Any] | None) -> dict[str, Any]:
+    return {"mode": mode, "reason": reason, "live_run": live_run}
+
+
+def _run_summary(run: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": run.get("status"),
+        "run_at": run.get("run_at"),
+        "target_date": run.get("target_date"),
+        "as_of": run.get("as_of"),
+        "games_scheduled": run.get("games_scheduled"),
+        "games_live": run.get("games_live"),
+        "errors": list(run.get("errors", []))[:20],
+    }
+
+
+def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """
+    Decide what the published data is, from the live run record and its snapshot.
+
+    Returns (snapshot or None, status). The snapshot is used only when the latest
+    live run succeeded and wrote it; a failed run, a missing or unreadable record,
+    or a snapshot left by an earlier run never counts as live.
+    """
+
     try:
-        return load_processed("live_matchup")
+        run = load_processed("live_run")
     except Exception as exc:
-        print(f"[CONFIG] Live snapshot unavailable: {exc} - using demo data")
-        return None
+        return None, _status(
+            config.DATA_MODE_FALLBACK, f"Live run record unreadable: {exc}", None
+        )
+    if run is None:
+        return None, _status(config.DATA_MODE_DEMO, "No live run; showing demo data", None)
+
+    summary = _run_summary(run)
+    if run.get("status") != "ok":
+        return None, _status(
+            config.DATA_MODE_FALLBACK,
+            f"Live run {run.get('status')}; showing demo data",
+            summary,
+        )
+    try:
+        snapshot = load_processed("live_matchup")
+    except Exception as exc:
+        return None, _status(
+            config.DATA_MODE_FALLBACK, f"Live snapshot unreadable: {exc}", summary
+        )
+    if not snapshot or snapshot.get("run_at") != run.get("run_at"):
+        return None, _status(
+            config.DATA_MODE_FALLBACK,
+            "Live snapshot does not belong to the latest live run; showing demo data",
+            summary,
+        )
+    return snapshot, _status(config.DATA_MODE_SNAPSHOT, "Live run ok", summary)
 
 
-print(f"[CONFIG] Data mode: {config.ACTIVE_MODE}")
-_live = _load_live_snapshot()
+_live, _live_status = _resolve_live_input()
+print(f"[CONFIG] Data mode: {_live_status['mode']} - {_live_status['reason']}")
 if _live:
     print(f"[CONFIG] Live snapshot found: {_live.get('fetched_date')} - using live data")
-else:
-    print("[CONFIG] No live snapshot - using demo data")
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -44,10 +90,13 @@ OFFENSE_UNAVAILABLE_FIELDS = (
 OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 
-def main() -> int:
+def build_payload() -> dict[str, Any]:
     payload = demo_inputs.build_demo_payload()
-    payload["metadata"]["data_mode"] = config.ACTIVE_MODE
+    payload["metadata"]["data_mode"] = _live_status["mode"]
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
+    payload["metadata"]["data_status"] = deepcopy(_live_status)
+    if _live_status["mode"] == config.DATA_MODE_FALLBACK:
+        payload["metadata"]["last_updated_label"] = "Live data unavailable; showing demo data"
     _apply_live_snapshot(payload)
     total_revised, graded_starters = _run_agents(payload["matchups"])
     _apply_live_confidence(payload)
@@ -57,6 +106,11 @@ def main() -> int:
         total_revised,
         graded_starters,
     )
+    return payload
+
+
+def main() -> int:
+    payload = build_payload()
     matchup_ids = [matchup["id"] for matchup in payload["matchups"]]
 
     print("PitchCraft demo JSON generator")
@@ -208,6 +262,8 @@ def _apply_live_game_to_matchup(
             "title": f"{fg['away_team']} vs {fg['home_team']}",
             "venue": fg.get("venue", matchup["game"]["venue"]),
             "start_time_local": fg.get("start_time", matchup["game"]["start_time_local"]),
+            # No live source for a broadcast note; never keep the demo template's text.
+            "broadcast_note": None,
             "home_team_id": str(fg.get("home_team_id", matchup["game"]["home_team_id"])),
             "away_team_id": str(fg.get("away_team_id", matchup["game"]["away_team_id"])),
         }
@@ -376,7 +432,6 @@ def _live_confidence_note(matchup_id: str) -> dict[str, Any]:
         "pitch_data_status": "fetched_snapshot",
         "notes": [
             f"Live snapshot fetched {_live['fetched_date']} for {matchup_id}.",
-            "If live fetching fails, PitchCraft falls back to cached demo data.",
         ],
     }
 
