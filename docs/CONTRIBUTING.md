@@ -33,24 +33,24 @@ confirmed. Wrap around 72 characters. Several short paragraphs are fine.>
 
 - **Type (enforced):** `feat`, `fix`, `docs`, `chore`, `style`, `refactor`, `test`, `perf`, `ci`, `build`. Optional scope: `fix(pipeline): ...`.
 - **Subject (enforced):** lowercase after the colon, imperative ("add", "fix", "remove"), no trailing period. Aim for under 72 characters.
-- **Body (enforced: at least one line):** explain the why, not a list of files. Name the root cause for fixes. Mention anything deliberately left out.
+- **Body (enforced: at least one line):** keep it short. At most two short paragraphs: (1) what was wrong or why the change is needed, with the root cause for fixes; (2) what changed, plus anything deliberately left pending. No file lists, no task bookkeeping (ticking PLAN.md or STATUS.md is implied).
 - **Verification line (expected):** end with what was run and its result, e.g. `pytest 24/24, ruff clean, next build green`.
 - **Language:** English.
 
 ### Example
 
 ```
-fix: stop demo recent form leaking into live starters
+fix: stop live team offense inheriting demo values
 
-_apply_live_starter overwrote name, pitch mix and season stats with live
-data but kept recent_form and bio from the demo inputs, so the Matchup
-Analyst could describe a real pitcher's form using another pitcher's demo
-label. Live starters now take recent form from real data or mark it as
-unavailable.
+When a team had no real split, _apply_offense_split kept the demo
+offense fields and record, and the analyst reported them as facts. A
+missing field inside a real split also became "N/A", read as 0.0.
 
-Covers the "Live starters carry no demo fields" scenario in PLAN.md.
+Unavailable offense fields are now None; the analyst skips offense
+claims without OPS and the card shows a dash. Pending for P0.8:
+game.broadcast_note still inherits demo text.
 
-pytest 12/12, next build green.
+pytest 15/15, tsc and eslint clean, next build green.
 ```
 
 ## Workflow

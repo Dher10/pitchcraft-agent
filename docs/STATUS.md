@@ -4,9 +4,9 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`) and P0.1b done.
+- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b and P0.2 done.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.2 (add `as_of` to every fetcher). Start in plan mode.
+- **Next task:** `PLAN.md` → P0.3 `[auto]` (team splits by date range; start in plan mode, then auto lane).
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
@@ -23,6 +23,16 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.2 `as_of` in every fetcher (Claude Code)
+
+- `as_of` is an ISO date, inclusive (data dated on or before it); `None` = today, so current behavior is unchanged. Fetchers in `live_pipeline.py`: `fetch_pitcher_statcast` (end date = `as_of`, plus a `game_date <= as_of` filter), `fetch_pitcher_season_stats` (`byDateRange` Jan 1 → `as_of`; `as_of` must be in `season`), `fetch_team_splits`, and new `fetch_series_status`. Callers (`build_live_snapshot`) are not wired yet; that comes with P0.7 and the eval dataset.
+- **Team splits (input for P0.3):** `statSplits&sitCodes=vl,vr` ignores `startDate`/`endDate` (same PA 1963 / 4034 with or without a range ending 2026-06-30), and `byDateRange` drops the vl/vr split. With `as_of` set, `fetch_team_splits` returns `{}` (unavailable) instead of leaking season-to-date numbers.
+- **Series status:** the schedule's `seriesStatus` is the standing *after each game*, not the final result (checked on the 2026 ALDS/NLDS: game 3 shows "leads 2-1" while the series ended 3-1). This corrects the planning note above ("past series status shows the final result"); that only holds when reading the series' last game. `fetch_series_status` returns the standing after the last earlier game of the same series dated ≤ `as_of` (0-0 for game 1); `{}` outside the postseason.
+- Tests: 18 new in `tests/test_fetchers_as_of.py` (network and Statcast mocked; 15 seen failing first, 3 were unchanged-behavior checks). Local run: 33 passed. Real calls with `as_of`: Burnes season stats before his first start → `{}`, through 2026-09-30 → 10.1 IP; Statcast through 2026-09-14 → 7.2 IP (his two starts, 3.0 + 4.2); series standings before games 1, 3 and 4 as expected.
+- `requirements-dev.txt` now includes `requirements.txt`: CI only installed pytest and `live_pipeline` imports pybaseball/numpy/pandas.
+- Gherkin "As-of cutoff prevents leakage" and "Series status has no leakage": fetcher level covered by the tests above; the end-to-end scenario needs the callers wired (P0.7, P2.4).
+- No product behavior change; nothing to add to Pending Notion sync.
 
 ### 2026-10-10 — P0.1b live team fields without demo values (Claude Code)
 

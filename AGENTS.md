@@ -33,6 +33,15 @@ Do not start coding until you can state, in one sentence, which `PLAN.md` task y
 - Never hardcode user-facing strings in the agents; language is a parameter (decision D6).
 - Never present demo data as live (decision D1 and Phase 0).
 
+## Autonomy lanes (D22)
+
+Each task in `PLAN.md` is labelled `[auto]` or `[gated]`; unlabelled tasks are gated.
+
+- `[gated]`: show the plan, wait for approval, and get an explicit yes before each commit (D20).
+- `[auto]`: show the plan and wait for approval once. Then implement, run the tests, commit and push to `v2` without asking, and continue with the next `[auto]` task in order. Report each finished task in `STATUS.md`.
+- In the auto lane, stop and ask the owner if: any test fails and the fix is not obvious, CI goes red, the task conflicts with `DECISIONS.md`, or it requires touching `DECISIONS.md`, `.github/workflows/`, secrets or `main`. Stop when the next task is `[gated]`.
+- Identity, format, branch and history rules apply in both lanes. The commit-msg hook still runs.
+
 ## After EVERY finished task (not at the end of the session)
 
 Sessions can end abruptly when tokens run out. Update the handoff after each task:

@@ -1,2 +1,4 @@
 # Test dependencies (kept apart from runtime requirements.txt).
+# Fetcher tests import live_pipeline, which needs pybaseball/numpy/pandas.
+-r requirements.txt
 pytest==9.1.1

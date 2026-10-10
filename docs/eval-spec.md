@@ -48,7 +48,7 @@ The rules-based writer is scored on G1, P1, C1 and F1 through a claim-extraction
 
 - 40 matchups from the 2026 regular season and postseason.
 - Stratified: 10 high-data veterans; 10 limited-sample starters (rookies, returns from IL); 10 openers, bullpen-adjacent or missing-data cases; 10 postseason games.
-- Leakage rule: every fetch uses `as_of = game_date − 1`, including series status (the API returns final results for past series).
+- Leakage rule: every fetch uses `as_of = game_date − 1`, including series status. The schedule's `seriesStatus` is the standing after each game, so reading the series' last game returns the final result; the standing before first pitch is the one after the previous game of the same series dated on or before `as_of` (`fetch_series_status`, P0.2).
 - Split: 20 dev / 20 test. Test frozen before B1 runs.
 - Stored as JSONL in `evals/data/` with fetch date and `as_of` per case.
 

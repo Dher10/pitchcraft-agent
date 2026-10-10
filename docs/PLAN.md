@@ -20,17 +20,19 @@ Living plan. Agents tick checkboxes and update `STATUS.md` after every task (see
 
 ## Phase 0 — Data integrity (target Oct 18)
 
+Lanes (D22): `[auto]` = plan approved once, then commit and push without asking; `[gated]` = explicit yes before each commit. Unlabelled = gated.
+
 - [x] P0.0 Test infrastructure: add pytest, a `tests/` folder and a GitHub Actions workflow that runs the tests on every push to `v2`. No logic changes before this exists. Includes tests of the `.githooks/commit-msg` hook (rejects subject without prefix, message without body, author/committer other than the owner; strips `Co-Authored-By`) and a smoke test of the five agents over demo data.
 - [x] P0.1 Remove demo `recent_form` and bio from live starters (`data_pipeline/generate_demo_json.py`, `_apply_live_starter`). Real source or marked unavailable.
 - [x] P0.1b Team `offense_profile` never inherits demo values: when a team has no real split, mark offense fields as unavailable. Extend the "Live starters carry no demo fields" Gherkin coverage to team fields.
-- [ ] P0.2 Add `as_of` to every fetcher in `data_pipeline/fetchers/`: Statcast, pitcher season stats, team splits, series status.
-- [ ] P0.3 Check whether the MLB Stats API supports team splits by date range. If not, derive them from Statcast with the same cutoff. Record the finding in `STATUS.md`.
-- [ ] P0.4 Measure the real 2026 distribution (pitches, batters faced, walks) and present proposed per-dimension thresholds (D11) to the owner. Do not implement thresholds until the owner approves; record the approved values in `DECISIONS.md`.
-- [ ] P0.5 Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
-- [ ] P0.6 Fix the name-split bug in `agents/report_writer.py` (`_watch_observation`).
-- [ ] P0.7 Remove the hardcoded season year (2026, `2026-03-20`).
-- [ ] P0.8 Explicit data mode and error log instead of the silent fallback to demo.
-- [ ] P0.9 Hygiene: upgrade Next.js to 16.4.0 (fixes `npm audit` critical/high findings; read `node_modules/next/dist/docs/` first); delete `pitchcraftvisualpolish.bundle` (stray git bundle); pin `pybaseball==2.2.7`; move or delete `test_splits.py`. `npm audit --omit=dev` must report 0 critical and 0 high.
+- [x] P0.2 [gated] Add `as_of` to every fetcher in `data_pipeline/fetchers/`: Statcast, pitcher season stats, team splits, series status.
+- [ ] P0.3 [auto] Check whether the MLB Stats API supports team splits by date range. If not, derive them from Statcast with the same cutoff. Record the finding in `STATUS.md`.
+- [ ] P0.4 [gated] Measure the real 2026 distribution (pitches, batters faced, walks) and present proposed per-dimension thresholds (D11) to the owner. Do not implement thresholds until the owner approves; record the approved values in `DECISIONS.md`.
+- [ ] P0.5 [gated] Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
+- [ ] P0.6 [auto] Fix the name-split bug in `agents/report_writer.py` (`_watch_observation`).
+- [ ] P0.7 [auto] Remove the hardcoded season year (2026, `2026-03-20`).
+- [ ] P0.8 [auto] Explicit data mode and error log instead of the silent fallback to demo.
+- [ ] P0.9 [auto] Hygiene: upgrade Next.js to 16.4.0 (fixes `npm audit` critical/high findings; read `node_modules/next/dist/docs/` first); delete `pitchcraftvisualpolish.bundle` (stray git bundle); pin `pybaseball==2.2.7`; move or delete `test_splits.py`. `npm audit --omit=dev` must report 0 critical and 0 high.
 
 ### Phase 0 definition of done
 
@@ -106,7 +108,7 @@ Feature: Phase 0 data integrity
 - [ ] P2.1 AI Studio API key + test call; GitHub Models access. Keys only in env vars / GitHub secrets.
 - [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]`, a versioned prompt and an exact model ID pinned in config. Output is schema-validated before it can reach the public JSON; free-text MLB fields are passed as quoted data, never as instructions. No `dangerouslySetInnerHTML` anywhere in the frontend.
 - [ ] P2.3 Guardrail: informed retry and fallback to rules (D2).
-- [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen.
+- [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen. Historical case builder raises if `as_of` is None.
 - [ ] P2.5 Human labels (G2, L1, U1) — owner task, ~6–8 hours, reserved in the week of Oct 19–25 and finished before Nov 1.
 - [ ] P2.6 Code evaluators and judge; calibration on dev. If GitHub Models is unavailable in the daily run, G2 is logged as `not_evaluated` and publishing continues (D17).
 - [ ] P2.7 Baseline run A vs. B1; error analysis; one change; B2 run.

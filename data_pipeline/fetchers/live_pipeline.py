@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta
 import json
 import os
 import sys
@@ -114,6 +114,32 @@ def _team_abbreviation(team: dict[str, Any]) -> str:
         return MLB_TEAM_ABBR_BY_ID[team_id]
     return MLB_TEAM_ABBR_BY_NAME.get(team.get("name"), "???")
 
+POSTSEASON_GAME_TYPES = ("F", "D", "L", "W")
+
+
+def _parse_as_of(as_of: str | date | None) -> date:
+    """
+    Resolve the data cutoff. `as_of` is inclusive: data dated on or before it.
+    None means today. Raises ValueError on anything that is not an ISO date.
+    """
+
+    if as_of is None:
+        return date.today()
+    if isinstance(as_of, datetime):
+        return as_of.date()
+    if isinstance(as_of, date):
+        return as_of
+    if isinstance(as_of, str):
+        return date.fromisoformat(as_of)
+    raise ValueError(f"as_of must be an ISO date string or a date, got {as_of!r}")
+
+
+def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
+    req = urllib.request.Request(url, headers={"User-Agent": "PitchCraft-Capstone/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return json.loads(response.read())
+
+
 def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
     """
     Fetch today's MLB games with probable pitchers.
@@ -168,16 +194,31 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         return []
 
 
-def fetch_pitcher_season_stats(pitcher_id: int, season: int = 2026) -> dict[str, Any]:
+def fetch_pitcher_season_stats(
+    pitcher_id: int,
+    season: int = 2026,
+    as_of: str | date | None = None,
+) -> dict[str, Any]:
     """
     Fetch season pitching stats for a pitcher from the MLB Stats API.
 
+    With `as_of`, the stats cover Jan 1 of the season through that date
+    (inclusive); `as_of` must fall in `season`. Raises ValueError otherwise.
     Returns {} on any error so Statcast counts can remain the fallback.
     """
 
+    if as_of is None:
+        stats_query = "stats=season"
+    else:
+        cutoff = _parse_as_of(as_of)
+        if cutoff.year != season:
+            raise ValueError(f"as_of {cutoff.isoformat()} is not in season {season}")
+        stats_query = (
+            f"stats=byDateRange&startDate={season}-01-01&endDate={cutoff.isoformat()}"
+        )
     url = (
         f"https://statsapi.mlb.com/api/v1/people/{pitcher_id}/stats"
-        f"?stats=season&group=pitching&season={season}"
+        f"?{stats_query}&group=pitching&season={season}"
     )
     try:
         req = urllib.request.Request(
@@ -210,14 +251,28 @@ def fetch_pitcher_season_stats(pitcher_id: int, season: int = 2026) -> dict[str,
         return {}
 
 
-def fetch_team_splits(team_id: int, season: int = 2026) -> dict[str, Any]:
+def fetch_team_splits(
+    team_id: int,
+    season: int = 2026,
+    as_of: str | date | None = None,
+) -> dict[str, Any]:
     """
     Fetch team hitting splits vs LHP and vs RHP for the season.
 
     Returns {"vl": {...}, "vr": {...}} each with ops, avg, strikeouts, walks,
     plate_appearances, k_rate, and bb_rate. Returns {} on failure.
+
+    With `as_of` it returns {} (unavailable): the MLB API ignores startDate and
+    endDate on statSplits, so any answer would include games after the cutoff.
     """
 
+    if as_of is not None:
+        cutoff = _parse_as_of(as_of)
+        print(
+            f"[LIVE] Team splits for team {team_id} unavailable as of "
+            f"{cutoff.isoformat()}: the MLB API has no date-bounded splits"
+        )
+        return {}
     url = (
         f"https://statsapi.mlb.com/api/v1/teams/{team_id}/stats"
         f"?stats=statSplits&sitCodes=vl,vr&group=hitting&season={season}"
@@ -257,17 +312,108 @@ def fetch_team_splits(team_id: int, season: int = 2026) -> dict[str, Any]:
         return {}
 
 
+def fetch_series_status(
+    game_pk: int,
+    as_of: str | date | None = None,
+) -> dict[str, Any]:
+    """
+    Postseason series standing before first pitch of `game_pk`, using only
+    games dated on or before `as_of` (default today).
+
+    The schedule's seriesStatus is the standing after each game, so the
+    standing before this game is the one after the last earlier game of the
+    same series. Game 1 (or a cutoff before any game) gives 0-0. `wins` and
+    `losses` follow the MLB convention (leader first). Returns {} for games
+    outside a postseason series or on any error.
+    """
+
+    cutoff = _parse_as_of(as_of)
+    schedule = "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
+    try:
+        data = _get_json(f"{schedule}&gamePk={game_pk}&hydrate=seriesStatus")
+        games = [g for d in data.get("dates", []) for g in d.get("games", [])]
+        game = next((g for g in games if g.get("gamePk") == game_pk), None)
+        if not game or game.get("gameType") not in POSTSEASON_GAME_TYPES:
+            return {}
+        number = game.get("seriesGameNumber")
+        if not number:
+            return {}
+        game_date = date.fromisoformat(game["officialDate"])
+        game_type = game["gameType"]
+        home_id = game["teams"]["home"]["team"]["id"]
+        team_ids = {home_id, game["teams"]["away"]["team"]["id"]}
+
+        window_start = (game_date - timedelta(days=10)).isoformat()
+        window_end = min(cutoff, game_date).isoformat()
+        data = _get_json(
+            f"{schedule}&teamId={home_id}&startDate={window_start}"
+            f"&endDate={window_end}&gameType={game_type}&hydrate=seriesStatus"
+        )
+        earlier = []
+        for entry in (g for d in data.get("dates", []) for g in d.get("games", [])):
+            entry_teams = {
+                entry["teams"]["home"]["team"]["id"],
+                entry["teams"]["away"]["team"]["id"],
+            }
+            if (
+                entry.get("gameType") == game_type
+                and entry_teams == team_ids
+                and (entry.get("seriesGameNumber") or 0) < number
+                and date.fromisoformat(entry["officialDate"]) <= cutoff
+                and entry.get("status", {}).get("abstractGameState") == "Final"
+            ):
+                earlier.append(entry)
+
+        base = {"game_number": number, "as_of": cutoff.isoformat()}
+        if not earlier:
+            return {
+                **base,
+                "games_played": 0,
+                "result": None,
+                "wins": 0,
+                "losses": 0,
+                "is_over": False,
+                "source_game_pk": None,
+            }
+        last = max(earlier, key=lambda entry: entry["seriesGameNumber"])
+        status = last.get("seriesStatus")
+        if not status:
+            return {}
+        return {
+            **base,
+            "games_played": last["seriesGameNumber"],
+            "result": status.get("result"),
+            "wins": status.get("wins"),
+            "losses": status.get("losses"),
+            "is_over": bool(status.get("isOver")),
+            "source_game_pk": last["gamePk"],
+        }
+    except Exception as exc:
+        print(f"[LIVE] Series status fetch failed for game {game_pk}: {exc}")
+        return {}
+
+
 def fetch_pitcher_statcast(
     pitcher_id: int,
     pitcher_name: str,
     season_start: str = "2026-03-20",
+    as_of: str | date | None = None,
 ) -> dict[str, Any] | None:
-    """Fetch and process Statcast data for one pitcher, or return None on failure."""
+    """
+    Fetch and process Statcast data for one pitcher, or return None on failure.
 
-    today = date.today().isoformat()
+    Only pitches dated on or before `as_of` (default today) are used, for the
+    pitch data and for the season stats. A bad `as_of` raises ValueError.
+    """
+
+    cutoff = _parse_as_of(as_of)
     try:
         print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
-        df = statcast_pitcher(season_start, today, player_id=pitcher_id)
+        df = statcast_pitcher(season_start, cutoff.isoformat(), player_id=pitcher_id)
+        if df is not None and "game_date" in df.columns:
+            import pandas as pd
+
+            df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
         if df is None or len(df) == 0:
             print(f"[LIVE] No Statcast data for {pitcher_name}")
             return None
@@ -277,7 +423,7 @@ def fetch_pitcher_statcast(
             print(f"[LIVE] No usable pitch mix for {pitcher_name}")
             return None
         statcast_summary = processed["season_summary"]
-        mlb_stats = fetch_pitcher_season_stats(pitcher_id)
+        mlb_stats = fetch_pitcher_season_stats(pitcher_id, as_of=as_of)
         if mlb_stats:
             processed["season_summary"] = {
                 "era": mlb_stats.get("era", "N/A"),
