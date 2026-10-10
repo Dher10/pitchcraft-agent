@@ -28,14 +28,16 @@ export default function StarterCard({
     return <PostgameStarter starter={starter} side={side} starterLine={starterLine} />;
   }
 
-  const bio = [
-    `Age ${starter.bio.age}`,
-    starter.bio.height,
-    `${starter.bio.weight} lb`,
-    `B/T ${starter.bio.bats}/${starter.bio.throws}`,
-    starter.bio.mlb_service,
-    starter.bio.accolades.join(", "),
-  ].filter(Boolean);
+  const bio = starter.bio
+    ? [
+        `Age ${starter.bio.age}`,
+        starter.bio.height,
+        `${starter.bio.weight} lb`,
+        `B/T ${starter.bio.bats}/${starter.bio.throws}`,
+        starter.bio.mlb_service,
+        starter.bio.accolades.join(", "),
+      ].filter(Boolean)
+    : ["Bio not available"];
 
   const throwsHand = normalizeThrows(starter.throws);
   const teamColor = getTeamColor(starter.team);
@@ -66,7 +68,7 @@ export default function StarterCard({
       <div className="mt-4 flex items-center gap-3.5">
         <ZoneDiagram locations={locations} width={64} height={76} />
         <p className="text-[13px] leading-5 text-neutral-600">
-          {starter.recent_form.last_three_starts_summary}
+          {starter.recent_form?.last_three_starts_summary ?? "Recent form not available"}
         </p>
       </div>
     </article>

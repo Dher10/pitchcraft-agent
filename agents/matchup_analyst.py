@@ -118,7 +118,7 @@ def _safe_label(value: Any, fallback: str) -> str:
 
 def _starter_findings(starter: dict[str, Any]) -> tuple[list[str], list[str]]:
     profile = starter["pitching_profile"]
-    recent = starter["recent_form"]["label"].lower()
+    recent = ((starter.get("recent_form") or {}).get("label") or "").lower()
     strengths: list[str] = []
     risks: list[str] = []
 

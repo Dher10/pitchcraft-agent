@@ -266,7 +266,9 @@ def _apply_live_starter(
     starter["name"] = live_starter["name"]
     starter["team"] = team_abbr
     starter["throws"] = throws
-    starter["bio"]["throws"] = throws
+    # No live source yet (P1.5 adds bio); never keep the demo template's values.
+    starter["bio"] = None
+    starter["recent_form"] = None
     starter["season_summary"].update(live_starter["season_summary"])
     starter["pitching_profile"].update(live_starter["pitching_profile"])
     _sanitize_pitching_profile(starter)

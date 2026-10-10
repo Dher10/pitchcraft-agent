@@ -4,21 +4,32 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0 and P0.0 done.
+- **Phase:** Phase 0 in progress. S0, P0.0 and P0.1 done.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.1 (remove demo `recent_form` and bio from live starters). Start in plan mode.
+- **Next task:** `PLAN.md` → P0.2 (add `as_of` to every fetcher). Start in plan mode.
 - **Blocked:** nothing.
-- **Half-done:** the first GitHub Actions run of `tests.yml` has not been seen yet (check it after the P0.0 push; Python 3.14 on `setup-python` v5.6.0 is unverified).
+- **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
+- **Open finding (not in any task yet):** `_apply_offense_split` in `generate_demo_json.py` returns early when a team has no split, so the live matchup keeps the demo team `offense_profile` (`summary_label`, `ops_vs_hand`, `recent_form` "Stable"/"Hot"). Same class of leak as P0.1 but on teams. Needs an owner decision on where to fix it (P0.1 follow-up, P0.8 or its own task).
+- **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live-starter fields until the generator is next run.
 
 ## Pending Notion sync
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
-- (none)
+- P0.1: live starters now show "Bio not available" and "Recent form not available" instead of demo text. The bio source comes with P1.5.
+- P1.0 now also covers: checkout and setup-python versions without Node 20 (pinned by SHA) and runner fixed to `ubuntu-24.04`.
 
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.1 live starters without demo fields (Claude Code)
+
+- Root cause: `_apply_live_starter` overwrote only name, hand, `season_summary` and `pitching_profile` on a deep copy of the demo template, so the template's `bio` and `recent_form` stayed under a real pitcher's name.
+- Fix: live starters get `bio = None` and `recent_form = None`. `StarterCard` shows "Bio not available" / "Recent form not available". `matchup_analyst._starter_findings` and the `validators.py` bio check accept `None`. `lib/types.ts` updated.
+- Tests: `tests/test_live_starters_no_demo_fields.py` (3 tests). Written first and seen failing on the old code (demo recent-form text in the starter and in the findings), then passing. Local run: 10 passed. `tsc --noEmit`, `eslint` on the changed files and `npm run build` clean.
+- Gherkin "Live starters carry no demo fields": covered by the automated test above.
+- Also closed: confirmed with `gh run view` that run 38084965586 is green.
 
 ### 2026-10-10 — P0.0 test infrastructure (Claude Code)
 

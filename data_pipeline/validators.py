@@ -123,8 +123,10 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
         for slot in STARTER_SLOTS:
             starter = starters.get(slot)
             record(
-                f"{label}: {slot} includes bio",
-                isinstance(starter, Mapping) and "bio" in starter,
+                f"{label}: {slot} includes bio (or marks it unavailable)",
+                isinstance(starter, Mapping)
+                and "bio" in starter
+                and (starter["bio"] is None or isinstance(starter["bio"], Mapping)),
                 "bio missing",
             )
             record(

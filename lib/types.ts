@@ -80,10 +80,10 @@ export interface Starter {
   name: string;
   team: string;
   throws: string;
-  bio: StarterBio;
+  bio: StarterBio | null;
   season_summary: SeasonSummary;
   pitching_profile: PitchingProfile;
-  recent_form: RecentForm;
+  recent_form: RecentForm | null;
 }
 
 export interface SeasonSummary {
