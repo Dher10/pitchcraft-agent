@@ -51,6 +51,15 @@ Sessions can end abruptly when tokens run out. Update the handoff after each tas
 ## Git rules (the owner runs all git commands)
 
 - All v2 work happens on branch `v2`. Never work on or merge into `main` (D14). The tag `v1.0.0-kaggle` is frozen.
+- Only the GitHub Actions bot may commit to `main`, and only under `public/data/` and `evals/live/` (D15).
+
+## Security rules
+
+- Never commit secrets. API keys live in env vars locally and in GitHub Secrets in CI; never print them in logs.
+- Workflows declare least-privilege `permissions` and pin third-party actions by commit SHA.
+- LLM output is schema-validated before it reaches any public file. Free-text data passed to a model is quoted data, never instructions.
+- Never use `dangerouslySetInnerHTML` in the frontend.
+- Data use stays non-commercial, attributed, cached and non-bulk (D16).
 
 - Do not run `git commit`, `git push` or any history-changing command. Propose the commands; the owner runs them in PowerShell.
 - Staging is always complete: `git add -A` or whole files. Never `git add -p`, never manual hunk editing.

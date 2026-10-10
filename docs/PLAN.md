@@ -8,18 +8,24 @@ Living plan. Agents tick checkboxes and update `STATUS.md` after every task (see
 - **v2.0-b — Nov 15, 2026:** LLM writer enabled only if it passes the eval; case study published.
 - **v2.1:** Spanish.
 
-**Cut order if v2.0-a slips past Oct 25:** 1) bio facts in the postseason layer, 2) series context, 3) automated postgame. Phase 0, automation and source signals are never cut.
+**Build order inside v2.0-a:** core first (Phase 0, daily job, badges, offseason state), then the postseason layer. The postseason layer is in scope and worked daily; it is built last only because the core must be live first.
+
+**Hard window:** the postseason layer only has value while there are postseason games. If it is not live before the World Series ends, it waits for the 2027 postseason.
+
+**If v2.0-a slips past Oct 25, cut in this order:** 1) automated postgame, 2) bio facts in the postseason layer. Phase 0, automation, source signals and series context are never cut.
 
 ## Phase 0 — Data integrity (target Oct 18)
 
+- [ ] P0.0 Test infrastructure: add pytest, a `tests/` folder and a GitHub Actions workflow that runs the tests on every push to `v2`. No logic changes before this exists.
 - [ ] P0.1 Remove demo `recent_form` and bio from live starters (`data_pipeline/generate_demo_json.py`, `_apply_live_starter`). Real source or marked unavailable.
 - [ ] P0.2 Add `as_of` to every fetcher in `data_pipeline/fetchers/`: Statcast, pitcher season stats, team splits, series status.
 - [ ] P0.3 Check whether the MLB Stats API supports team splits by date range. If not, derive them from Statcast with the same cutoff. Record the finding in `STATUS.md`.
-- [ ] P0.4 Rate-based labels (K%, BB%, HR rate) in a single module. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
-- [ ] P0.5 Per-dimension sample thresholds (D11), checked against the real 2026 distribution before fixing the numbers. Record the chosen values in `DECISIONS.md` via owner approval.
+- [ ] P0.4 Measure the real 2026 distribution (pitches, batters faced, walks) and present proposed per-dimension thresholds (D11) to the owner. Do not implement thresholds until the owner approves; record the approved values in `DECISIONS.md`.
+- [ ] P0.5 Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
 - [ ] P0.6 Fix the name-split bug in `agents/report_writer.py` (`_watch_observation`).
 - [ ] P0.7 Remove the hardcoded season year (2026, `2026-03-20`).
 - [ ] P0.8 Explicit data mode and error log instead of the silent fallback to demo.
+- [ ] P0.9 Hygiene: upgrade Next.js to 16.4.0 (fixes `npm audit` critical/high findings; read `node_modules/next/dist/docs/` first); delete `pitchcraftvisualpolish.bundle` (stray git bundle); pin `pybaseball==2.2.7`; move or delete `test_splits.py`. `npm audit --omit=dev` must report 0 critical and 0 high.
 
 ### Phase 0 definition of done
 
@@ -79,6 +85,7 @@ Feature: Phase 0 data integrity
 
 ## Phase 1 — Automation and signals (target Oct 25, closes v2.0-a)
 
+- [ ] P1.0 Workflow security: least-privilege `permissions` (`contents: write`, `models: read` only where needed); secrets only via GitHub Secrets and never printed; third-party actions pinned by commit SHA; no secrets on pull requests from forks. The bot commits only `public/data/` and `evals/live/` (D15).
 - [ ] P1.1 Test the Statcast fetch from GitHub Actions. If blocked, heavy fetch runs locally and Actions uses the committed cache. Record the result in `DECISIONS.md` via owner approval.
 - [ ] P1.2 Daily workflow (cron + manual trigger for testing): today's previews, yesterday's postgame, publish JSON.
 - [ ] P1.3 Several real games per day; no demo rows mixed into live mode.
@@ -86,15 +93,17 @@ Feature: Phase 0 data integrity
 - [ ] P1.5 Postseason layer: series context + draft + debut + birthplace as cited claims (D7). Handle international signings with no draft record.
 - [ ] P1.6 Offseason state on the site.
 - [ ] P1.7 Daily append-only log under `evals/live/` even while only the rules writer runs (monitoring starts here).
+- [ ] P1.8 Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
+- [ ] P1.9 Data attribution and disclaimer on the site (MLB / Baseball Savant), no monetization of any kind, cached fetches and no bulk downloads (D16).
 
 ## Phase 2 — LLM writer and eval (target Nov 8)
 
 - [ ] P2.1 AI Studio API key + test call; GitHub Models access. Keys only in env vars / GitHub secrets.
-- [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]` and a versioned prompt.
+- [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]`, a versioned prompt and an exact model ID pinned in config. Output is schema-validated before it can reach the public JSON; free-text MLB fields are passed as quoted data, never as instructions. No `dangerouslySetInnerHTML` anywhere in the frontend.
 - [ ] P2.3 Guardrail: informed retry and fallback to rules (D2).
 - [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen.
-- [ ] P2.5 Human labels (G2, L1, U1) — owner task.
-- [ ] P2.6 Code evaluators and judge; calibration on dev.
+- [ ] P2.5 Human labels (G2, L1, U1) — owner task, ~6–8 hours, reserved in the week of Oct 19–25 and finished before Nov 1.
+- [ ] P2.6 Code evaluators and judge; calibration on dev. If GitHub Models is unavailable in the daily run, G2 is logged as `not_evaluated` and publishing continues (D17).
 - [ ] P2.7 Baseline run A vs. B1; error analysis; one change; B2 run.
 
 ## Phase 3 — Publish (target Nov 15)

@@ -19,8 +19,17 @@ Append-only. Never edit or delete a decision. To change one, append a new decisi
 | D13 | 2026-10-10 | The repo is the source of truth for PRD, eval spec, decisions, plan and status. Notion keeps a full mirror for the owner, synced after repo changes. Changes enter `DECISIONS.md` first, then Notion. | All agents must read the same docs, and work must continue in any tool (Claude Code, Codex). Notion stays readable from anywhere. | Closed |
 
 | D14 | 2026-10-10 | Same repo for v2. v1 is frozen with the tag `v1.0.0-kaggle`. All v2 work happens on branch `v2`; `main` keeps serving v1 on Vercel until v2.0-a is merged. Agents never commit to `main`. | Keeps the evolution in one history, keeps every existing link (CV, site, Kaggle, Vercel) working, and protects the live demo while v2 is built. | Closed |
+| D15 | 2026-10-10 | Exception to D14: the GitHub Actions bot may commit to `main`, but only files under `public/data/` and `evals/live/`. Humans and coding agents still never commit to `main`. | Vercel publishes from `main`, so daily data must land there. Scoping the bot to data paths keeps code changes behind review. | Closed |
+| D16 | 2026-10-10 | MLB data use: PitchCraft stays non-commercial (no ads, sponsorships or paid features), shows visible attribution to MLB and Baseball Savant, caches every fetch and avoids bulk downloads. The 40-case eval set is fetched once and cached. | The MLBAM notice permits only "individual, non-commercial, non-bulk use". Not legal advice; this keeps the project inside the most conservative reading. | Closed |
+| D17 | 2026-10-10 | GitHub Models (judge) never blocks publishing. In the daily run, if the judge is unavailable, G2 is logged as `not_evaluated` and code checks alone gate the report. | Its free tier is meant for prototyping and can be rate-limited or change without notice. | Closed |
+| D18 | 2026-10-10 | The postseason layer stays in v2.0-a and is worked daily, built after the core. Cut order if late: automated postgame first, then bio facts. Series context is never cut. | The owner prioritizes the postseason experience; it is the only feature with a hard window (ends with the World Series). | Closed |
+| D19 | 2026-10-10 | Phase 0 starts with test infrastructure (pytest + CI on `v2`) and includes a hygiene task: Next.js 16.4.0, remove the stray `.bundle`, pin pybaseball. | Audit found no tests in the repo, so Gherkin criteria could not be verified, and `npm audit` reported 1 critical and 4 high findings fixed by Next 16.4.0. | Closed |
 
 ## Sources for D11
 
 - [FanGraphs: strikeout rate after 70 batters faced](https://fantasy.fangraphs.com/looking-at-strikeout-rate-changes-after-70-batters-faced)
 - [Baseball Prospectus: Should I worry about my favorite pitcher?](https://www.baseballprospectus.com/news/article/20516/baseball-therapy-should-i-worry-about-my-favorite-pitcher/)
+
+## Sources for D16
+
+- [MLBAM copyright notice](http://gdx.mlb.com/components/copyright.txt)
