@@ -32,7 +32,7 @@ def run(findings: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, An
         "short_summary": [
             f"{away['name']} brings this strength: {away_strength}.",
             f"{home['name']} brings this strength: {home_strength}.",
-            f"The early what to watch is {_watch_observation(first_watch)}.",
+            f"The early what to watch is {_watch_observation(first_watch, (away['name'], home['name']))}.",
         ],
         "sections": [
             {"title": "Today's Matchup Summary", "body": findings["matchup_summary"]},
@@ -85,18 +85,23 @@ def _first(values: list[str], fallback: str) -> str:
     return values[0] if values else fallback
 
 
-def _watch_observation(watch_item: str) -> str:
+def _watch_observation(watch_item: str, starter_names: tuple[str, ...] = ()) -> str:
+    """
+    Turn "Can <starter> <action>?" into "whether <starter> can <action>".
+
+    The subject is matched against the full starter names of the packet. Where a
+    name ends is never guessed from word positions: names have one to four words
+    ("Corbin Burnes", "Luis Garcia Jr."), so an unmatched subject is left as is.
+    """
+
     item = watch_item.rstrip("?")
     if not item.startswith("Can "):
         return item[:1].lower() + item[1:]
-    subject, _, action = item[4:].partition(" ")
-    if not action:
-        return item[4:].lower()
-    if action.startswith("Pitcher ") or action.startswith("Demo "):
-        parts = item[4:].split(" ", 3)
-        if len(parts) >= 4:
-            return f"whether {parts[0]} {parts[1]} {parts[2]} can {parts[3]}"
-    return f"whether {subject} can {action}"
+    rest = item[4:]
+    for name in sorted(starter_names, key=len, reverse=True):
+        if rest.startswith(f"{name} "):
+            return f"whether {name} can {rest[len(name) + 1:]}"
+    return item
 
 
 def _enforce_language_rules(report: dict[str, Any]) -> None:

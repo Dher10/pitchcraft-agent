@@ -6,7 +6,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`) done; P0.4 analysis written, not approved.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.6 `[auto]`, then P0.7, P0.8, P0.9 (owner's order). **P0.5 is skipped: it waits for the owner's decision** on `docs/thresholds-proposal.md` (P0.4 stays unticked until values are approved and recorded in `DECISIONS.md`).
+- **Next task:** `PLAN.md` → P0.7 `[auto]`, then P0.8, P0.9 (owner's order). P0.5 is skipped until the owner decides on `docs/thresholds-proposal.md`. Stop before P1.0.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
@@ -25,6 +25,14 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.6 starter names never split (Claude Code, auto lane)
+
+- Root cause: `_watch_observation` in `agents/report_writer.py` split the subject of "Can <name> <action>?" at the first space (or at the third word for names starting with "Pitcher" / "Demo"), so "Can Corbin Burnes land the slider…" became "whether Corbin can Burnes land…" and even "Pitcher A" gave "whether Pitcher A land can the slider".
+- Fix: the subject is matched against the full starter names of the packet (longest first); where a name ends is never guessed. An unmatched subject is left as written.
+- Tests: `tests/test_report_writer_names.py` (24 cases: 11 name shapes × 2 checks, home starter, unmatched subject). 21 seen failing on the old code, then passing. Local run: 80 passed.
+- Gherkin "Pitcher name is never split": covered for the rules writer by these tests. The LLM writer will need the same check in P2.2 (claims are checked against starter names).
+- No product behavior change beyond the sentence; nothing to add to Pending Notion sync.
 
 ### 2026-10-10 — P0.4 threshold analysis (Claude Code, analysis only)
 
