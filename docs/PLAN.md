@@ -28,7 +28,7 @@ Lanes (D22): `[auto]` = plan approved once, then commit and push without asking;
 - [x] P0.2 [gated] Add `as_of` to every fetcher in `data_pipeline/fetchers/`: Statcast, pitcher season stats, team splits, series status.
 - [x] P0.3 [auto] Check whether the MLB Stats API supports team splits by date range. If not, derive them from Statcast with the same cutoff. Record the finding in `STATUS.md`.
 - [x] P0.3b [gated] Filter pitcher Statcast by `game_type` (never spring training; postseason only up to `as_of`). Pace and cap the Savant team-batting requests (2 s pause, 210 per run, fails if exceeded).
-- [ ] P0.4 [gated] Measure the real 2026 distribution (pitches, batters faced, walks) and present proposed per-dimension thresholds (D11) to the owner. Do not implement thresholds until the owner approves; record the approved values in `DECISIONS.md`.
+- [x] P0.4 [gated] Measure the real 2026 distribution (pitches, batters faced, walks) and present proposed per-dimension thresholds (D11) to the owner. Do not implement thresholds until the owner approves; record the approved values in `DECISIONS.md`.
 - [ ] P0.5 [gated] Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
 - [x] P0.6 [auto] Fix the name-split bug in `agents/report_writer.py` (`_watch_observation`).
 - [x] P0.7 [auto] Remove the hardcoded season year (2026, `2026-03-20`).
@@ -120,6 +120,11 @@ Feature: Phase 0 data integrity
 - [ ] P3.2 Quality page on the site.
 - [ ] P3.3 Case study on danielherdenez.com and pm-ai-playbook — owner task.
 - [ ] P3.4 README, ARCHITECTURE, RUNBOOK, CHANGELOG.
+
+## Backlog after v2 (not scheduled)
+
+- [ ] Ground-ball rate as the replacement for the contact-risk label (D24 leaves contact risk as a count). It stabilizes at about 70 balls in play (FanGraphs Sample Size); Statcast supplies batted-ball type. Needs its own threshold decision.
+- [ ] Carry-over of the previous season for April. D24 uses current-season data only, so early in the season most starters are flagged (April: 26% of starts flagged on arsenal, 58% on strikeout, 100% on control). Needs a decision on how to weight the previous season.
 
 ## Open questions (owner)
 

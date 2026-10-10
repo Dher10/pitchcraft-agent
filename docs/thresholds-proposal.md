@@ -1,6 +1,6 @@
 # Sample thresholds — proposal for D11 (P0.4)
 
-Status: **proposal, nothing implemented.** P0.5 stays blocked until the owner approves values. Approved values go into `DECISIONS.md` as a new decision (D11 stays as written).
+Status: **approved by the owner on 2026-10-10 with the recommended values (arsenal 100 pitches, strikeout 70 BF, control 170 BF, contact risk as a count only); recorded as D24.** The analysis below is kept as the evidence behind D24.
 
 ## What the owner needs to decide
 

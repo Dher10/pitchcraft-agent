@@ -4,10 +4,10 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`), P0.6–P0.9 done; P0.4 analysis written, not approved; P0.5 waiting.
+- **Phase:** Phase 0 in progress. S0, P0.0–P0.4 (P0.4 closed with D24), P0.6–P0.9 done. Only P0.5 is left before the Phase 0 definition-of-done check.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** owner decision on `docs/thresholds-proposal.md` (unblocks P0.4 → P0.5 `[gated]`). After that: Phase 0 definition-of-done check, then P1.0 (unlabelled = gated; touches `.github/workflows/`). The auto-lane tasks P0.6–P0.9 are done.
-- **Blocked:** P0.4 / P0.5 wait for the owner's threshold decision. Nothing else.
+- **Next task:** `PLAN.md` → P0.5 `[gated]` (rate-based labels and limited-sample flags with the D24 thresholds; plan mode first). Then the Phase 0 definition-of-done check, then P1.0 (unlabelled = gated; touches `.github/workflows/`).
+- **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
@@ -16,7 +16,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 Changes made in the repo that the owner still needs mirrored to Notion:
 
 - P0.8: new data mode `demo_fallback` and `metadata.data_status` in the published JSON (live run failed or found no games: demo content, labelled as such); a live run record `live_run.json` with the errors; live matchups no longer show the demo broadcast note.
-- New `docs/thresholds-proposal.md` (P0.4 analysis: 2026 distribution and threshold options; a proposal, nothing approved).
+- New `docs/thresholds-proposal.md` (P0.4 analysis of the 2026 distribution) and D24 (approved sample thresholds) in `DECISIONS.md`; new "Backlog after v2" section in `PLAN.md`.
 - D23 (Savant request ceiling: 210 requests, once, cached, 2 s pause) added to `DECISIONS.md`.
 - P0.1: live starters now show "Bio not available" and "Recent form not available" instead of demo text. The bio source comes with P1.5.
 - New plan task P0.1b (team `offense_profile` never inherits demo values), placed after P0.1. Done: live team offense and record show "not available" instead of demo values; when a team has no split, the report makes no offense claims and the Data Confidence Note says so.
@@ -25,6 +25,12 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.4 closed: thresholds approved as D24 (Claude Code)
+
+- The owner approved the recommended values: arsenal 100 pitches, strikeout 70 BF, control 170 BF, contact risk as a count only (option a). Recorded as D24 with the proposal's percentages; D11's status cell now reads "Superseded by D24" (the only edit to an existing decision row).
+- Added "Backlog after v2" to `PLAN.md`: (1) ground-ball rate to replace contact risk, (2) prior-season carry-over for April.
+- `docs/thresholds-proposal.md` marked approved and kept as the evidence behind D24. P0.4 ticked. Docs only.
 
 ### 2026-10-10 — P0.9 hygiene, and where Phase 0 stands (Claude Code, auto lane)
 
