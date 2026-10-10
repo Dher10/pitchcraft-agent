@@ -1,0 +1,2 @@
+# Test dependencies (kept apart from runtime requirements.txt).
+pytest==9.1.1

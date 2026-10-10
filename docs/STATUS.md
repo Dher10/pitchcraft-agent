@@ -4,11 +4,11 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 not started. Planning closed on 2026-10-10. S0 done (pending owner approval of its commit).
+- **Phase:** Phase 0 in progress. S0 and P0.0 done.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.0 (test infrastructure). Start in plan mode.
+- **Next task:** `PLAN.md` → P0.1 (remove demo `recent_form` and bio from live starters). Start in plan mode.
 - **Blocked:** nothing.
-- **Half-done:** nothing.
+- **Half-done:** the first GitHub Actions run of `tests.yml` has not been seen yet (check it after the P0.0 push; Python 3.14 on `setup-python` v5.6.0 is unverified).
 
 ## Pending Notion sync
 
@@ -20,11 +20,19 @@ Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
 
+### 2026-10-10 — P0.0 test infrastructure (Claude Code)
+
+- Added `requirements-dev.txt` (pytest 9.1.1), `pytest.ini`, `tests/` and `.github/workflows/tests.yml` (push to `v2` + manual; `contents: read`; actions pinned by SHA: checkout v4.2.2, setup-python v5.6.0; Python 3.14 as local).
+- `tests/test_commit_msg_hook.py` (6 tests): valid message accepted; rejects no-prefix subject, no body, other author, other committer; strips `Co-Authored-By`. Mutation-checked on temporary copies of the hook (via `COMMIT_MSG_HOOK`): each mutation fails exactly its test; the real hook was not modified.
+- `tests/test_demo_agents_smoke.py`: five agents over demo data in memory; asserts nothing under `public/data` or `data_cache` changes; does not import `live_pipeline` or `generate_demo_json`.
+- Local run: 7 passed. `.gitattributes` already forces LF on `.githooks/*` (verified).
+- No product behavior change; nothing to add to Pending Notion sync.
+
 ### 2026-10-10 — S0 setup (Claude Code)
 
 - Created `.claude/settings.json` (attribution off, D21). Ran `git config core.hooksPath .githooks`.
 - Removed the contradictory git lines from `AGENTS.md` (owner edit); D20 governs.
-- Commit of all pending docs/config proposed to the owner; the post-commit check (`git log -1 --format='%an <%ae>%n%B'`) is still to be run.
+- Committed as `2147676` and pushed to `v2`. Post-commit check passed: author Daniel Herdenez, no attribution.
 
 ### 2026-10-10 — Git workflow (Claude chat)
 
