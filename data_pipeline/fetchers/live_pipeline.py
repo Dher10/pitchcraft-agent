@@ -7,6 +7,7 @@ import io
 import json
 import os
 import sys
+import time
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -94,6 +95,9 @@ STATCAST_TEAM_CODE_BY_MLB_ABBR = {"ARI": "AZ"}
 
 # Savant caps a search CSV at 25,000 rows; a full chunk may be truncated.
 SAVANT_ROW_CAP = 25000
+# Request budget for the team-batting fetch: 30 teams x 7 monthly chunks, once.
+SAVANT_MAX_REQUESTS_PER_RUN = 210
+SAVANT_PAUSE_SECONDS = 2.0
 SAVANT_BATTING_URL = (
     "https://baseballsavant.mlb.com/statcast_search/csv?all=true&type=details"
     "&player_type=batter&hfGT=R%7C&min_pitches=0&min_results=0&group_by=name"
@@ -173,6 +177,30 @@ def _get_text(url: str, timeout: int = 60) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "PitchCraft-Capstone/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8-sig")
+
+
+class SavantRequestCapExceeded(RuntimeError):
+    """A run tried to make more Savant requests than SAVANT_MAX_REQUESTS_PER_RUN."""
+
+
+_savant_run = {"requests": 0}
+
+
+def _savant_get(url: str) -> str:
+    """
+    One paced, counted Savant request. Sleeps SAVANT_PAUSE_SECONDS before every
+    request except the first of the run and raises before exceeding the cap.
+    Cache hits never reach this function.
+    """
+
+    if _savant_run["requests"] >= SAVANT_MAX_REQUESTS_PER_RUN:
+        raise SavantRequestCapExceeded(
+            f"more than {SAVANT_MAX_REQUESTS_PER_RUN} Savant requests in one run"
+        )
+    if _savant_run["requests"] > 0:
+        time.sleep(SAVANT_PAUSE_SECONDS)
+    _savant_run["requests"] += 1
+    return _get_text(url)
 
 
 def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
@@ -321,6 +349,8 @@ def fetch_team_splits(
         try:
             df = fetch_team_batting_statcast(code, date.fromisoformat(season_start), cutoff)
             return derive_team_splits(df, code, cutoff)
+        except SavantRequestCapExceeded:
+            raise
         except Exception as exc:
             print(f"[LIVE] Team splits from Statcast failed for team {team_id}: {exc}")
             return {}
@@ -385,9 +415,11 @@ def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> A
 
     pybaseball.statcast(team=...) filters by pitching team, so this asks Savant
     directly with player_type=batter, one request per calendar month (about 7
-    per season, never league-wide). Finished months are cached on disk, trimmed
-    to the columns the splits need; a month that includes today is not cached.
-    Raises RuntimeError if a month hits Savant's row cap (possible truncation).
+    per season, never league-wide), paced and capped per run (see _savant_get).
+    Finished months are cached on disk, trimmed to the columns the splits need;
+    a month that includes today is not cached. Raises RuntimeError if a month
+    hits Savant's row cap (possible truncation) and SavantRequestCapExceeded
+    when the run's request budget is spent.
     """
 
     import pandas as pd
@@ -400,7 +432,7 @@ def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> A
         if cache_file.exists():
             frames.append(pd.read_csv(cache_file))
             continue
-        text = _get_text(
+        text = _savant_get(
             SAVANT_BATTING_URL.format(
                 team=statcast_team, start=chunk_start.isoformat(), end=chunk_end.isoformat()
             )
@@ -580,7 +612,8 @@ def fetch_pitcher_statcast(
     Fetch and process Statcast data for one pitcher, or return None on failure.
 
     Only pitches dated on or before `as_of` (default today) are used, for the
-    pitch data and for the season stats. A bad `as_of` raises ValueError.
+    pitch data and for the season stats, and only from regular-season and
+    postseason games (never spring training). A bad `as_of` raises ValueError.
     """
 
     cutoff = _parse_as_of(as_of)
@@ -591,6 +624,10 @@ def fetch_pitcher_statcast(
             import pandas as pd
 
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
+        if df is not None and "game_type" in df.columns:
+            # pybaseball asks for regular season, postseason and spring training.
+            # Spring never counts; postseason counts only up to the cutoff above.
+            df = df[df["game_type"].isin(("R",) + POSTSEASON_GAME_TYPES)]
         if df is None or len(df) == 0:
             print(f"[LIVE] No Statcast data for {pitcher_name}")
             return None

@@ -134,14 +134,21 @@ def csv_for(rows) -> str:
 @pytest.fixture
 def savant(monkeypatch, tmp_path):
     monkeypatch.setattr(lp, "TEAM_BATTING_CACHE_DIR", tmp_path / "team_batting")
+    monkeypatch.setattr(lp, "_savant_run", {"requests": 0})
     urls: list[str] = []
-    state = {"csv": csv_for(pa_rows("NYY", "L", VS_L))}
+    state = {"csv": csv_for(pa_rows("NYY", "L", VS_L)), "sleeps": [], "events": []}
 
     def fake_get_text(url: str, timeout: int = 60) -> str:
         urls.append(url)
+        state["events"].append("request")
         return state["csv"]
 
+    def fake_sleep(seconds: float) -> None:
+        state["sleeps"].append(seconds)
+        state["events"].append("sleep")
+
     monkeypatch.setattr(lp, "_get_text", fake_get_text)
+    monkeypatch.setattr(lp.time, "sleep", fake_sleep)
     return urls, state
 
 
@@ -186,6 +193,61 @@ def test_fetch_batting_caches_finished_chunks_but_not_the_current_one(savant):
     lp.fetch_team_batting_statcast("NYY", first_of_month, today)
     lp.fetch_team_batting_statcast("NYY", first_of_month, today)
     assert len(urls) == 2  # a chunk that includes today is still growing
+
+
+def test_fetch_batting_waits_two_seconds_between_requests_but_not_before_the_first(savant):
+    urls, state = savant
+
+    lp.fetch_team_batting_statcast("NYY", date(2026, 3, 20), date(2026, 5, 10))
+
+    assert lp.SAVANT_PAUSE_SECONDS == 2.0
+    assert state["events"] == ["request", "sleep", "request", "sleep", "request"]
+    assert state["sleeps"] == [2.0, 2.0]
+
+
+def test_fetch_batting_cache_hits_make_no_request_and_no_pause(savant):
+    urls, state = savant
+    lp.fetch_team_batting_statcast("NYY", date(2026, 4, 1), date(2026, 4, 30))
+    state["events"].clear()
+
+    lp.fetch_team_batting_statcast("NYY", date(2026, 4, 1), date(2026, 4, 30))
+
+    assert state["events"] == []
+
+
+def test_fetch_batting_aborts_before_exceeding_the_request_cap(savant, monkeypatch):
+    urls, _ = savant
+    monkeypatch.setattr(lp, "SAVANT_MAX_REQUESTS_PER_RUN", 2)
+
+    with pytest.raises(lp.SavantRequestCapExceeded):
+        lp.fetch_team_batting_statcast("NYY", date(2026, 3, 20), date(2026, 5, 10))
+
+    assert len(urls) == 2  # the third request is never made
+
+
+def test_request_cap_counts_the_whole_run_not_one_call(savant, monkeypatch):
+    urls, _ = savant
+    monkeypatch.setattr(lp, "SAVANT_MAX_REQUESTS_PER_RUN", 3)
+    lp.fetch_team_batting_statcast("NYY", date(2026, 4, 1), date(2026, 5, 31))  # 2 requests
+
+    with pytest.raises(lp.SavantRequestCapExceeded):
+        lp.fetch_team_batting_statcast("BOS", date(2026, 4, 1), date(2026, 5, 31))  # 2 more
+
+    assert len(urls) == 3
+
+
+def test_request_cap_is_210_the_whole_league_once():
+    assert lp.SAVANT_MAX_REQUESTS_PER_RUN == 210  # 30 teams x 7 monthly chunks
+
+
+def test_team_splits_do_not_swallow_the_request_cap(monkeypatch):
+    def over_cap(code, start, end):
+        raise lp.SavantRequestCapExceeded("cap")
+
+    monkeypatch.setattr(lp, "fetch_team_batting_statcast", over_cap)
+
+    with pytest.raises(lp.SavantRequestCapExceeded):
+        lp.fetch_team_splits(147, season=2026, as_of="2026-07-14")
 
 
 def test_fetch_batting_skips_empty_months(savant):

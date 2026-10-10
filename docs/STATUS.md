@@ -4,13 +4,12 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`) and P0.3 done.
+- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`) and P0.3b done.
 - **Branch:** `v2` (D14). `main` serves v1.
 - **Next task:** `PLAN.md` → P0.4 `[gated]` (measure the real 2026 distribution and propose thresholds; start in plan mode, wait for approval). The auto lane stops here.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Open finding (not in any task yet):** live matchups still inherit the demo `game.broadcast_note` ("Demo matchup for capstone"). Not shown in the UI; belongs with P0.8 (explicit data mode).
-- **Open finding (for P0.5):** the pitcher Statcast request (`pybaseball.statcast_pitcher`, `hfGT=R|PO|S`) includes spring-training and postseason pitches, and `fetch_pitcher_statcast` does not filter `game_type`. A season-to-date sample can mix them. Confirmed in the library source; not seen in a real case yet (the pitcher I checked only had regular-season starts).
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
 ## Pending Notion sync
@@ -24,6 +23,15 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.3b pitcher game_type filter and Savant request budget (Claude Code)
+
+- `fetch_pitcher_statcast` keeps only `R` and postseason (`F`, `D`, `L`, `W`) rows; spring training (`S`), exhibition (`E`) and all-star (`A`) never count, even when dated before `as_of`. Postseason rows count only when dated on or before `as_of`, through the existing date filter. This closes the open finding from P0.3. If the frame has no `game_type` column the filter is skipped.
+- Savant team-batting fetch: `_savant_get` sleeps 2 s before every request except the first of the run, counts only real HTTP requests (cache hits are free) and raises `SavantRequestCapExceeded` before request 211 (30 teams x 7 monthly chunks). `fetch_team_splits` re-raises it instead of returning `{}`, so the run stops. The pybaseball pitcher fetch is a different path and is not counted.
+- Tests: 7 new (1 in `test_fetchers_as_of.py`, 6 in `test_team_splits_as_of.py`; the new ones seen failing first). Local run: 56 passed.
+- D23 (the 210-request ceiling) was approved by the owner and added to `DECISIONS.md` in this commit.
+- Not checked, noted for P0.5 / P2.4: pitcher ERA / WHIP / IP come from the MLB API (`stats=season` / `byDateRange`); whether they include postseason games is unknown, so for a postseason case they could differ from the Statcast counts, which now include postseason games before `as_of`.
+- No product behavior change; nothing to add to Pending Notion sync.
 
 ### 2026-10-10 — P0.3 team splits by date range (Claude Code, auto lane)
 

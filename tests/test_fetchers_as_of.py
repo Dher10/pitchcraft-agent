@@ -114,6 +114,45 @@ def test_statcast_stops_at_as_of(monkeypatch):
     assert len(seen["df"]) == 6  # 3 pitches on 07-10 and 3 on 07-14
 
 
+def test_statcast_keeps_only_regular_season_and_postseason_before_as_of(monkeypatch):
+    rows = []
+    # (game_date, game_type): spring and exhibition never count; postseason only
+    # when dated on or before as_of.
+    for game_date, game_type in (
+        ("2026-03-10", "S"),  # spring training, before as_of
+        ("2026-04-02", "E"),  # exhibition
+        ("2026-04-03", "A"),  # all-star
+        ("2026-05-01", "R"),
+        ("2026-07-10", "R"),
+        ("2026-07-12", "D"),  # postseason on or before as_of: counts
+        ("2026-07-16", "D"),  # postseason after as_of: dropped by the date filter
+        ("2026-07-16", "R"),
+    ):
+        rows.append({**_statcast_frame().iloc[0].to_dict(), "game_date": pd.Timestamp(game_date), "game_type": game_type})
+    frame = pd.DataFrame(rows)
+
+    seen = {}
+    real_process = lp.process_pitcher_statcast
+
+    def spy_process(df, name):
+        seen["df"] = df
+        return real_process(df, name)
+
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: frame)
+    monkeypatch.setattr(lp, "process_pitcher_statcast", spy_process)
+    install_urlopen(monkeypatch, lambda url: {})
+
+    result = lp.fetch_pitcher_statcast(1, "Test Pitcher", as_of="2026-07-14")
+
+    assert result is not None
+    kept = seen["df"][["game_date", "game_type"]]
+    assert sorted(zip(kept["game_date"].dt.strftime("%Y-%m-%d"), kept["game_type"])) == [
+        ("2026-05-01", "R"),
+        ("2026-07-10", "R"),
+        ("2026-07-12", "D"),
+    ]
+
+
 def test_statcast_without_as_of_ends_today(monkeypatch):
     calls = {}
 
