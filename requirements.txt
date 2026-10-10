@@ -1,4 +1,4 @@
 # PitchCraft data pipeline dependencies
 # Core generator/agents use the Python standard library.
 # Live data integration uses pybaseball (MLB Statcast) + the MLB Stats API.
-pybaseball>=2.2.7
+pybaseball==2.2.7

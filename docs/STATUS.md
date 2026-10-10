@@ -4,10 +4,10 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`) done; P0.4 analysis written, not approved.
+- **Phase:** Phase 0 in progress. S0, P0.0, P0.1 (`b73368a`), P0.1b, P0.2 (`d34d49b`), P0.3 (`2a5490d`), P0.3b (`d948cbb`), P0.6–P0.9 done; P0.4 analysis written, not approved; P0.5 waiting.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.9 `[auto]` (last of the owner's order). P0.5 is skipped until the owner decides on `docs/thresholds-proposal.md`. Stop before P1.0.
-- **Blocked:** nothing.
+- **Next task:** owner decision on `docs/thresholds-proposal.md` (unblocks P0.4 → P0.5 `[gated]`). After that: Phase 0 definition-of-done check, then P1.0 (unlabelled = gated; touches `.github/workflows/`). The auto-lane tasks P0.6–P0.9 are done.
+- **Blocked:** P0.4 / P0.5 wait for the owner's threshold decision. Nothing else.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
@@ -25,6 +25,31 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.9 hygiene, and where Phase 0 stands (Claude Code, auto lane)
+
+- **Next.js 16.2.9 → 16.4.0** (and `eslint-config-next` to 16.4.0, both pinned exactly like before). 16.4.0 was published 2026-10-06, is `latest` and not deprecated. I read the installed docs first: the 16.3 / 16.4 entries only add features (`ensureStatic`, `prefetch`, `catchError`, `io`, `agentFeedback`, `turbopackLocalPostcssConfig`); nothing the app uses (`next/font/google`, `Metadata`, `NextConfig`, one dynamic route) changed. `npm run lint`, `tsc --noEmit` and `npm run build` are clean.
+- **`npm audit --omit=dev`: 0 vulnerabilities at every level** (was 1 critical, 4 high, 1 moderate). The upgrade left 1 high (`source-map-js`) and 1 moderate (`baseline-browser-mapping`), both transitive; `npm audit fix` without `--force` updated them in `package-lock.json` only (`package.json` untouched by it).
+- Still open and out of the task's scope: `npm audit` including dev dependencies shows 5 high, all one chain under `eslint-config-next` (`@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`, a stack-exhaustion DoS in glob matching). Dev tooling only, never shipped; the "fix" npm offers is a downgrade to `eslint-config-next@14.2.35`, which I did not take. Worth re-checking when `eslint-config-next` releases a newer chain.
+- `pybaseball` pinned to `==2.2.7` in `requirements.txt` (what CI and my machine already ran).
+- Deleted `pitchcraftvisualpolish.bundle`: its only ref, `564b5f7`, is already in `main` and `v2`, and the file stays recoverable from commit `5a8c5cc`. Deleted `test_splits.py`: a one-off probe of the team-splits endpoint without dates, superseded by P0.3 (the finding and the tests are in this file and `tests/`).
+- npm printed a warning that `unrs-resolver`'s install script was blocked (new `allowScripts` behavior); lint and build work without it.
+
+**Phase 0 status for the owner (Gherkin scenarios in `PLAN.md`):**
+
+| Scenario | State |
+|---|---|
+| As-of cutoff prevents leakage | Covered by tests for each fetcher (P0.2, P0.3) and the pipeline accepts `as_of` (P0.7). A real historical case end to end arrives with P2.4. |
+| Pitcher name is never split | Covered for the rules writer (P0.6). |
+| Limited sample is flagged, not filled | **Open: P0.5**, waiting for your threshold values. |
+| No games scheduled | Run exits 0 with no errors and records `no_games` (P0.8). "Site shows the season archive" is P1.6. |
+| Data source failure is explicit | Covered (P0.8). |
+| Debut with zero pitches | **Open.** A starter with no pitches makes the game be skipped (no crash), but there is no per-dimension flag yet; it falls under P0.5. |
+| Live starters carry no demo fields | Covered (P0.1, P0.1b, and the broadcast note in P0.8). |
+| Labels use rates, not counts | **Open: P0.5.** |
+| Series status has no leakage | Fetcher covered (P0.2); it is not part of the packet until P1.5. |
+
+- Auto-lane run finished: P0.6, P0.7, P0.8 and P0.9, one commit each, CI green after each. Stopped here as instructed: the next items are P0.4 (needs your approval), P0.5 (gated) and P1.0 (unlabelled, so gated, and it touches `.github/workflows/`).
 
 ### 2026-10-10 — P0.8 explicit data mode and error log (Claude Code, auto lane)
 
