@@ -14,6 +14,10 @@ Living plan. Agents tick checkboxes and update `STATUS.md` after every task (see
 
 **If v2.0-a slips past Oct 25, cut in this order:** 1) automated postgame, 2) bio facts in the postseason layer. Phase 0, automation, source signals and series context are never cut.
 
+## Setup
+
+- [x] S0 Create `.claude/settings.json` with `{"attribution": {"commit": "", "pr": ""}}` (disables Claude Code attribution, D21). Run `git config core.hooksPath .githooks`, confirm identity per `docs/CONTRIBUTING.md`, and commit all pending docs and config with the new flow. Check with `git log -1 --format='%an <%ae>%n%B'` that the commit is under the owner's name, in format, and without attribution.
+
 ## Phase 0 — Data integrity (target Oct 18)
 
 - [ ] P0.0 Test infrastructure: add pytest, a `tests/` folder and a GitHub Actions workflow that runs the tests on every push to `v2`. No logic changes before this exists.

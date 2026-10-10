@@ -39,7 +39,7 @@ Sessions can end abruptly when tokens run out. Update the handoff after each tas
 
 1. Tick the task's checkbox in `docs/PLAN.md`.
 2. Update `docs/STATUS.md`: what you finished, the next task, anything half-done or blocked.
-3. Propose a commit message (see below). The owner runs git.
+3. Prepare the commit (see Git rules) and ask the owner for approval before running it.
 4. If the task changed the product's behavior or an assumption, add a line to the "Pending Notion sync" list in `STATUS.md`.
 
 ## Changing a decision
@@ -48,10 +48,18 @@ Sessions can end abruptly when tokens run out. Update the handoff after each tas
 - If a task requires changing a decision, stop and ask the owner.
 - Once approved: append a new decision, mark the old one as `Superseded by Dxx`, and note it in `STATUS.md`.
 
-## Git rules (the owner runs all git commands)
+## Git rules
 
-- All v2 work happens on branch `v2`. Never work on or merge into `main` (D14). The tag `v1.0.0-kaggle` is frozen.
+Full rules in `docs/CONTRIBUTING.md`. Read it before your first commit.
+
+- Before the first commit of a session, run and show `git config user.name`, `git config user.email`, `git branch --show-current` and `git remote -v`. Stop if the email is not `edherdenez@gmail.com` or the branch is not `v2`.
+- You may run `git add -A`, `git commit` and `git push origin v2` only after showing the owner the changed files and the full commit message and getting an explicit yes (D20).
+- Never touch `main`, merge into `main`, force push, rebase, reset, rewrite history, or create/move/delete tags. The tag `v1.0.0-kaggle` is frozen. Merging `v2` into `main` is the owner's release step.
 - Only the GitHub Actions bot may commit to `main`, and only under `public/data/` and `evals/live/` (D15).
+- Commit format: `type: lowercase imperative summary`, a body with what and why (root cause for fixes), and a verification line. No `Co-Authored-By` or any AI attribution. The `commit-msg` hook enforces identity, format and no attribution; never bypass it with `--no-verify`.
+- Staging is always complete: `git add -A` or whole files. Never `git add -p`.
+- One task = one commit.
+- Never commit from a cloud agent session; only from local tools on the owner's machine.
 
 ## Security rules
 
@@ -60,12 +68,6 @@ Sessions can end abruptly when tokens run out. Update the handoff after each tas
 - LLM output is schema-validated before it reaches any public file. Free-text data passed to a model is quoted data, never instructions.
 - Never use `dangerouslySetInnerHTML` in the frontend.
 - Data use stays non-commercial, attributed, cached and non-bulk (D16).
-
-- Do not run `git commit`, `git push` or any history-changing command. Propose the commands; the owner runs them in PowerShell.
-- Staging is always complete: `git add -A` or whole files. Never `git add -p`, never manual hunk editing.
-- Commit messages: imperative mood, prefix (`fix:`, `feat:`, `chore:`, `docs:`, `test:`), extended body explaining why.
-- No `Co-Authored-By` lines.
-- One commit per task.
 
 ## Definition of done
 

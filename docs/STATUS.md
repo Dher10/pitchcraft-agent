@@ -4,9 +4,9 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 not started. Planning closed on 2026-10-10.
+- **Phase:** Phase 0 not started. Planning closed on 2026-10-10. S0 done (pending owner approval of its commit).
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.0 (pytest + CI on `v2`). Start in plan mode.
+- **Next task:** `PLAN.md` → P0.0 (test infrastructure). Start in plan mode.
 - **Blocked:** nothing.
 - **Half-done:** nothing.
 
@@ -19,6 +19,17 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — S0 setup (Claude Code)
+
+- Created `.claude/settings.json` (attribution off, D21). Ran `git config core.hooksPath .githooks`.
+- Removed the contradictory git lines from `AGENTS.md` (owner edit); D20 governs.
+- Commit of all pending docs/config proposed to the owner; the post-commit check (`git log -1 --format='%an <%ae>%n%B'`) is still to be run.
+
+### 2026-10-10 — Git workflow (Claude chat)
+
+- Found commit `564b5f7` authored as `Claude <noreply@anthropic.com>` with attribution trailers, made by a cloud session in July. Left in history (rewriting `main` and the tag is riskier than the issue).
+- Added `docs/CONTRIBUTING.md`, `.githooks/commit-msg`, `.gitattributes` and `.claude/settings.json`. Decisions D20–D21.
 
 ### 2026-10-10 — Audit (Claude chat)
 

@@ -1,0 +1,49 @@
+#!/bin/sh
+# PitchCraft commit-msg hook (decision D21).
+# Runs on every local commit, from any tool (Claude Code, Codex, terminal).
+#   1. Author and committer must be the owner.
+#   2. AI attribution lines are removed from the message.
+#   3. The message must follow docs/CONTRIBUTING.md: prefix + lowercase subject + body.
+
+MSG_FILE="$1"
+OWNER_EMAIL="edherdenez@gmail.com"
+
+email_of() { git var "$1" | sed -E 's/^.*<([^>]*)>.*$/\1/'; }
+AUTHOR_EMAIL=$(email_of GIT_AUTHOR_IDENT)
+COMMITTER_EMAIL=$(email_of GIT_COMMITTER_IDENT)
+
+if [ "$AUTHOR_EMAIL" != "$OWNER_EMAIL" ] || [ "$COMMITTER_EMAIL" != "$OWNER_EMAIL" ]; then
+  echo "commit-msg: blocked. Author/committer must be $OWNER_EMAIL." >&2
+  echo "  author:    $AUTHOR_EMAIL" >&2
+  echo "  committer: $COMMITTER_EMAIL" >&2
+  echo "  Fix: git config user.name \"Daniel Herdenez\" && git config user.email $OWNER_EMAIL" >&2
+  exit 1
+fi
+
+# Remove AI attribution lines.
+TMP_FILE="$MSG_FILE.pitchcraft.tmp"
+grep -v -i -E '^[[:space:]]*(co-authored-by:|claude-session:)|generated with \[?claude code|noreply@anthropic\.com' "$MSG_FILE" > "$TMP_FILE"
+mv "$TMP_FILE" "$MSG_FILE"
+
+CONTENT=$(grep -v '^#' "$MSG_FILE")
+SUBJECT=$(printf '%s\n' "$CONTENT" | sed '/^[[:space:]]*$/d' | head -n 1)
+
+case "$SUBJECT" in
+  Merge\ *|Revert\ *) exit 0 ;;
+esac
+
+if ! printf '%s\n' "$SUBJECT" | grep -q -E '^(feat|fix|docs|chore|style|refactor|test|perf|ci|build)(\([a-z0-9._-]+\))?: [a-z0-9`]'; then
+  echo "commit-msg: blocked. Subject must look like 'fix: lowercase imperative summary'." >&2
+  echo "  got: $SUBJECT" >&2
+  echo "  See docs/CONTRIBUTING.md" >&2
+  exit 1
+fi
+
+BODY_LINES=$(printf '%s\n' "$CONTENT" | sed '/^[[:space:]]*$/d' | sed '1d' | wc -l | tr -d ' ')
+if [ "$BODY_LINES" -lt 1 ]; then
+  echo "commit-msg: blocked. A body explaining what changed and why is required." >&2
+  echo "  See docs/CONTRIBUTING.md" >&2
+  exit 1
+fi
+
+exit 0
