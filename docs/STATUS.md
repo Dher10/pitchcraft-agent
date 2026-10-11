@@ -4,10 +4,10 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 code tasks are done (S0, P0.0–P0.9, with P0.4 closed as D24). Next is the Phase 0 definition-of-done check against the Gherkin scenarios.
+- **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.10 QA gate (D27): the owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
-- **Blocked:** nothing.
+- **Next task:** P0.12 (five subtasks A–E, one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Blocked:** P0.12-A's QA-02 fix waits for the owner to approve D29 (`as_of` is always the day before the game).
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.

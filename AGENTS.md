@@ -15,6 +15,8 @@ These rules apply to every agent working in this repo (Claude Code, Codex or any
 3. `docs/DECISIONS.md` — decisions already made. Read the ones related to your task.
 4. `docs/PRD_v2.md` and `docs/eval-spec.md` — only the sections your task touches.
 
+Exception: an agent that runs `docs/QA_PROTOCOL.md` does not read `docs/STATUS.md` at the start. The protocol's own reading order applies, and STATUS is read only after the agent has formed its own findings.
+
 Do not start coding until you can state, in one sentence, which `PLAN.md` task you are working on.
 
 ## Source of truth
