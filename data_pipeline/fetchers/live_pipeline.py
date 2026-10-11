@@ -22,6 +22,8 @@ import numpy as np
 import pybaseball
 from pybaseball import statcast_pitcher
 
+from data_pipeline import labels  # noqa: E402
+
 pybaseball.cache.enable()
 
 MLB_TEAM_ABBR_BY_ID = {
@@ -303,6 +305,12 @@ def fetch_pitcher_season_stats(
     the stats cover Jan 1 of the season through that date (inclusive); `as_of`
     must fall in `season`. Raises ValueError otherwise.
     Returns {} on any error so Statcast counts can remain the fallback.
+
+    Scope: REGULAR SEASON ONLY. Both `stats=season` and `stats=byDateRange` leave
+    out postseason games even when the range ends after them (checked 2026-10-10:
+    a pitcher with 12.2 postseason IP still returned 162.2 regular-season IP);
+    postseason needs an explicit gameType. Statcast pitches do include postseason,
+    so callers must not present the two as one sample.
     """
 
     cutoff = _parse_as_of(as_of)
@@ -327,7 +335,8 @@ def fetch_pitcher_season_stats(
         )
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
-        splits = data.get("stats", [{}])[0].get("splits", [])
+        stats = data.get("stats") or [{}]
+        splits = stats[0].get("splits", [])
         if not splits:
             return {}
         stat = splits[0].get("stat", {})
@@ -338,6 +347,7 @@ def fetch_pitcher_season_stats(
             "strikeouts": stat.get("strikeOuts"),
             "walks": stat.get("baseOnBalls"),
             "home_runs_allowed": stat.get("homeRuns"),
+            "batters_faced": stat.get("battersFaced"),
         }
         print(
             f"[LIVE] Season stats fetched: ERA {result['era']}, "
@@ -677,42 +687,138 @@ def fetch_pitcher_statcast(
             # pybaseball asks for regular season, postseason and spring training.
             # Spring never counts; postseason counts only up to the cutoff above.
             df = df[df["game_type"].isin(("R",) + POSTSEASON_GAME_TYPES)]
-        if df is None or len(df) == 0:
-            print(f"[LIVE] No Statcast data for {pitcher_name}")
-            return None
-        print(f"[LIVE] {pitcher_name}: {len(df)} pitches fetched")
-        processed = process_pitcher_statcast(df, pitcher_name)
-        if not processed["pitch_mix"]:
-            print(f"[LIVE] No usable pitch mix for {pitcher_name}")
-            return None
-        statcast_summary = processed["season_summary"]
+        processed = None
+        counts = None
+        if df is not None and len(df) > 0:
+            print(f"[LIVE] {pitcher_name}: {len(df)} pitches fetched")
+            counts = _statcast_counts(df)
+            processed = process_pitcher_statcast(df, pitcher_name)
+            if not processed["pitch_mix"]:
+                processed = None
+        if processed is None:
+            # No MLB pitches on record (a debut) or none usable. The game is still
+            # shown: every pitch-based dimension is flagged limited, never skipped.
+            print(f"[LIVE] No usable Statcast pitches for {pitcher_name}; limited-sample starter")
+            throws = fetch_pitcher_hand(pitcher_id)
+            if throws is None:
+                return None
+            processed = _empty_pitcher_data(pitcher_name, throws)
+            counts = None
         mlb_stats = fetch_pitcher_season_stats(pitcher_id, as_of=as_of)
-        if mlb_stats:
-            processed["season_summary"] = {
-                "era": mlb_stats.get("era", "N/A"),
-                "whip": mlb_stats.get("whip", "N/A"),
-                "innings": mlb_stats.get("innings", "N/A"),
-                "strikeouts": mlb_stats.get("strikeouts")
-                or statcast_summary["strikeouts"],
-                "walks": mlb_stats.get("walks") or statcast_summary["walks"],
-                "home_runs_allowed": mlb_stats.get("home_runs_allowed")
-                or statcast_summary["home_runs_allowed"],
-            }
-        else:
-            processed["season_summary"] = {
-                "era": "N/A",
-                "whip": "N/A",
-                "innings": "N/A",
-                "strikeouts": statcast_summary["strikeouts"],
-                "walks": statcast_summary["walks"],
-                "home_runs_allowed": statcast_summary["home_runs_allowed"],
-            }
-        update_pitching_profile_labels(processed)
+        _attach_sample(processed, counts, mlb_stats, cutoff)
         return processed
     except Exception as exc:
         print(f"[LIVE] Statcast fetch failed for {pitcher_name}: {exc}")
         _record_error("statcast_pitcher", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
         return None
+
+
+def fetch_pitcher_hand(pitcher_id: int) -> str | None:
+    """Throwing hand ("R", "L" or "S") from the MLB people endpoint, or None (error recorded)."""
+
+    try:
+        data = _get_json(f"https://statsapi.mlb.com/api/v1/people/{pitcher_id}")
+        return data["people"][0]["pitchHand"]["code"]
+    except Exception as exc:
+        print(f"[LIVE] Pitcher hand lookup failed for id={pitcher_id}: {exc}")
+        _record_error("mlb_person", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
+        return None
+
+
+def _statcast_counts(df: Any) -> dict[str, Any]:
+    """Pitch and plate-appearance counts from the Statcast frame (regular season + postseason)."""
+
+    events = df["events"].dropna() if "events" in df.columns else df.iloc[0:0]["pitch_type"]
+    plate_appearances = events[~events.isin(NON_PA_EVENTS)]
+    has_postseason = "game_type" in df.columns and bool((df["game_type"] != "R").any())
+    return {
+        "batters_faced": int(len(plate_appearances)),
+        "strikeouts": int(plate_appearances.isin(STRIKEOUT_EVENTS).sum()),
+        "walks": int(plate_appearances.isin(WALK_EVENTS).sum()),
+        "home_runs": int((plate_appearances == "home_run").sum()),
+        "has_postseason": has_postseason,
+    }
+
+
+def _empty_pitcher_data(pitcher_name: str, throws: str) -> dict[str, Any]:
+    return {
+        "name": pitcher_name,
+        "throws": throws,
+        "pitch_mix": [],
+        "velocity_by_pitch": [],
+        "movement": {},
+        "pitch_locations": {"vs_lhh": [], "vs_rhh": []},
+        "pitching_profile": {
+            "style_label": labels.ARSENAL_LIMITED_STYLE,
+            "primary_pitch": "Not available",
+            "putaway_pitch": "Not available",
+            "command_label": None,
+            "swing_miss_label": None,
+            "contact_risk_label": None,
+        },
+    }
+
+
+def _attach_sample(
+    processed: dict[str, Any],
+    counts: dict[str, Any] | None,
+    mlb_stats: dict[str, Any],
+    cutoff: date,
+) -> None:
+    """
+    Build the sample, the season summary and the rate labels, each with its scope.
+
+    Arsenal pitches come from the Statcast frame behind the pitch mix (regular
+    season, plus postseason when such games are in it). Rate counts come from the
+    MLB API when it answers (regular season only, like ERA/WHIP), otherwise from
+    the same Statcast frame, and the sample records which.
+    """
+
+    through = cutoff.isoformat()
+    arsenal_kind = (
+        labels.SCOPE_REGULAR_POSTSEASON
+        if counts and counts["has_postseason"]
+        else labels.SCOPE_REGULAR
+    )
+    pitches = processed.pop("pitches_used", 0) if processed["pitch_mix"] else 0
+    if mlb_stats:
+        source, rates_kind = "mlb_api", labels.SCOPE_REGULAR
+        numbers = {
+            "batters_faced": mlb_stats.get("batters_faced"),
+            "strikeouts": mlb_stats.get("strikeouts"),
+            "walks": mlb_stats.get("walks"),
+            "home_runs": mlb_stats.get("home_runs_allowed"),
+        }
+    elif counts:
+        source, rates_kind = "statcast", arsenal_kind
+        numbers = {key: counts[key] for key in ("batters_faced", "strikeouts", "walks", "home_runs")}
+    else:
+        source, rates_kind = "unavailable", labels.SCOPE_REGULAR
+        numbers = {"batters_faced": None, "strikeouts": None, "walks": None, "home_runs": None}
+
+    rates_scope = labels.make_scope(rates_kind, through)
+    sample = labels.build_sample(
+        pitches=pitches,
+        arsenal_scope=labels.make_scope(arsenal_kind, through),
+        batters_faced=numbers["batters_faced"],
+        strikeouts=numbers["strikeouts"],
+        walks=numbers["walks"],
+        home_runs=numbers["home_runs"],
+        rates_source=source,
+        rates_scope=rates_scope,
+    )
+    processed["sample"] = sample
+    processed["season_summary"] = {
+        "era": mlb_stats.get("era", "N/A") if mlb_stats else "N/A",
+        "whip": mlb_stats.get("whip", "N/A") if mlb_stats else "N/A",
+        "innings": mlb_stats.get("innings", "N/A") if mlb_stats else "N/A",
+        "strikeouts": numbers["strikeouts"],
+        "walks": numbers["walks"],
+        "home_runs_allowed": numbers["home_runs"],
+        "scope": rates_scope,
+    }
+    processed.pop("statcast_counts", None)
+    labels.apply_profile_labels(processed["pitching_profile"], sample)
 
 
 def normalize_plate_x(x: float) -> float:
@@ -798,10 +904,6 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
                     }
                 )
 
-    strikeouts = int(df[df["events"] == "strikeout"]["events"].count())
-    walks = int(df[df["events"] == "walk"]["events"].count())
-    home_runs = int(df[df["events"] == "home_run"]["events"].count())
-
     top = pitch_mix[0]["pitch"] if pitch_mix else "Fastball"
     second = pitch_mix[1]["pitch"] if len(pitch_mix) > 1 else "Slider"
 
@@ -812,21 +914,14 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
         "velocity_by_pitch": velocity_rows,
         "movement": movement,
         "pitch_locations": pitch_locations,
-        "season_summary": {
-            "era": "live",
-            "whip": "live",
-            "innings": "live",
-            "strikeouts": strikeouts,
-            "walks": walks,
-            "home_runs_allowed": home_runs,
-        },
+        "pitches_used": total,
         "pitching_profile": {
             "style_label": f"{top}-{second} starter",
             "primary_pitch": top,
             "putaway_pitch": second,
-            "command_label": derive_command_label(walks),
-            "swing_miss_label": derive_swing_miss_label(strikeouts, total),
-            "contact_risk_label": derive_contact_risk_label(home_runs),
+            "command_label": None,
+            "swing_miss_label": None,
+            "contact_risk_label": None,
         },
     }
 
@@ -992,54 +1087,6 @@ def _usage_pct(part: int, total: int) -> float:
     return round(part / total * 100, 1) if total > 0 else 0
 
 
-def derive_swing_miss_label(strikeouts: int, total_pitches: int) -> str:
-    if total_pitches == 0:
-        return "Limited swing-and-miss data available"
-    if strikeouts >= 80:
-        return "Above-average swing-and-miss ability"
-    if strikeouts >= 40:
-        return "Moderate swing-and-miss ability"
-    return "Limited swing-and-miss data available"
-
-
-def derive_command_label(walks: int, innings_str: str | None = None) -> str:
-    if walks <= 25:
-        return "Solid command this season"
-    if walks <= 40:
-        return "Average command this season"
-    return "Below-average command this season"
-
-
-def derive_contact_risk_label(home_runs: int) -> str:
-    if home_runs <= 8:
-        return "Limited hard contact allowed"
-    if home_runs <= 15:
-        return "Moderate contact risk"
-    return "Elevated contact risk"
-
-
-def update_pitching_profile_labels(processed: dict[str, Any]) -> None:
-    season = processed.get("season_summary", {})
-    profile = processed.get("pitching_profile", {})
-    strikeouts = _safe_int(season.get("strikeouts"))
-    walks = _safe_int(season.get("walks"))
-    home_runs = _safe_int(season.get("home_runs_allowed"))
-    total_pitches = sum(
-        _safe_int(row.get("away_starter", {}).get("overall"))
-        for row in processed.get("pitch_mix", [])
-    )
-    profile["command_label"] = derive_command_label(walks, season.get("innings"))
-    profile["swing_miss_label"] = derive_swing_miss_label(strikeouts, total_pitches)
-    profile["contact_risk_label"] = derive_contact_risk_label(home_runs)
-
-
-def _safe_int(value: Any) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return 0
-
-
 def _combine_pitch_mix(
     away_data: dict[str, Any],
     home_data: dict[str, Any],
@@ -1159,8 +1206,6 @@ def main_with_args(target_date: str | None, as_of: str | None) -> int:
         return 1 if record["status"] == "failed" else 0
 
     save_processed("live_matchup", snapshot)
-    away_top = snapshot["away_starter"]["pitch_mix"][0]
-    home_top = snapshot["home_starter"]["pitch_mix"][0]
     print(
         "[LIVE] Snapshot saved. Featured: "
         f"{snapshot['featured_game']['away_team']} @ "
@@ -1169,14 +1214,15 @@ def main_with_args(target_date: str | None, as_of: str | None) -> int:
     print(f"[LIVE] Live games processed: {len(snapshot['live_games'])}")
     if snapshot.get("skipped_games"):
         print(f"[LIVE] Skipped games: {', '.join(snapshot['skipped_games'])}")
-    print(
-        f"[LIVE] Away: {snapshot['away_starter']['name']} - "
-        f"top pitch: {away_top['pitch']} {away_top['away_starter']['overall']}%"
-    )
-    print(
-        f"[LIVE] Home: {snapshot['home_starter']['name']} - "
-        f"top pitch: {home_top['pitch']} {home_top['away_starter']['overall']}%"
-    )
+    for side in ("away", "home"):
+        starter = snapshot[f"{side}_starter"]
+        top = starter["pitch_mix"][0] if starter["pitch_mix"] else None
+        detail = (
+            f"top pitch: {top['pitch']} {top['away_starter']['overall']}%"
+            if top
+            else "no pitches on record (limited sample)"
+        )
+        print(f"[LIVE] {side.capitalize()}: {starter['name']} - {detail}")
     return 0
 
 

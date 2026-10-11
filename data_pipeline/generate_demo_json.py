@@ -14,6 +14,7 @@ if __package__ in (None, ""):
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
 from data_pipeline import config
 from data_pipeline import demo_inputs
+from data_pipeline import labels
 from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.validators import ValidationError, validate_payload
 
@@ -289,19 +290,24 @@ def _apply_live_game_to_matchup(
     _apply_live_starter(matchup["starters"]["away_starter"], away, fg["away_team_abbr"], fg.get("away_pitcher_id"))
     _apply_live_starter(matchup["starters"]["home_starter"], home, fg["home_team_abbr"], fg.get("home_pitcher_id"))
 
+    offense_scope = labels.make_scope(labels.SCOPE_REGULAR, _live_through())
     _apply_offense_split(
         matchup["teams"]["home"]["offense_profile"],
         live_game.get("home_team_splits", {}),
         away.get("throws", "R"),
+        offense_scope,
     )
     _apply_offense_split(
         matchup["teams"]["away"]["offense_profile"],
         live_game.get("away_team_splits", {}),
         home.get("throws", "L"),
+        offense_scope,
     )
 
     matchup["charts"]["pitch_mix"] = live_game["combined_charts"]["pitch_mix"]
     matchup["charts"]["velocity_by_pitch"] = live_game["combined_charts"]["velocity_by_pitch"]
+    # The demo template's 0-100 strength scores would sit under real pitcher names.
+    matchup["charts"]["strength_profile"] = []
     matchup["charts"]["pitch_movement"] = {
         "away_starter": away.get("movement", {}),
         "home_starter": home.get("movement", {}),
@@ -336,59 +342,37 @@ def _apply_live_starter(
     starter["recent_form"] = None
     starter["season_summary"].update(live_starter["season_summary"])
     starter["pitching_profile"].update(live_starter["pitching_profile"])
-    _sanitize_pitching_profile(starter)
+    # The sample decides every label. A snapshot from before samples existed has
+    # none: every dimension is then limited, never filled from the demo template.
+    sample = live_starter.get("sample") or _unknown_sample()
+    starter["sample"] = sample
+    starter["season_summary"].setdefault("scope", sample["rates"]["scope"])
+    labels.apply_profile_labels(starter["pitching_profile"], sample)
 
 
-def _sanitize_pitching_profile(starter: dict[str, Any]) -> None:
-    profile = starter["pitching_profile"]
-    season = starter["season_summary"]
-    if _is_placeholder_label(profile.get("command_label")):
-        profile["command_label"] = _derive_command_label(_safe_int(season.get("walks")))
-    if _is_placeholder_label(profile.get("swing_miss_label")):
-        profile["swing_miss_label"] = _derive_swing_miss_label(_safe_int(season.get("strikeouts")))
-    if _is_placeholder_label(profile.get("contact_risk_label")):
-        profile["contact_risk_label"] = _derive_contact_risk_label(_safe_int(season.get("home_runs_allowed")))
+def _live_through() -> str:
+    return (_live or {}).get("as_of") or (_live or {}).get("fetched_date") or ""
 
 
-def _is_placeholder_label(value: Any) -> bool:
-    return not value or str(value).strip().lower() == "see live data"
-
-
-def _derive_swing_miss_label(strikeouts: int) -> str:
-    if strikeouts >= 80:
-        return "Above-average swing-and-miss ability"
-    if strikeouts >= 40:
-        return "Moderate swing-and-miss ability"
-    return "Limited swing-and-miss data available"
-
-
-def _derive_command_label(walks: int) -> str:
-    if walks <= 25:
-        return "Solid command this season"
-    if walks <= 40:
-        return "Average command this season"
-    return "Below-average command this season"
-
-
-def _derive_contact_risk_label(home_runs: int) -> str:
-    if home_runs <= 8:
-        return "Limited hard contact allowed"
-    if home_runs <= 15:
-        return "Moderate contact risk"
-    return "Elevated contact risk"
-
-
-def _safe_int(value: Any) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return 0
+def _unknown_sample() -> dict[str, Any]:
+    scope = labels.make_scope(labels.SCOPE_REGULAR, _live_through())
+    return labels.build_sample(
+        pitches=None,
+        arsenal_scope=scope,
+        batters_faced=None,
+        strikeouts=None,
+        walks=None,
+        home_runs=None,
+        rates_source="unavailable",
+        rates_scope=scope,
+    )
 
 
 def _apply_offense_split(
     offense_profile: dict[str, Any],
     splits: dict[str, Any],
     starter_hand: str,
+    scope: dict[str, str] | None = None,
 ) -> None:
     hand = starter_hand if starter_hand in ("L", "R") else starter_hand[:1]
     split = splits.get("vl" if hand == "L" else "vr", {})
@@ -398,6 +382,7 @@ def _apply_offense_split(
     for field in OFFENSE_UNAVAILABLE_FIELDS:
         offense_profile[field] = None
     offense_profile["vs_pitcher_hand"] = f"{hand}HP"
+    offense_profile["scope"] = scope
     if not split:
         return
 

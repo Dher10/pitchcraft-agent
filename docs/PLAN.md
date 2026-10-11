@@ -29,7 +29,7 @@ Lanes (D22): `[auto]` = plan approved once, then commit and push without asking;
 - [x] P0.3 [auto] Check whether the MLB Stats API supports team splits by date range. If not, derive them from Statcast with the same cutoff. Record the finding in `STATUS.md`.
 - [x] P0.3b [gated] Filter pitcher Statcast by `game_type` (never spring training; postseason only up to `as_of`). Pace and cap the Savant team-batting requests (2 s pause, 210 per run, fails if exceeded).
 - [x] P0.4 [gated] Measure the real 2026 distribution (pitches, batters faced, walks) and present proposed per-dimension thresholds (D11) to the owner. Do not implement thresholds until the owner approves; record the approved values in `DECISIONS.md`.
-- [ ] P0.5 [gated] Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
+- [x] P0.5 [gated] Rate-based labels (K%, BB%, HR rate) in a single module, using the thresholds approved in P0.4. Remove the duplicated count-based logic in `live_pipeline.py` and `generate_demo_json.py`. Fix the `total_pitches` calculation (currently sums percentages).
 - [x] P0.6 [auto] Fix the name-split bug in `agents/report_writer.py` (`_watch_observation`).
 - [x] P0.7 [auto] Remove the hardcoded season year (2026, `2026-03-20`).
 - [x] P0.8 [auto] Explicit data mode and error log instead of the silent fallback to demo.

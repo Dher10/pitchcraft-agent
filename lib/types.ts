@@ -80,6 +80,14 @@ export interface OffenseProfile {
   k_rate_vs_hand: string | null;
   bb_rate_vs_hand: string | null;
   recent_form: string | null;
+  scope?: DataScope | null;
+}
+
+/** Which games a group of figures covers (live data only). */
+export interface DataScope {
+  kind: "regular_season" | "regular_and_postseason";
+  through: string;
+  label: string;
 }
 
 export interface StarterBio {
@@ -101,24 +109,41 @@ export interface Starter {
   season_summary: SeasonSummary;
   pitching_profile: PitchingProfile;
   recent_form: RecentForm | null;
+  sample?: Sample;
+}
+
+/** The sample behind a live starter's labels (D24). Absent for demo starters. */
+export interface Sample {
+  arsenal: { pitches: number | null; scope: DataScope };
+  rates: {
+    batters_faced: number | null;
+    strikeouts: number | null;
+    walks: number | null;
+    home_runs: number | null;
+    source: "mlb_api" | "statcast" | "unavailable";
+    scope: DataScope;
+  };
+  limited: { arsenal: boolean; strikeout: boolean; control: boolean };
+  thresholds: { arsenal: number; strikeout: number; control: number };
 }
 
 export interface SeasonSummary {
   era: string;
   whip: string;
   innings: string;
-  strikeouts: number;
-  walks: number;
-  home_runs_allowed: number;
+  strikeouts: number | null;
+  walks: number | null;
+  home_runs_allowed: number | null;
+  scope?: DataScope;
 }
 
 export interface PitchingProfile {
   style_label: string;
   primary_pitch: string;
   putaway_pitch: string;
-  command_label: string;
-  swing_miss_label: string;
-  contact_risk_label: string;
+  command_label: string | null;
+  swing_miss_label: string | null;
+  contact_risk_label: string | null;
 }
 
 export interface RecentForm {

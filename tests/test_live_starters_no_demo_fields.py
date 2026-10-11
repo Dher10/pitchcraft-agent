@@ -12,7 +12,7 @@ import json
 import pytest
 
 from agents import critic, data_scout, matchup_analyst, report_writer
-from data_pipeline import demo_inputs
+from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
 
 SLOTS = ("away_starter", "home_starter")
@@ -25,6 +25,19 @@ def _fake_live_game(
 ) -> dict:
     def live_starter(name: str, throws: str) -> dict:
         source = template["starters"]["away_starter"]
+        reg = labels.make_scope(labels.SCOPE_REGULAR, "2026-07-04")
+        sample = labels.build_sample(
+            pitches=1500,
+            arsenal_scope=reg,
+            batters_faced=400,
+            strikeouts=90,
+            walks=30,
+            home_runs=10,
+            rates_source="mlb_api",
+            rates_scope=reg,
+        )
+        profile = deepcopy(source["pitching_profile"])
+        labels.apply_profile_labels(profile, sample)
         return {
             "name": name,
             "throws": throws,
@@ -37,8 +50,10 @@ def _fake_live_game(
                 "strikeouts": 110,
                 "walks": 30,
                 "home_runs_allowed": 10,
+                "scope": reg,
             },
-            "pitching_profile": deepcopy(source["pitching_profile"]),
+            "sample": sample,
+            "pitching_profile": profile,
         }
 
     return {

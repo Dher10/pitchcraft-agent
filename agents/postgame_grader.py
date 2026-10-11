@@ -180,7 +180,7 @@ def _what_to_watch_next(starter: dict[str, Any], line: dict[str, Any]) -> str:
         return "The next checkpoint is limiting contact before counts turn stressful."
     if int(line["earned_runs"]) >= 4:
         return "The next checkpoint is cutting off big innings after the first damage."
-    if int(line["strikeouts"]) <= 3 and "average" in profile["swing_miss_label"].lower():
+    if int(line["strikeouts"]) <= 3 and "average" in (profile.get("swing_miss_label") or "").lower():
         return f"The next checkpoint is getting more chase from the {profile['putaway_pitch'].lower()}."
     return "The next checkpoint is repeating that walk suppression deep into another start."
 

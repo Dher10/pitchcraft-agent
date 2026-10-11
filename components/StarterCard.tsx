@@ -63,8 +63,13 @@ export default function StarterCard({
       <dl className="mt-4 grid grid-cols-3 gap-2">
         <StatTile label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
         <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={starter.season_summary.whip} />
-        <StatTile label="K" title="Strikeouts." value={starter.season_summary.strikeouts} />
+        <StatTile label="K" title="Strikeouts." value={starter.season_summary.strikeouts ?? "—"} />
       </dl>
+      {starter.season_summary.scope ? (
+        <p className="mt-1.5 font-mono text-[10px] text-neutral-400">
+          ERA, WHIP and K: {starter.season_summary.scope.label}
+        </p>
+      ) : null}
       <div className="mt-4 flex items-center gap-3.5">
         <ZoneDiagram locations={locations} width={64} height={76} />
         <p className="text-[13px] leading-5 text-neutral-600">

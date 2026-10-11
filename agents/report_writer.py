@@ -25,13 +25,15 @@ def run(findings: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, An
     home = starters["home_starter"]
     away_strength = _first(findings["away_starter_strengths"], "Has a defined scouting note for this matchup fit")
     home_strength = _first(findings["home_starter_strengths"], "Has a defined scouting note for this matchup fit")
+    away_sample = away.get("sample")
+    home_sample = home.get("sample")
     first_watch = findings["three_things_to_watch"][0].rstrip("?")
 
     report = {
         "headline": findings["matchup_headline"],
         "short_summary": [
-            f"{away['name']} brings this strength: {away_strength}.",
-            f"{home['name']} brings this strength: {home_strength}.",
+            _strength_line(away, findings["away_starter_strengths"], away_strength),
+            _strength_line(home, findings["home_starter_strengths"], home_strength),
             f"The early what to watch is {_watch_observation(first_watch, (away['name'], home['name']))}.",
         ],
         "sections": [
@@ -40,17 +42,12 @@ def run(findings: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, An
             {"title": f"{home['name']} vs {teams['away']['name']}", "body": findings["home_vs_away_offense"]},
             {
                 "title": "Arsenal Scout",
-                "body": (
-                    f"The main contrast is {findings['away_style']} versus {findings['home_style']}. "
-                    f"The primary pitch contrast is {away['pitching_profile']['primary_pitch']} "
-                    f"against {home['pitching_profile']['primary_pitch']}, a scouting note for matchup fit "
-                    "and each pressure point."
-                ),
+                "body": _arsenal_scout(findings, away, home),
             },
             {"title": "Three Things to Watch", "bullets": findings["three_things_to_watch"]},
             {
                 "title": "Data Confidence Note",
-                "body": _confidence_note(matchup_input),
+                "body": _confidence_note(matchup_input, findings),
             },
         ],
     }
@@ -58,7 +55,50 @@ def run(findings: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, An
     return report
 
 
-def _confidence_note(matchup_input: dict[str, Any]) -> str:
+def _arsenal_limited(starter: dict[str, Any]) -> bool:
+    sample = starter.get("sample")
+    return bool(sample and sample["limited"]["arsenal"])
+
+
+def _strength_line(starter: dict[str, Any], strengths: list[str], strength: str) -> str:
+    if not strengths and starter.get("sample") is not None:
+        return f"{starter['name']} has no claimed strength because the data is limited."
+    return f"{starter['name']} brings this strength: {strength}."
+
+
+def _arsenal_scout(findings: dict[str, Any], away: dict[str, Any], home: dict[str, Any]) -> str:
+    if not (_arsenal_limited(away) or _arsenal_limited(home)):
+        return (
+            f"The main contrast is {findings['away_style']} versus {findings['home_style']}. "
+            f"The primary pitch contrast is {away['pitching_profile']['primary_pitch']} "
+            f"against {home['pitching_profile']['primary_pitch']}, a scouting note for matchup fit "
+            "and each pressure point."
+        )
+    parts: list[str] = []
+    for starter, notes, style in (
+        (away, findings["away_data_notes"], findings["away_style"]),
+        (home, findings["home_data_notes"], findings["home_style"]),
+    ):
+        if _arsenal_limited(starter):
+            parts.append(notes[0])  # the limitation, and nothing more about his pitches
+        else:
+            parts.append(f"{starter['name']} works off {style}.")
+    parts.append("No arsenal contrast is drawn because at least one arsenal has too little data.")
+    return " ".join(parts)
+
+
+def _confidence_note(matchup_input: dict[str, Any], findings: dict[str, Any]) -> str:
+    note = _base_confidence_note(matchup_input)
+    extra = list(findings.get("scope_notes", []))
+    starters = matchup_input["starters"].values()
+    if any(
+        any(s.get("sample", {}).get("limited", {}).values()) for s in starters if s.get("sample")
+    ):
+        extra.append("Samples below the minimum are flagged as limited and no claim is made from them.")
+    return " ".join([note, *extra]) if extra else note
+
+
+def _base_confidence_note(matchup_input: dict[str, Any]) -> str:
     confidence = matchup_input.get("data_confidence", {})
     if confidence.get("level") == "fetched_snapshot":
         has_offense = all(

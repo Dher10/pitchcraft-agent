@@ -96,6 +96,17 @@ At the published value every start in 2026 would be flagged: no starter passed 8
 
 Options for the owner: (a) drop the contact-risk label and keep the plain count ("allowed 12 home runs in 140 IP") with no rate claim; (b) replace the metric with one that stabilizes sooner, for example ground-ball rate (70 balls in play per FanGraphs), which Statcast can supply; (c) keep the label with a low threshold and accept that it is below the published point. I recommend (a) for v2.0-a and (b) as a later task.
 
+## Rate bands (added with P0.5)
+
+D24 fixes the sample thresholds. Turning a rate into a label also needs cut points, which D24 does not cover. P0.5 uses rounded quartiles of 2026 starters with 5 or more starts (243 pitchers, regular season through 2026-09-27; league averages 22.1% K and 8.9% BB):
+
+| Rate | q25 | median | q75 | Label rule |
+|---|---|---|---|---|
+| Strikeouts per batter faced | 17.9% | 21.0% | 24.6% | 25% or more: above-average; under 18%: below-average; otherwise average |
+| Walks per batter faced | 6.9% | 8.2% | 10.0% | 7% or less: solid command; 10% or more: below-average; otherwise average |
+
+A label is given only when the dimension clears its D24 sample threshold. The cut points belong to one season's league environment and should be rechecked each year.
+
 ## For the postseason layer
 
 The postseason starters are mostly regulars. Among the 243 pitchers with 5 or more starts: none is below 100 pitches or 70 BF at season end, 2 are below 100 BF, 27 are below 170 BF and 96 are below 400 BF. So arsenal and strikeout flags will be rare in October, control will still be flagged for about 1 starter in 9, and the contact-risk issue above does not go away.

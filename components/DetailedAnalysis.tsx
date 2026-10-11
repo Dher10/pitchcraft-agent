@@ -133,6 +133,13 @@ function PitcherAttack({
           </p>
         </div>
       </div>
+      {starter.sample ? (
+        <p className="mt-3 font-mono text-[10px] text-neutral-400">
+          {starter.sample.limited.arsenal
+            ? `Arsenal data limited: ${starter.sample.arsenal.pitches ?? 0} pitches (${starter.sample.thresholds.arsenal} needed)`
+            : `Pitch data: ${starter.sample.arsenal.scope.label}`}
+        </p>
+      ) : null}
       <div className="mt-4 border-t border-neutral-200 pt-3 font-mono text-[10px] text-neutral-400">
         {matchup.charts.velocity_by_pitch
           .map((row) => {

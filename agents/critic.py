@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from data_pipeline import labels
+
 
 BETTING_SCAN_TERMS = (
     "bet",
@@ -21,8 +23,9 @@ def run(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, Any]
     """Check report claims against structured data and return critic review."""
 
     checks: list[dict[str, str]] = []
-    checks.extend(_pitch_claim_checks(matchup_input))
+    checks.extend(_pitch_claim_checks(report, matchup_input))
     checks.append(_command_check(report, matchup_input))
+    checks.append(_scope_check(report, matchup_input))
     checks.append(_language_scan(report))
 
     revision_notes = [
@@ -54,11 +57,16 @@ def run(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, Any]
     }
 
 
-def _pitch_claim_checks(matchup_input: dict[str, Any]) -> list[dict[str, str]]:
+def _pitch_claim_checks(report: dict[str, Any], matchup_input: dict[str, Any]) -> list[dict[str, str]]:
     checks: list[dict[str, str]] = []
+    report_text = _report_text(report).lower()
     for slot in ("away_starter", "home_starter"):
         starter = matchup_input["starters"][slot]
         profile = starter["pitching_profile"]
+        sample = starter.get("sample")
+        if sample and sample["limited"]["arsenal"]:
+            checks.append(_limited_arsenal_check(starter, sample, report_text))
+            continue
         primary_pitch = profile["primary_pitch"]
         putaway_pitch = profile["putaway_pitch"]
         primary_usage = _pitch_usage(matchup_input, slot, primary_pitch)
@@ -101,24 +109,96 @@ def _pitch_claim_checks(matchup_input: dict[str, Any]) -> list[dict[str, str]]:
     return checks
 
 
+def _limited_arsenal_check(
+    starter: dict[str, Any], sample: dict[str, Any], report_text: str
+) -> dict[str, str]:
+    """A limited arsenal must not be described: the report may only state the limitation."""
+
+    profile = starter["pitching_profile"]
+    named = [
+        _display_pitch(pitch)
+        for pitch in (profile["primary_pitch"], profile["putaway_pitch"])
+        if pitch and pitch != "Not available" and _display_pitch(pitch).lower() in report_text
+    ]
+    pitches = sample["arsenal"]["pitches"]
+    have = f"{pitches} pitches" if pitches else "no pitches on record"
+    needed = sample["thresholds"]["arsenal"]
+    if named:
+        return {
+            "claim": f"{starter['name']}'s arsenal is limited.",
+            "status": "unsupported",
+            "evidence": (
+                f"Only {have} (minimum {needed}), but the report names {', '.join(named)}."
+            ),
+        }
+    return {
+        "claim": f"{starter['name']}'s arsenal is limited.",
+        "status": "supported",
+        "evidence": f"{have.capitalize()}, below the {needed} needed; the report makes no arsenal claim.",
+    }
+
+
+def _command_evidence(matchup_input: dict[str, Any], slot: str) -> str:
+    """Evidence for a command claim: the strength profile when there is one, else the walk rate."""
+
+    if matchup_input["charts"].get("strength_profile"):
+        return f"Command signal is {_strength_value(matchup_input, 'Command', slot)} in the strength profile."
+    sample = matchup_input["starters"][slot].get("sample")
+    if sample and sample["rates"]["batters_faced"]:
+        rates = sample["rates"]
+        return (
+            f"{rates['walks']} walks in {rates['batters_faced']} batters faced "
+            f"({rates['scope']['label']})."
+        )
+    return "No walk-rate sample is available."
+
+
+def _scope_check(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, str]:
+    """Pitch data and season figures must not be presented as one sample when they differ."""
+
+    claim = "Pitch data and season figures are not presented as one sample."
+    differing = [
+        starter["name"]
+        for starter in matchup_input["starters"].values()
+        if starter.get("sample") and labels.scopes_differ(starter["sample"])
+    ]
+    if not differing:
+        return {
+            "claim": claim,
+            "status": "not_present",
+            "evidence": "Each starter's figures cover the same games.",
+        }
+    if "different samples" in _report_text(report).lower():
+        return {
+            "claim": claim,
+            "status": "supported",
+            "evidence": f"The report says the figures for {', '.join(differing)} cover different samples.",
+        }
+    return {
+        "claim": claim,
+        "status": "unsupported",
+        "evidence": (
+            f"Pitch data and season figures for {', '.join(differing)} cover different games "
+            "(postseason is in one and not the other), but the report does not say so."
+        ),
+    }
+
+
 def _command_check(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, str]:
     report_text = _report_text(report).lower()
-    command_values = {
-        slot: _strength_value(matchup_input, "Command", slot)
-        for slot in ("away_starter", "home_starter")
-    }
+
+    def command_label(slot: str) -> str:
+        return (matchup_input["starters"][slot]["pitching_profile"].get("command_label") or "").lower()
+
     below_average = [
         slot
         for slot in ("away_starter", "home_starter")
-        if "below-average command" in matchup_input["starters"][slot]["pitching_profile"]["command_label"].lower()
+        if "below-average command" in command_label(slot)
     ]
     plus_or_solid = [
         slot
         for slot in ("away_starter", "home_starter")
-        if any(
-            term in matchup_input["starters"][slot]["pitching_profile"]["command_label"].lower()
-            for term in ("plus", "solid")
-        )
+        if any(term in command_label(slot) for term in ("plus", "solid"))
     ]
 
     if "below-average command" in report_text and below_average:
@@ -127,7 +207,7 @@ def _command_check(report: dict[str, Any], matchup_input: dict[str, Any]) -> dic
         return {
             "claim": f"{starter['name']} carries below-average command risk.",
             "status": "supported",
-            "evidence": f"Command signal is {command_values[slot]} in the strength profile.",
+            "evidence": _command_evidence(matchup_input, slot),
         }
 
     if "command" in report_text and plus_or_solid:
@@ -136,7 +216,7 @@ def _command_check(report: dict[str, Any], matchup_input: dict[str, Any]) -> dic
         return {
             "claim": f"{starter['name']}'s command label is supported.",
             "status": "supported",
-            "evidence": f"Command signal is {command_values[slot]} in the strength profile.",
+            "evidence": _command_evidence(matchup_input, slot),
         }
 
     return {

@@ -4,9 +4,9 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 in progress. S0, P0.0–P0.4 (P0.4 closed with D24), P0.6–P0.9 done. Only P0.5 is left before the Phase 0 definition-of-done check.
+- **Phase:** Phase 0 code tasks are done (S0, P0.0–P0.9, with P0.4 closed as D24). Next is the Phase 0 definition-of-done check against the Gherkin scenarios.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** `PLAN.md` → P0.5 `[gated]` (rate-based labels and limited-sample flags with the D24 thresholds; plan mode first). Then the Phase 0 definition-of-done check, then P1.0 (unlabelled = gated; touches `.github/workflows/`).
+- **Next task:** Phase 0 definition-of-done check (walk the nine Gherkin scenarios in `PLAN.md` and record each as automated or manual evidence), then P1.0 (unlabelled = gated; touches `.github/workflows/`).
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
@@ -16,6 +16,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 Changes made in the repo that the owner still needs mirrored to Notion:
 
 - P0.8: new data mode `demo_fallback` and `metadata.data_status` in the published JSON (live run failed or found no games: demo content, labelled as such); a live run record `live_run.json` with the errors; live matchups no longer show the demo broadcast note.
+- P0.5: live starters now show rate-based labels only when the D24 sample is met and "data limited" otherwise; contact risk is a home-run count; every figure group states its scope (regular season vs regular season + postseason); a starter with no MLB pitches no longer drops the game; the live strength-profile chart is "not available" instead of demo scores.
 - New `docs/thresholds-proposal.md` (P0.4 analysis of the 2026 distribution) and D24 (approved sample thresholds) in `DECISIONS.md`; new "Backlog after v2" section in `PLAN.md`.
 - D23 (Savant request ceiling: 210 requests, once, cached, 2 s pause) added to `DECISIONS.md`.
 - P0.1: live starters now show "Bio not available" and "Recent form not available" instead of demo text. The bio source comes with P1.5.
@@ -25,6 +26,20 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.5 rate-based labels, limited samples, scopes (Claude Code, gated)
+
+- **One module, `data_pipeline/labels.py`:** D24 thresholds (arsenal 100 pitches, strikeout 70 BF, control 170 BF), rate bands, the sample structure and the data scopes. A dimension below its threshold, or with a missing number, is `limited` and gets no label (a missing number is never read as zero). Labels come from rates only (K/BF, BB/BF): the same rate gets the same label whatever the innings. Contact risk has no rate label; the report gives the home-run count with batters faced. Removed the count-based `derive_*` / `update_pitching_profile_labels` (live pipeline) and `_derive_*` / `_sanitize_pitching_profile` (generator), and with them the `total_pitches` bug (it summed usage percentages).
+- **Rate bands (my proposal, approved with the plan; they are not part of D24):** rounded quartiles of 2026 starters with 5+ starts (n = 243). Strikeout: above-average at 25% or more, below-average under 18%. Control: solid at 7% or less, below-average at 10% or more. Documented in `docs/thresholds-proposal.md`. Revisit when the season changes.
+- **Scopes (owner's requirement during the task):** every group of figures carries `{kind, through, label}`. `season_summary.scope` and `sample.rates.scope`: the MLB API's ERA, WHIP, innings, batters faced and counts are **regular season only**; `sample.arsenal.scope` (pitch mix, velocity, movement): Statcast, regular season plus postseason up to `as_of` (kind is `regular_season` when no postseason pitch is in the frame); `offense_profile.scope`: regular season. If the API is down the rates fall back to the Statcast frame and take its scope. When the scopes differ the report says so ("They are different samples"), qualifies rate claims as regular-season rates, and the critic has a new check that marks `unsupported` a report that hides it. Verified live on Chris Sale as of 2026-10-08: 2,785 pitches, scope regular season and postseason; 648 BF, 200 K, 31 BB, ERA 2.16 and WHIP 0.98, scope regular season; both labels computed from the regular-season rates.
+- **ERA/WHIP and postseason (the question asked):** the API's `stats=season` and `stats=byDateRange` return regular season only even when the range ends after postseason starts (Sale: 12.2 postseason IP, still 162.2 IP). Postseason needs an explicit `gameType`. Written into `fetch_pitcher_season_stats`.
+- **Debut with zero pitches:** an empty Statcast frame no longer drops the game. The starter is built with no pitch mix, `pitches = 0`, every dimension limited, the throwing hand from `people/{id}` (a failed lookup records `mlb_person` and skips the game), unknown counts as `None` (the card shows "—"). Checked live with Clayton Kershaw (no 2026 pitches): built, left-handed, all limited. That run also found a false error: the API answers `"stats": []` for a pitcher without stats and the fetcher recorded it as a failure; fixed and tested.
+- **Report behavior:** a limited arsenal gets one sentence ("40 pitches; 100 needed, so this report makes no arsenal claim for him") and nothing about his pitches, style or put-away pitch; the headline uses names instead of style labels; the Arsenal Scout section draws no contrast; strikeout and control claims are made only when their samples clear the threshold; the "what to watch" question becomes neutral. Demo starters (no `sample`) are untouched. The critic checks the report text against a limited arsenal and no longer crashes on a `None` label.
+- **Demo leak closed:** live matchups kept the demo template's 0–100 `strength_profile` under real pitcher names (and the critic cited it as evidence). Live matchups now get an empty profile; the chart shows "Not available for live data yet".
+- **Frontend:** `lib/types.ts` (`Sample`, `DataScope`, nullable labels and counts), `StarterCard` (scope caption under ERA/WHIP/K, "—" for unknown), `DetailedAnalysis` (pitch-data scope or limited note), `StrengthProfile` (empty state). Origin and limited badges are still P1.4.
+- **Old snapshots** (written before samples existed) have no `sample`: every dimension is then limited rather than filled.
+- Tests: `test_labels.py` (31), `test_limited_samples.py` (18), `test_live_sample_pipeline.py` (16), plus the shared fake snapshot updated to carry a sample. Written first and seen failing (labels: module missing, then one float-rounding edge fixed with cross-multiplication; limited samples: 16 of 18; pipeline: 15 of 15 at the time; the empty-stats test failed before its fix). Local run: 183 passed; `tsc --noEmit`, eslint and `next build` clean; a dry `build_payload()` passes `validate_payload` (96/96).
+- Still open: "Limited sample is flagged" and "Debut" are covered at the packet and report level for the rules writer; the LLM writer (P2.2) needs the same checks. The year-over-year drift of the rate bands is not handled.
 
 ### 2026-10-10 — P0.4 closed: thresholds approved as D24 (Claude Code)
 

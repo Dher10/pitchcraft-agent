@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from data_pipeline import labels
+
 
 def run(matchup_packet: dict[str, Any]) -> dict[str, Any]:
     """Analyze a matchup packet and return deterministic structured findings."""
@@ -24,24 +26,41 @@ def run(matchup_packet: dict[str, Any]) -> dict[str, Any]:
     away_style = _style_description(away_profile)
     home_style = _style_description(home_profile)
 
+    away_sample = away_starter.get("sample")
+    home_sample = home_starter.get("sample")
+
     three_things = [
-        f"Can {away_starter['name']} land the {_pitch_short_name(away_profile['putaway_pitch']).lower()} early in counts?",
-        f"Can {home_starter['name']} keep the ball {_location_goal(home_profile['primary_pitch'])}?",
+        (
+            f"Can {away_starter['name']} stay ahead of hitters early in counts?"
+            if _arsenal_limited(away_sample)
+            else f"Can {away_starter['name']} land the {_pitch_short_name(away_profile['putaway_pitch']).lower()} early in counts?"
+        ),
+        (
+            f"Can {home_starter['name']} work efficiently through the lineup?"
+            if _arsenal_limited(home_sample)
+            else f"Can {home_starter['name']} keep the ball {_location_goal(home_profile['primary_pitch'])}?"
+        ),
         "Which lineup forces more deep counts by the third inning?",
     ]
 
-    away_vs_home = (
-        f"{away_starter['name']}'s {_pitch_short_name(away_profile['primary_pitch']).lower()}-"
-        f"{_pitch_short_name(away_profile['putaway_pitch']).lower()} combination gives him "
-        f"{_safe_label(away_profile.get('swing_miss_label'), 'a defined swing-and-miss path').lower()}. "
-        f"{_offense_read(home_team, away_starter)}"
-    )
+    if away_sample is None:
+        away_vs_home = (
+            f"{away_starter['name']}'s {_pitch_short_name(away_profile['primary_pitch']).lower()}-"
+            f"{_pitch_short_name(away_profile['putaway_pitch']).lower()} combination gives him "
+            f"{_safe_label(away_profile.get('swing_miss_label'), 'a defined swing-and-miss path').lower()}. "
+            f"{_offense_read(home_team, away_starter)}"
+        )
+    else:
+        away_vs_home = f"{_live_pitcher_read(away_starter, away_sample)} {_offense_read(home_team, away_starter)}"
 
-    home_vs_away = (
-        f"{home_starter['name']} needs to {_command_note(home_profile['command_label'])} and use the "
-        f"{_pitch_short_name(home_profile['putaway_pitch']).lower()} to {_contact_note(home_profile['contact_risk_label'])}. "
-        f"{_offense_read(away_team, home_starter)}"
-    )
+    if home_sample is None:
+        home_vs_away = (
+            f"{home_starter['name']} needs to {_command_note(home_profile['command_label'])} and use the "
+            f"{_pitch_short_name(home_profile['putaway_pitch']).lower()} to {_contact_note(home_profile['contact_risk_label'])}. "
+            f"{_offense_read(away_team, home_starter)}"
+        )
+    else:
+        home_vs_away = f"{_live_pitcher_read(home_starter, home_sample)} {_offense_read(away_team, home_starter)}"
 
     return {
         "away_starter_strengths": away_strengths,
@@ -55,13 +74,16 @@ def run(matchup_packet: dict[str, Any]) -> dict[str, Any]:
         ],
         "lineup_pressure_points_by_team": pressure_points,
         "three_things_to_watch": three_things,
-        "matchup_headline": f"{away_profile['style_label']} against {home_profile['style_label']}",
+        "matchup_headline": _matchup_label(away_starter, home_starter),
         "away_vs_home_offense": away_vs_home,
         "home_vs_away_offense": home_vs_away,
         "matchup_summary": (
-            f"This matchup features {away_profile['style_label']} against {home_profile['style_label']}. "
+            f"This matchup features {_matchup_label(away_starter, home_starter)}. "
             "The scouting note is matchup fit, with each pressure point shaping what to watch."
         ),
+        "away_data_notes": _data_notes(away_starter["name"], away_sample) if away_sample else [],
+        "home_data_notes": _data_notes(home_starter["name"], home_sample) if home_sample else [],
+        "scope_notes": _scope_notes(matchup_packet),
         "away_style": away_style,
         "home_style": home_style,
     }
@@ -119,6 +141,9 @@ def _safe_label(value: Any, fallback: str) -> str:
 
 
 def _starter_findings(starter: dict[str, Any]) -> tuple[list[str], list[str]]:
+    sample = starter.get("sample")
+    if sample is not None:
+        return _live_starter_findings(starter, sample)
     profile = starter["pitching_profile"]
     recent = ((starter.get("recent_form") or {}).get("label") or "").lower()
     strengths: list[str] = []
@@ -148,6 +173,144 @@ def _starter_findings(starter: dict[str, Any]) -> tuple[list[str], list[str]]:
 
     strengths.append(_style_description(profile))
     return strengths, risks
+
+
+def _arsenal_limited(sample: dict[str, Any] | None) -> bool:
+    return bool(sample and sample["limited"]["arsenal"])
+
+
+def _matchup_label(away: dict[str, Any], home: dict[str, Any]) -> str:
+    """Headline subject: the two styles, or the names when an arsenal is too thin to describe."""
+
+    if _arsenal_limited(away.get("sample")) or _arsenal_limited(home.get("sample")):
+        return f"{away['name']} against {home['name']}"
+    return f"{away['pitching_profile']['style_label']} against {home['pitching_profile']['style_label']}"
+
+
+def _lower_first(text: str) -> str:
+    return text[:1].lower() + text[1:]
+
+
+def _live_starter_findings(
+    starter: dict[str, Any], sample: dict[str, Any]
+) -> tuple[list[str], list[str]]:
+    """Strengths and risks for a live starter: only from labels that cleared their sample threshold."""
+
+    profile = starter["pitching_profile"]
+    strengths: list[str] = []
+    risks: list[str] = []
+    swing = profile.get("swing_miss_label")
+    command = profile.get("command_label")
+    if swing and "above-average" in swing.lower():
+        strengths.append("Above-average swing-and-miss ability")
+    if command and "solid" in command.lower():
+        strengths.append(f"{command} supports strike-zone control")
+    if command and "below-average" in command.lower():
+        risks.append("Below-average command can create deep-count traffic")
+    if not sample["limited"]["arsenal"]:
+        strengths.append(_style_description(profile))
+    return strengths, risks
+
+
+def _live_pitcher_read(starter: dict[str, Any], sample: dict[str, Any]) -> str:
+    """What the data supports about a live starter, plus what it does not."""
+
+    name = starter["name"]
+    profile = starter["pitching_profile"]
+    qualifier = " (regular-season rates)" if labels.scopes_differ(sample) else ""
+    parts: list[str] = []
+    if not sample["limited"]["arsenal"]:
+        parts.append(
+            f"{name} works off a {_pitch_short_name(profile['primary_pitch']).lower()}-"
+            f"{_pitch_short_name(profile['putaway_pitch']).lower()} combination."
+        )
+    # Name the pitcher in the first rate sentence unless the arsenal sentence already did.
+    subject = "He" if parts else name
+    for label in (profile.get("swing_miss_label"), profile.get("command_label")):
+        if label:
+            parts.append(f"{subject} shows {_lower_first(label)}{qualifier}.")
+            subject = "He"
+    parts.extend(_data_notes(name, sample))
+    return " ".join(parts)
+
+
+def _plural(count: int, noun: str) -> str:
+    return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
+
+
+def _data_notes(name: str, sample: dict[str, Any]) -> list[str]:
+    """One sentence per limited dimension, and the contact-risk count (never a rate label)."""
+
+    needed = sample["thresholds"]
+    rates = sample["rates"]
+    limited = sample["limited"]
+    batters = rates["batters_faced"]
+    have_batters = f"{batters} batters faced" if batters else "no batters faced on record"
+    notes: list[str] = []
+    if limited["arsenal"]:
+        pitches = sample["arsenal"]["pitches"]
+        have = f"{pitches} pitches" if pitches else "no pitches on record"
+        notes.append(
+            f"{name}'s arsenal data is limited ({have}; {needed['arsenal']} needed), "
+            "so this report makes no arsenal claim for him."
+        )
+    if limited["strikeout"]:
+        notes.append(
+            f"Strikeout data for {name} is limited ({have_batters}; {needed['strikeout']} needed), "
+            "so no swing-and-miss claim is made."
+        )
+    if limited["control"]:
+        notes.append(
+            f"Control data for {name} is limited ({have_batters}; {needed['control']} needed), "
+            "so no command claim is made."
+        )
+    home_runs = rates["home_runs"]
+    if home_runs is not None and batters:
+        notes.append(
+            f"{name} has allowed {_plural(home_runs, 'home run')} over {batters} batters faced; "
+            "no contact-risk rating is given because a home-run rate needs a far larger sample."
+        )
+    else:
+        notes.append(f"Home runs allowed are not available for {name}.")
+    return notes
+
+
+def _scope_notes(packet: dict[str, Any]) -> list[str]:
+    """Which games each group of figures covers, so they are never read as one sample."""
+
+    notes: list[str] = []
+    groups: dict[tuple[bool, str, str], list[str]] = {}
+    for slot in ("away_starter", "home_starter"):
+        starter = packet["starters"][slot]
+        sample = starter.get("sample")
+        if sample is None:
+            continue
+        key = (
+            labels.scopes_differ(sample),
+            sample["rates"]["scope"]["label"],
+            sample["arsenal"]["scope"]["label"],
+        )
+        groups.setdefault(key, []).append(starter["name"])
+    for (differ, rates_label, arsenal_label), names in groups.items():
+        who = " and ".join(names)
+        if differ:
+            notes.append(
+                f"{who}: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the "
+                f"{rates_label}; the pitch mix, velocity and movement cover the {arsenal_label}. "
+                "They are different samples."
+            )
+        else:
+            notes.append(f"{who}: all pitcher figures cover the {rates_label}.")
+    offense_labels = list(
+        dict.fromkeys(
+            scope["label"]
+            for side in ("home", "away")
+            if (scope := packet["teams"][side]["offense_profile"].get("scope"))
+        )
+    )
+    for label in offense_labels:
+        notes.append(f"Team offense splits cover the {label}.")
+    return notes
 
 
 def _lineup_pressure_points(matchup_packet: dict[str, Any]) -> dict[str, list[str]]:
