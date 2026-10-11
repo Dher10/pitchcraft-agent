@@ -164,7 +164,9 @@ def _what_to_watch_next(t: Catalog, starter: dict[str, Any], line: dict[str, Any
         return t("grader.next.hits")
     if int(line["earned_runs"]) >= 4:
         return t("grader.next.runs")
-    if int(line["strikeouts"]) <= 3 and "average" in (profile.get("swing_miss_label") or "").lower():
+    # Only the "Average ..." label: "Above-average" and "Below-average" also contain "average".
+    swing_miss = (profile.get("swing_miss_label") or "").lower()
+    if int(line["strikeouts"]) <= 3 and swing_miss.startswith("average"):
         return t("grader.next.chase", putaway=profile["putaway_pitch"].lower())
     return t("grader.next.default")
 

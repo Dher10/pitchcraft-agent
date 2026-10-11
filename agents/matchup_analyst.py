@@ -112,7 +112,7 @@ def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> 
 
     if ops is None:
         read = t("analyst.offense.unavailable", hand=hand)
-    elif ops >= 0.750:
+    elif ops >= labels.OFFENSE_OPS_STRONG:
         read = t("analyst.offense.strong", hand=hand, ops=ops_text, name=starter_name)
     elif ops >= 0.700:
         read = t("analyst.offense.average", hand=hand, ops=ops_text)
@@ -120,9 +120,9 @@ def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> 
         read = t("analyst.offense.weak", hand=hand, ops=ops_text, name=starter_name)
 
     notes = []
-    if k_rate is not None and k_rate >= 23:
+    if k_rate is not None and k_rate >= labels.OFFENSE_K_NOTE_PCT:
         notes.append(t("analyst.offense.note_strikeouts"))
-    if bb_rate is not None and bb_rate >= 9:
+    if bb_rate is not None and bb_rate >= labels.OFFENSE_BB_NOTE_PCT:
         notes.append(t("analyst.offense.note_walks", name=starter_name))
     if notes:
         read = t("analyst.offense.with_notes", read=read, notes="; ".join(notes))
@@ -348,11 +348,11 @@ def _lineup_pressure_points(t: Catalog, matchup_packet: dict[str, Any]) -> dict[
         ops = _optional_rate(offense.get("ops_vs_hand"))
         k_rate = _optional_rate(offense.get("k_rate_vs_hand"))
         bb_rate = _optional_rate(offense.get("bb_rate_vs_hand"))
-        if ops is not None and ops > 0.750:
+        if ops is not None and ops >= labels.OFFENSE_OPS_STRONG:
             team_points.append(t("analyst.pressure.ops"))
-        if k_rate is not None and k_rate > 22:
+        if k_rate is not None and k_rate >= labels.OFFENSE_K_NOTE_PCT:
             team_points.append(t("analyst.pressure.strikeouts"))
-        if bb_rate is not None and bb_rate > 9:
+        if bb_rate is not None and bb_rate >= labels.OFFENSE_BB_NOTE_PCT:
             team_points.append(t("analyst.pressure.walks"))
         points[team["id"]] = team_points
     return points

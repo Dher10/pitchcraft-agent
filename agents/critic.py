@@ -25,6 +25,9 @@ DATA_PITCH_NAMES = {
     "eephus": ("eephus",),
 }
 FASTBALL_FAMILY = ("four-seam", "sinker", "cutter")
+SLOTS = ("away_starter", "home_starter")
+# Words of the data labels ("Plus command", "Solid command"), not text the agents write.
+COMMAND_STRONG_TERMS = ("plus", "solid")
 GENERIC_FASTBALL = "fastball"
 _SENTENCE_BREAK = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
 
@@ -79,13 +82,13 @@ def run(
 
 def _pitch_claim_checks(t: Catalog, report: dict[str, Any], matchup_input: dict[str, Any]) -> list[dict[str, str]]:
     checks: list[dict[str, str]] = []
-    report_text = _report_text(report).lower()
-    for slot in ("away_starter", "home_starter"):
+    owned = _owned_sentences(report, matchup_input)
+    for slot in SLOTS:
         starter = matchup_input["starters"][slot]
         profile = starter["pitching_profile"]
         sample = starter.get("sample")
         if sample and sample["limited"]["arsenal"]:
-            checks.append(_limited_arsenal_check(t, starter, sample, report_text))
+            checks.append(_limited_arsenal_check(t, matchup_input, slot, sample, owned))
             continue
         for role, pitch, minimum in (
             ("primary", profile["primary_pitch"], labels.PRIMARY_MIN_USAGE_PCT),
@@ -159,6 +162,14 @@ def _named_pitches(t: Catalog, sentence: str) -> set[str]:
     return named
 
 
+def _without_names(sentence: str, names: list[str]) -> str:
+    """The sentence without the starters' names: a pitcher called "Fastball" threw no pitch by it."""
+
+    for name in sorted(names, key=len, reverse=True):
+        sentence = sentence.replace(name, " ")
+    return sentence
+
+
 def _supports(thrown: set[str], pitch: str) -> bool:
     if pitch == GENERIC_FASTBALL:
         return bool(thrown & {*FASTBALL_FAMILY, GENERIC_FASTBALL})
@@ -185,7 +196,7 @@ def _unobserved_pitch_check(t: Catalog, report: dict[str, Any], matchup_input: d
         for sentence in _SENTENCE_BREAK.split(text):
             mentioned = [slot for slot in slots if names[slot] in sentence]
             allowed = thrown[mentioned[0]] if len(mentioned) == 1 else together
-            for pitch in sorted(_named_pitches(t, sentence)):
+            for pitch in sorted(_named_pitches(t, _without_names(sentence, list(names.values())))):
                 if _supports(allowed, pitch):
                     continue
                 if len(mentioned) == 1:
@@ -203,16 +214,50 @@ def _unobserved_pitch_check(t: Catalog, report: dict[str, Any], matchup_input: d
 
 
 def _limited_arsenal_check(
-    t: Catalog, starter: dict[str, Any], sample: dict[str, Any], report_text: str
+    t: Catalog,
+    matchup_input: dict[str, Any],
+    slot: str,
+    sample: dict[str, Any],
+    owned: list[tuple[str | None, str]],
 ) -> dict[str, str]:
-    """A limited arsenal must not be described: the report may only state the limitation."""
+    """
+    A limited arsenal must not be described: the report may only state the limitation.
 
+    Only what the report says about this starter counts (QA2-02): the sentences that name
+    only him, and the unnamed ones in the section titled with his name. What it says about
+    the other starter is that starter's business, even if both throw the same pitch. A
+    sentence that names both, or nobody and sits in no starter's section, is held to this
+    starter only for a pitch the other one never threw.
+    """
+
+    starter = matchup_input["starters"][slot]
+    other = SLOTS[1] if slot == SLOTS[0] else SLOTS[0]
+    other_thrown = _thrown_by(matchup_input, other)
+    names = [matchup_input["starters"][s]["name"] for s in SLOTS]
     profile = starter["pitching_profile"]
-    named = [
-        _display_pitch(pitch)
-        for pitch in (profile["primary_pitch"], profile["putaway_pitch"])
-        if labels.pitch_named(pitch) and _display_pitch(pitch).lower() in report_text
+    profile_pitches = [
+        pitch for pitch in (profile["primary_pitch"], profile["putaway_pitch"]) if labels.pitch_named(pitch)
     ]
+    named: list[str] = []
+
+    def add(display: str) -> None:
+        if display.lower() not in (item.lower() for item in named):
+            named.append(display)
+
+    for owner, sentence in owned:
+        if owner == other:
+            continue
+        text = _without_names(sentence, names)
+        for pitch in sorted(_named_pitches(t, text)):
+            if owner is None and _supports(other_thrown, pitch):
+                continue
+            add(pitch.capitalize())
+        # The profile's own pitch names count too, even outside the vocabulary of known pitches.
+        for pitch in profile_pitches:
+            if _display_pitch(pitch).lower() in text.lower() and not (
+                owner is None and _pitch_usage(matchup_input, other, pitch) > 0
+            ):
+                add(_display_pitch(pitch))
     pitches = sample["arsenal"]["pitches"]
     have = t("critic.limited.pitches", count=pitches) if pitches else t("critic.limited.none")
     needed = sample["thresholds"]["arsenal"]
@@ -272,25 +317,50 @@ def _scope_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, An
 
 
 def _command_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, str]:
-    report_text = _report_text(report).lower()
+    """
+    A command claim must match the label of the starter it is about (QA2-02 sweep).
+
+    "Below-average command" said about a starter whose label is not that, or "solid
+    command" about one who is not solid, is unsupported even if the other starter has the
+    label. A claim with no starter to attribute it to is supported if some starter has it.
+    """
+
+    owned = _owned_sentences(report, matchup_input)
+    said = {slot: " ".join(s for o, s in owned if o == slot).lower() for slot in (*SLOTS, None)}
+    word = t("critic.command.word")
+    below = labels.COMMAND_BELOW.lower()
+    strong_phrases = [f"{term} {word}" for term in COMMAND_STRONG_TERMS]
 
     def command_label(slot: str) -> str:
         return (matchup_input["starters"][slot]["pitching_profile"].get("command_label") or "").lower()
 
-    below = labels.COMMAND_BELOW.lower()
-    below_average = [
-        slot
-        for slot in ("away_starter", "home_starter")
-        if below in command_label(slot)
-    ]
+    below_average = [slot for slot in SLOTS if below in command_label(slot)]
     plus_or_solid = [
-        slot
-        for slot in ("away_starter", "home_starter")
-        if any(term in command_label(slot) for term in ("plus", "solid"))
+        slot for slot in SLOTS if any(term in command_label(slot) for term in COMMAND_STRONG_TERMS)
     ]
 
-    if below in report_text and below_average:
-        slot = below_average[0]
+    for slot in SLOTS:
+        wording = None
+        if below in said[slot] and slot not in below_average:
+            wording = below
+        elif slot not in plus_or_solid:
+            wording = next((phrase for phrase in strong_phrases if phrase in said[slot]), None)
+        if wording:
+            starter = matchup_input["starters"][slot]
+            label = starter["pitching_profile"].get("command_label") or t("critic.command.no_label")
+            return {
+                "claim": t("critic.command.wrong_claim", name=starter["name"]),
+                "status": "unsupported",
+                "evidence": t(
+                    "critic.command.wrong_evidence", name=starter["name"], wording=wording, label=label
+                ),
+            }
+
+    claimed_below = [slot for slot in SLOTS if below in said[slot]]
+    if not claimed_below and below in said[None]:
+        claimed_below = below_average
+    if claimed_below:
+        slot = claimed_below[0]
         starter = matchup_input["starters"][slot]
         return {
             "claim": t("critic.command.below_claim", name=starter["name"]),
@@ -298,8 +368,11 @@ def _command_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, 
             "evidence": _command_evidence(t, matchup_input, slot),
         }
 
-    if t("critic.command.word") in report_text and plus_or_solid:
-        slot = plus_or_solid[0]
+    claimed_command = [slot for slot in plus_or_solid if word in said[slot]]
+    if not claimed_command and word in said[None]:
+        claimed_command = plus_or_solid
+    if claimed_command:
+        slot = claimed_command[0]
         starter = matchup_input["starters"][slot]
         return {
             "claim": t("critic.command.label_claim", name=starter["name"]),
@@ -365,12 +438,45 @@ def _report_text(report: dict[str, Any]) -> str:
 
 
 def _report_locations(report: dict[str, Any]) -> list[tuple[str, str]]:
-    locations: list[tuple[str, str]] = [("headline", report.get("headline", ""))]
-    for index, summary in enumerate(report.get("short_summary", [])):
+    # The text fields are mandatory: a report that lost them must fail, not pass every text check.
+    locations: list[tuple[str, str]] = [("headline", report["headline"])]
+    for index, summary in enumerate(report["short_summary"]):
         locations.append((f"short_summary[{index}]", summary))
-    for index, section in enumerate(report.get("sections", [])):
+    for index, section in enumerate(report["sections"]):
         if section.get("body"):
             locations.append((f"sections[{index}].body", section["body"]))
         for bullet_index, bullet in enumerate(section.get("bullets", [])):
             locations.append((f"sections[{index}].bullets[{bullet_index}]", bullet))
     return locations
+
+
+def _owned_sentences(report: dict[str, Any], matchup_input: dict[str, Any]) -> list[tuple[str | None, str]]:
+    """
+    Every sentence of the report with the starter it is about, or None when that cannot be told.
+
+    A sentence that names exactly one starter is about him. One that names nobody is about the
+    starter in the title of its section, if the title names exactly one. One that names both is
+    nobody's alone.
+    """
+
+    names = {slot: matchup_input["starters"][slot]["name"] for slot in SLOTS}
+
+    def owner(sentence: str, section_owner: str | None) -> str | None:
+        mentioned = [slot for slot in SLOTS if names[slot] in sentence]
+        if len(mentioned) == 1:
+            return mentioned[0]
+        return None if mentioned else section_owner
+
+    def split(text: str, section_owner: str | None) -> list[tuple[str | None, str]]:
+        return [(owner(sentence, section_owner), sentence) for sentence in _SENTENCE_BREAK.split(text)]
+
+    owned: list[tuple[str | None, str]] = []
+    for text in (report["headline"], *report["short_summary"]):
+        owned.extend(split(text, None))
+    for section in report["sections"]:
+        titled = [slot for slot in SLOTS if names[slot] in section["title"]]
+        section_owner = titled[0] if len(titled) == 1 else None
+        for text in (section.get("body"), *section.get("bullets", [])):
+            if text:
+                owned.extend(split(text, section_owner))
+    return owned

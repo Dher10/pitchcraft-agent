@@ -47,6 +47,12 @@ LEGACY_PLACEHOLDER_LABEL = "see live data"
 PUTAWAY_MIN_USAGE_PCT = 15
 PRIMARY_MIN_USAGE_PCT = 30
 
+# D32: the lineup notes of the analyst ("strike out often", "draws walks", "hits well") and its
+# pressure points use these, at or above, on the figure the fan reads on the card.
+OFFENSE_K_NOTE_PCT = 23.0
+OFFENSE_BB_NOTE_PCT = 9.0
+OFFENSE_OPS_STRONG = 0.750  # "hits well against": OPS against the starter's hand, at or above
+
 SCOPE_REGULAR = "regular_season"
 SCOPE_REGULAR_POSTSEASON = "regular_and_postseason"
 _SCOPE_TEXT = {
@@ -73,6 +79,17 @@ def pitch_named(pitch: Any) -> bool:
     """True when a profile names a real pitch (not "Not available" or empty)."""
 
     return is_available(pitch) and str(pitch).strip().lower() != PITCH_NOT_AVAILABLE.lower()
+
+
+def share_at_least(count: int, total: int, minimum_pct: float) -> bool:
+    """
+    True when `count` is at least `minimum_pct` percent of `total`, on the raw counts.
+
+    Cross-multiplied, so a share such as 374 / 2500 = 14.96% is below 15 even though the
+    chart rounds it to 15.0. A decision is never taken on a rounded figure.
+    """
+
+    return total > 0 and count * 100 >= total * minimum_pct
 
 
 def _below(value: int | None, threshold: int) -> bool:

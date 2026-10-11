@@ -208,6 +208,11 @@ EN_MESSAGES: dict[str, object] = {
     "critic.command.word": "command",
     "critic.command.below_claim": "{name} carries below-average command risk.",
     "critic.command.label_claim": "{name}'s command label is supported.",
+    "critic.command.wrong_claim": "The report's command claim about {name} matches the data.",
+    "critic.command.wrong_evidence": (
+        "The report says {name} has {wording}, but his command label is {label}."
+    ),
+    "critic.command.no_label": "not available",
     "critic.command.absent_claim": "The report makes a command claim.",
     "critic.command.absent_evidence": "No command claim requiring correction was found.",
     "critic.command.strength": "Command signal is {value} in the strength profile.",

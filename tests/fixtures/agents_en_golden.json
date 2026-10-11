@@ -270,7 +270,6 @@
       "home_style": "Sinker to set up, Changeup to finish",
       "home_vs_away_offense": "Demo Pitcher B needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.768 OPS), so Demo Pitcher B cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher B needs efficient strikes.",
       "lineup_pressure_points": [
-        "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
         "draws walks at an above-average rate"
       ],
@@ -279,9 +278,7 @@
           "has strong OPS against this pitcher's hand",
           "draws walks at an above-average rate"
         ],
-        "sf": [
-          "has elevated swing-and-miss risk"
-        ]
+        "sf": []
       },
       "matchup_headline": "Power fastball-slider starter against Command-oriented sinker-changeup starter",
       "matchup_summary": "This matchup features Power fastball-slider starter against Command-oriented sinker-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",

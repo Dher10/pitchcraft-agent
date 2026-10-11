@@ -1068,10 +1068,13 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
 
     pitch_mix = []
     velocity_rows = []
+    # Raw pitch counts: ranking and the put-away rule (D30) never use the rounded share.
+    pitch_counts: dict[str, int] = {}
 
     for pitch_name, sub in df.groupby("pitch_name"):
         sub_l = lhh[lhh["pitch_name"] == pitch_name]
         sub_r = rhh[rhh["pitch_name"] == pitch_name]
+        pitch_counts[pitch_name] = len(sub)
 
         pitch_mix.append(
             {
@@ -1095,7 +1098,9 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
                 }
             )
 
-    pitch_mix.sort(key=lambda row: row["away_starter"]["overall"], reverse=True)
+    # Most thrown first by raw count (two pitches that both read 20.0% are not a tie);
+    # a real tie in the counts is ranked by name so the order is stable.
+    pitch_mix.sort(key=lambda row: (-pitch_counts[row["pitch"]], row["pitch"]))
     pitch_mix = pitch_mix[:5]
     top_pitch_names = {row["pitch"] for row in pitch_mix}
     velocity_rows = [row for row in velocity_rows if row["pitch"] in top_pitch_names]
@@ -1131,7 +1136,9 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
     second = (
         pitch_mix[1]["pitch"]
         if len(pitch_mix) > 1
-        and pitch_mix[1]["away_starter"]["overall"] >= labels.PUTAWAY_MIN_USAGE_PCT
+        and labels.share_at_least(
+            pitch_counts[pitch_mix[1]["pitch"]], total, labels.PUTAWAY_MIN_USAGE_PCT
+        )
         else labels.PITCH_NOT_AVAILABLE
     )
     style = f"{top}-{second} starter" if labels.pitch_named(second) else f"{top} starter"

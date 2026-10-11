@@ -11,6 +11,7 @@ from copy import deepcopy
 import pytest
 
 from agents import critic, data_scout, matchup_analyst, report_writer
+from agents.language import catalog_for
 from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline.validators import validate_payload
@@ -337,3 +338,12 @@ def test_live_matchups_do_not_keep_the_demo_strength_profile(monkeypatch):
     assert matchup["charts"]["strength_profile"] == []
     _, _, review = run_agents(matchup)
     assert all("strength profile" not in c["evidence"] for c in review["checks"])
+
+
+def test_a_sample_without_its_limited_flags_is_an_error_not_a_healthy_sample(monkeypatch):
+    # The writer used .get("limited", {}), so a malformed sample read as "nothing is limited".
+    matchup = build(monkeypatch)
+    del matchup["starters"]["away_starter"]["sample"]["limited"]
+
+    with pytest.raises(KeyError):
+        report_writer._confidence_note(catalog_for("en"), matchup, {"scope_notes": []})

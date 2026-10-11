@@ -93,9 +93,7 @@ def _confidence_note(t: Catalog, matchup_input: dict[str, Any], findings: dict[s
     note = _base_confidence_note(t, matchup_input)
     extra = list(findings.get("scope_notes", []))
     starters = matchup_input["starters"].values()
-    if any(
-        any(s.get("sample", {}).get("limited", {}).values()) for s in starters if s.get("sample")
-    ):
+    if any(any(s["sample"]["limited"].values()) for s in starters if s.get("sample")):
         extra.append(t("writer.confidence.limited"))
     return " ".join([note, *extra]) if extra else note
 
