@@ -3,8 +3,9 @@ import { ESLint } from "eslint";
 
 // QA found `npm run lint` failing on Windows while it scanned .pytest_cache, a folder pytest
 // creates and the OS may deny. The lint must never look at it, or at other tool caches.
-// Loading the Next.js ESLint config takes several seconds the first time.
-vi.setConfig({ testTimeout: 30_000 });
+// Loading the Next.js ESLint config takes several seconds the first time, and over 30 on a cold
+// Windows start (the first test of a run failed on that timeout once, QA run 2 session).
+vi.setConfig({ testTimeout: 120_000 });
 
 describe("eslint ignores", () => {
   const eslint = new ESLint();

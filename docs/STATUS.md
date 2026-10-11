@@ -4,17 +4,19 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 is open. The first QA gate (2026-10-10) returned FAIL and P0.12 (A–E) fixed its ten findings. The second gate (2026-10-11, `docs/qa/QA-phase-0-2026-10-11.md`) returned FAIL: one Blocker, two Highs, two Mediums, one Low. P0.13 (A–C) fixes them; A and B are done, C is next. Run 3 of the gate (P0.10) comes after P0.13.
+- **Phase:** Phase 0 is open. The first QA gate (2026-10-10) returned FAIL and P0.12 (A–E) fixed its ten findings. The second gate (2026-10-11, `docs/qa/QA-phase-0-2026-10-11.md`) returned FAIL: one Blocker, two Highs, two Mediums, one Low. P0.13 (A–C) fixed them (A `c3e03da`, B `4a33315`, C in the commit after). Phase 0 stays open until run 3 of the gate (P0.10).
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.13-C (QA2-05 hook filter independent of the locale, QA2-06 audit line, the verification rule in `CONTRIBUTING.md`, and the ESLint cold-start timeout raised in `lib/__tests__/lint-config.test.ts`, said in the commit body). Then P0.10 run 3 (D27): the owner starts Codex with exactly `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`; the report goes to `docs/qa/`. The QA agent does not read this file at the start (AGENTS.md). P1.0 starts only after Phase 0 closes.
+- **Next task:** P0.10 run 3 (D27), the third QA gate of Phase 0: the owner starts Codex with exactly `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`; the report goes to `docs/qa/`. The QA agent does not read this file at the start (AGENTS.md). P1.0 starts only after Phase 0 closes.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
-- **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
+- **Accepted risk (audited 2026-10-11, npm 12.0.2, Node 24.16.0):** `npm audit` including dev dependencies reports 5 high, all one chain under `eslint-config-next` (`@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`, a stack-exhaustion denial of service in glob matching; dev tooling, never shipped; npm's fix is a downgrade to `eslint-config-next@14.2.35`, not taken). `npm audit --omit=dev` reports 0. QA run 2 reported 0 for both on the same day (QA2-06); that was not reproduced here, so the line above stays as measured. Details in the P0.11 entry. Recheck when `eslint-config-next` publishes a newer chain.
 - **Committed JSON:** regenerated in P0.12-B from an empty cache, so it is `demo_cached` (demo names, labelled demo). Command: `python -c "import pathlib, tempfile; from data_pipeline.fetchers import cache_manager; cache_manager.PROCESSED_DIR = pathlib.Path(tempfile.mkdtemp()); from data_pipeline import generate_demo_json as g; raise SystemExit(g.main())"`. The bot's daily live file is a P1.2 matter.
 
 ## Pending Notion sync
 
 Changes made in the repo that the owner still needs mirrored to Notion:
+
+- P0.13-C: the commit hook strips AI attribution whatever the locale of the shell (a UTF-8 locale used to leave a line starting with an emoji such as the robot in the message); `CONTRIBUTING.md` has a new "Verification" section: the verification line comes from `python -m pytest` and `npm test` in the default terminal, without changing PATH or locale, and tests that depend on the environment are parameterized by environment.
 
 - P0.13-B: the Critic holds each claim to the starter it is about: a limited-arsenal starter is judged only on what the report says about him (his own sentences and the unnamed ones in the section with his name), so a healthy opponent that shares a pitch no longer blocks the game; a "below-average" or "solid" command claim is checked against the label of the starter it is about. The put-away pitch (D30) and the pitch ranking use raw pitch counts, so 14.96% is not 15%. The postgame "chase" suggestion applies to "Average" swing-and-miss only. D32 added: one cut-off each for the lineup sentence and the pressure points (K% 23.0, BB% 9.0, OPS .750, all at or above); provisional until the cut-offs are recomputed from 2026 lineup-vs-hand quartiles (task in P2.4).
 
@@ -39,6 +41,17 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.13-C hook locale, verification rule and handoff (Claude Code, gated)
+
+- **QA2-05:** reproduced first with the locale as a test parameter: under `C.UTF-8` the hook left `🤖 Generated with ChatGPT` (and the same with Claude Code's wording) in the message; the default locale of the terminal used here and `C` passed, which is why the ordinary suite passed here and failed for QA. A BMP symbol (`✨ generated by codex`) was stripped under `C.UTF-8`; the robot, outside the Basic Multilingual Plane, was not: Git for Windows' `grep` does not match `[^[:alnum:]]*` over such a character in a UTF-8 locale (cause inferred from that contrast, not read from grep's source). Fix in `.githooks/commit-msg`: `in_c() { LC_ALL=C "$@"; }` and every `grep` and `sed` that reads the message goes through it, with the message read from stdin so the C locale never touches a file name. The identity checks (`git var`) are untouched.
+- **Tests:** `test_attribution_is_stripped_in_every_locale` (5 trailers x default, `C`, `C.UTF-8`) and `test_prose_with_accents_and_emoji_survives_in_every_locale` (accents, a dash and an emoji in the body survive, the attribution line goes) in `tests/test_commit_msg_hook.py`; the fixture takes `env_overrides`. Seen failing: 3 of the 18 new cases, all under `C.UTF-8`. All 62 hook tests pass.
+- **QA2-06:** audited again today (see Accepted risk above): 5 high with dev dependencies, 0 without. QA's "0 for both" was not reproduced; the line was refreshed with date, tool versions and both results instead of being changed to zero.
+- **Verification rule** added to `CONTRIBUTING.md` (owner's wording: verification is run without changing PATH or locale; tests that depend on the environment are parameterized by environment).
+- **ESLint cold start:** the timeout of `lib/__tests__/lint-config.test.ts` goes from 30 s to 120 s. It failed once in this task (P0.13-A run) because the first load of the Next.js config took longer than 30 s on this Windows machine.
+- Local run (default terminal, nothing changed in PATH or locale): `python -m pytest` 565 passed, 1 skipped; `npm test` 32 passed; `npx tsc --noEmit` and `npm run lint` exit 0.
+- **P0.13 is done.** QA2-01/03 → A (`c3e03da`), QA2-02/04 → B (`4a33315`), QA2-05/06 → C.
+- Next: P0.10 run 3 (see Current state).
 
 ### 2026-10-11 — P0.13-B attribution and rounding (Claude Code, gated)
 

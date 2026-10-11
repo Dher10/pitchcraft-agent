@@ -34,7 +34,7 @@ confirmed. Wrap around 72 characters. Several short paragraphs are fine.>
 - **Type (enforced):** `feat`, `fix`, `docs`, `chore`, `style`, `refactor`, `test`, `perf`, `ci`, `build`. Optional scope: `fix(pipeline): ...`.
 - **Subject (enforced):** lowercase after the colon, imperative ("add", "fix", "remove"), no trailing period. Aim for under 72 characters.
 - **Body (enforced: at least one line):** keep it short. At most two short paragraphs: (1) what was wrong or why the change is needed, with the root cause for fixes; (2) what changed, plus anything deliberately left pending. No file lists, no task bookkeeping (ticking PLAN.md or STATUS.md is implied).
-- **Verification line (expected):** end with what was run and its result, e.g. `pytest 24/24, ruff clean, next build green`.
+- **Verification line (expected):** end with what was run and its result, e.g. `pytest 24/24, ruff clean, next build green`. The result of the tests comes from `python -m pytest` and `npm test` run as described in "Verification" below.
 - **Language:** English.
 
 ### Example
@@ -52,6 +52,14 @@ game.broadcast_note still inherits demo text.
 
 pytest 15/15, tsc and eslint clean, next build green.
 ```
+
+## Verification
+
+The verification line of a commit comes from `python -m pytest` and `npm test`, run in the owner's default terminal. Verification is run without changing PATH or locale; tests that depend on the environment are parameterized by environment.
+
+- Nothing is prepended to the PATH and no locale variable is set to make a run pass. A suite that only passes after changing the environment has found a bug in the code or in the test.
+- When behavior can depend on the environment (the locale of the shell, the PATH, the OS), the test takes the environment as a parameter and runs every case: the hook tests run the attribution filter under the default locale, `C` and `C.UTF-8`.
+- If a command cannot run (a sandbox, a missing tool), say so in the commit body and in `STATUS.md`; do not report the result of a different command or environment as if it were the default one.
 
 ## Workflow
 
