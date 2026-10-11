@@ -1039,8 +1039,9 @@ def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
     """
     For each pitch type, compute median horizontal and vertical movement in inches.
 
-    Pitch families are mapped for frontend color and copy. Empty or sparse movement
-    data falls back to zeroes so the JSON shape remains stable.
+    Pitch families are mapped for frontend color and copy. Movement that is missing
+    (no columns, all null, or fewer than three observations) is None, never zero: the
+    keys stay so the JSON shape is stable, but a zero would read as a measured shape.
     """
 
     family_map = {
@@ -1069,7 +1070,7 @@ def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
             h_break = round(float(sub["pfx_x"].median()) * 12, 1)
             v_break = round(float(sub["pfx_z"].median()) * 12, 1)
         else:
-            h_break, v_break = 0.0, 0.0
+            h_break, v_break = None, None
         result[name] = {
             "h_break": h_break,
             "v_break": v_break,

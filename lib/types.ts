@@ -178,8 +178,9 @@ export interface StrengthRow {
 export type PitchFamily = "Fastball" | "Breaking" | "Offspeed";
 
 export interface PitchMovement {
-  h_break: number;
-  v_break: number;
+  /** Inches; null when the movement was not measured (never 0 for "unknown"). */
+  h_break: number | null;
+  v_break: number | null;
   family: PitchFamily;
 }
 

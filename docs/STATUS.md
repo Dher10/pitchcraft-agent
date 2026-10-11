@@ -6,7 +6,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.12-C (then D, E; one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** P0.12-D (then E; one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
@@ -16,6 +16,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- P0.12-C: the detail panel shows each starter's own pitches only, a message instead of a chart for an empty or limited arsenal, and "Movement data not available" instead of a 0.0-inch break; the starter card shows a dash for an unavailable ERA, WHIP or K. Component tests now run in CI (job `components` in `tests.yml`, `npm test`).
 - D30 (put-away pitch = second pitch by usage, only from 15% of the mix) added to `DECISIONS.md`.
 - P0.12-B: the Critic no longer "revises" anything (status `revised` is gone from the schema, validator and UI); an `unsupported` claim stops the generator (exit 1, JSON untouched). A pitcher with one pitch has no put-away pitch (a second pitch counts only from 15% of the mix) and reports say "works mainly off a four-seam". The served JSON was regenerated and is now plainly demo. The Critic panel's "Revision Notes" is now "Critic Notes".
 - D29 (approved 2026-10-11) added and D23 marked "amended by D29": `as_of` is always the official game date (New York) minus one day, in historical runs and in the daily job; the month that holds `as_of` is refreshed each run under its own 10-request budget. P1.3 reviews that budget for days of up to 15 games. P0.12 added to `PLAN.md` after the first QA gate failed.
@@ -31,6 +32,16 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.12-C frontend honesty and the component test runner (Claude Code, gated)
+
+- **Runner (brought forward from P1.4):** Vitest 5.0.2 + Testing Library + jsdom, as in the Next.js guide shipped in `node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md`. All versions pinned exactly and installed with `npm install --before=2026-09-27`, so none is younger than two weeks (vitest 5.0.2, @vitejs/plugin-react 6.1.1, jsdom 30.1.1, vite 8.3.1, @testing-library/react 16.3.3, @testing-library/dom 10.4.2, vite-tsconfig-paths 6.1.1). `@types/node` goes from `^20` to `24.19.0` because vitest 5 asks for 22 or 24+ and the runtime is Node 24. `npm audit --omit=dev`: 0; with dev dependencies the same 5 high findings of the accepted `eslint-config-next` chain, nothing new. `npm test` runs `vitest run` (`vitest.config.mts`, `vitest.setup.ts`); tests live in `components/__tests__/` and `lib/__tests__/` with a self-contained typed fixture (`fixtures.ts`), so they do not depend on the file the bot rewrites.
+- **CI:** new job `components` in `.github/workflows/tests.yml`: `actions/setup-node` v7.0.0 pinned by SHA `820762786026740c76f36085b0efc47a31fe5020` (release of 2026-07-14, runs on node24, commit signed), Node `24.16.0`, `npm ci`, `npm test`, `persist-credentials: false`, workflow-level `permissions: contents: read`. The job uses `ubuntu-24.04`; P1.0 still has to move the `pytest` job off `ubuntu-latest` and its two actions off Node 20.
+- **QA-03:** `DetailedAnalysis` keeps only the rows with usage above 0 for that starter (the combined chart also holds the opponent's), starts on his own first pitch, lists velocities only for those pitches, shows "has no pitches on record" for an empty arsenal, "pitch shapes are not described" for a limited one, and "Movement data not available for this pitch" when movement is null or has no entry (a real measured 0.0 is still drawn). `compute_movement` returns `None` (not 0.0) for missing columns, all-null values or fewer than 3 observations; `PitchMovement` in `lib/types.ts` allows null.
+- **"N/A is never a number", frontend half (owner's addition in B):** `lib/format.ts` `formatFigure` turns "N/A", empty, null and undefined into a dash; `StarterCard` uses it for ERA, WHIP and K. IP is not shown on the pre-game card, so there is nothing to format there. A real `0.00` ERA or 0 strikeouts still shows as such.
+- Tests first and seen failing: the QA probe reproduced in a real component under jsdom (the debut got the opponent's Four-seam row); 10 of 16 component tests and 7 of 9 `test_movement_unavailable.py` failed before the fix. Local run: pytest 305 passed, 1 skipped; vitest 28 passed; `tsc`, lint and `next build` clean.
+- Left for P1.4: the badge tests and the remaining component states (origin badges, `StrengthProfile` empty state, `ScoutingReport` offense dashes).
+- Next: P0.12-D.
 
 ### 2026-10-11 — P0.12-B the Critic blocks publication, CI validates the served JSON (Claude Code, gated)
 

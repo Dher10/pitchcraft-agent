@@ -2,6 +2,7 @@ import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
 import StatTile from "@/components/StatTile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram from "@/components/ZoneDiagram";
+import { formatFigure } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 
 interface StarterCardProps {
@@ -61,9 +62,9 @@ export default function StarterCard({
         {throwsHand}HP &middot; {starter.pitching_profile.style_label}
       </p>
       <dl className="mt-4 grid grid-cols-3 gap-2">
-        <StatTile label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
-        <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={starter.season_summary.whip} />
-        <StatTile label="K" title="Strikeouts." value={starter.season_summary.strikeouts ?? "—"} />
+        <StatTile label="ERA" title="Earned Run Average. Lower is better." value={formatFigure(starter.season_summary.era)} />
+        <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={formatFigure(starter.season_summary.whip)} />
+        <StatTile label="K" title="Strikeouts." value={formatFigure(starter.season_summary.strikeouts)} />
       </dl>
       {starter.season_summary.scope ? (
         <p className="mt-1.5 font-mono text-[10px] text-neutral-400">
