@@ -41,12 +41,24 @@ def good_run(**overrides) -> dict:
     }
 
 
+def good_game(**overrides) -> dict:
+    """The least a live game must say for the generator to trust it (dates and hands)."""
+
+    return {
+        "featured_game": {"official_date": "2026-07-15"},
+        "as_of": "2026-07-14",
+        "away_starter": {"name": "Alpha Livearm", "throws": "R"},
+        "home_starter": {"name": "Bravo Liveleft", "throws": "L"},
+        **overrides,
+    }
+
+
 def good_snapshot(**overrides) -> dict:
     return {
         "run_at": RUN_AT,
         "fetched_date": "2026-07-15",
         "as_of": "2026-07-14",
-        "live_games": [{"some": "data"}],
+        "live_games": [good_game()],
         **overrides,
     }
 

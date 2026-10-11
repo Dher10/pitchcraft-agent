@@ -4,9 +4,9 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums. P0.12 (A–E) fixed all ten findings; the second gate decides.
+- **Phase:** Phase 0 is open. The first QA gate (2026-10-10) returned FAIL and P0.12 (A–E) fixed its ten findings. The second gate (2026-10-11, `docs/qa/QA-phase-0-2026-10-11.md`) returned FAIL: one Blocker, two Highs, two Mediums, one Low. P0.13 (A–C) fixes them; A is done, B and C are next. Run 3 of the gate (P0.10) comes after P0.13.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.10 run 2 (D27), the second QA gate of Phase 0. The owner starts Codex with exactly: `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`. The report goes to `docs/qa/` (the first one is `docs/qa/QA-phase-0-2026-10-10.md`, FAIL). The QA agent does not read this file at the start (AGENTS.md). P1.0 starts only after Phase 0 closes. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** P0.13-B (QA2-02 and QA2-04, plus the sweep items listed in `PLAN.md`; D32 for the analyst's K%/BB% cut-offs is shown to the owner before the commit). Then P0.13-C, then P0.10 run 3 (D27): the owner starts Codex with exactly `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`; the report goes to `docs/qa/`. The QA agent does not read this file at the start (AGENTS.md). P1.0 starts only after Phase 0 closes.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
@@ -15,6 +15,8 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 ## Pending Notion sync
 
 Changes made in the repo that the owner still needs mirrored to Notion:
+
+- P0.13-A: the generator no longer trusts a cached run and snapshot just because their strings match: every date is parsed, each game's cutoff must be before its official date and equal the run's, and no figure may run past it; otherwise the page falls back to demo with the reason. Publication also fails if any figure of a game covers its own day or later. A snapshot written before D29 (no per-game dates) is now rejected. A malformed answer from the MLB API (a schedule date without `games`, stats without `stats`/`splits`) is a recorded source failure, not "no games" or zero figures; the pitcher's throwing hand is never guessed (looked up once, cached, at most 10 lookups per run).
 
 - P0.12-E: the commit hook now also rejects capitals and a trailing period in the subject (code in backticks may keep its case) and Merge/Revert subjects that git did not write, and strips attribution from any AI tool (Codex, ChatGPT, Copilot, …); a valid empty finished month of Savant data is cached (no repeat request); the lint ignores `.pytest_cache`.
 - D31 added and D6 marked "scoped by D31": D6 in v2.0 is the `language` parameter plus the catalog of the five agents; data labels, the generator's texts and the frontend copy stay English until v2.1 (task L10N.1).
@@ -35,6 +37,17 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.13-A input boundary (Claude Code, gated)
+
+- **QA2-01:** `_snapshot_unsafe` in `generate_demo_json.py`, called by `_resolve_live_input` after the ownership check. Dates must be written `YYYY-MM-DD` and parse; the run's cutoff is before its game date; the snapshot has games; each game has an `official_date` equal to the run's game date, an `as_of` before it and equal to the run's, a named starter with `throws` L or R, and no figure (`sample` arsenal and rates, `season_summary`) running past the cutoff. A failure gives `demo_fallback` with the reason. Second layer in `validators.py`: `_validate_data_cutoff` fails any matchup whose starters' or offense scopes reach its own date or later, so a payload built around the resolver still cannot publish. The QA probe (game 07-15, cutoff 07-20, real fetcher and resolver) now ends in `demo_fallback`; the same late scopes fed straight to `build_payload` fail validation.
+- **QA2-03:** two helpers in `live_pipeline.py`: `_schedule_games` (a `dates` list, a `games` list in every date entry) and `_stat_splits` (a `stats` list, a `splits` list in every entry). Used by the schedule, the pitcher season stats, the series status (both requests) and the team splits through the API. `[]` at any level stays valid. Checked against the live API on 2026-10-11 before making `games` mandatory: a day without games answers `dates: []` (2026-12-25) and every date entry that exists carries `games` (2026-07-16, two date ranges, the 15-game 2026-07-17). A frame without `events` gives batters faced, K, BB and HR of `None` (limited, source "unavailable") and a `statcast_pitcher` error; the game is still shown (D1).
+- **Sweep fixes done here:** a Statcast frame without `p_throws` no longer makes a left-hander right-handed: `process_pitcher_statcast` returns `throws: None` and the fetcher asks `fetch_pitcher_hand`; the generator indexes `throws` instead of defaulting to "R"; team-split counts the API omits are `None` (they were 0); `mlb_stats_api.py` (imported by nothing, tests included) is deleted.
+- **Pitcher-hand budget and cache (owner asked which):** a valid hand is cached for good in `data_cache/raw/pitcher_hand/<id>.json` (a hand does not change; git-ignored); only a cache miss is a request, and requests are capped at `PITCHER_HAND_MAX_REQUESTS_PER_RUN = 10` (5 candidate games x 2 starters, the same bound as D29's open-month budget). A failed request counts, is not cached, and an invalid answer (unknown code) is not cached either. Past the cap the hand is unavailable with a `mlb_person` error, no call is made and the run goes on. The counter resets in `run_live_pipeline`. This is a constant, not a decision: D23 covers only Savant. The budget for the pitcher Statcast fetches is still the open P1.2 proposal.
+- `tests/conftest.py` redirects the hand cache to a temporary folder for every test.
+- Tests first and seen failing: `test_snapshot_dates.py` (new, 21 of 24 failed), `test_source_structure.py` (16 new cases failed), `test_pitcher_hand.py` (new, 11 failed): 48 failures in all; the rest are controls (valid empty answers, the coherent pair). Older fixtures that the new rule made fail were updated, not weakened: stub live games now carry dates and hands (`good_game` in `test_stale_snapshot.py`), and the debut-payload test puts its game the day after its figures. `tests/golden_scenarios.py` and the English golden are untouched.
+- Local run (default terminal, nothing changed in PATH or locale): `python -m pytest` 478 passed, 1 skipped. `npm test`: 32 passed on the second run; the first run had one failure in `lib/__tests__/lint-config.test.ts`, the ESLint cold start against its 30-second timeout (seen before, unrelated to this task; raising it is a one-line change if the owner wants it).
+- Next: P0.13-B.
 
 ### 2026-10-11 — P0.12-E Mediums and tooling (Claude Code, gated)
 

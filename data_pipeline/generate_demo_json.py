@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import date
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
@@ -73,6 +75,13 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
             f"Live snapshot does not belong to the latest live run ({mismatch}); showing demo data",
             summary,
         )
+    unsafe = _snapshot_unsafe(run, snapshot)
+    if unsafe:
+        return None, _status(
+            config.DATA_MODE_FALLBACK,
+            f"Live snapshot rejected ({unsafe}); showing demo data",
+            summary,
+        )
     return snapshot, _status(config.DATA_MODE_SNAPSHOT, "Live run ok", summary)
 
 
@@ -96,6 +105,94 @@ def _snapshot_mismatch(run: dict[str, Any], snapshot: Any) -> str | None:
         if not isinstance(expected, str) or not expected or expected != found:
             return f"{snapshot_key.replace('_', ' ')} does not match the run"
     return None
+
+
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+_SLOTS = ("away_starter", "home_starter")
+
+
+def _parse_date(value: Any) -> date | None:
+    """A date written exactly as YYYY-MM-DD, or None. Anything else is not a date."""
+
+    if not isinstance(value, str) or not _ISO_DATE.fullmatch(value):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _snapshot_unsafe(run: dict[str, Any], snapshot: dict[str, Any]) -> str | None:
+    """
+    Why a snapshot that belongs to its run still cannot be published as live, or None.
+
+    Equal strings prove ownership, not safety (QA2-01). Every date is parsed and the
+    relationships D29 relies on are checked: the cutoff of the run and of every game is before
+    the game's official date, the game is the run's game day, and no figure of any starter
+    reaches past the cutoff. A game without its dates or its starters' hands is malformed.
+    """
+
+    target = _parse_date(run.get("target_date"))
+    cutoff = _parse_date(run.get("as_of"))
+    if target is None:
+        return f"run game date {run.get('target_date')!r} is not a date"
+    if cutoff is None:
+        return f"run cutoff {run.get('as_of')!r} is not a date"
+    if cutoff >= target:
+        return f"run cutoff {cutoff} is not before the game date {target}"
+
+    games = snapshot.get("live_games")
+    if not isinstance(games, list) or not games:
+        return "the snapshot has no games"
+    for index, game in enumerate(games, start=1):
+        problem = _game_unsafe(game, target, cutoff)
+        if problem:
+            return f"game {index}: {problem}"
+    return None
+
+
+def _game_unsafe(game: Any, target: date, cutoff: date) -> str | None:
+    if not isinstance(game, dict) or not isinstance(game.get("featured_game"), dict):
+        return "no game record"
+    official_raw = game["featured_game"].get("official_date")
+    official = _parse_date(official_raw)
+    if official is None:
+        return f"official date {official_raw!r} is not a date"
+    if official != target:
+        return f"official date {official} is not the run's game date {target}"
+    game_cutoff_raw = game.get("as_of")
+    game_cutoff = _parse_date(game_cutoff_raw)
+    if game_cutoff is None:
+        return f"cutoff {game_cutoff_raw!r} is not a date"
+    if game_cutoff >= official:
+        return f"cutoff {game_cutoff} is not before the official date {official}"
+    if game_cutoff != cutoff:
+        return f"cutoff {game_cutoff} is not the run's cutoff {cutoff}"
+
+    for slot in _SLOTS:
+        starter = game.get(slot)
+        if not isinstance(starter, dict) or not starter.get("name"):
+            return f"{slot} has no name"
+        if starter.get("throws") not in ("L", "R"):
+            return f"{slot} throws {starter.get('throws')!r}, not L or R"
+        for through in _starter_throughs(starter):
+            reached = _parse_date(through)
+            if reached is None:
+                return f"{slot} has a figure through {through!r}, not a date"
+            if reached > game_cutoff:
+                return f"{slot} has a figure through {reached}, after the cutoff {game_cutoff}"
+    return None
+
+
+def _starter_throughs(starter: dict[str, Any]) -> list[Any]:
+    """The last day every group of figures of a starter claims to cover."""
+
+    scopes = []
+    sample = starter.get("sample")
+    if isinstance(sample, dict):
+        scopes += [(sample.get("arsenal") or {}).get("scope"), (sample.get("rates") or {}).get("scope")]
+    scopes.append((starter.get("season_summary") or {}).get("scope"))
+    return [scope.get("through") for scope in scopes if isinstance(scope, dict)]
 
 
 _live, _live_status = _resolve_live_input()
@@ -347,13 +444,13 @@ def _apply_live_game_to_matchup(
     _apply_offense_split(
         matchup["teams"]["home"]["offense_profile"],
         live_game.get("home_team_splits", {}),
-        away.get("throws", "R"),
+        away["throws"],
         offense_scope,
     )
     _apply_offense_split(
         matchup["teams"]["away"]["offense_profile"],
         live_game.get("away_team_splits", {}),
-        home.get("throws", "L"),
+        home["throws"],
         offense_scope,
     )
 
@@ -385,7 +482,7 @@ def _apply_live_starter(
     team_abbr: str,
     pitcher_id: int | None,
 ) -> None:
-    throws = live_starter.get("throws", "R")
+    throws = live_starter["throws"]  # never guessed: _snapshot_unsafe rejects a starter without it
     starter["id"] = str(pitcher_id or starter["id"])
     starter["name"] = live_starter["name"]
     starter["team"] = team_abbr

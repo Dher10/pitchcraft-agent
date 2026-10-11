@@ -17,6 +17,7 @@ from data_pipeline import generate_demo_json as gdj
 from data_pipeline.fetchers import cache_manager
 from data_pipeline.fetchers import live_pipeline as lp
 from data_pipeline.validators import validate_payload
+from tests.test_stale_snapshot import good_game
 
 
 class FakeResponse:
@@ -227,7 +228,12 @@ def test_a_good_run_with_its_own_snapshot_is_live():
     write_run("ok")
     cache_manager.save_processed(
         "live_matchup",
-        {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-14"},
+        {
+            "run_at": "2026-07-15T12:00:00+00:00",
+            "fetched_date": "2026-07-15",
+            "as_of": "2026-07-14",
+            "live_games": [good_game()],
+        },
     )
 
     snapshot, status = gdj._resolve_live_input()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import date
 import re
 from typing import Any
 
@@ -152,9 +153,69 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
     )
     _validate_pitch_locations(pitch_locations, label, record)
 
+    _validate_data_cutoff(matchup, label, record)
     _validate_final_postgame(matchup, label, record)
     _validate_critic_review(matchup.get("critic_review"), label, record)
     _validate_report_betting_terms(matchup.get("report"), label, record)
+
+
+def _iso_date(value: Any) -> date | None:
+    """A date written exactly as YYYY-MM-DD, or None."""
+
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _scope_throughs(matchup: Mapping[str, Any]) -> list[tuple[str, Any]]:
+    """(where, last day covered) of every group of figures the matchup says how far it reaches."""
+
+    found: list[tuple[str, Any]] = []
+
+    def add(where: str, scope: Any) -> None:
+        if isinstance(scope, Mapping):
+            found.append((where, scope.get("through")))
+
+    starters = matchup.get("starters")
+    for slot in STARTER_SLOTS:
+        starter = starters.get(slot) if isinstance(starters, Mapping) else None
+        if not isinstance(starter, Mapping):
+            continue
+        sample = starter.get("sample")
+        if isinstance(sample, Mapping):
+            for group in ("arsenal", "rates"):
+                part = sample.get(group)
+                add(f"{slot} {group}", part.get("scope") if isinstance(part, Mapping) else None)
+        summary = starter.get("season_summary")
+        add(f"{slot} season summary", summary.get("scope") if isinstance(summary, Mapping) else None)
+    teams = matchup.get("teams")
+    for side in TEAM_SIDES:
+        team = teams.get(side) if isinstance(teams, Mapping) else None
+        offense = team.get("offense_profile") if isinstance(team, Mapping) else None
+        add(f"{side} offense", offense.get("scope") if isinstance(offense, Mapping) else None)
+    return found
+
+
+def _validate_data_cutoff(matchup: Mapping[str, Any], label: str, record: Any) -> None:
+    """No figure of a game may cover that game's own day or later (D29): last line of defense."""
+
+    scopes = _scope_throughs(matchup)
+    if not scopes:
+        return
+    game_day = _iso_date(matchup.get("date"))
+    late = []
+    for where, through in scopes:
+        day = _iso_date(through)
+        if game_day is None or day is None or day >= game_day:
+            late.append(f"{where} through {through!r}")
+    record(
+        f"{label}: data cutoff is before the game date",
+        not late,
+        f"game date {matchup.get('date')!r}: {', '.join(late)}",
+    )
 
 
 def _validate_pitch_mix(charts: Any, label: str, record: Any) -> None:

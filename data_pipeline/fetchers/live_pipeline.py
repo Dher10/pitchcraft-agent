@@ -17,6 +17,7 @@ from zoneinfo import ZoneInfo
 
 PYBASEBALL_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache" / "raw" / "pybaseball"
 TEAM_BATTING_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache" / "raw" / "team_batting"
+PITCHER_HAND_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache" / "raw" / "pitcher_hand"
 os.environ.setdefault("PYBASEBALL_CACHE", str(PYBASEBALL_CACHE_DIR))
 
 import numpy as np
@@ -105,6 +106,11 @@ SAVANT_MAX_REQUESTS_PER_RUN = 210
 # Its requests have their own budget, apart from the 210 above: 5 candidate games x 2 teams.
 SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN = 10
 SAVANT_PAUSE_SECONDS = 2.0
+# Throwing-hand lookups (MLB people endpoint) when a Statcast frame cannot say the hand. A hand
+# does not change, so an answer is cached for good; only a cache miss counts. 10 is the most a
+# run can need: 5 candidate games x 2 starters.
+PITCHER_HAND_MAX_REQUESTS_PER_RUN = 10
+PITCHER_HANDS = ("L", "R", "S")
 SAVANT_BATTING_URL = (
     "https://baseballsavant.mlb.com/statcast_search/csv?all=true&type=details"
     "&player_type=batter&hfGT=R%7C&min_pitches=0&min_results=0&group_by=name"
@@ -226,6 +232,7 @@ class SavantOpenMonthBudgetExceeded(RuntimeError):
 
 
 _savant_run = {"requests": 0, "open_requests": 0}
+_pitcher_hand_run = {"requests": 0}
 
 # Failures of the current run, written to data_cache/processed/live_run.json by main().
 _run_errors: list[dict[str, Any]] = []
@@ -270,6 +277,47 @@ def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
         return json.loads(response.read())
 
 
+def _schedule_games(data: Any) -> list[tuple[str | None, dict[str, Any]]]:
+    """
+    The (date, game) pairs of a schedule response.
+
+    `{"dates": []}` is a valid answer for a day without games (checked against the live API:
+    a date entry that exists always carries a `games` list, empty or not). A response without
+    a `dates` list, or a date entry without a `games` list, is malformed and raises, so it is
+    recorded as a source failure instead of reading as "no games".
+    """
+
+    dates = data.get("dates") if isinstance(data, dict) else None
+    if not isinstance(dates, list):
+        raise ValueError("schedule response has no 'dates' list")
+    games: list[tuple[str | None, dict[str, Any]]] = []
+    for entry in dates:
+        if not isinstance(entry, dict) or not isinstance(entry.get("games"), list):
+            raise ValueError("schedule response has a date entry without a 'games' list")
+        games.extend((entry.get("date"), game) for game in entry["games"])
+    return games
+
+
+def _stat_splits(data: Any) -> list[dict[str, Any]]:
+    """
+    The splits of a stats response (people or teams endpoint).
+
+    `{"stats": []}` and `{"stats": [{"splits": []}]}` are valid answers for a player or team
+    without figures. A response without a `stats` list, or a stats entry without a `splits`
+    list, is malformed (an error envelope, for one) and raises.
+    """
+
+    stats = data.get("stats") if isinstance(data, dict) else None
+    if not isinstance(stats, list):
+        raise ValueError("stats response has no 'stats' list")
+    splits: list[dict[str, Any]] = []
+    for entry in stats:
+        if not isinstance(entry, dict) or not isinstance(entry.get("splits"), list):
+            raise ValueError("stats response has an entry without a 'splits' list")
+        splits.extend(entry["splits"])
+    return splits
+
+
 @lru_cache(maxsize=None)
 def season_dates(season: int) -> tuple[date, date]:
     """
@@ -307,39 +355,32 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
 
-        dates = data.get("dates") if isinstance(data, dict) else None
-        if not isinstance(dates, list):
-            raise ValueError("schedule response has no 'dates' list")
-
         games = []
-        for date_entry in dates:
-            for game in date_entry.get("games", []):
-                away = game["teams"]["away"]
-                home = game["teams"]["home"]
-                away_pp = away.get("probablePitcher", {})
-                home_pp = home.get("probablePitcher", {})
-                games.append(
-                    {
-                        "game_pk": game.get("gamePk"),
-                        # The official MLB date, not the UTC date of the start time (D29).
-                        "official_date": game.get("officialDate") or date_entry.get("date"),
-                        "away_team": away.get("team", {}).get("name", "Unknown"),
-                        "away_team_id": away.get("team", {}).get("id"),
-                        "away_team_abbr": _team_abbreviation(away.get("team", {})),
-                        "home_team": home.get("team", {}).get("name", "Unknown"),
-                        "home_team_id": home.get("team", {}).get("id"),
-                        "home_team_abbr": _team_abbreviation(home.get("team", {})),
-                        "away_pitcher_name": away_pp.get("fullName"),
-                        "away_pitcher_id": away_pp.get("id"),
-                        "home_pitcher_name": home_pp.get("fullName"),
-                        "home_pitcher_id": home_pp.get("id"),
-                        "venue": game.get("venue", {}).get("name", ""),
-                        "start_time": game.get("gameDate", ""),
-                        "status": game.get("status", {}).get(
-                            "abstractGameState", "Preview"
-                        ),
-                    }
-                )
+        for entry_date, game in _schedule_games(data):
+            away = game["teams"]["away"]
+            home = game["teams"]["home"]
+            away_pp = away.get("probablePitcher", {})
+            home_pp = home.get("probablePitcher", {})
+            games.append(
+                {
+                    "game_pk": game.get("gamePk"),
+                    # The official MLB date, not the UTC date of the start time (D29).
+                    "official_date": game.get("officialDate") or entry_date,
+                    "away_team": away.get("team", {}).get("name", "Unknown"),
+                    "away_team_id": away.get("team", {}).get("id"),
+                    "away_team_abbr": _team_abbreviation(away.get("team", {})),
+                    "home_team": home.get("team", {}).get("name", "Unknown"),
+                    "home_team_id": home.get("team", {}).get("id"),
+                    "home_team_abbr": _team_abbreviation(home.get("team", {})),
+                    "away_pitcher_name": away_pp.get("fullName"),
+                    "away_pitcher_id": away_pp.get("id"),
+                    "home_pitcher_name": home_pp.get("fullName"),
+                    "home_pitcher_id": home_pp.get("id"),
+                    "venue": game.get("venue", {}).get("name", ""),
+                    "start_time": game.get("gameDate", ""),
+                    "status": game.get("status", {}).get("abstractGameState", "Preview"),
+                }
+            )
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")
         return games
     except Exception as exc:
@@ -390,8 +431,7 @@ def fetch_pitcher_season_stats(
         )
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
-        stats = data.get("stats") or [{}]
-        splits = stats[0].get("splits", [])
+        splits = _stat_splits(data)
         if not splits:
             return {}
         stat = splits[0].get("stat", {})
@@ -474,27 +514,27 @@ def fetch_team_splits(
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
         out = {}
-        for stats_entry in data.get("stats", []):
-            for split in stats_entry.get("splits", []):
-                code = split.get("split", {}).get("code")
-                if code in ("vl", "vr"):
-                    stat = split.get("stat", {})
-                    plate_appearances = stat.get("plateAppearances")
-                    strikeouts = stat.get("strikeOuts", 0)
-                    walks = stat.get("baseOnBalls", 0)
-                    out[code] = {
-                        "ops": stat.get("ops"),
-                        "avg": stat.get("avg"),
-                        "strikeouts": strikeouts,
-                        "walks": walks,
-                        "plate_appearances": plate_appearances,
-                        "k_rate": round(strikeouts / plate_appearances * 100, 1)
-                        if plate_appearances
-                        else None,
-                        "bb_rate": round(walks / plate_appearances * 100, 1)
-                        if plate_appearances
-                        else None,
-                    }
+        for split in _stat_splits(data):
+            code = split.get("split", {}).get("code")
+            if code in ("vl", "vr"):
+                stat = split.get("stat", {})
+                plate_appearances = stat.get("plateAppearances")
+                # A count the source does not give is unavailable (None), never a measured zero.
+                strikeouts = stat.get("strikeOuts")
+                walks = stat.get("baseOnBalls")
+                out[code] = {
+                    "ops": stat.get("ops"),
+                    "avg": stat.get("avg"),
+                    "strikeouts": strikeouts,
+                    "walks": walks,
+                    "plate_appearances": plate_appearances,
+                    "k_rate": round(strikeouts / plate_appearances * 100, 1)
+                    if plate_appearances and strikeouts is not None
+                    else None,
+                    "bb_rate": round(walks / plate_appearances * 100, 1)
+                    if plate_appearances and walks is not None
+                    else None,
+                }
         return out
     except Exception as exc:
         print(f"[LIVE] Team splits fetch failed for team {team_id}: {exc}")
@@ -702,7 +742,7 @@ def fetch_series_status(
     schedule = "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
     try:
         data = _get_json(f"{schedule}&gamePk={game_pk}&hydrate=seriesStatus")
-        games = [g for d in data.get("dates", []) for g in d.get("games", [])]
+        games = [g for _, g in _schedule_games(data)]
         game = next((g for g in games if g.get("gamePk") == game_pk), None)
         if not game or game.get("gameType") not in POSTSEASON_GAME_TYPES:
             return {}
@@ -721,7 +761,7 @@ def fetch_series_status(
             f"&endDate={window_end}&gameType={game_type}&hydrate=seriesStatus"
         )
         earlier = []
-        for entry in (g for d in data.get("dates", []) for g in d.get("games", [])):
+        for _, entry in _schedule_games(data):
             entry_teams = {
                 entry["teams"]["home"]["team"]["id"],
                 entry["teams"]["away"]["team"]["id"],
@@ -805,9 +845,22 @@ def fetch_pitcher_statcast(
         if len(df) > 0:
             print(f"[LIVE] {pitcher_name}: {len(df)} pitches fetched")
             counts = _statcast_counts(df)
+            if counts["batters_faced"] is None:
+                _record_error(
+                    "statcast_pitcher",
+                    "pitcher Statcast data has no 'events' column: batters faced, strikeouts, "
+                    "walks and home runs are unavailable",
+                    pitcher_id=pitcher_id,
+                )
             processed = process_pitcher_statcast(df, pitcher_name)
             if not processed["pitch_mix"]:
                 processed = None
+            elif processed["throws"] is None:
+                # The frame cannot say which hand he throws with; never assume the right one.
+                throws = fetch_pitcher_hand(pitcher_id)
+                if throws is None:
+                    return None
+                processed["throws"] = throws
         if processed is None:
             # No MLB pitches on record (a debut) or none usable. The game is still
             # shown: every pitch-based dimension is flagged limited, never skipped.
@@ -826,24 +879,78 @@ def fetch_pitcher_statcast(
         return None
 
 
-def fetch_pitcher_hand(pitcher_id: int) -> str | None:
-    """Throwing hand ("R", "L" or "S") from the MLB people endpoint, or None (error recorded)."""
+def _cached_pitcher_hand(pitcher_id: int) -> str | None:
+    """The cached hand, or None when there is no usable cache entry (a bad file is ignored)."""
 
+    path = PITCHER_HAND_CACHE_DIR / f"{pitcher_id}.json"
+    try:
+        throws = json.loads(path.read_text(encoding="utf-8")).get("throws")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return throws if throws in PITCHER_HANDS else None
+
+
+def fetch_pitcher_hand(pitcher_id: int) -> str | None:
+    """
+    Throwing hand ("R", "L" or "S") from the MLB people endpoint, or None (error recorded).
+
+    A hand does not change, so a valid answer is cached for good under
+    data_cache/raw/pitcher_hand and a cache hit costs nothing. Only a request counts against
+    the budget of PITCHER_HAND_MAX_REQUESTS_PER_RUN per run (a failed one too); past it the
+    answer is unavailable and the error says why, without a call. A failed or invalid answer
+    is never cached.
+    """
+
+    cached = _cached_pitcher_hand(pitcher_id)
+    if cached is not None:
+        return cached
+    if _pitcher_hand_run["requests"] >= PITCHER_HAND_MAX_REQUESTS_PER_RUN:
+        message = (
+            f"pitcher hand request budget of {PITCHER_HAND_MAX_REQUESTS_PER_RUN} per run "
+            "is spent"
+        )
+        print(f"[LIVE] Pitcher hand lookup skipped for id={pitcher_id}: {message}")
+        _record_error("mlb_person", message, pitcher_id=pitcher_id)
+        return None
+    _pitcher_hand_run["requests"] += 1
     try:
         data = _get_json(f"https://statsapi.mlb.com/api/v1/people/{pitcher_id}")
-        return data["people"][0]["pitchHand"]["code"]
+        throws = data["people"][0]["pitchHand"]["code"]
+        if throws not in PITCHER_HANDS:
+            raise ValueError(f"unknown throwing hand {throws!r}")
     except Exception as exc:
         print(f"[LIVE] Pitcher hand lookup failed for id={pitcher_id}: {exc}")
         _record_error("mlb_person", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
         return None
+    try:
+        PITCHER_HAND_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        (PITCHER_HAND_CACHE_DIR / f"{pitcher_id}.json").write_text(
+            json.dumps({"pitcher_id": pitcher_id, "throws": throws}), encoding="utf-8"
+        )
+    except OSError as exc:  # the answer is still good; only the cache is lost
+        print(f"[LIVE] Could not cache the hand of id={pitcher_id}: {exc}")
+    return throws
 
 
 def _statcast_counts(df: Any) -> dict[str, Any]:
-    """Pitch and plate-appearance counts from the Statcast frame (regular season + postseason)."""
+    """
+    Pitch and plate-appearance counts from the Statcast frame (regular season + postseason).
 
-    events = df["events"].dropna() if "events" in df.columns else df.iloc[0:0]["pitch_type"]
-    plate_appearances = events[~events.isin(NON_PA_EVENTS)]
+    A frame without `events` cannot say how many batters he faced: the counts are None
+    (unavailable), never a measured zero.
+    """
+
     has_postseason = "game_type" in df.columns and bool((df["game_type"] != "R").any())
+    if "events" not in df.columns:
+        return {
+            "batters_faced": None,
+            "strikeouts": None,
+            "walks": None,
+            "home_runs": None,
+            "has_postseason": has_postseason,
+        }
+    events = df["events"].dropna()
+    plate_appearances = events[~events.isin(NON_PA_EVENTS)]
     return {
         "batters_faced": int(len(plate_appearances)),
         "strikeouts": int(plate_appearances.isin(STRIKEOUT_EVENTS).sum()),
@@ -902,7 +1009,7 @@ def _attach_sample(
             "walks": mlb_stats.get("walks"),
             "home_runs": mlb_stats.get("home_runs_allowed"),
         }
-    elif counts:
+    elif counts and counts["batters_faced"] is not None:
         source, rates_kind = "statcast", arsenal_kind
         numbers = {key: counts[key] for key in ("batters_faced", "strikeouts", "walks", "home_runs")}
     else:
@@ -994,10 +1101,12 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
     velocity_rows = [row for row in velocity_rows if row["pitch"] in top_pitch_names]
     kept_names = [row["pitch"] for row in pitch_mix]
     movement = compute_movement(df, kept_names)
+    # None when the frame cannot say: the fetcher then asks the MLB people endpoint. A guess
+    # of "R" would pick the wrong team split and print the wrong hand.
     throws = (
         df["p_throws"].dropna().iloc[0]
         if "p_throws" in df.columns and len(df["p_throws"].dropna()) > 0
-        else "R"
+        else None
     )
 
     pitch_locations = {"vs_lhh": [], "vs_rhh": []}
@@ -1308,6 +1417,7 @@ def run_live_pipeline(
 
     _run_errors.clear()
     _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
+    _pitcher_hand_run.update(requests=0)  # so is the pitcher-hand budget
     info: dict[str, Any] = {}
     run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     target = target_date or today_eastern().isoformat()

@@ -231,6 +231,8 @@ def test_a_debut_flags_every_dimension_and_the_report_is_still_written(monkeypat
 def test_a_debut_payload_still_validates(monkeypatch):
     matchup = build(monkeypatch, away=debut_sample())
     payload = demo_inputs.build_demo_payload()
+    # The fixture's figures run through 2026-07-04; the game is the next day (D29).
+    matchup["date"] = "2026-07-05"
     payload["matchups"][0] = matchup
     payload["featured_matchup_id"] = matchup["id"]
     monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "", "live_run": None})
