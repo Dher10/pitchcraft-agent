@@ -6,9 +6,10 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 code tasks are done (S0, P0.0–P0.9, with P0.4 closed as D24). Next is the Phase 0 definition-of-done check against the Gherkin scenarios.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** owner decisions on the three partial scenarios (see the Phase 0 definition-of-done entry), then P0.10 QA gate (D27; the owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`). P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** P0.10 QA gate (D27): the owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
+- **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
 
 ## Pending Notion sync
@@ -27,6 +28,14 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — P0.11 close the Phase 0 gaps before the QA gate (Claude Code, gated)
+
+- **Scenario 1 is now automated end to end** (`tests/test_as_of_end_to_end.py`): `run_live_pipeline` runs with `as_of=2026-07-14` for a game on 2026-07-15 over sources that do leak: Statcast returns the game-day pitches, later pitches and spring-training pitches regardless of the range; the season-stats API answers with obviously "future" numbers for any end date after the cutoff; the Savant team-batting source ignores the requested end date and returns 50 home runs from 2026-07-20. The test inspects the snapshot (150 pitches, the cutoff numbers, 20 plate appearances and a .000 OPS in the team splits, no leaked token anywhere in the serialized data) and the requests (every season-stats call ends on the cutoff and no Savant call goes past it). A control test runs the same sources without `as_of` and shows the leaks are really reachable. Seven deliberate breaks (Statcast date filter, spring training allowed, season stats ignoring the cutoff, team-split date filter, Savant asked past the cutoff, `as_of` dropped for pitchers, `as_of` dropped for team splits) are all caught. Local run: 185 passed.
+- **D28** splits scenarios 4 and 9 so each part is verified where it is built; D4 is marked "amended by D28". Phase 0 keeps: the pipeline exits successfully without errors and records `no_games` (4), and the series-status fetch returns the standing before first pitch for a given `as_of` (9). Moved: "the site shows the season archive" is now an acceptance criterion of P1.6; "the historical dataset builds every postseason case this way" is an acceptance criterion of P2.4. Nothing was dropped.
+- **Gaps assigned to tasks:** component tests for the explicit "not available" states go to P1.4 (the repo has no test runner for components); pinning pandas and numpy goes to P1.0; counting the pitcher Statcast fetch in a request budget goes to P1.2 (D23's 210 covers only the team-batting fetch, so a budget for pitcher requests needs its own figure, proposed as a new decision).
+- **Accepted risk (owner, 2026-10-10):** `npm audit` including dev dependencies shows 5 high findings, one chain under `eslint-config-next` (`@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`, a stack-exhaustion denial of service in glob matching). They are development tooling, never shipped, and `npm audit --omit=dev` reports 0. npm's suggested fix is a downgrade to `eslint-config-next@14.2.35`, which is not taken. Recheck when `eslint-config-next` publishes a newer chain.
+- Next: P0.10, the QA gate (the owner starts Codex).
 
 ### 2026-10-10 — Phase 0 definition-of-done check (Claude Code, self-check before the QA gate)
 

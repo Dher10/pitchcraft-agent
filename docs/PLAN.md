@@ -34,6 +34,7 @@ Lanes (D22): `[auto]` = plan approved once, then commit and push without asking;
 - [x] P0.7 [auto] Remove the hardcoded season year (2026, `2026-03-20`).
 - [x] P0.8 [auto] Explicit data mode and error log instead of the silent fallback to demo.
 - [x] P0.9 [auto] Hygiene: upgrade Next.js to 16.4.0 (fixes `npm audit` critical/high findings; read `node_modules/next/dist/docs/` first); delete `pitchcraftvisualpolish.bundle` (stray git bundle); pin `pybaseball==2.2.7`; move or delete `test_splits.py`. `npm audit --omit=dev` must report 0 critical and 0 high.
+- [x] P0.11 [gated] Close the Phase 0 gaps found by the definition-of-done check, before the QA gate: end-to-end `as_of` test (scenario 1), split scenarios 4 and 9 (D28), assign the remaining gaps to P1.0, P1.2 and P1.4, and document the accepted dev-only `npm audit` findings.
 - [ ] P0.10 [gated] QA gate for Phase 0 (D27). The owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`; the report goes to `docs/qa/`. Phase 0 closes only on PASS, or on PASS WITH CONDITIONS once the listed conditions are met; any Blocker or High is a FAIL and Phase 0 stays open.
 
 ### Phase 0 definition of done
@@ -59,9 +60,10 @@ Feature: Phase 0 data integrity
 
   Scenario: No games scheduled
     Given a date with no MLB games
-    When the daily job runs
+    When the live pipeline runs
     Then it exits successfully without errors
-    And the site shows the season archive
+    And the run is recorded as no games
+    # "the site shows the season archive" is an acceptance criterion of P1.6 (D28)
 
   Scenario: Data source failure is explicit
     Given Statcast does not respond
@@ -88,19 +90,20 @@ Feature: Phase 0 data integrity
 
   Scenario: Series status has no leakage
     Given a postseason game already played
-    When it is fetched for the historical dataset
+    When its series status is fetched with as_of before first pitch
     Then the series status reflects the standing before first pitch, not the final result
+    # "the historical dataset builds every postseason case this way" is an acceptance criterion of P2.4 (D28)
 ```
 
 ## Phase 1 — Automation and signals (target Oct 25, closes v2.0-a)
 
-- [ ] P1.0 Workflow security: least-privilege `permissions` (`contents: write`, `models: read` only where needed); secrets only via GitHub Secrets and never printed; third-party actions pinned by commit SHA; no secrets on pull requests from forks. Also update `actions/checkout` and `actions/setup-python` in `tests.yml` to versions that no longer run on Node 20, pinned by commit SHA, and pin the runner to `ubuntu-24.04` instead of `ubuntu-latest`. The bot commits only `public/data/` and `evals/live/` (D15).
+- [ ] P1.0 Workflow security: least-privilege `permissions` (`contents: write`, `models: read` only where needed); secrets only via GitHub Secrets and never printed; third-party actions pinned by commit SHA; no secrets on pull requests from forks. Also update `actions/checkout` and `actions/setup-python` in `tests.yml` to versions that no longer run on Node 20, pinned by commit SHA, and pin the runner to `ubuntu-24.04` instead of `ubuntu-latest`. The bot commits only `public/data/` and `evals/live/` (D15). Pin pandas and numpy (and any other Python dependency CI installs) in `requirements.txt`; today only `pybaseball` is pinned.
 - [ ] P1.1 Test the Statcast fetch from GitHub Actions. If blocked, heavy fetch runs locally and Actions uses the committed cache. Record the result in `DECISIONS.md` via owner approval.
-- [ ] P1.2 Daily workflow (cron + manual trigger for testing): today's previews, yesterday's postgame, publish JSON.
+- [ ] P1.2 Daily workflow (cron + manual trigger for testing): today's previews, yesterday's postgame, publish JSON. Count the pitcher Statcast fetch (`statcast_pitcher`) in a request budget with pacing, like the team-batting fetch (D23). D23's 210 covers only team batting, so the budget for pitcher requests needs its own figure: propose it as a new decision (D23 is not edited).
 - [ ] P1.3 Several real games per day; no demo rows mixed into live mode.
-- [ ] P1.4 Origin and limited-data badges in the frontend (D3).
+- [ ] P1.4 Origin and limited-data badges in the frontend (D3). Includes component tests for the explicit "not available", "—", empty and limited states (the repo has no component test runner yet; set one up).
 - [ ] P1.5 Postseason layer: series context + draft + debut + birthplace as cited claims (D7). Handle international signings with no draft record.
-- [ ] P1.6 Offseason state on the site.
+- [ ] P1.6 Offseason state on the site. Acceptance criterion (D28): on a date with no MLB games, with a `no_games` run record, the site shows the season archive, not demo content.
 - [ ] P1.7 Daily append-only log under `evals/live/` even while only the rules writer runs (monitoring starts here).
 - [ ] P1.8 Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
 - [ ] P1.9 Data attribution and disclaimer on the site (MLB / Baseball Savant), no monetization of any kind, cached fetches and no bulk downloads (D16).
@@ -111,7 +114,7 @@ Feature: Phase 0 data integrity
 - [ ] P2.1 AI Studio API key + test call; GitHub Models access. Keys only in env vars / GitHub secrets.
 - [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]`, a versioned prompt and an exact model ID pinned in config. Output is schema-validated before it can reach the public JSON; free-text MLB fields are passed as quoted data, never as instructions. No `dangerouslySetInnerHTML` anywhere in the frontend.
 - [ ] P2.3 Guardrail: informed retry and fallback to rules (D2).
-- [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen. Historical case builder raises if `as_of` is None.
+- [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen. Historical case builder raises if `as_of` is None. Acceptance criterion (D28): every postseason case carries the series status as of `game_date − 1` (the standing before first pitch), never the final result.
 - [ ] P2.5 Human labels (G2, L1, U1) — owner task, ~6–8 hours, reserved in the week of Oct 19–25 and finished before Nov 1.
 - [ ] P2.6 Code evaluators and judge; calibration on dev. If GitHub Models is unavailable in the daily run, G2 is logged as `not_evaluated` and publishing continues (D17).
 - [ ] P2.7 Baseline run A vs. B1; error analysis; one change; B2 run.
