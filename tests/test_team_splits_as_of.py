@@ -227,7 +227,8 @@ def test_fetch_batting_aborts_before_exceeding_the_request_cap(savant, monkeypat
     monkeypatch.setattr(lp, "SAVANT_MAX_REQUESTS_PER_RUN", 2)
 
     with pytest.raises(lp.SavantRequestCapExceeded):
-        lp.fetch_team_batting_statcast("NYY", date(2026, 3, 20), date(2026, 5, 10))
+        # Three whole months: closed chunks, which are the ones the 210 counts.
+        lp.fetch_team_batting_statcast("NYY", date(2026, 3, 20), date(2026, 5, 31))
 
     assert len(urls) == 2  # the third request is never made
 
@@ -248,7 +249,7 @@ def test_request_cap_is_210_the_whole_league_once():
 
 
 def test_team_splits_do_not_swallow_the_request_cap(monkeypatch):
-    def over_cap(code, start, end):
+    def over_cap(code, start, end, **kw):
         raise lp.SavantRequestCapExceeded("cap")
 
     monkeypatch.setattr(lp, "fetch_team_batting_statcast", over_cap)
@@ -272,7 +273,7 @@ def test_fetch_batting_skips_empty_months(savant):
 def test_team_splits_with_as_of_derive_from_statcast(monkeypatch):
     calls = {}
 
-    def fake_batting(code, start, end):
+    def fake_batting(code, start, end, **kw):
         calls["args"] = (code, end)
         return frame(pa_rows("NYY", "L", VS_L) + pa_rows("NYY", "R", VS_R))
 
@@ -287,7 +288,7 @@ def test_team_splits_with_as_of_derive_from_statcast(monkeypatch):
 def test_team_splits_use_savants_own_code_for_arizona(monkeypatch):
     calls = {}
 
-    def fake_batting(code, start, end):
+    def fake_batting(code, start, end, **kw):
         calls["code"] = code
         return frame([])
 
@@ -299,7 +300,7 @@ def test_team_splits_use_savants_own_code_for_arizona(monkeypatch):
 
 
 def test_team_splits_with_as_of_return_empty_on_failure(monkeypatch):
-    def boom(code, start, end):
+    def boom(code, start, end, **kw):
         raise OSError("savant down")
 
     monkeypatch.setattr(lp, "fetch_team_batting_statcast", boom)
@@ -309,7 +310,7 @@ def test_team_splits_with_as_of_return_empty_on_failure(monkeypatch):
 
 def test_team_splits_with_as_of_return_empty_for_unknown_team(monkeypatch):
     monkeypatch.setattr(
-        lp, "fetch_team_batting_statcast", lambda *a: pytest.fail("must not fetch")
+        lp, "fetch_team_batting_statcast", lambda *a, **kw: pytest.fail("must not fetch")
     )
 
     assert lp.fetch_team_splits(999999, season=2026, as_of="2026-07-14") == {}
@@ -324,7 +325,7 @@ def test_derived_splits_match_the_shape_of_the_api_splits(monkeypatch):
     monkeypatch.setattr(
         lp,
         "fetch_team_batting_statcast",
-        lambda *a: frame(pa_rows("NYY", "L", VS_L)),
+        lambda *a, **kw: frame(pa_rows("NYY", "L", VS_L)),
     )
     api_keys = {"ops", "avg", "strikeouts", "walks", "plate_appearances", "k_rate", "bb_rate"}
 

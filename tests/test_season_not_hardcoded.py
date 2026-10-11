@@ -208,7 +208,7 @@ def test_statcast_returns_none_when_season_dates_are_unavailable(monkeypatch):
 def batting_calls(monkeypatch, stubbed_seasons):
     calls = {}
 
-    def fake_batting(code, start, end):
+    def fake_batting(code, start, end, **kw):
         calls["args"] = (code, start, end)
         return pd.DataFrame([])
 
@@ -293,28 +293,3 @@ def test_build_live_snapshot_passes_as_of_to_every_fetcher(monkeypatch):
     assert seen["statcast"] == ["2026-07-14", "2026-07-14"]
     assert seen["splits"] == ["2026-07-14", "2026-07-14"]
     assert snapshot["as_of"] == "2026-07-14"
-
-
-def test_build_live_snapshot_without_as_of_keeps_todays_behavior(monkeypatch):
-    game = {
-        "game_pk": 1, "away_team": "A", "away_team_id": 1, "away_team_abbr": "AAA",
-        "home_team": "B", "home_team_id": 2, "home_team_abbr": "BBB",
-        "away_pitcher_name": "X", "away_pitcher_id": 11, "home_pitcher_name": "Y",
-        "home_pitcher_id": 22, "venue": "", "start_time": "", "status": "Preview",
-    }
-    starter = {
-        "pitch_mix": [{"pitch": "Four-seam", "away_starter": {"overall": 1, "vs_lhh": 1, "vs_rhh": 1}}],
-        "velocity_by_pitch": [],
-    }
-    seen = []
-
-    monkeypatch.setattr(lp, "fetch_todays_games", lambda target: [game])
-    monkeypatch.setattr(
-        lp, "fetch_pitcher_statcast", lambda pid, name, **kw: seen.append(kw.get("as_of")) or {"name": name, **starter}
-    )
-    monkeypatch.setattr(lp, "fetch_team_splits", lambda tid, **kw: seen.append(kw.get("as_of")) or {})
-
-    snapshot = lp.build_live_snapshot("2026-07-15")
-
-    assert seen == [None, None, None, None]
-    assert snapshot["as_of"] is None

@@ -194,7 +194,7 @@ def write_run(status="ok", run_at="2026-07-15T12:00:00+00:00", errors=None):
             "status": status,
             "run_at": run_at,
             "target_date": "2026-07-15",
-            "as_of": None,
+            "as_of": "2026-07-14",
             "games_scheduled": 1,
             "games_live": 1 if status == "ok" else 0,
             "skipped_games": [],
@@ -226,7 +226,8 @@ def test_a_failed_run_means_demo_fallback_with_the_errors():
 def test_a_good_run_with_its_own_snapshot_is_live():
     write_run("ok")
     cache_manager.save_processed(
-        "live_matchup", {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15"}
+        "live_matchup",
+        {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-14"},
     )
 
     snapshot, status = gdj._resolve_live_input()

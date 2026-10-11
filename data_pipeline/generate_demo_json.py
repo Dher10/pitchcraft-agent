@@ -65,13 +65,36 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
         return None, _status(
             config.DATA_MODE_FALLBACK, f"Live snapshot unreadable: {exc}", summary
         )
-    if not snapshot or snapshot.get("run_at") != run.get("run_at"):
+    mismatch = _snapshot_mismatch(run, snapshot)
+    if mismatch:
         return None, _status(
             config.DATA_MODE_FALLBACK,
-            "Live snapshot does not belong to the latest live run; showing demo data",
+            f"Live snapshot does not belong to the latest live run ({mismatch}); showing demo data",
             summary,
         )
     return snapshot, _status(config.DATA_MODE_SNAPSHOT, "Live run ok", summary)
+
+
+def _snapshot_mismatch(run: dict[str, Any], snapshot: Any) -> str | None:
+    """
+    Why `snapshot` cannot be proven to belong to `run`, or None if it can.
+
+    Both need the same non-empty run identifier, the same game date and the same
+    cutoff. A missing value is never equal to another missing value.
+    """
+
+    if not isinstance(snapshot, dict) or not snapshot:
+        return "no snapshot"
+    run_at = run.get("run_at")
+    if not isinstance(run_at, str) or not run_at.strip():
+        return "the run record has no run identifier"
+    if snapshot.get("run_at") != run_at:
+        return "different run identifier"
+    for key, snapshot_key in (("target_date", "fetched_date"), ("as_of", "as_of")):
+        expected, found = run.get(key), snapshot.get(snapshot_key)
+        if not isinstance(expected, str) or not expected or expected != found:
+            return f"{snapshot_key.replace('_', ' ')} does not match the run"
+    return None
 
 
 _live, _live_status = _resolve_live_input()
@@ -88,6 +111,23 @@ OFFENSE_UNAVAILABLE_FIELDS = (
     "bb_rate_vs_hand",
     "recent_form",
 )
+# What a live starter shows for a field its snapshot does not supply (never a demo value).
+UNAVAILABLE_SUMMARY = {
+    "era": "N/A",
+    "whip": "N/A",
+    "innings": "N/A",
+    "strikeouts": None,
+    "walks": None,
+    "home_runs_allowed": None,
+}
+UNAVAILABLE_PROFILE = {
+    "style_label": labels.ARSENAL_LIMITED_STYLE,
+    "primary_pitch": "Not available",
+    "putaway_pitch": "Not available",
+    "command_label": None,
+    "swing_miss_label": None,
+    "contact_risk_label": None,
+}
 OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 
@@ -340,8 +380,16 @@ def _apply_live_starter(
     # No live source yet (P1.5 adds bio); never keep the demo template's values.
     starter["bio"] = None
     starter["recent_form"] = None
-    starter["season_summary"].update(live_starter["season_summary"])
-    starter["pitching_profile"].update(live_starter["pitching_profile"])
+    # Built from unavailable defaults plus what the snapshot supplies, so a partial
+    # snapshot can never keep a number from the demo template.
+    starter["season_summary"] = {
+        **UNAVAILABLE_SUMMARY,
+        **(live_starter.get("season_summary") or {}),
+    }
+    starter["pitching_profile"] = {
+        **UNAVAILABLE_PROFILE,
+        **(live_starter.get("pitching_profile") or {}),
+    }
     # The sample decides every label. A snapshot from before samples existed has
     # none: every dimension is then limited, never filled from the demo template.
     sample = live_starter.get("sample") or _unknown_sample()

@@ -211,11 +211,12 @@ def test_no_row_stat_or_split_after_the_cutoff_reaches_the_snapshot(leaky_source
     )
 
 
-def test_without_as_of_the_same_sources_would_leak(leaky_sources):
+def test_the_same_sources_do_leak_when_a_fetcher_is_given_a_late_cutoff(leaky_sources):
     # Control: proves the fixtures really contain post-cutoff data, so the test above
-    # is not passing just because the leaks were never reachable.
-    record, snapshot = lp.run_live_pipeline(GAME_DAY)
+    # is not passing just because the leaks were never reachable. It calls the fetchers
+    # directly with a late cutoff: the pipeline itself no longer accepts one (D29).
+    starter = lp.fetch_pitcher_statcast(11, "Away Ace", as_of="2026-10-10")
 
-    sweepers = {row["pitch"] for row in snapshot["away_starter"]["pitch_mix"]}
+    sweepers = {row["pitch"] for row in starter["pitch_mix"]}
     assert "Sweeper" in sweepers
-    assert snapshot["away_starter"]["season_summary"]["era"] == "9.99"
+    assert starter["season_summary"]["era"] == "9.99"

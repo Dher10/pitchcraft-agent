@@ -12,6 +12,7 @@ import time
 import urllib.request
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 
 PYBASEBALL_CACHE_DIR = Path(__file__).resolve().parents[2] / "data_cache" / "raw" / "pybaseball"
@@ -100,6 +101,9 @@ STATCAST_TEAM_CODE_BY_MLB_ABBR = {"ARI": "AZ"}
 SAVANT_ROW_CAP = 25000
 # Request budget for the team-batting fetch: 30 teams x 7 monthly chunks, once.
 SAVANT_MAX_REQUESTS_PER_RUN = 210
+# D29: the month that holds `as_of` is not closed, so it is refreshed on every run.
+# Its requests have their own budget, apart from the 210 above: 5 candidate games x 2 teams.
+SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN = 10
 SAVANT_PAUSE_SECONDS = 2.0
 SAVANT_BATTING_URL = (
     "https://baseballsavant.mlb.com/statcast_search/csv?all=true&type=details"
@@ -158,6 +162,9 @@ def _team_abbreviation(team: dict[str, Any]) -> str:
 
 POSTSEASON_GAME_TYPES = ("F", "D", "L", "W")
 
+# MLB's official game date is the New York date, whatever the runner's clock says (D29).
+MLB_TIMEZONE = ZoneInfo("America/New_York")
+
 
 def _parse_as_of(as_of: str | date | None) -> date:
     """
@@ -176,6 +183,34 @@ def _parse_as_of(as_of: str | date | None) -> date:
     raise ValueError(f"as_of must be an ISO date string or a date, got {as_of!r}")
 
 
+def today_eastern() -> date:
+    """Today's date in New York: the date MLB uses for a game, never the runner's UTC date."""
+
+    return datetime.now(MLB_TIMEZONE).date()
+
+
+def resolve_as_of(game_date: str | date, as_of: str | date | None = None) -> date:
+    """
+    The data cutoff for a game (D29): the day before its official date.
+
+    An explicit `as_of` is accepted only if it is before the game date, so a
+    caller can narrow the cutoff but never reach the game day or later. A missing
+    game date raises: the cutoff is never guessed from the runner's clock.
+    """
+
+    if game_date is None:
+        raise ValueError("a game date is required to resolve as_of")
+    game = _parse_as_of(game_date)
+    if as_of is None:
+        return game - timedelta(days=1)
+    cutoff = _parse_as_of(as_of)
+    if cutoff >= game:
+        raise ValueError(
+            f"as_of {cutoff.isoformat()} must be before the game date {game.isoformat()}"
+        )
+    return cutoff
+
+
 def _get_text(url: str, timeout: int = 60) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "PitchCraft-Capstone/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -186,7 +221,11 @@ class SavantRequestCapExceeded(RuntimeError):
     """A run tried to make more Savant requests than SAVANT_MAX_REQUESTS_PER_RUN."""
 
 
-_savant_run = {"requests": 0}
+class SavantOpenMonthBudgetExceeded(RuntimeError):
+    """A run spent its SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN (D29)."""
+
+
+_savant_run = {"requests": 0, "open_requests": 0}
 
 # Failures of the current run, written to data_cache/processed/live_run.json by main().
 _run_errors: list[dict[str, Any]] = []
@@ -198,20 +237,30 @@ def _record_error(source: str, message: str, **context: Any) -> None:
     _run_errors.append({"source": source, "message": str(message)[:300], **context})
 
 
-def _savant_get(url: str) -> str:
+def _savant_get(url: str, open_month: bool = False) -> str:
     """
     One paced, counted Savant request. Sleeps SAVANT_PAUSE_SECONDS before every
     request except the first of the run and raises before exceeding the cap.
+    Requests for the open month (D29) are counted apart, against their own budget.
     Cache hits never reach this function.
     """
 
-    if _savant_run["requests"] >= SAVANT_MAX_REQUESTS_PER_RUN:
+    closed_made = _savant_run.get("requests", 0)
+    open_made = _savant_run.get("open_requests", 0)
+    if open_month:
+        if open_made >= SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN:
+            raise SavantOpenMonthBudgetExceeded(
+                f"more than {SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN} open-month "
+                "Savant requests in one run"
+            )
+    elif closed_made >= SAVANT_MAX_REQUESTS_PER_RUN:
         raise SavantRequestCapExceeded(
             f"more than {SAVANT_MAX_REQUESTS_PER_RUN} Savant requests in one run"
         )
-    if _savant_run["requests"] > 0:
+    if closed_made + open_made > 0:
         time.sleep(SAVANT_PAUSE_SECONDS)
-    _savant_run["requests"] += 1
+    counter = "open_requests" if open_month else "requests"
+    _savant_run[counter] = _savant_run.get(counter, 0) + 1
     return _get_text(url)
 
 
@@ -245,7 +294,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
     Returns [] on any error so the demo data path stays available.
     """
 
-    date_str = target_date or date.today().isoformat()
+    date_str = target_date or today_eastern().isoformat()
     url = (
         "https://statsapi.mlb.com/api/v1/schedule"
         f"?sportId=1&date={date_str}&hydrate=probablePitcher,venue"
@@ -258,8 +307,12 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
 
+        dates = data.get("dates") if isinstance(data, dict) else None
+        if not isinstance(dates, list):
+            raise ValueError("schedule response has no 'dates' list")
+
         games = []
-        for date_entry in data.get("dates", []):
+        for date_entry in dates:
             for game in date_entry.get("games", []):
                 away = game["teams"]["away"]
                 home = game["teams"]["home"]
@@ -268,6 +321,8 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
                 games.append(
                     {
                         "game_pk": game.get("gamePk"),
+                        # The official MLB date, not the UTC date of the start time (D29).
+                        "official_date": game.get("officialDate") or date_entry.get("date"),
                         "away_team": away.get("team", {}).get("name", "Unknown"),
                         "away_team_id": away.get("team", {}).get("id"),
                         "away_team_abbr": _team_abbreviation(away.get("team", {})),
@@ -395,7 +450,9 @@ def fetch_team_splits(
         try:
             first_day, last_day = season_dates(season)
             start = date.fromisoformat(season_start) if season_start else first_day
-            df = fetch_team_batting_statcast(code, start, min(cutoff, last_day))
+            df = fetch_team_batting_statcast(
+                code, start, min(cutoff, last_day), season_end=last_day
+            )
             return derive_team_splits(df, code, cutoff)
         except SavantRequestCapExceeded:
             raise
@@ -460,7 +517,23 @@ def _month_chunks(start: date, end: date) -> list[tuple[date, date]]:
     return chunks
 
 
-def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> Any:
+def _is_open_chunk(chunk_end: date, season_end: date | None) -> bool:
+    """
+    A chunk is open (D29) when its month is not complete yet: it ends today or later,
+    or before the last day of its month and before the end of the regular season.
+    """
+
+    if chunk_end >= date.today():
+        return True
+    if season_end is not None and chunk_end >= season_end:
+        return False
+    month_end = (chunk_end.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+    return chunk_end < month_end
+
+
+def fetch_team_batting_statcast(
+    statcast_team: str, start: date, end: date, season_end: date | None = None
+) -> Any:
     """
     Statcast pitch rows from the batting side of one team, `start` to `end`
     inclusive, regular season only.
@@ -469,9 +542,12 @@ def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> A
     directly with player_type=batter, one request per calendar month (about 7
     per season, never league-wide), paced and capped per run (see _savant_get).
     Finished months are cached on disk, trimmed to the columns the splits need;
-    a month that includes today is not cached. Raises RuntimeError if a month
-    hits Savant's row cap (possible truncation) and SavantRequestCapExceeded
-    when the run's request budget is spent.
+    a month that includes today is not cached. The month that holds `end` is open
+    (see _is_open_chunk): it is a partial chunk cached under its end date, and its
+    requests are counted against the open-month budget of D29. Raises RuntimeError
+    if a month hits Savant's row cap (possible truncation), SavantRequestCapExceeded
+    when the run's request budget is spent and SavantOpenMonthBudgetExceeded when
+    its open-month budget is.
     """
 
     import pandas as pd
@@ -487,7 +563,8 @@ def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> A
         text = _savant_get(
             SAVANT_BATTING_URL.format(
                 team=statcast_team, start=chunk_start.isoformat(), end=chunk_end.isoformat()
-            )
+            ),
+            open_month=_is_open_chunk(chunk_end, season_end),
         )
         if not text.strip():
             continue
@@ -505,6 +582,26 @@ def fetch_team_batting_statcast(statcast_team: str, start: date, end: date) -> A
     if not frames:
         return pd.DataFrame(columns=list(TEAM_BATTING_COLUMNS))
     return pd.concat(frames, ignore_index=True)
+
+
+TEAM_SPLIT_REQUIRED_COLUMNS = (
+    "game_date",
+    "game_type",
+    "events",
+    "inning_topbot",
+    "home_team",
+    "away_team",
+    "p_throws",
+)
+PITCHER_STATCAST_REQUIRED_COLUMNS = ("game_date", "game_type")
+
+
+def _require_columns(df: Any, required: tuple[str, ...], source: str) -> None:
+    """A source frame without its integrity columns is a source failure, never a pass-through."""
+
+    missing = [column for column in required if column not in df.columns]
+    if missing:
+        raise ValueError(f"{source} data is missing required column(s): {', '.join(missing)}")
 
 
 def _rate3(value: float | None) -> str | None:
@@ -553,6 +650,7 @@ def derive_team_splits(df: Any, statcast_team: str, as_of: str | date | None) ->
     cutoff = _parse_as_of(as_of)
     if len(df) == 0:
         return {}
+    _require_columns(df, TEAM_SPLIT_REQUIRED_COLUMNS, "team batting")
     batting = ((df["inning_topbot"] == "Top") & (df["away_team"] == statcast_team)) | (
         (df["inning_topbot"] == "Bot") & (df["home_team"] == statcast_team)
     )
@@ -562,8 +660,7 @@ def derive_team_splits(df: Any, statcast_team: str, as_of: str | date | None) ->
         & ~df["events"].isin(NON_PA_EVENTS)
         & (pd.to_datetime(df["game_date"]).dt.date <= cutoff)
     )
-    if "game_type" in df.columns:
-        keep &= df["game_type"] == "R"
+    keep &= df["game_type"] == "R"
     plate_appearances = df[keep]
     splits = {}
     for code, hand in (("vl", "L"), ("vr", "R")):
@@ -679,17 +776,20 @@ def fetch_pitcher_statcast(
             return None
         print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
         df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
-        if df is not None and "game_date" in df.columns:
+        if df is None:
+            raise ValueError("Statcast returned no result (None)")
+        # An empty frame is a valid answer (a debut) and may have no columns at all.
+        if len(df) > 0:
             import pandas as pd
 
+            _require_columns(df, PITCHER_STATCAST_REQUIRED_COLUMNS, "pitcher Statcast")
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
-        if df is not None and "game_type" in df.columns:
             # pybaseball asks for regular season, postseason and spring training.
             # Spring never counts; postseason counts only up to the cutoff above.
             df = df[df["game_type"].isin(("R",) + POSTSEASON_GAME_TYPES)]
         processed = None
         counts = None
-        if df is not None and len(df) > 0:
+        if len(df) > 0:
             print(f"[LIVE] {pitcher_name}: {len(df)} pitches fetched")
             counts = _statcast_counts(df)
             processed = process_pitcher_statcast(df, pitcher_name)
@@ -984,13 +1084,18 @@ def build_live_snapshot(
     """
     Fetch schedule and Statcast data, returning a generator-ready snapshot.
 
-    `as_of` (default None = today) is the data cutoff passed to every pitcher
-    and team fetch, for historical runs. `run_info`, when given, is filled with
-    games_scheduled, games_live and skipped_games for the run record.
+    `target_date` is the official MLB date of the games (default: today in New
+    York). The data cutoff passed to every pitcher and team fetch is the day
+    before each game (D29); an explicit `as_of` may only be earlier than that.
+    `run_info`, when given, is filled with games_scheduled, games_live and
+    skipped_games for the run record.
     """
 
     info = run_info if run_info is not None else {}
-    games = fetch_todays_games(target_date)
+    target = target_date or today_eastern().isoformat()
+    if as_of is not None:
+        resolve_as_of(target, as_of)  # reject an as_of on or after the game day up front
+    games = fetch_todays_games(target)
     info.update(games_scheduled=len(games), games_live=0, skipped_games=[])
     if not games:
         return None
@@ -1016,15 +1121,16 @@ def build_live_snapshot(
             f"{featured['away_pitcher_name']} vs {featured['home_pitcher_name']}"
         )
 
+        game_as_of = resolve_as_of(featured.get("official_date") or target, as_of).isoformat()
         away_data = fetch_pitcher_statcast(
             featured["away_pitcher_id"],
             featured["away_pitcher_name"],
-            as_of=as_of,
+            as_of=game_as_of,
         )
         home_data = fetch_pitcher_statcast(
             featured["home_pitcher_id"],
             featured["home_pitcher_name"],
-            as_of=as_of,
+            as_of=game_as_of,
         )
 
         if not away_data or not home_data:
@@ -1036,11 +1142,12 @@ def build_live_snapshot(
             print(f"[LIVE] Skipping {skipped} - insufficient pitch data")
             continue
 
-        away_splits = fetch_team_splits(featured["away_team_id"], as_of=as_of)
-        home_splits = fetch_team_splits(featured["home_team_id"], as_of=as_of)
+        away_splits = fetch_team_splits(featured["away_team_id"], as_of=game_as_of)
+        home_splits = fetch_team_splits(featured["home_team_id"], as_of=game_as_of)
         live_games.append(
             {
                 "featured_game": featured,
+                "as_of": game_as_of,
                 "away_starter": away_data,
                 "home_starter": home_data,
                 "combined_charts": {
@@ -1060,8 +1167,8 @@ def build_live_snapshot(
     primary = live_games[0]
     snapshot = {
         "data_mode": "fetched_snapshot",
-        "fetched_date": target_date or date.today().isoformat(),
-        "as_of": _parse_as_of(as_of).isoformat() if as_of is not None else None,
+        "fetched_date": target,
+        "as_of": primary["as_of"],
         "live_games": live_games,
         "skipped_games": skipped_games,
         "games_today": [
@@ -1156,6 +1263,15 @@ def _run_status(info: dict[str, Any], errors: list[dict[str, Any]]) -> str:
     return "no_usable_games"
 
 
+def _run_as_of(target: str, as_of: str | date | None) -> str | None:
+    """The cutoff of a run that produced no snapshot, or None if it was rejected."""
+
+    try:
+        return resolve_as_of(target, as_of).isoformat()
+    except ValueError:
+        return None
+
+
 def run_live_pipeline(
     target_date: str | None = None,
     as_of: str | date | None = None,
@@ -1168,18 +1284,20 @@ def run_live_pipeline(
     """
 
     _run_errors.clear()
+    _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
     info: dict[str, Any] = {}
     run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    target = target_date or today_eastern().isoformat()
     try:
-        snapshot = build_live_snapshot(target_date, as_of, run_info=info)
+        snapshot = build_live_snapshot(target, as_of, run_info=info)
     except Exception as exc:
         _record_error("pipeline", f"{type(exc).__name__}: {exc}")
         snapshot = None
     record = {
         "status": _run_status(info, _run_errors),
         "run_at": run_at,
-        "target_date": target_date or date.today().isoformat(),
-        "as_of": _parse_as_of(as_of).isoformat() if as_of is not None else None,
+        "target_date": target,
+        "as_of": snapshot["as_of"] if snapshot is not None else _run_as_of(target, as_of),
         "games_scheduled": info.get("games_scheduled", 0),
         "games_live": info.get("games_live", 0),
         "skipped_games": info.get("skipped_games", []),

@@ -81,6 +81,7 @@ def _statcast_frame() -> pd.DataFrame:
             rows.append(
                 {
                     "game_date": pd.Timestamp(game_date),
+                    "game_type": "R",
                     "pitch_type": pitch_type,
                     "stand": stand,
                     "p_throws": "R",

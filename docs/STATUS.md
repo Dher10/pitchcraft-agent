@@ -6,8 +6,8 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.12 (five subtasks A–E, one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
-- **Blocked:** P0.12-A's QA-02 fix waits for the owner to approve D29 (`as_of` is always the day before the game).
+- **Next task:** P0.12-B (then C, D, E; one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
@@ -16,6 +16,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- D29 (approved 2026-10-11) added and D23 marked "amended by D29": `as_of` is always the official game date (New York) minus one day, in historical runs and in the daily job; the month that holds `as_of` is refreshed each run under its own 10-request budget. P1.3 reviews that budget for days of up to 15 games. P0.12 added to `PLAN.md` after the first QA gate failed.
 - P0.8: new data mode `demo_fallback` and `metadata.data_status` in the published JSON (live run failed or found no games: demo content, labelled as such); a live run record `live_run.json` with the errors; live matchups no longer show the demo broadcast note.
 - D25 (rate bands), D26 (Vercel Web Analytics, Hobby plan) and D27 (independent QA gate per phase) added to `DECISIONS.md`; `docs/QA_PROTOCOL.md` added; P1.10 added to `PLAN.md`; two more items in the backlog after v2.
 - P0.5: live starters now show rate-based labels only when the D24 sample is met and "data limited" otherwise; contact risk is a home-run count; every figure group states its scope (regular season vs regular season + postseason); a starter with no MLB pitches no longer drops the game; the live strength-profile chart is "not available" instead of demo scores.
@@ -28,6 +29,15 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.12-A strict input boundary (Claude Code, gated)
+
+- **QA-02 (D29):** `resolve_as_of(game_date, as_of)` in `live_pipeline.py`: the cutoff is the day before the game's official date (`officialDate` from the schedule, New York), never the runner's UTC clock. `fetch_todays_games` returns `official_date`; its default date is today in New York. `build_live_snapshot` resolves the cutoff per game and passes it to every pitcher and team fetch; an explicit `as_of` on or after the game day is rejected (the run is recorded as failed). The snapshot and the run record carry the resolved `as_of`. The Savant budget for the month that holds `as_of` is separate (10 requests per run, `SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN`); when spent, that team's splits are unavailable with an error. Both Savant counters now reset at the start of each run. Deleted `test_build_live_snapshot_without_as_of_keeps_todays_behavior`; the e2e leak control now calls the fetcher with a late cutoff instead of the pipeline default. The fetchers keep `as_of=None` meaning today (the pipeline is the boundary).
+- **QA-05:** pitcher Statcast needs `game_date` and `game_type` on a non-empty frame, and a `None` result is an error; `derive_team_splits` needs its seven columns (the `game_type` filter is no longer optional). An empty frame (a debut) is still valid. A schedule without a `dates` list is an error, so the run is `failed`, not `no_games`.
+- **QA-06:** `_snapshot_mismatch` in the generator: a snapshot is live only with the same non-empty `run_at`, the same game date and the same `as_of` as the run. Two missing identifiers are no longer "equal".
+- **QA-08:** `_apply_live_starter` builds the summary and profile from unavailable defaults (`N/A` for ERA/WHIP/IP, `None` for counts, "Not available" pitches) plus what the snapshot supplies.
+- Tests first and seen failing: `test_as_of_boundary.py` (10 of 14 failed), `test_source_structure.py` (11 of 19), `test_stale_snapshot.py` (13 of 16), `test_partial_live_snapshot.py` (5 of 6); the rest are guards that must keep passing (valid empty frame and schedule, earlier explicit `as_of`). Older stubs that the new signature or the mandatory `game_type` broke were updated, not weakened. Local run: 239 passed.
+- Next: P0.12-B.
 
 ### 2026-10-10 — P0.11 close the Phase 0 gaps before the QA gate (Claude Code, gated)
 
