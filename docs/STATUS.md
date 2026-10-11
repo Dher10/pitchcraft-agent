@@ -6,7 +6,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 code tasks are done (S0, P0.0–P0.9, with P0.4 closed as D24). Next is the Phase 0 definition-of-done check against the Gherkin scenarios.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** Phase 0 definition-of-done check (walk the nine Gherkin scenarios in `PLAN.md` and record each as automated or manual evidence), then P1.0 (unlabelled = gated; touches `.github/workflows/`).
+- **Next task:** Phase 0 definition-of-done check (walk the nine Gherkin scenarios in `PLAN.md`; record each as automated or manual evidence), then P0.10 QA gate (D27; the owner starts Codex with `docs/QA_PROTOCOL.md`). P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
@@ -16,6 +16,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 Changes made in the repo that the owner still needs mirrored to Notion:
 
 - P0.8: new data mode `demo_fallback` and `metadata.data_status` in the published JSON (live run failed or found no games: demo content, labelled as such); a live run record `live_run.json` with the errors; live matchups no longer show the demo broadcast note.
+- D25 (rate bands), D26 (Vercel Web Analytics, Hobby plan) and D27 (independent QA gate per phase) added to `DECISIONS.md`; `docs/QA_PROTOCOL.md` added; P1.10 added to `PLAN.md`; two more items in the backlog after v2.
 - P0.5: live starters now show rate-based labels only when the D24 sample is met and "data limited" otherwise; contact risk is a home-run count; every figure group states its scope (regular season vs regular season + postseason); a starter with no MLB pitches no longer drops the game; the live strength-profile chart is "not available" instead of demo scores.
 - New `docs/thresholds-proposal.md` (P0.4 analysis of the 2026 distribution) and D24 (approved sample thresholds) in `DECISIONS.md`; new "Backlog after v2" section in `PLAN.md`.
 - D23 (Savant request ceiling: 210 requests, once, cached, 2 s pause) added to `DECISIONS.md`.
@@ -26,6 +27,15 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — D25, D26, D27, P1.10 and P0.10 (Claude Code, docs only)
+
+- **D25:** the rate bands used by P0.5 (strikeout 25% / 18%, walk 7% / 10%, rounded quartiles of 243 starters with 5+ starts) are now a decision, so a change to them goes through `DECISIONS.md`.
+- **D26:** Vercel Web Analytics on Hobby, page views only; measurable things get their own route (`/quality` now, per-game routes later); active from the merge of v2.0-a, not before. Limits checked against Vercel's documentation: 50,000 events a month included and shared across the account (so with the personal site), no custom events on Hobby, one-month reporting window, a 3-day grace period then paused collection past the limit, no extra purchase. Two wording points from the docs: they say no *third-party* cookies (visitors are identified by a request hash discarded after 24 hours), and collection exists only after Enable is clicked in the dashboard. The P1.9 attribution and disclaimer text should not promise more than that.
+- **D27 and P0.10:** each phase closes only after an independent QA gate run by a different agent (Codex) with `docs/QA_PROTOCOL.md` (added in this commit, owner's file); any Blocker or High is a FAIL and the phase stays open. P0.10 `[gated]` is the gate for Phase 0, after the definition-of-done check below.
+- **P1.10 `[auto]`** added to Phase 1: install `@vercel/analytics`, `<Analytics />` in the root layout, `/quality` route.
+- **Backlog after v2:** automatic monthly summary of visits per route (the one-month window makes it necessary), and per-game routes.
+- Open question left for the owner: Vercel's docs do not say whether preview deployments of `v2` are counted; D26 avoids the question by tying activation to the merge.
 
 ### 2026-10-10 — P0.5 rate-based labels, limited samples, scopes (Claude Code, gated)
 

@@ -34,6 +34,7 @@ Lanes (D22): `[auto]` = plan approved once, then commit and push without asking;
 - [x] P0.7 [auto] Remove the hardcoded season year (2026, `2026-03-20`).
 - [x] P0.8 [auto] Explicit data mode and error log instead of the silent fallback to demo.
 - [x] P0.9 [auto] Hygiene: upgrade Next.js to 16.4.0 (fixes `npm audit` critical/high findings; read `node_modules/next/dist/docs/` first); delete `pitchcraftvisualpolish.bundle` (stray git bundle); pin `pybaseball==2.2.7`; move or delete `test_splits.py`. `npm audit --omit=dev` must report 0 critical and 0 high.
+- [ ] P0.10 [gated] QA gate for Phase 0 (D27). The owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`; the report goes to `docs/qa/`. Phase 0 closes only on PASS, or on PASS WITH CONDITIONS once the listed conditions are met; any Blocker or High is a FAIL and Phase 0 stays open.
 
 ### Phase 0 definition of done
 
@@ -103,6 +104,7 @@ Feature: Phase 0 data integrity
 - [ ] P1.7 Daily append-only log under `evals/live/` even while only the rules writer runs (monitoring starts here).
 - [ ] P1.8 Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
 - [ ] P1.9 Data attribution and disclaimer on the site (MLB / Baseball Savant), no monetization of any kind, cached fetches and no bulk downloads (D16).
+- [ ] P1.10 [auto] Web Analytics (D26): install `@vercel/analytics`, add `<Analytics />` to the root layout (`app/layout.tsx`) and create the `/quality` route (its content is P3.2). Page views only. Read the Next.js docs in `node_modules/next/dist/docs/` first. Clicking Enable in the Vercel dashboard is the owner's step at the merge of v2.0-a into `main`, not before.
 
 ## Phase 2 — LLM writer and eval (target Nov 8)
 
@@ -125,6 +127,8 @@ Feature: Phase 0 data integrity
 
 - [ ] Ground-ball rate as the replacement for the contact-risk label (D24 leaves contact risk as a count). It stabilizes at about 70 balls in play (FanGraphs Sample Size); Statcast supplies batted-ball type. Needs its own threshold decision.
 - [ ] Carry-over of the previous season for April. D24 uses current-season data only, so early in the season most starters are flagged (April: 26% of starts flagged on arsenal, 58% on strikeout, 100% on control). Needs a decision on how to weight the previous season.
+- [ ] Automatic monthly summary of visits per route: the Hobby reporting window is one month (D26), so the numbers should be saved each month (for example into `evals/live/`) before they age out.
+- [ ] Per-game routes (for example `/game/<id>`), so that views per game can be measured with page views alone (D26).
 
 ## Open questions (owner)
 
