@@ -6,7 +6,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 code tasks are done (S0, P0.0–P0.9, with P0.4 closed as D24). Next is the Phase 0 definition-of-done check against the Gherkin scenarios.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** Phase 0 definition-of-done check (walk the nine Gherkin scenarios in `PLAN.md`; record each as automated or manual evidence), then P0.10 QA gate (D27; the owner starts Codex with `docs/QA_PROTOCOL.md`). P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** owner decisions on the three partial scenarios (see the Phase 0 definition-of-done entry), then P0.10 QA gate (D27; the owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`). P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
@@ -27,6 +27,30 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-10 — Phase 0 definition-of-done check (Claude Code, self-check before the QA gate)
+
+Method: each Gherkin scenario of `PLAN.md` mapped to the automated tests that cover it, then checked that those tests can fail: 13 deliberate breaks of the code (date filters removed, the old name split restored, a threshold moved by one, a failed run treated as live, the debut starter dropped, demo bio inherited again, …), each run against the tests that should notice it, with the file restored afterwards. First pass: 12 caught, 1 survived. The survivor was a weak test (`test_limited_arsenal_makes_no_arsenal_claim_beyond_the_limitation` compared pitch names case-sensitively while the analyst writes them in lower case, so a report that described a limited arsenal still passed). Fixed in the same commit; second pass: 13 of 13 caught. Also green: `pytest` 183/183, `tsc --noEmit`, eslint, `next build`, `npm audit --omit=dev` (0), no `dangerouslySetInnerHTML`.
+
+| # | Scenario | Evidence | State |
+|---|---|---|---|
+| 1 | As-of cutoff prevents leakage | `test_fetchers_as_of.py`, `test_team_splits_as_of.py`, `test_season_not_hardcoded.py` (59 tests): Statcast, season stats and team splits stop at `as_of`; the pipeline passes it to every fetcher | **Partial.** No single test runs the pipeline with `as_of` and inspects the resulting snapshot; series status is not part of the packet yet (P1.5) |
+| 2 | Pitcher name is never split | `test_report_writer_names.py` (24) | Covered for the rules writer |
+| 3 | Limited sample is flagged, not filled | `test_labels.py`, `test_limited_samples.py` (49) | Covered |
+| 4 | No games scheduled | `test_data_mode.py`: exits 0, no errors, status `no_games` | **Partial.** "The site shows the season archive" is P1.6, not built; today the site would show demo content labelled `demo_fallback` |
+| 5 | Data source failure is explicit | `test_data_mode.py` (20), including the Statcast-down run end to end into the generator | Covered |
+| 6 | Debut with zero pitches | `test_live_sample_pipeline.py`, `test_limited_samples.py` (7 selected); checked live with a pitcher who has no 2026 pitches | Covered |
+| 7 | Live starters carry no demo fields | `test_live_starters_no_demo_fields.py` plus broadcast note and strength profile tests (22 selected) | Covered |
+| 8 | Labels use rates, not counts | `test_labels.py` (same rate, different innings, same label) | Covered |
+| 9 | Series status has no leakage | `test_fetchers_as_of.py` series tests (6): the standing is the one after the last earlier game, later games never appear | **Partial.** Fetcher only; the "historical dataset" that would call it is P2.4 |
+
+Known gaps to expect from the QA gate (P0.10), none fixed here:
+- Scenarios 4 and 9 describe behavior that belongs to Phase 1 and Phase 2 but sit in the Phase 0 definition of done. Decision for the owner: move them to those phases' criteria, or accept Phase 0 closing with them partial. I did not edit the Gherkin.
+- Scenario 1 would be fully automated by one more test: run `run_live_pipeline` with `as_of=2026-07-14` over mocked sources that include later rows and assert the snapshot has none of them. Cheap; not written yet.
+- Frontend states ("Not available", "—", empty strength profile) are checked by `tsc` and `next build` only; there is no component test setup.
+- Python dependencies other than `pybaseball` are not pinned (pandas and numpy come in transitively).
+- The pitcher Statcast request (`statcast_pitcher`) is outside the D23 request counter, which covers only the team-batting fetch.
+- Five dev-only high findings in `npm audit` under the `eslint-config-next` chain (documented in the P0.9 entry).
 
 ### 2026-10-10 — D25, D26, D27, P1.10 and P0.10 (Claude Code, docs only)
 

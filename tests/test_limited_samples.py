@@ -101,8 +101,11 @@ def test_limited_arsenal_makes_no_arsenal_claim_beyond_the_limitation(monkeypatc
     assert "40 pitches" in text and "100" in text
     assert "no arsenal claim" in text
     # none of the away starter's pitch names or style appears anywhere
-    assert AWAY_PRIMARY not in text and AWAY_PUTAWAY not in text
-    assert AWAY_PRIMARY not in "\n".join(findings["three_things_to_watch"])
+    # (the analyst writes pitch names in lower case, so compare case-insensitively)
+    lowered = text.lower()
+    assert AWAY_PRIMARY.lower() not in lowered and AWAY_PUTAWAY.lower() not in lowered
+    assert AWAY_PRIMARY.lower() not in "\n".join(findings["three_things_to_watch"]).lower()
+    assert AWAY_PRIMARY.lower() not in findings["away_vs_home_offense"].lower()
     assert matchup["starters"]["away_starter"]["pitching_profile"]["style_label"] == (
         "Arsenal data limited"
     )
@@ -213,7 +216,7 @@ def test_a_debut_flags_every_dimension_and_the_report_is_still_written(monkeypat
     }
     assert profile["swing_miss_label"] is None and profile["command_label"] is None
     assert "no pitches on record" in text
-    assert AWAY_PRIMARY not in text
+    assert AWAY_PRIMARY.lower() not in text.lower()
     assert review["checks"]
 
 
