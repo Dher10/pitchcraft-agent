@@ -131,6 +131,10 @@ UNAVAILABLE_PROFILE = {
 OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 
+class CriticBlocked(RuntimeError):
+    """The critic found a claim the data does not back up: nothing is published (QA-04)."""
+
+
 def build_payload() -> dict[str, Any]:
     payload = demo_inputs.build_demo_payload()
     payload["metadata"]["data_mode"] = _live_status["mode"]
@@ -139,19 +143,23 @@ def build_payload() -> dict[str, Any]:
     if _live_status["mode"] == config.DATA_MODE_FALLBACK:
         payload["metadata"]["last_updated_label"] = "Live data unavailable; showing demo data"
     _apply_live_snapshot(payload)
-    total_revised, graded_starters = _run_agents(payload["matchups"])
+    total_warnings, graded_starters = _run_agents(payload["matchups"])
     _apply_live_confidence(payload)
     _update_archive_postgame_labels(payload)
     payload["agent_workflow"] = _build_agent_workflow(
         len(payload["matchups"]),
-        total_revised,
+        total_warnings,
         graded_starters,
     )
     return payload
 
 
 def main() -> int:
-    payload = build_payload()
+    try:
+        payload = build_payload()
+    except CriticBlocked as exc:
+        print(f"Publication blocked by the critic: {exc}", file=sys.stderr)
+        return 1
     matchup_ids = [matchup["id"] for matchup in payload["matchups"]]
 
     print("PitchCraft demo JSON generator")
@@ -171,7 +179,7 @@ def main() -> int:
 
 
 def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
-    total_revised = 0
+    total_warnings = 0
     graded_starters = 0
     for matchup_input in matchups:
         packet = data_scout.run(matchup_input)
@@ -185,14 +193,16 @@ def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
         print(f"[AGENT] Report Writer: {len(report['sections'])} sections generated")
 
         critic_review = critic.run(report, matchup_input)
-        revised_count = sum(
-            1 for check in critic_review["checks"] if check["status"] == "revised"
-        )
-        total_revised += revised_count
+        unsupported = [c for c in critic_review["checks"] if c["status"] == "unsupported"]
+        warnings = sum(1 for c in critic_review["checks"] if c["status"] == "warning")
+        total_warnings += warnings
         print(
             f"[AGENT] Critic: {len(critic_review['checks'])} checks, "
-            f"{revised_count} revised"
+            f"{warnings} warning(s), {len(unsupported)} unsupported"
         )
+        if unsupported:
+            details = "; ".join(f"{c['claim']} {c['evidence']}" for c in unsupported)
+            raise CriticBlocked(f"{matchup_input['id']}: {details}")
 
         matchup_input["report"] = report
         matchup_input["critic_review"] = critic_review
@@ -213,7 +223,7 @@ def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
         else:
             matchup_input["postgame"] = None
 
-    return total_revised, graded_starters
+    return total_warnings, graded_starters
 
 
 def _apply_live_snapshot(payload: dict[str, Any]) -> None:
@@ -496,7 +506,7 @@ def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
 
 def _build_agent_workflow(
     matchup_count: int,
-    total_revised: int,
+    total_warnings: int,
     graded_starters: int,
 ) -> dict[str, Any]:
     postgame_step = (
@@ -540,7 +550,8 @@ def _build_agent_workflow(
                 "agent": "Critic / Fact-check Agent",
                 "status": "completed",
                 "output": (
-                    f"Verified claims. {total_revised} claim(s) revised across all matchups."
+                    "Checked every claim against the data: none unsupported, "
+                    f"{total_warnings} warning(s) across all matchups."
                 ),
             },
             postgame_step,

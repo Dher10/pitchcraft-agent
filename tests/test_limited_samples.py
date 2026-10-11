@@ -59,6 +59,14 @@ def build(monkeypatch, away=None, home=None):
         starter["pitching_profile"].update(primary_pitch=primary, putaway_pitch=putaway)
         labels.apply_profile_labels(starter["pitching_profile"], smp)
         starter["season_summary"]["scope"] = smp["rates"]["scope"]
+    # The profile names these pitches, so the game's pitch mix must contain them.
+    zero = {"overall": 0, "vs_lhh": 0, "vs_rhh": 0}
+    live_game["combined_charts"]["pitch_mix"] = [
+        {"pitch": AWAY_PRIMARY, "away_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}, "home_starter": zero},
+        {"pitch": AWAY_PUTAWAY, "away_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}, "home_starter": zero},
+        {"pitch": HOME_PRIMARY, "away_starter": zero, "home_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}},
+        {"pitch": HOME_PUTAWAY, "away_starter": zero, "home_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}},
+    ]
     monkeypatch.setattr(
         gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [live_game]}
     )

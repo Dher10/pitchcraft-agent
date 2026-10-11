@@ -32,7 +32,7 @@ def run(matchup_packet: dict[str, Any]) -> dict[str, Any]:
     three_things = [
         (
             f"Can {away_starter['name']} stay ahead of hitters early in counts?"
-            if _arsenal_limited(away_sample)
+            if _arsenal_limited(away_sample) or not labels.pitch_named(away_profile["putaway_pitch"])
             else f"Can {away_starter['name']} land the {_pitch_short_name(away_profile['putaway_pitch']).lower()} early in counts?"
         ),
         (
@@ -220,10 +220,14 @@ def _live_pitcher_read(starter: dict[str, Any], sample: dict[str, Any]) -> str:
     qualifier = " (regular-season rates)" if labels.scopes_differ(sample) else ""
     parts: list[str] = []
     if not sample["limited"]["arsenal"]:
-        parts.append(
-            f"{name} works off a {_pitch_short_name(profile['primary_pitch']).lower()}-"
-            f"{_pitch_short_name(profile['putaway_pitch']).lower()} combination."
-        )
+        primary = _pitch_short_name(profile["primary_pitch"]).lower()
+        if labels.pitch_named(profile["putaway_pitch"]):
+            parts.append(
+                f"{name} works off a {primary}-"
+                f"{_pitch_short_name(profile['putaway_pitch']).lower()} combination."
+            )
+        else:
+            parts.append(f"{name} works mainly off a {primary}.")
     # Name the pitcher in the first rate sentence unless the arsenal sentence already did.
     subject = "He" if parts else name
     for label in (profile.get("swing_miss_label"), profile.get("command_label")):
@@ -289,14 +293,16 @@ def _scope_notes(packet: dict[str, Any]) -> list[str]:
             labels.scopes_differ(sample),
             sample["rates"]["scope"]["label"],
             sample["arsenal"]["scope"]["label"],
+            _available_figures(starter, sample),
         )
         groups.setdefault(key, []).append(starter["name"])
-    for (differ, rates_label, arsenal_label), names in groups.items():
+    for (differ, rates_label, arsenal_label, figures), names in groups.items():
         who = " and ".join(names)
         if differ:
+            # Only figures that exist are named: "N/A" is never a claim.
+            season = f"{figures} cover the {rates_label}; " if figures else "no season figures are available; "
             notes.append(
-                f"{who}: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the "
-                f"{rates_label}; the pitch mix, velocity and movement cover the {arsenal_label}. "
+                f"{who}: {season}the pitch mix, velocity and movement cover the {arsenal_label}. "
                 "They are different samples."
             )
         else:
@@ -311,6 +317,23 @@ def _scope_notes(packet: dict[str, Any]) -> list[str]:
     for label in offense_labels:
         notes.append(f"Team offense splits cover the {label}.")
     return notes
+
+
+def _available_figures(starter: dict[str, Any], sample: dict[str, Any]) -> str:
+    """The season figures a starter really has, as a phrase ("ERA, innings and the ... counts")."""
+
+    summary = starter.get("season_summary") or {}
+    names = [
+        name
+        for name, key in (("ERA", "era"), ("WHIP", "whip"), ("innings", "innings"))
+        if labels.is_available(summary.get(key))
+    ]
+    rates = sample["rates"]
+    if any(rates[key] is not None for key in ("strikeouts", "walks", "home_runs")):
+        names.append("the strikeout, walk and home-run counts")
+    if len(names) > 1:
+        return f"{', '.join(names[:-1])} and {names[-1]}"
+    return names[0] if names else ""
 
 
 def _lineup_pressure_points(matchup_packet: dict[str, Any]) -> dict[str, list[str]]:
@@ -344,6 +367,8 @@ def _optional_rate(raw_value: str | None) -> float | None:
 
 
 def _style_description(profile: dict[str, Any]) -> str:
+    if not labels.pitch_named(profile["putaway_pitch"]):
+        return f"{profile['primary_pitch']} as the main pitch"
     return (
         f"{profile['primary_pitch']} to set up, "
         f"{profile['putaway_pitch']} to finish"

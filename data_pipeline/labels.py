@@ -37,6 +37,12 @@ COMMAND_AVERAGE = "Average command"
 COMMAND_BELOW = "Below-average command"
 
 ARSENAL_LIMITED_STYLE = "Arsenal data limited"
+PITCH_NOT_AVAILABLE = "Not available"
+
+# A second pitch is called the put-away pitch only above this share of the mix; the
+# critic treats the most-used pitch as the primary one above PRIMARY_MIN_USAGE_PCT.
+PUTAWAY_MIN_USAGE_PCT = 15
+PRIMARY_MIN_USAGE_PCT = 30
 
 SCOPE_REGULAR = "regular_season"
 SCOPE_REGULAR_POSTSEASON = "regular_and_postseason"
@@ -52,6 +58,18 @@ def make_scope(kind: str, through: str) -> dict[str, str]:
     if kind not in _SCOPE_TEXT:
         raise ValueError(f"unknown scope kind {kind!r}")
     return {"kind": kind, "through": through, "label": f"{_SCOPE_TEXT[kind]} through {through}"}
+
+
+def is_available(value: Any) -> bool:
+    """False for None, an empty string and "N/A": nothing may be computed or claimed from them."""
+
+    return value is not None and str(value).strip() not in ("", "N/A")
+
+
+def pitch_named(pitch: Any) -> bool:
+    """True when a profile names a real pitch (not "Not available" or empty)."""
+
+    return is_available(pitch) and str(pitch).strip().lower() != PITCH_NOT_AVAILABLE.lower()
 
 
 def _below(value: int | None, threshold: int) -> bool:

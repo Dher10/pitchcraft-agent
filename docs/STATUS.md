@@ -6,16 +6,18 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.12-B (then C, D, E; one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** P0.12-C (then D, E; one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
-- **Committed JSON not regenerated:** `public/data/pitchcraft-demo.json` still holds the old live starter and team fields until the generator is next run.
+- **Committed JSON:** regenerated in P0.12-B from an empty cache, so it is `demo_cached` (demo names, labelled demo). Command: `python -c "import pathlib, tempfile; from data_pipeline.fetchers import cache_manager; cache_manager.PROCESSED_DIR = pathlib.Path(tempfile.mkdtemp()); from data_pipeline import generate_demo_json as g; raise SystemExit(g.main())"`. The bot's daily live file is a P1.2 matter.
 
 ## Pending Notion sync
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- D30 (put-away pitch = second pitch by usage, only from 15% of the mix) added to `DECISIONS.md`.
+- P0.12-B: the Critic no longer "revises" anything (status `revised` is gone from the schema, validator and UI); an `unsupported` claim stops the generator (exit 1, JSON untouched). A pitcher with one pitch has no put-away pitch (a second pitch counts only from 15% of the mix) and reports say "works mainly off a four-seam". The served JSON was regenerated and is now plainly demo. The Critic panel's "Revision Notes" is now "Critic Notes".
 - D29 (approved 2026-10-11) added and D23 marked "amended by D29": `as_of` is always the official game date (New York) minus one day, in historical runs and in the daily job; the month that holds `as_of` is refreshed each run under its own 10-request budget. P1.3 reviews that budget for days of up to 15 games. P0.12 added to `PLAN.md` after the first QA gate failed.
 - P0.8: new data mode `demo_fallback` and `metadata.data_status` in the published JSON (live run failed or found no games: demo content, labelled as such); a live run record `live_run.json` with the errors; live matchups no longer show the demo broadcast note.
 - D25 (rate bands), D26 (Vercel Web Analytics, Hobby plan) and D27 (independent QA gate per phase) added to `DECISIONS.md`; `docs/QA_PROTOCOL.md` added; P1.10 added to `PLAN.md`; two more items in the backlog after v2.
@@ -29,6 +31,16 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.12-B the Critic blocks publication, CI validates the served JSON (Claude Code, gated)
+
+- **QA-04:** `process_pitcher_statcast` no longer invents pitches: the put-away pitch is the second pitch only from 15% of the mix (`labels.PUTAWAY_MIN_USAGE_PCT`), otherwise "Not available"; no pitch mix means no pitch named at all (it used to say "Fastball"). The analyst and writer cope with it ("works mainly off a four-seam", a neutral what-to-watch question, style "Four-seam as the main pitch"). The Critic never emits `revised`: a profile pitch absent from the mix is `unsupported`, a low share is a `warning`, and a new check marks `unsupported` any pitch name in the report text that is not in the game's pitch mix. `_run_agents` raises `CriticBlocked` on any `unsupported` check, `main()` returns 1 and does not write the JSON, and the validator rejects `unsupported` and the removed `revised`. The workflow text counts warnings, not revisions. Consequence for P1.2: the daily job must keep the previous JSON when the generator exits 1.
+- **Pitch names in the report text (owner's follow-up, D30):** the critic's name check now knows aliases (`two-seam`/`sinker`, `cut fastball`/`cutter`, `change-up`, `split-finger`, `curve ball`, `4-seam`; plain `fastball` needs any fastball-family pitch) and holds a sentence that names exactly one starter to that starter's pitches; a sentence naming both or neither is held to the two together (the limit of reading free text; a pronoun sentence is not attributed). Before: aliases were not scanned at all (a fabricated "two-seam" or "cut fastball" passed) and the scope was the union of both starters (10 of 28 tests in `tests/test_critic_pitch_names.py` failed); no false positive on correct alias text. D30 records the 15% put-away rule as a simplification to review when pitch data by count exists.
+- **"revised" in docs:** only `docs/KAGGLE_WRITEUP.md` (the archived v1 submission, kept unchanged by its own header) describes the old REVISED chip; `PRD_v2.md`, `eval-spec.md` and `PLAN.md` say nothing that conflicts with the new schema, so nothing else changed.
+- **QA-01:** `tests/test_served_json.py` checks the file `lib/data.ts` serves (validator, mode honesty, no demo field on live matchups, no `revised`/`unsupported`, no `N/A` in report text, pitch names in the mix); invariants, not a comparison with a regeneration, so a live file from the bot passes too. The file was regenerated with the corrected generator from an empty cache (command in Current state): `demo_cached`, demo names, no live claim.
+- **"N/A is never a number" (owner's addition):** `tests/test_na_is_not_a_number.py` — no agent output names or computes ERA, WHIP or IP when they are `N/A` or `None`; the analyst's scope note lists only the figures that exist (before it named ERA/WHIP/innings regardless); both spellings give identical output. The frontend half (the card shows "—") needs the component runner, so it is a test in P0.12-C; the card still shows the string "N/A" until then.
+- Tests first and seen failing: 18 of the 30 new tests failed on the old code (the rest are guards or live-file-only). Older fixtures that named pitches missing from their own chart (`test_limited_samples.py`) now include them in the chart. Local run: 296 passed, 1 skipped (a live-file-only test); `tsc`, lint and `next build` clean.
+- Next: P0.12-C.
 
 ### 2026-10-11 — P0.12-A strict input boundary (Claude Code, gated)
 

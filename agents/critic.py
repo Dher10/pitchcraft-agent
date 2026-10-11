@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from data_pipeline import labels
@@ -19,41 +20,71 @@ BETTING_SCAN_TERMS = (
 )
 
 
+# Pitch names the report may use, with the other ways a fan text says them. A pitch that is
+# named in the report must be one the starter threw (see _unobserved_pitch_check).
+PITCH_ALIASES = {
+    "four-seam": ("four-seam", "four seam", "4-seam"),
+    "sinker": ("sinker", "two-seam", "two seam", "2-seam"),
+    "cutter": ("cutter", "cut fastball"),
+    "slider": ("slider",),
+    "sweeper": ("sweeper",),
+    "slurve": ("slurve",),
+    "curveball": ("curveball", "curve ball", "knuckle curve"),
+    "changeup": ("changeup", "change-up"),
+    "splitter": ("splitter", "split-finger", "split finger"),
+    "knuckleball": ("knuckleball",),
+    "forkball": ("forkball",),
+    "eephus": ("eephus",),
+}
+FASTBALL_FAMILY = ("four-seam", "sinker", "cutter")
+GENERIC_FASTBALL = "fastball"
+_ALIAS_PATTERNS = {
+    pitch: re.compile(r"\b(?:" + "|".join(re.escape(a) for a in aliases) + r")s?\b")
+    for pitch, aliases in PITCH_ALIASES.items()
+}
+_FASTBALL_PATTERN = re.compile(r"\bfastballs?\b")
+_SENTENCE_BREAK = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
+
+
 def run(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, Any]:
     """Check report claims against structured data and return critic review."""
 
     checks: list[dict[str, str]] = []
     checks.extend(_pitch_claim_checks(report, matchup_input))
+    checks.append(_unobserved_pitch_check(report, matchup_input))
     checks.append(_command_check(report, matchup_input))
     checks.append(_scope_check(report, matchup_input))
     checks.append(_language_scan(report))
 
-    revision_notes = [
-        check["evidence"]
-        for check in checks
-        if check["status"] == "revised"
-    ]
-    revision_notes.extend(
+    # The critic reviews; it does not rewrite. A claim it cannot support is reported as
+    # "unsupported", and the generator refuses to publish a report that has one.
+    notes = [check["evidence"] for check in checks if check["status"] == "warning"]
+    notes.extend(
         [
             "Kept the report focused on matchup fit rather than outcome prediction.",
             "Avoided claiming official Stuff+.",
         ]
     )
 
-    revised_count = sum(1 for check in checks if check["status"] == "revised")
-    if revised_count == 0:
-        summary = f"The critic checked {len(checks)} claims and found them supported by the data."
-    else:
+    unsupported = sum(1 for check in checks if check["status"] == "unsupported")
+    warnings = sum(1 for check in checks if check["status"] == "warning")
+    if unsupported:
         summary = (
-            f"The critic checked {len(checks)} claims and revised {revised_count} "
-            "where the data did not back them up."
+            f"The critic checked {len(checks)} claims and found {unsupported} the data does "
+            "not back up; this report must not be published."
         )
+    elif warnings:
+        summary = (
+            f"The critic checked {len(checks)} claims: none unsupported, {warnings} with a warning."
+        )
+    else:
+        summary = f"The critic checked {len(checks)} claims and found them supported by the data."
 
     return {
         "status": "reviewed",
         "summary": summary,
         "checks": checks,
-        "revision_notes": revision_notes,
+        "revision_notes": notes,
     }
 
 
@@ -67,46 +98,120 @@ def _pitch_claim_checks(report: dict[str, Any], matchup_input: dict[str, Any]) -
         if sample and sample["limited"]["arsenal"]:
             checks.append(_limited_arsenal_check(starter, sample, report_text))
             continue
-        primary_pitch = profile["primary_pitch"]
-        putaway_pitch = profile["putaway_pitch"]
-        primary_usage = _pitch_usage(matchup_input, slot, primary_pitch)
-        putaway_usage = _pitch_usage(matchup_input, slot, putaway_pitch)
-
-        if primary_usage >= 30:
-            primary_status = "supported"
-            primary_evidence = f"Pitch mix shows {primary_usage}% {_display_pitch(primary_pitch)} usage."
-        else:
-            primary_status = "revised"
-            primary_evidence = (
-                f"{_display_pitch(primary_pitch)} usage is only {primary_usage}%. "
-                "Primary pitch revised to reflect actual usage."
-            )
-        checks.append(
-            {
-                "claim": f"{starter['name']}'s primary pitch is {_display_pitch(primary_pitch)}.",
-                "status": primary_status,
-                "evidence": primary_evidence,
-            }
-        )
-
-        if putaway_usage >= 15:
-            putaway_status = "supported"
-            putaway_evidence = f"Put-away pitch usage at {putaway_usage}% supports this claim."
-        else:
-            putaway_status = "revised"
-            putaway_evidence = (
-                f"{_display_pitch(putaway_pitch)} usage is only {putaway_usage}%. "
-                "Revised to reflect the higher-usage put-away pitch."
-            )
-        checks.append(
-            {
-                "claim": f"{starter['name']}'s put-away pitch is {_display_pitch(putaway_pitch)}.",
-                "status": putaway_status,
-                "evidence": putaway_evidence,
-            }
-        )
+        for role, pitch, minimum in (
+            ("primary", profile["primary_pitch"], labels.PRIMARY_MIN_USAGE_PCT),
+            ("put-away", profile["putaway_pitch"], labels.PUTAWAY_MIN_USAGE_PCT),
+        ):
+            if labels.pitch_named(pitch):
+                checks.append(_pitch_role_check(matchup_input, slot, starter, role, pitch, minimum))
 
     return checks
+
+
+def _pitch_role_check(
+    matchup_input: dict[str, Any],
+    slot: str,
+    starter: dict[str, Any],
+    role: str,
+    pitch: str,
+    minimum: int,
+) -> dict[str, str]:
+    usage = _pitch_usage(matchup_input, slot, pitch)
+    claim = f"{starter['name']}'s {role} pitch is {_display_pitch(pitch)}."
+    if usage <= 0:
+        return {
+            "claim": claim,
+            "status": "unsupported",
+            "evidence": f"{_display_pitch(pitch)} does not appear in {starter['name']}'s pitch mix.",
+        }
+    if usage >= minimum:
+        evidence = (
+            f"Pitch mix shows {usage:g}% {_display_pitch(pitch)} usage."
+            if role == "primary"
+            else f"Put-away pitch usage at {usage:g}% supports this claim."
+        )
+        return {"claim": claim, "status": "supported", "evidence": evidence}
+    return {
+        "claim": claim,
+        "status": "warning",
+        "evidence": (
+            f"{_display_pitch(pitch)} is only {usage:g}% of {starter['name']}'s pitch mix, "
+            f"below the {minimum}% the report treats as a {role} pitch."
+        ),
+    }
+
+
+def _canonical_pitches(name: str) -> set[str]:
+    """The pitches a mix row stands for, whatever it is called ("Two-seam" is a sinker)."""
+
+    lower = name.lower()
+    found = {pitch for pitch, pattern in _ALIAS_PATTERNS.items() if pattern.search(lower)}
+    if not found and _FASTBALL_PATTERN.search(lower):
+        found.add(GENERIC_FASTBALL)
+    return found
+
+
+def _thrown_by(matchup_input: dict[str, Any], slot: str) -> set[str]:
+    thrown: set[str] = set()
+    for row in matchup_input["charts"]["pitch_mix"]:
+        if row[slot]["overall"] > 0:
+            thrown |= _canonical_pitches(row["pitch"])
+    return thrown
+
+
+def _named_pitches(sentence: str) -> set[str]:
+    lower = sentence.lower()
+    named = {pitch for pitch, pattern in _ALIAS_PATTERNS.items() if pattern.search(lower)}
+    if _FASTBALL_PATTERN.search(lower):
+        named.add(GENERIC_FASTBALL)
+    return named
+
+
+def _supports(thrown: set[str], pitch: str) -> bool:
+    if pitch == GENERIC_FASTBALL:
+        return bool(thrown & {*FASTBALL_FAMILY, GENERIC_FASTBALL})
+    return pitch in thrown
+
+
+def _unobserved_pitch_check(report: dict[str, Any], matchup_input: dict[str, Any]) -> dict[str, str]:
+    """
+    Every pitch the report names must have been thrown in this game's data.
+
+    A sentence that names exactly one starter is held to that starter's pitches; a
+    sentence that names both, or neither, to the two together (free text cannot say
+    whose pitch it is). Aliases count: "two-seam" is a sinker, "cut fastball" a
+    cutter, and "fastball" is any fastball-family pitch.
+    """
+
+    slots = ("away_starter", "home_starter")
+    thrown = {slot: _thrown_by(matchup_input, slot) for slot in slots}
+    together = thrown["away_starter"] | thrown["home_starter"]
+    names = {slot: matchup_input["starters"][slot]["name"] for slot in slots}
+
+    problems: list[str] = []
+    for _, text in _report_locations(report):
+        for sentence in _SENTENCE_BREAK.split(text):
+            mentioned = [slot for slot in slots if names[slot] in sentence]
+            allowed = thrown[mentioned[0]] if len(mentioned) == 1 else together
+            for pitch in sorted(_named_pitches(sentence)):
+                if _supports(allowed, pitch):
+                    continue
+                if len(mentioned) == 1:
+                    problems.append(f"{names[mentioned[0]]} is credited with {pitch}, which he did not throw")
+                else:
+                    problems.append(f"{pitch} is named, but neither starter threw it")
+    claim = "The report names only pitches that appear in the pitch mix."
+    if problems:
+        return {
+            "claim": claim,
+            "status": "unsupported",
+            "evidence": "; ".join(dict.fromkeys(problems)) + " in this data.",
+        }
+    return {
+        "claim": claim,
+        "status": "supported",
+        "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+    }
 
 
 def _limited_arsenal_check(
@@ -249,11 +354,11 @@ def _language_scan(report: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _pitch_usage(matchup_input: dict[str, Any], slot: str, pitch: str) -> int:
+def _pitch_usage(matchup_input: dict[str, Any], slot: str, pitch: str) -> float:
     target = _normalize_pitch(pitch)
     for row in matchup_input["charts"]["pitch_mix"]:
         if _normalize_pitch(row["pitch"]) == target:
-            return int(row[slot]["overall"])
+            return float(row[slot]["overall"])
     return 0
 
 

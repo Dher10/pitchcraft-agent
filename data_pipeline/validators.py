@@ -247,6 +247,11 @@ def _validate_critic_review(critic_review: Any, label: str, record: Any) -> None
             status in CRITIC_STATUSES,
             f"found {status!r}",
         )
+        record(
+            f"{label}: critic_review.checks[{index}] is not an unsupported claim",
+            status != "unsupported",
+            "an unsupported claim must not be published",
+        )
 
 
 def _validate_report_betting_terms(report: Any, label: str, record: Any) -> None:

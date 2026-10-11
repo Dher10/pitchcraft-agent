@@ -49,7 +49,6 @@ POSTGAME_STARTER_LINE_REQUIRED_KEYS = (
 CRITIC_STATUSES = (
     "supported",
     "unsupported",
-    "revised",
     "not_present",
     "warning",
 )

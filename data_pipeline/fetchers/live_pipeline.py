@@ -1004,8 +1004,17 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
                     }
                 )
 
-    top = pitch_mix[0]["pitch"] if pitch_mix else "Fastball"
-    second = pitch_mix[1]["pitch"] if len(pitch_mix) > 1 else "Slider"
+    # Only pitches that were thrown: no pitch is invented to fill a slot.
+    top = pitch_mix[0]["pitch"] if pitch_mix else labels.PITCH_NOT_AVAILABLE
+    second = (
+        pitch_mix[1]["pitch"]
+        if len(pitch_mix) > 1
+        and pitch_mix[1]["away_starter"]["overall"] >= labels.PUTAWAY_MIN_USAGE_PCT
+        else labels.PITCH_NOT_AVAILABLE
+    )
+    style = f"{top}-{second} starter" if labels.pitch_named(second) else f"{top} starter"
+    if not labels.pitch_named(top):
+        style = labels.ARSENAL_LIMITED_STYLE
 
     return {
         "name": pitcher_name,
@@ -1016,7 +1025,7 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
         "pitch_locations": pitch_locations,
         "pitches_used": total,
         "pitching_profile": {
-            "style_label": f"{top}-{second} starter",
+            "style_label": style,
             "primary_pitch": top,
             "putaway_pitch": second,
             "command_label": None,

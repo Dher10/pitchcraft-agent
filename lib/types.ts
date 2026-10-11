@@ -1,5 +1,5 @@
 export type MatchupStatus = "upcoming" | "final" | "demo";
-export type CriticCheckStatus = "supported" | "unsupported" | "revised" | "not_present" | "warning";
+export type CriticCheckStatus = "supported" | "unsupported" | "not_present" | "warning";
 export type ConfidenceLevel = "live_confirmed" | "fetched_snapshot" | "partial" | "demo_cached" | "limited";
 export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
 export type AgentStatus = "completed" | "not_applicable" | "pending";
