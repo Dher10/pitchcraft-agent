@@ -158,6 +158,63 @@ def test_api_numbers_win_and_a_real_zero_is_kept(monkeypatch):
     assert result["pitching_profile"]["swing_miss_label"] == "Below-average swing-and-miss ability"
 
 
+def _api_line(**stat):
+    return {"stats": [{"splits": [{"stat": stat}]}]}
+
+
+def _counts(result):
+    rates = result["sample"]["rates"]
+    return (rates["batters_faced"], rates["strikeouts"], rates["walks"], rates["home_runs"])
+
+
+def test_an_api_line_without_counts_does_not_beat_valid_statcast_counts(monkeypatch):
+    # QA3-02: a valid line with only ERA/WHIP/IP has no counts. It used to win and hide Statcast's.
+    route(monkeypatch, [("/stats?", _api_line(era="3.10", whip="1.05", inningsPitched="101.0"))])
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
+
+    result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
+
+    assert result["sample"]["rates"]["source"] == "statcast"
+    assert _counts(result) == (19, 4, 3, 2)
+    assert result["season_summary"]["era"] == "3.10"  # the API still supplies what it has
+    assert lp._run_errors == []
+
+
+@pytest.mark.parametrize("missing", ["battersFaced", "strikeOuts", "baseOnBalls", "homeRuns"])
+def test_an_api_line_missing_one_count_does_not_beat_valid_statcast_counts(monkeypatch, missing):
+    stat = {"era": "3.10", "battersFaced": 400, "strikeOuts": 90, "baseOnBalls": 20, "homeRuns": 5}
+    del stat[missing]
+    route(monkeypatch, [("/stats?", _api_line(**stat))])
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
+
+    result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
+
+    assert result["sample"]["rates"]["source"] == "statcast"
+    assert _counts(result) == (19, 4, 3, 2)
+
+
+def test_a_complete_api_line_still_wins_over_statcast(monkeypatch):
+    route(monkeypatch, [("/stats?", _api_line(battersFaced=400, strikeOuts=90, baseOnBalls=20, homeRuns=5))])
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
+
+    result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
+
+    assert result["sample"]["rates"]["source"] == "mlb_api"
+    assert _counts(result) == (400, 90, 20, 5)
+
+
+def test_a_partial_api_line_is_used_only_when_statcast_has_no_counts(monkeypatch):
+    route(monkeypatch, [("/stats?", _api_line(battersFaced=400, strikeOuts=90, baseOnBalls=20))])
+    monkeypatch.setattr(
+        lp, "statcast_pitcher", lambda *a, **k: frame(n_plain=150).drop(columns=["events"])
+    )
+
+    result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
+
+    assert result["sample"]["rates"]["source"] == "mlb_api"
+    assert _counts(result) == (400, 90, 20, None)  # the missing count stays unavailable, not zero
+
+
 def test_season_summary_carries_the_scope_of_the_api_figures(monkeypatch):
     route(monkeypatch, [("/stats?", API_STATS)])
     monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
@@ -283,6 +340,7 @@ SCHEDULE = {
             "games": [
                 {
                     "gamePk": 1,
+                    "officialDate": "2026-07-15",
                     "gameDate": "2026-07-15T23:05:00Z",
                     "status": {"abstractGameState": "Preview"},
                     "venue": {"name": "Yankee Stadium"},

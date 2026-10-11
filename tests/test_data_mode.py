@@ -40,6 +40,7 @@ SCHEDULE = {
             "games": [
                 {
                     "gamePk": 1,
+                    "officialDate": "2026-07-15",
                     "gameDate": "2026-07-15T23:05:00Z",
                     "status": {"abstractGameState": "Preview"},
                     "venue": {"name": "Yankee Stadium"},

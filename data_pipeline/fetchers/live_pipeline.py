@@ -25,6 +25,7 @@ import pybaseball
 from pybaseball import statcast_pitcher
 
 from data_pipeline import labels  # noqa: E402
+from data_pipeline.fetchers import mlb_schemas  # noqa: E402
 
 pybaseball.cache.enable()
 
@@ -277,45 +278,30 @@ def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
         return json.loads(response.read())
 
 
-def _schedule_games(data: Any) -> list[tuple[str | None, dict[str, Any]]]:
+def _schedule_games(data: Any, schema: Any, where: str) -> list[tuple[str | None, dict[str, Any]]]:
     """
-    The (date, game) pairs of a schedule response.
+    The (date, game) pairs of a schedule response, after the whole answer is checked against
+    `schema` (mlb_schemas): every date entry, every game and the inner objects the fetcher reads.
 
-    `{"dates": []}` is a valid answer for a day without games (checked against the live API:
-    a date entry that exists always carries a `games` list, empty or not). A response without
-    a `dates` list, or a date entry without a `games` list, is malformed and raises, so it is
-    recorded as a source failure instead of reading as "no games".
-    """
-
-    dates = data.get("dates") if isinstance(data, dict) else None
-    if not isinstance(dates, list):
-        raise ValueError("schedule response has no 'dates' list")
-    games: list[tuple[str | None, dict[str, Any]]] = []
-    for entry in dates:
-        if not isinstance(entry, dict) or not isinstance(entry.get("games"), list):
-            raise ValueError("schedule response has a date entry without a 'games' list")
-        games.extend((entry.get("date"), game) for game in entry["games"])
-    return games
-
-
-def _stat_splits(data: Any) -> list[dict[str, Any]]:
-    """
-    The splits of a stats response (people or teams endpoint).
-
-    `{"stats": []}` and `{"stats": [{"splits": []}]}` are valid answers for a player or team
-    without figures. A response without a `stats` list, or a stats entry without a `splits`
-    list, is malformed (an error envelope, for one) and raises.
+    `{"dates": []}` is a valid answer for a day without games and so is a date entry with an
+    empty `games` list; a missing list, an error envelope or a game without a field the
+    pipeline needs raises `SourceShapeError`, so it is recorded as a source failure.
     """
 
-    stats = data.get("stats") if isinstance(data, dict) else None
-    if not isinstance(stats, list):
-        raise ValueError("stats response has no 'stats' list")
-    splits: list[dict[str, Any]] = []
-    for entry in stats:
-        if not isinstance(entry, dict) or not isinstance(entry.get("splits"), list):
-            raise ValueError("stats response has an entry without a 'splits' list")
-        splits.extend(entry["splits"])
-    return splits
+    mlb_schemas.validate(schema, data, where)
+    return [(entry.get("date"), game) for entry in data["dates"] for game in entry["games"]]
+
+
+def _stat_splits(data: Any, schema: Any, where: str) -> list[dict[str, Any]]:
+    """
+    The splits of a stats response (people or teams endpoint), after the whole answer is
+    checked against `schema`: every splits entry carries its `stat` object (and `split.code`
+    for a team). `{"stats": []}` and `{"stats": [{"splits": []}]}` are valid answers for a
+    player or team without figures; anything else malformed raises `SourceShapeError`.
+    """
+
+    mlb_schemas.validate(schema, data, where)
+    return [split for entry in data["stats"] for split in entry["splits"]]
 
 
 @lru_cache(maxsize=None)
@@ -328,6 +314,7 @@ def season_dates(season: int) -> tuple[date, date]:
     """
 
     data = _get_json(f"https://statsapi.mlb.com/api/v1/seasons/{season}?sportId=1")
+    mlb_schemas.validate(mlb_schemas.SEASONS, data, "seasons response")
     entry = data["seasons"][0]
     return (
         date.fromisoformat(entry["regularSeasonStartDate"]),
@@ -356,29 +343,30 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
             data = json.loads(response.read())
 
         games = []
-        for entry_date, game in _schedule_games(data):
+        for _, game in _schedule_games(data, mlb_schemas.SCHEDULE_DAY, "schedule response"):
             away = game["teams"]["away"]
             home = game["teams"]["home"]
-            away_pp = away.get("probablePitcher", {})
-            home_pp = home.get("probablePitcher", {})
+            # Not announced yet is a normal answer: no probablePitcher object at all.
+            away_pp = away.get("probablePitcher") or {}
+            home_pp = home.get("probablePitcher") or {}
             games.append(
                 {
-                    "game_pk": game.get("gamePk"),
+                    "game_pk": game["gamePk"],
                     # The official MLB date, not the UTC date of the start time (D29).
-                    "official_date": game.get("officialDate") or entry_date,
-                    "away_team": away.get("team", {}).get("name", "Unknown"),
-                    "away_team_id": away.get("team", {}).get("id"),
-                    "away_team_abbr": _team_abbreviation(away.get("team", {})),
-                    "home_team": home.get("team", {}).get("name", "Unknown"),
-                    "home_team_id": home.get("team", {}).get("id"),
-                    "home_team_abbr": _team_abbreviation(home.get("team", {})),
+                    "official_date": game["officialDate"],
+                    "away_team": away["team"]["name"],
+                    "away_team_id": away["team"]["id"],
+                    "away_team_abbr": _team_abbreviation(away["team"]),
+                    "home_team": home["team"]["name"],
+                    "home_team_id": home["team"]["id"],
+                    "home_team_abbr": _team_abbreviation(home["team"]),
                     "away_pitcher_name": away_pp.get("fullName"),
                     "away_pitcher_id": away_pp.get("id"),
                     "home_pitcher_name": home_pp.get("fullName"),
                     "home_pitcher_id": home_pp.get("id"),
-                    "venue": game.get("venue", {}).get("name", ""),
-                    "start_time": game.get("gameDate", ""),
-                    "status": game.get("status", {}).get("abstractGameState", "Preview"),
+                    "venue": (game.get("venue") or {}).get("name", ""),
+                    "start_time": game["gameDate"],
+                    "status": game["status"]["abstractGameState"],
                 }
             )
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")
@@ -431,10 +419,10 @@ def fetch_pitcher_season_stats(
         )
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
-        splits = _stat_splits(data)
+        splits = _stat_splits(data, mlb_schemas.PITCHER_STATS, "season stats response")
         if not splits:
             return {}
-        stat = splits[0].get("stat", {})
+        stat = splits[0]["stat"]
         result = {
             "era": stat.get("era", "N/A"),
             "whip": stat.get("whip", "N/A"),
@@ -514,10 +502,10 @@ def fetch_team_splits(
         with urllib.request.urlopen(req, timeout=8) as response:
             data = json.loads(response.read())
         out = {}
-        for split in _stat_splits(data):
-            code = split.get("split", {}).get("code")
+        for split in _stat_splits(data, mlb_schemas.TEAM_SPLITS, "team splits response"):
+            code = split["split"]["code"]
             if code in ("vl", "vr"):
-                stat = split.get("stat", {})
+                stat = split["stat"]
                 plate_appearances = stat.get("plateAppearances")
                 # A count the source does not give is unavailable (None), never a measured zero.
                 strikeouts = stat.get("strikeOuts")
@@ -742,13 +730,13 @@ def fetch_series_status(
     schedule = "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
     try:
         data = _get_json(f"{schedule}&gamePk={game_pk}&hydrate=seriesStatus")
-        games = [g for _, g in _schedule_games(data)]
-        game = next((g for g in games if g.get("gamePk") == game_pk), None)
-        if not game or game.get("gameType") not in POSTSEASON_GAME_TYPES:
+        games = [
+            g for _, g in _schedule_games(data, mlb_schemas.SERIES_SCHEDULE, "series game response")
+        ]
+        game = next((g for g in games if g["gamePk"] == game_pk), None)
+        if not game or game["gameType"] not in POSTSEASON_GAME_TYPES:
             return {}
-        number = game.get("seriesGameNumber")
-        if not number:
-            return {}
+        number = game["seriesGameNumber"]
         game_date = date.fromisoformat(game["officialDate"])
         game_type = game["gameType"]
         home_id = game["teams"]["home"]["team"]["id"]
@@ -761,17 +749,17 @@ def fetch_series_status(
             f"&endDate={window_end}&gameType={game_type}&hydrate=seriesStatus"
         )
         earlier = []
-        for _, entry in _schedule_games(data):
+        for _, entry in _schedule_games(data, mlb_schemas.SERIES_SCHEDULE, "series window response"):
             entry_teams = {
                 entry["teams"]["home"]["team"]["id"],
                 entry["teams"]["away"]["team"]["id"],
             }
             if (
-                entry.get("gameType") == game_type
+                entry["gameType"] == game_type
                 and entry_teams == team_ids
-                and (entry.get("seriesGameNumber") or 0) < number
+                and entry["seriesGameNumber"] < number
                 and date.fromisoformat(entry["officialDate"]) <= cutoff
-                and entry.get("status", {}).get("abstractGameState") == "Final"
+                and entry["status"]["abstractGameState"] == "Final"
             ):
                 earlier.append(entry)
 
@@ -787,16 +775,21 @@ def fetch_series_status(
                 "source_game_pk": None,
             }
         last = max(earlier, key=lambda entry: entry["seriesGameNumber"])
-        status = last.get("seriesStatus")
-        if not status:
-            return {}
+        # The hydrated standing of a final series game is mandatory: its absence is a failure,
+        # not "no standing".
+        mlb_schemas.validate(
+            mlb_schemas.SERIES_STATUS,
+            last.get("seriesStatus"),
+            f"seriesStatus of game {last['gamePk']}",
+        )
+        status = last["seriesStatus"]
         return {
             **base,
             "games_played": last["seriesGameNumber"],
-            "result": status.get("result"),
-            "wins": status.get("wins"),
-            "losses": status.get("losses"),
-            "is_over": bool(status.get("isOver")),
+            "result": status["result"],
+            "wins": status["wins"],
+            "losses": status["losses"],
+            "is_over": status["isOver"],
             "source_game_pk": last["gamePk"],
         }
     except Exception as exc:
@@ -821,20 +814,28 @@ def fetch_pitcher_statcast(
     ValueError.
     """
 
+    import pandas as pd
+
     cutoff = _parse_as_of(as_of)
     try:
         start = season_start or season_dates(cutoff.year)[0].isoformat()
         if cutoff.isoformat() < start:
-            print(f"[LIVE] Season {cutoff.year} has not started as of {cutoff.isoformat()}")
-            return None
-        print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
-        df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
+            # Opening day (D29: the cutoff is the day before the game) or earlier: no pitch can
+            # have been thrown this season and there is no valid Statcast range to ask for. The
+            # starter is still known, so he is built as a debut below: every pitch-based
+            # dimension limited, the game kept (D1). Prior-season carry-over is deferred.
+            print(
+                f"[LIVE] Season {cutoff.year} has not started as of {cutoff.isoformat()}; "
+                "no Statcast request"
+            )
+            df = pd.DataFrame()
+        else:
+            print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
+            df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
         if df is None:
             raise ValueError("Statcast returned no result (None)")
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
-            import pandas as pd
-
             _require_columns(df, PITCHER_STATCAST_REQUIRED_COLUMNS, "pitcher Statcast")
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
             # pybaseball asks for regular season, postseason and spring training.
@@ -915,6 +916,7 @@ def fetch_pitcher_hand(pitcher_id: int) -> str | None:
     _pitcher_hand_run["requests"] += 1
     try:
         data = _get_json(f"https://statsapi.mlb.com/api/v1/people/{pitcher_id}")
+        mlb_schemas.validate(mlb_schemas.PERSON, data, "person response")
         throws = data["people"][0]["pitchHand"]["code"]
         if throws not in PITCHER_HANDS:
             raise ValueError(f"unknown throwing hand {throws!r}")
@@ -1001,15 +1003,22 @@ def _attach_sample(
         else labels.SCOPE_REGULAR
     )
     pitches = processed.pop("pitches_used", 0) if processed["pitch_mix"] else 0
-    if mlb_stats:
+    api_numbers = {
+        "batters_faced": mlb_stats.get("batters_faced"),
+        "strikeouts": mlb_stats.get("strikeouts"),
+        "walks": mlb_stats.get("walks"),
+        "home_runs": mlb_stats.get("home_runs_allowed"),
+    }
+    api_complete = all(value is not None for value in api_numbers.values())
+    api_partial = any(value is not None for value in api_numbers.values())
+    statcast_counts = counts is not None and counts["batters_faced"] is not None
+    # A valid API line can lack some counts (they are optional figures). It is the source only
+    # when it has all four: a line without them never hides valid Statcast counts (QA3-02), and a
+    # partial one is used only when Statcast has nothing. Sources are never mixed field by field.
+    if api_complete or (api_partial and not statcast_counts):
         source, rates_kind = "mlb_api", labels.SCOPE_REGULAR
-        numbers = {
-            "batters_faced": mlb_stats.get("batters_faced"),
-            "strikeouts": mlb_stats.get("strikeouts"),
-            "walks": mlb_stats.get("walks"),
-            "home_runs": mlb_stats.get("home_runs_allowed"),
-        }
-    elif counts and counts["batters_faced"] is not None:
+        numbers = api_numbers
+    elif statcast_counts:
         source, rates_kind = "statcast", arsenal_kind
         numbers = {key: counts[key] for key in ("batters_faced", "strikeouts", "walks", "home_runs")}
     else:

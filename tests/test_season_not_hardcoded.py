@@ -183,12 +183,42 @@ def test_explicit_season_start_is_still_honored(monkeypatch, stubbed_seasons, ur
     assert seen["range"] == ("2025-05-01", "2025-07-14")
 
 
-def test_statcast_before_opening_day_returns_none_without_fetching(monkeypatch, stubbed_seasons, urls):
-    monkeypatch.setattr(
-        lp, "statcast_pitcher", lambda *a, **k: pytest.fail("must not fetch")
-    )
+@pytest.mark.parametrize("as_of", ["2026-03-10", "2026-03-24"])  # opening day is 2026-03-25
+def test_statcast_before_opening_day_builds_an_empty_limited_starter_without_fetching(
+    monkeypatch, stubbed_seasons, as_of
+):
+    # QA3-01: a cutoff before the season is not a reason to drop the game. Statcast is not asked
+    # (there is no valid range), the starter is built like a debut, and nothing fails.
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: pytest.fail("must not fetch"))
+    monkeypatch.setattr(lp, "_run_errors", [])
+    requested: list[str] = []
+
+    def fake_urlopen(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else req
+        requested.append(url)
+        if "/stats?" in url:
+            return FakeResponse({"stats": [{"splits": []}]})  # no line before the season starts
+        return FakeResponse({"people": [{"pitchHand": {"code": "L"}}]})
+
+    monkeypatch.setattr(lp.urllib.request, "urlopen", fake_urlopen)
+
+    starter = lp.fetch_pitcher_statcast(1, "Test Pitcher", as_of=as_of)
+
+    assert starter is not None and starter["throws"] == "L"
+    assert starter["pitch_mix"] == []
+    assert starter["sample"]["arsenal"]["pitches"] == 0
+    assert starter["sample"]["limited"] == {"arsenal": True, "strikeout": True, "control": True}
+    assert lp._run_errors == []
+    assert len(requested) == 2  # the hand and the (empty) season line, nothing else
+
+
+def test_statcast_before_opening_day_still_fails_when_the_hand_is_unknown(monkeypatch, stubbed_seasons, urls):
+    # `urls` answers every request with {}: not a person. The hand is never guessed (QA2-03).
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: pytest.fail("must not fetch"))
+    monkeypatch.setattr(lp, "_run_errors", [])
 
     assert lp.fetch_pitcher_statcast(1, "Test Pitcher", as_of="2026-03-10") is None
+    assert [e["source"] for e in lp._run_errors] == ["mlb_person"]
 
 
 def test_statcast_returns_none_when_season_dates_are_unavailable(monkeypatch):
