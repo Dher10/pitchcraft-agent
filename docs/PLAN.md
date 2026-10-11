@@ -39,7 +39,7 @@ Lanes (D22): `[auto]` = plan approved once, then commit and push without asking;
   - [x] P0.12-A Strict input boundary: QA-02 (`as_of` is always the day before the game, including the daily job; needs D29 approved first), QA-05 (mandatory columns and schedule structure; malformed or null is an error, a valid empty frame or schedule is not), QA-06 (stale snapshot protection requires non-empty, matching run identifiers and consistent dates), QA-08 (a partial live summary or profile never inherits demo values).
   - [x] P0.12-B The Critic blocks publication, and CI validates the served JSON: QA-04 (no invented put-away pitch; the critic never reports a revision it did not make, and an unsupported claim stops the publish), QA-01 (a test over `public/data/pitchcraft-demo.json`, the file `lib/data.ts` serves, then regenerate it with the corrected generator).
   - [x] P0.12-C Frontend honesty, and the component test runner brought forward from P1.4: QA-03 (the detail panel only shows the selected starter's own arsenal, a limitation for an empty or limited arsenal, and unavailable movement as unavailable, never as 0.0; also the starter card shows "—" for an unavailable ERA, WHIP or IP, the frontend half of the "N/A is never a number" invariant started in B).
-  - [ ] P0.12-D Minimal D6: QA-07 (`language` parameter, `en` by default, on every agent that writes text, and the agents' user-facing text in a catalog; no Spanish yet).
+  - [x] P0.12-D Minimal D6: QA-07 (`language` parameter, `en` by default, on every agent that writes text, and the agents' user-facing text in a catalog; no Spanish yet).
   - [ ] P0.12-E Medium and tooling: QA-09 (cache a valid empty finished month), QA-10 (commit-msg hook gaps), the hook tests no longer depend on `sed` being on PATH, and `.pytest_cache` is out of the lint.
 - [ ] P0.10 [gated] QA gate for Phase 0 (D27). The owner starts Codex with `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`; the report goes to `docs/qa/`. Phase 0 closes only on PASS, or on PASS WITH CONDITIONS once the listed conditions are met; any Blocker or High is a FAIL and Phase 0 stays open. Run 1 (2026-10-10): FAIL, six Blockers, one High, three Mediums. Run 2 happens after P0.12.
 
@@ -103,7 +103,7 @@ Feature: Phase 0 data integrity
 
 ## Phase 1 — Automation and signals (target Oct 25, closes v2.0-a)
 
-- [ ] P1.0 Workflow security: least-privilege `permissions` (`contents: write`, `models: read` only where needed); secrets only via GitHub Secrets and never printed; third-party actions pinned by commit SHA; no secrets on pull requests from forks. Also update `actions/checkout` and `actions/setup-python` in `tests.yml` to versions that no longer run on Node 20, pinned by commit SHA, and pin the runner to `ubuntu-24.04` instead of `ubuntu-latest`. The bot commits only `public/data/` and `evals/live/` (D15). Pin pandas and numpy (and any other Python dependency CI installs) in `requirements.txt`; today only `pybaseball` is pinned.
+- [ ] P1.0 Workflow security: least-privilege `permissions` (`contents: write`, `models: read` only where needed); secrets only via GitHub Secrets and never printed; third-party actions pinned by commit SHA; no secrets on pull requests from forks. Also update `actions/checkout` and `actions/setup-python` in `tests.yml` to versions that no longer run on Node 20, pinned by commit SHA, and pin the runner to `ubuntu-24.04` instead of `ubuntu-latest`. The bot commits only `public/data/` and `evals/live/` (D15). Pin pandas and numpy (and any other Python dependency CI installs) in `requirements.txt`; today only `pybaseball` is pinned. CI also runs `npx tsc --noEmit`, `npm run lint` and `next build`.
 - [ ] P1.1 Test the Statcast fetch from GitHub Actions. If blocked, heavy fetch runs locally and Actions uses the committed cache. Record the result in `DECISIONS.md` via owner approval.
 - [ ] P1.2 Daily workflow (cron + manual trigger for testing): today's previews, yesterday's postgame, publish JSON. Count the pitcher Statcast fetch (`statcast_pitcher`) in a request budget with pacing, like the team-batting fetch (D23). D23's 210 covers only team batting, so the budget for pitcher requests needs its own figure: propose it as a new decision (D23 is not edited).
 - [ ] P1.3 Several real games per day; no demo rows mixed into live mode. Review D29's open-month budget (10 requests per run, sized for 5 candidate games) for days of up to 15 games.
@@ -131,6 +131,10 @@ Feature: Phase 0 data integrity
 - [ ] P3.2 Quality page on the site.
 - [ ] P3.3 Case study on danielherdenez.com and pm-ai-playbook — owner task.
 - [ ] P3.4 README, ARCHITECTURE, RUNBOOK, CHANGELOG.
+
+## v2.1 — Spanish (after v2.0-b)
+
+- [ ] L10N.1 Finish D6 as scoped by D31. Separate a label's identifier from its visible text in `labels.py` (today the English text is also the value that code compares, and that is stored in the JSON); move the generator's texts (data mode and its reasons, confidence note, agent workflow, archive labels, offense split labels) and the frontend copy into catalogs; add the Spanish catalog of the five agents (`agents/messages_es.py`, same keys as `messages_en.py`); the writer and the eval take `language` end to end, and the eval checks Spanish reports (D6).
 
 ## Backlog after v2 (not scheduled)
 

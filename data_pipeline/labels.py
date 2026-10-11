@@ -38,6 +38,9 @@ COMMAND_BELOW = "Below-average command"
 
 ARSENAL_LIMITED_STYLE = "Arsenal data limited"
 PITCH_NOT_AVAILABLE = "Not available"
+# Words of the data the agents read, not text they write.
+FASTBALL_SUFFIX = " fastball"
+LEGACY_PLACEHOLDER_LABEL = "see live data"
 
 # A second pitch is called the put-away pitch only above this share of the mix; the
 # critic treats the most-used pitch as the primary one above PRIMARY_MIN_USAGE_PCT.

@@ -6,7 +6,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 - **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.12-D (then E; one commit each), then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** P0.12-E, then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
@@ -16,6 +16,7 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- P0.12-D (D6, minimal): every agent that writes text takes `language` (default `en`) and its sentences live in a catalog (`agents/messages_en.py`); an unknown language is an error. No change to what the fan reads. Spanish (v2.1) is one more catalog file. P1.0 now also lists `tsc`, lint and `next build` in CI.
 - P0.12-C: the detail panel shows each starter's own pitches only, a message instead of a chart for an empty or limited arsenal, and "Movement data not available" instead of a 0.0-inch break; the starter card shows a dash for an unavailable ERA, WHIP or K. Component tests now run in CI (job `components` in `tests.yml`, `npm test`).
 - D30 (put-away pitch = second pitch by usage, only from 15% of the mix) added to `DECISIONS.md`.
 - P0.12-B: the Critic no longer "revises" anything (status `revised` is gone from the schema, validator and UI); an `unsupported` claim stops the generator (exit 1, JSON untouched). A pitcher with one pitch has no put-away pitch (a second pitch counts only from 15% of the mix) and reports say "works mainly off a four-seam". The served JSON was regenerated and is now plainly demo. The Critic panel's "Revision Notes" is now "Critic Notes".
@@ -32,6 +33,15 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.12-D minimal D6: `language` parameter and a message catalog (Claude Code, gated)
+
+- **QA-07:** `agents/language.py` (`catalog_for(language)`, `UnknownLanguageError`, `Catalog` with `t(key, **params)`, `t.count(noun, n)` for plurals, `t.terms(key)` and `t.vocabulary(key)`) and `agents/messages_en.py` (162 entries, one per sentence). `run(..., language="en")` on `data_scout`, `matchup_analyst`, `report_writer`, `critic` and `postgame_grader`; `build_payload(language="en")` passes it to all five. An unknown language raises instead of falling back to English. The writer's and the critic's language-specific checks (forbidden and required terms, betting words, the "different samples" marker, how a text says a pitch: "two-seam", "cut fastball", …) are catalog entries too. Spanish is not written; it is a second `messages_xx.py` with the same keys.
+- **What did not move, on purpose:** words that belong to the data the agents read (the English rate labels such as "Above-average swing-and-miss ability", pitch names, the legacy "see live data" placeholder: now constants in `labels.py`) and developer errors (`raise ValueError(...)`). Not covered by this task and still English in code: the generator's own strings (data-mode labels like "Live data unavailable; showing demo data", the confidence note, the agent workflow text, archive grade labels, "Season split") and the labels in `labels.py`. They need the same treatment before Spanish ships (v2.1).
+- **Proof that nothing changed for the fan:** `tests/test_agents_en_golden.py` compares the output of the five agents over 13 matchups (demo, live, limited and debut arsenals, different scopes, no put-away pitch, unavailable ERA/WHIP/IP, offense splits) with a golden file captured *before* the refactor (99 KB) and passes unchanged; the regenerated `pitchcraft-demo.json` is byte-identical.
+- **Tests:** `tests/test_agents_language.py`. Written first and failing (the module did not exist). A pseudo-language catalog (`«key»`) proves the text comes from the catalog: no English sentence of the agents survives in the output of any of the 13 matchups (a fragment that is also in the input data does not count). A key check fails on a key used but missing, or in the catalog but unused. An AST guard fails on any string constant in `agents/*.py` that has a space and a word (docstrings and `raise` messages excluded), with a test that proves the guard catches a sentence.
+- Local run: pytest 338 passed, 1 skipped; vitest 28 passed; `tsc` and lint clean.
+- Next: P0.12-E.
 
 ### 2026-10-11 — P0.12-C frontend honesty and the component test runner (Claude Code, gated)
 

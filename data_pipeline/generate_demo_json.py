@@ -12,6 +12,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
+from agents.language import DEFAULT_LANGUAGE
 from data_pipeline import config
 from data_pipeline import demo_inputs
 from data_pipeline import labels
@@ -135,7 +136,9 @@ class CriticBlocked(RuntimeError):
     """The critic found a claim the data does not back up: nothing is published (QA-04)."""
 
 
-def build_payload() -> dict[str, Any]:
+def build_payload(language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
+    """The full payload; every agent writes its text in `language` (English by default)."""
+
     payload = demo_inputs.build_demo_payload()
     payload["metadata"]["data_mode"] = _live_status["mode"]
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
@@ -143,7 +146,7 @@ def build_payload() -> dict[str, Any]:
     if _live_status["mode"] == config.DATA_MODE_FALLBACK:
         payload["metadata"]["last_updated_label"] = "Live data unavailable; showing demo data"
     _apply_live_snapshot(payload)
-    total_warnings, graded_starters = _run_agents(payload["matchups"])
+    total_warnings, graded_starters = _run_agents(payload["matchups"], language)
     _apply_live_confidence(payload)
     _update_archive_postgame_labels(payload)
     payload["agent_workflow"] = _build_agent_workflow(
@@ -178,21 +181,21 @@ def main() -> int:
     return 0
 
 
-def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
+def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE) -> tuple[int, int]:
     total_warnings = 0
     graded_starters = 0
     for matchup_input in matchups:
-        packet = data_scout.run(matchup_input)
+        packet = data_scout.run(matchup_input, language=language)
         available_count = sum(1 for available in packet["availability"].values() if available)
         print(f"[AGENT] Data Scout: {available_count} sections available")
 
-        findings = matchup_analyst.run(packet)
+        findings = matchup_analyst.run(packet, language=language)
         print(f"[AGENT] Matchup Analyst: headline = {findings['matchup_headline'][:50]}")
 
-        report = report_writer.run(findings, matchup_input)
+        report = report_writer.run(findings, matchup_input, language=language)
         print(f"[AGENT] Report Writer: {len(report['sections'])} sections generated")
 
-        critic_review = critic.run(report, matchup_input)
+        critic_review = critic.run(report, matchup_input, language=language)
         unsupported = [c for c in critic_review["checks"] if c["status"] == "unsupported"]
         warnings = sum(1 for c in critic_review["checks"] if c["status"] == "warning")
         total_warnings += warnings
@@ -209,7 +212,7 @@ def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
         matchup_input["data_confidence"] = packet["data_confidence"]
 
         if matchup_input["status"] == "final":
-            postgame = postgame_grader.run(matchup_input)
+            postgame = postgame_grader.run(matchup_input, language=language)
             matchup_input["postgame"] = postgame
             graded_starters += len(postgame["starter_lines"])
             al = postgame["starter_lines"]["away_starter"]

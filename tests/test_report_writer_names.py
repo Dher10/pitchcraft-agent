@@ -8,6 +8,7 @@ from copy import deepcopy
 import pytest
 
 from agents import data_scout, matchup_analyst, report_writer
+from agents.language import catalog_for
 from data_pipeline import demo_inputs
 
 NAMES = [
@@ -78,6 +79,8 @@ def test_home_starter_name_is_not_split_either():
 
 def test_an_unknown_subject_is_left_untouched_instead_of_guessing_a_split():
     assert (
-        report_writer._watch_observation("Can Somebody Else keep it down?", ("Corbin Burnes",))
+        report_writer._watch_observation(
+            catalog_for("en"), "Can Somebody Else keep it down?", ("Corbin Burnes",)
+        )
         == "Can Somebody Else keep it down"
     )
