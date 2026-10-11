@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Not code, and may not be readable on Windows: pytest's cache.
+    ".pytest_cache/**",
   ]),
 ]);
 

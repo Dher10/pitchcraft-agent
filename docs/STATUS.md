@@ -4,9 +4,9 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 ## Current state
 
-- **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums.
+- **Phase:** Phase 0 is open. The first QA gate (2026-10-10, `docs/qa/QA-phase-0-2026-10-10.md`) returned FAIL: six Blockers, one High, three Mediums. P0.12 (A–E) fixed all ten findings; the second gate decides.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.12-E, then P0.10 run 2. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
+- **Next task:** P0.10 run 2 (D27), the second QA gate of Phase 0. The owner starts Codex with exactly: `Run docs/QA_PROTOCOL.md for Phase 0, range v1.0.0-kaggle..HEAD`. The report goes to `docs/qa/` (the first one is `docs/qa/QA-phase-0-2026-10-10.md`, FAIL). The QA agent does not read this file at the start (AGENTS.md). P1.0 starts only after Phase 0 closes. P1.0 starts only after Phase 0 closes. P1.10 (analytics, `[auto]`) is in Phase 1.
 - **Blocked:** nothing.
 - **Half-done:** nothing. The first GitHub Actions run of `tests.yml` was green (run 38084965586, job `pytest`, commit `062bf13`), so Python 3.14 on `setup-python` v5.6.0 works. Moving the workflow off Node 20 actions and onto `ubuntu-24.04` is now part of P1.0.
 - **Accepted risk:** 5 high findings in `npm audit` including dev dependencies, all one chain under `eslint-config-next` (dev tooling, never shipped; `npm audit --omit=dev` reports 0). Details in the P0.11 entry.
@@ -16,6 +16,8 @@ Updated by whichever agent finishes a task. Keep it short. Newest session on top
 
 Changes made in the repo that the owner still needs mirrored to Notion:
 
+- P0.12-E: the commit hook now also rejects capitals and a trailing period in the subject (code in backticks may keep its case) and Merge/Revert subjects that git did not write, and strips attribution from any AI tool (Codex, ChatGPT, Copilot, …); a valid empty finished month of Savant data is cached (no repeat request); the lint ignores `.pytest_cache`.
+- D31 added and D6 marked "scoped by D31": D6 in v2.0 is the `language` parameter plus the catalog of the five agents; data labels, the generator's texts and the frontend copy stay English until v2.1 (task L10N.1).
 - P0.12-D (D6, minimal): every agent that writes text takes `language` (default `en`) and its sentences live in a catalog (`agents/messages_en.py`); an unknown language is an error. No change to what the fan reads. Spanish (v2.1) is one more catalog file. P1.0 now also lists `tsc`, lint and `next build` in CI.
 - P0.12-C: the detail panel shows each starter's own pitches only, a message instead of a chart for an empty or limited arsenal, and "Movement data not available" instead of a 0.0-inch break; the starter card shows a dash for an unavailable ERA, WHIP or K. Component tests now run in CI (job `components` in `tests.yml`, `npm test`).
 - D30 (put-away pitch = second pitch by usage, only from 15% of the mix) added to `DECISIONS.md`.
@@ -33,6 +35,16 @@ Changes made in the repo that the owner still needs mirrored to Notion:
 Last Notion sync: 2026-10-10, from the initial docs commit.
 
 ## Session log
+
+### 2026-10-11 — P0.12-E Mediums and tooling (Claude Code, gated)
+
+- **QA-09:** `fetch_team_batting_statcast` caches a valid empty finished month (a blank answer becomes a header-only CSV under the same name) so it is requested once and counts once against the 210; a response that is not Savant's CSV (an error page, a JSON envelope) now raises instead of being cached as empty; a request that fails is not cached. A month that is not finished is still not cached.
+- **QA-10:** `.githooks/commit-msg`: the subject has no capitals (backticked code excepted) and no trailing period; `Merge` and `Revert` are accepted only in the shapes git writes (`Merge branch '…'`, `Merge remote-tracking branch '…'`, `Merge tag '…'`, and `Revert "…"` with `This reverts commit <sha>.`); the attribution filter covers trailers (`Co-authored-by`, `Claude-Session`, `Codex-Session`, `Assisted-by`, `Generated-by`), `Generated with/by <tool>` lines (with an emoji too), a tool's `Signed-off-by` and any `noreply@anthropic.com` / `noreply@openai.com`; prose that only mentions a tool is kept. The identity checks are unchanged and run first. All 25 commit messages of `v1.0.0-kaggle..HEAD` pass the new hook when replayed.
+- **`sed` in the hook tests:** the fixture of `tests/test_commit_msg_hook.py` puts the directory of the `sh` it found, Git's `usr/bin` and git's own directory on the PATH of the hook, so the tests no longer depend on the process PATH (one test runs the hook with `PATH` empty). The 4 hook tests that QA saw failing on Windows were in the original 6; the suite is now 44 hook tests (about a minute on Windows, a few seconds on Linux).
+- **Lint:** `.pytest_cache/**` is in the ESLint ignores; `lib/__tests__/lint-config.test.ts` asks ESLint itself whether `.pytest_cache` and `.next` are ignored and the code is not.
+- Tests first and seen failing: 28 of 56 in the hook and cache files, 2 of 4 in the lint file (one of the two was a timeout of the slow first ESLint load, fixed in the test; the other a real miss). Local run: pytest 388 passed, 1 skipped; vitest 32 passed; `tsc`, lint and `next build` clean.
+- **P0.12 is done.** The ten findings of the first gate map to: QA-02/05/06/08 → A (`6cdea68`), QA-04/01 → B (`f42e1f1`), QA-03 → C (`601170c`), QA-07 → D (`a67beb8`), QA-09/10 and the tooling items → E.
+- Next: P0.10 run 2 (see Current state).
 
 ### 2026-10-11 — P0.12-D minimal D6: `language` parameter and a message catalog (Claude Code, gated)
 

@@ -541,8 +541,9 @@ def fetch_team_batting_statcast(
     pybaseball.statcast(team=...) filters by pitching team, so this asks Savant
     directly with player_type=batter, one request per calendar month (about 7
     per season, never league-wide), paced and capped per run (see _savant_get).
-    Finished months are cached on disk, trimmed to the columns the splits need;
-    a month that includes today is not cached. The month that holds `end` is open
+    Finished months are cached on disk, trimmed to the columns the splits need,
+    and so are valid empty ones (a blank answer); a response that is not the CSV is an
+    error and is never cached. A month that includes today is not cached. The month that holds `end` is open
     (see _is_open_chunk): it is a partial chunk cached under its end date, and its
     requests are counted against the open-month budget of D29. Raises RuntimeError
     if a month hits Savant's row cap (possible truncation), SavantRequestCapExceeded
@@ -558,7 +559,9 @@ def fetch_team_batting_statcast(
             TEAM_BATTING_CACHE_DIR / f"{statcast_team}_{chunk_start}_{chunk_end}.csv"
         )
         if cache_file.exists():
-            frames.append(pd.read_csv(cache_file))
+            cached = pd.read_csv(cache_file)
+            if len(cached):
+                frames.append(cached)
             continue
         text = _savant_get(
             SAVANT_BATTING_URL.format(
@@ -566,19 +569,29 @@ def fetch_team_batting_statcast(
             ),
             open_month=_is_open_chunk(chunk_end, season_end),
         )
-        if not text.strip():
-            continue
-        chunk = pd.read_csv(io.StringIO(text))
-        if len(chunk) >= SAVANT_ROW_CAP:
-            raise RuntimeError(
-                f"Savant returned {len(chunk)} rows for {statcast_team} "
-                f"{chunk_start}..{chunk_end}: result may be truncated"
-            )
-        chunk = chunk[[c for c in TEAM_BATTING_COLUMNS if c in chunk.columns]]
+        if text.strip():
+            chunk = pd.read_csv(io.StringIO(text))
+            if "game_date" not in chunk.columns:
+                # An error page or an error envelope, not Savant's CSV: a failure, never an empty month.
+                raise ValueError(
+                    f"Savant did not send the batting CSV for {statcast_team} "
+                    f"{chunk_start}..{chunk_end}: {text.strip()[:80]!r}"
+                )
+            if len(chunk) >= SAVANT_ROW_CAP:
+                raise RuntimeError(
+                    f"Savant returned {len(chunk)} rows for {statcast_team} "
+                    f"{chunk_start}..{chunk_end}: result may be truncated"
+                )
+            chunk = chunk[[c for c in TEAM_BATTING_COLUMNS if c in chunk.columns]]
+        else:
+            # A blank answer is a valid empty month (off-season, no games): it is cached
+            # like any other so the same finished month is never requested twice (D23).
+            chunk = pd.DataFrame(columns=list(TEAM_BATTING_COLUMNS))
         if chunk_end < date.today():
             TEAM_BATTING_CACHE_DIR.mkdir(parents=True, exist_ok=True)
             chunk.to_csv(cache_file, index=False)
-        frames.append(chunk)
+        if len(chunk):
+            frames.append(chunk)
     if not frames:
         return pd.DataFrame(columns=list(TEAM_BATTING_COLUMNS))
     return pd.concat(frames, ignore_index=True)

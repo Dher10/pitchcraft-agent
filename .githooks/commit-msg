@@ -20,20 +20,33 @@ if [ "$AUTHOR_EMAIL" != "$OWNER_EMAIL" ] || [ "$COMMITTER_EMAIL" != "$OWNER_EMAI
   exit 1
 fi
 
-# Remove AI attribution lines.
+# Remove AI attribution lines, whatever the tool: trailers (Co-authored-by, Claude-Session,
+# Codex-Session, Assisted-by, Generated-by), "Generated with/by <tool>" lines (an emoji
+# before them is fine), a Signed-off-by from a tool, and any line with a tool's noreply address.
+# Prose that merely mentions a tool is kept.
+TOOLS='claude|codex|openai|chatgpt|gpt|copilot|gemini|cursor|aider|windsurf|cody'
 TMP_FILE="$MSG_FILE.pitchcraft.tmp"
-grep -v -i -E '^[[:space:]]*(co-authored-by:|claude-session:)|generated with \[?claude code|noreply@anthropic\.com' "$MSG_FILE" > "$TMP_FILE"
+grep -v -i -E "^[[:space:]]*(co-authored-by|claude-session|codex-session|assisted-by|generated-by):|^[^[:alnum:]]*generated (with|by) .*($TOOLS)|^[[:space:]]*signed-off-by:.*($TOOLS)|noreply@(anthropic|openai)\.com" "$MSG_FILE" > "$TMP_FILE"
 mv "$TMP_FILE" "$MSG_FILE"
 
 CONTENT=$(grep -v '^#' "$MSG_FILE")
 SUBJECT=$(printf '%s\n' "$CONTENT" | sed '/^[[:space:]]*$/d' | head -n 1)
 
-case "$SUBJECT" in
-  Merge\ *|Revert\ *) exit 0 ;;
-esac
+# Merge and Revert: only the messages git writes itself, never free text.
+if printf '%s\n' "$SUBJECT" | grep -q -E "^Merge (branch|remote-tracking branch|tag) '[^']+'( of [^ ]+)?( into [^ ]+)?$"; then
+  exit 0
+fi
+if printf '%s\n' "$SUBJECT" | grep -q -E '^Revert ".+"$' \
+  && printf '%s\n' "$CONTENT" | grep -q -E '^This reverts commit [0-9a-f]{40}(, reversing changes made to [0-9a-f]{40})?\.$'; then
+  exit 0
+fi
 
-if ! printf '%s\n' "$SUBJECT" | grep -q -E '^(feat|fix|docs|chore|style|refactor|test|perf|ci|build)(\([a-z0-9._-]+\))?: [a-z0-9`]'; then
-  echo "commit-msg: blocked. Subject must look like 'fix: lowercase imperative summary'." >&2
+# type: lowercase imperative summary, no trailing period. Code in backticks may keep its case.
+SUBJECT_WITHOUT_CODE=$(printf '%s\n' "$SUBJECT" | sed -E 's/`[^`]*`//g')
+if ! printf '%s\n' "$SUBJECT" | grep -q -E '^(feat|fix|docs|chore|style|refactor|test|perf|ci|build)(\([a-z0-9._-]+\))?: [a-z0-9`]' \
+  || printf '%s\n' "$SUBJECT_WITHOUT_CODE" | grep -q '[A-Z]' \
+  || printf '%s\n' "$SUBJECT" | grep -q '\.$'; then
+  echo "commit-msg: blocked. Subject must look like 'fix: lowercase imperative summary' (no capitals, no trailing period)." >&2
   echo "  got: $SUBJECT" >&2
   echo "  See docs/CONTRIBUTING.md" >&2
   exit 1
