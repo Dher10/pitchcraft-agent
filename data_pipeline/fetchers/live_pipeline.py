@@ -278,9 +278,9 @@ def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
         return json.loads(response.read())
 
 
-def _schedule_games(data: Any, schema: Any, where: str) -> list[tuple[str | None, dict[str, Any]]]:
+def _schedule_games(data: Any, schema: Any, where: str) -> list[dict[str, Any]]:
     """
-    The (date, game) pairs of a schedule response, after the whole answer is checked against
+    The games of a schedule response, after the whole answer is checked against
     `schema` (mlb_schemas): every date entry, every game and the inner objects the fetcher reads.
 
     `{"dates": []}` is a valid answer for a day without games and so is a date entry with an
@@ -289,7 +289,7 @@ def _schedule_games(data: Any, schema: Any, where: str) -> list[tuple[str | None
     """
 
     mlb_schemas.validate(schema, data, where)
-    return [(entry.get("date"), game) for entry in data["dates"] for game in entry["games"]]
+    return [game for entry in data["dates"] for game in entry["games"]]
 
 
 def _stat_splits(data: Any, schema: Any, where: str) -> list[dict[str, Any]]:
@@ -343,7 +343,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
             data = json.loads(response.read())
 
         games = []
-        for _, game in _schedule_games(data, mlb_schemas.SCHEDULE_DAY, "schedule response"):
+        for game in _schedule_games(data, mlb_schemas.SCHEDULE_DAY, "schedule response"):
             away = game["teams"]["away"]
             home = game["teams"]["home"]
             # Not announced yet is a normal answer: no probablePitcher object at all.
@@ -351,7 +351,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
             home_pp = home.get("probablePitcher") or {}
             games.append(
                 {
-                    "game_pk": game["gamePk"],
+                    "game_pk": game.get("gamePk"),
                     # The official MLB date, not the UTC date of the start time (D29).
                     "official_date": game["officialDate"],
                     "away_team": away["team"]["name"],
@@ -366,7 +366,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
                     "home_pitcher_id": home_pp.get("id"),
                     "venue": (game.get("venue") or {}).get("name", ""),
                     "start_time": game["gameDate"],
-                    "status": game["status"]["abstractGameState"],
+                    "status": (game.get("status") or {}).get("abstractGameState"),
                 }
             )
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")
@@ -730,9 +730,7 @@ def fetch_series_status(
     schedule = "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
     try:
         data = _get_json(f"{schedule}&gamePk={game_pk}&hydrate=seriesStatus")
-        games = [
-            g for _, g in _schedule_games(data, mlb_schemas.SERIES_SCHEDULE, "series game response")
-        ]
+        games = _schedule_games(data, mlb_schemas.SERIES_SCHEDULE, "series game response")
         game = next((g for g in games if g["gamePk"] == game_pk), None)
         if not game or game["gameType"] not in POSTSEASON_GAME_TYPES:
             return {}
@@ -749,7 +747,7 @@ def fetch_series_status(
             f"&endDate={window_end}&gameType={game_type}&hydrate=seriesStatus"
         )
         earlier = []
-        for _, entry in _schedule_games(data, mlb_schemas.SERIES_SCHEDULE, "series window response"):
+        for entry in _schedule_games(data, mlb_schemas.SERIES_SCHEDULE, "series window response"):
             entry_teams = {
                 entry["teams"]["home"]["team"]["id"],
                 entry["teams"]["away"]["team"]["id"],
@@ -1092,8 +1090,11 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
                     "overall": _usage_pct(len(sub), total),
                     "vs_lhh": _usage_pct(len(sub_l), len(lhh)),
                     "vs_rhh": _usage_pct(len(sub_r), len(rhh)),
+                    # Raw counts behind the rounded shares: decisions use these (QA3-03).
+                    "count": len(sub),
+                    "total": total,
                 },
-                "home_starter": {"overall": 0, "vs_lhh": 0, "vs_rhh": 0},
+                "home_starter": {"overall": 0, "vs_lhh": 0, "vs_rhh": 0, "count": 0, "total": 0},
             }
         )
 
@@ -1355,17 +1356,16 @@ def _combine_pitch_mix(
         )
     )
 
+    def not_thrown(data: dict[str, Any]) -> dict[str, Any]:
+        # A pitch he never threw: a real zero, out of his own total (every row carries it).
+        total = data["pitch_mix"][0]["away_starter"]["total"] if data["pitch_mix"] else 0
+        return {"overall": 0, "vs_lhh": 0, "vs_rhh": 0, "count": 0, "total": total}
+
     return [
         {
             "pitch": pitch_name,
-            "away_starter": away_pitches.get(pitch_name, {}).get(
-                "away_starter",
-                {"overall": 0, "vs_lhh": 0, "vs_rhh": 0},
-            ),
-            "home_starter": home_pitches.get(pitch_name, {}).get(
-                "away_starter",
-                {"overall": 0, "vs_lhh": 0, "vs_rhh": 0},
-            ),
+            "away_starter": away_pitches.get(pitch_name, {}).get("away_starter", not_thrown(away_data)),
+            "home_starter": home_pitches.get(pitch_name, {}).get("away_starter", not_thrown(home_data)),
         }
         for pitch_name in pitch_names
     ]

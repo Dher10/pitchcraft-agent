@@ -180,6 +180,10 @@ EN_MESSAGES: dict[str, object] = {
         "{pitch} is only {usage}% of {name}'s pitch mix, "
         "below the {minimum}% the report treats as a {role} pitch."
     ),
+    "critic.pitch.low_counts": (
+        "{pitch} is {count} of {total} pitches ({usage}%) in {name}'s pitch mix, "
+        "below the {minimum}% the report treats as a {role} pitch."
+    ),
     "critic.names.claim": "The report names only pitches that appear in the pitch mix.",
     "critic.names.supported": "Every pitch named in the report was thrown by the starter it is credited to.",
     "critic.names.credited": "{name} is credited with {pitch}, which he did not throw",

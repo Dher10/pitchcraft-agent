@@ -142,7 +142,7 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
         has_nested_keys(charts, CHART_KEYS),
         _missing_keys(charts, CHART_KEYS),
     )
-    _validate_pitch_mix(charts, label, record)
+    _validate_pitch_mix(charts, label, record, starters)
     _validate_pitch_movement(charts, label, record)
 
     pitch_locations = matchup.get("pitch_locations")
@@ -218,7 +218,45 @@ def _validate_data_cutoff(matchup: Mapping[str, Any], label: str, record: Any) -
     )
 
 
-def _validate_pitch_mix(charts: Any, label: str, record: Any) -> None:
+def _is_count(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _validate_pitch_counts(starter_mix: Any, sample: Any, row_label: str, slot: str, record: Any) -> None:
+    """
+    A live starter's mix row carries the raw pitch count and the total behind its share (QA3-03):
+    the critic decides on them, never on the rounded `overall`. Both are whole numbers, the
+    count is part of the total, the total is the starter's sample of pitches, and the share
+    shown is the one they give.
+    """
+
+    count = starter_mix.get("count") if isinstance(starter_mix, Mapping) else None
+    total = starter_mix.get("total") if isinstance(starter_mix, Mapping) else None
+    ok = _is_count(count) and _is_count(total) and count <= total
+    record(
+        f"{row_label}.{slot} carries its raw pitch count and total",
+        ok,
+        f"count {count!r}, total {total!r}",
+    )
+    if not ok:
+        return
+    pitches = ((sample.get("arsenal") or {}).get("pitches")) if isinstance(sample, Mapping) else None
+    if pitches is not None:
+        record(
+            f"{row_label}.{slot} total is the starter's pitches in the sample",
+            total == pitches,
+            f"total {total}, sample pitches {pitches}",
+        )
+    shown = starter_mix.get("overall")
+    expected = round(count / total * 100, 1) if total else 0
+    record(
+        f"{row_label}.{slot} share matches its counts",
+        isinstance(shown, (int, float)) and abs(shown - expected) < 0.05,
+        f"shows {shown!r}, counts give {expected}",
+    )
+
+
+def _validate_pitch_mix(charts: Any, label: str, record: Any, starters: Any = None) -> None:
     pitch_mix = charts.get("pitch_mix") if isinstance(charts, Mapping) else None
     if not isinstance(pitch_mix, list):
         record(f"{label}: charts.pitch_mix is a list", False, f"found {type(pitch_mix).__name__}")
@@ -237,6 +275,10 @@ def _validate_pitch_mix(charts: Any, label: str, record: Any) -> None:
                 and all(split in starter_mix for split in BATTER_HAND_SPLITS),
                 _missing_keys(starter_mix, BATTER_HAND_SPLITS),
             )
+            starter = starters.get(slot) if isinstance(starters, Mapping) else None
+            sample = starter.get("sample") if isinstance(starter, Mapping) else None
+            if sample is not None:  # live data; the demo has no sample and no counts
+                _validate_pitch_counts(starter_mix, sample, row_label, slot, record)
 
 
 def _validate_pitch_movement(charts: Any, label: str, record: Any) -> None:

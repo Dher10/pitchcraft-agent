@@ -110,29 +110,43 @@ def _pitch_role_check(
     minimum: int,
 ) -> dict[str, str]:
     usage = _pitch_usage(matchup_input, slot, pitch)
+    counts = _pitch_counts(matchup_input, slot, pitch)
     role_name = t(f"critic.role.{role}")
     claim = t("critic.pitch.claim", name=starter["name"], role=role_name, pitch=_display_pitch(pitch))
-    if usage <= 0:
+    if not _was_thrown(usage, counts):
         return {
             "claim": claim,
             "status": "unsupported",
             "evidence": t("critic.pitch.absent", pitch=_display_pitch(pitch), name=starter["name"]),
         }
-    if usage >= minimum:
+    # The minimum is a decision: it is taken on the raw counts when the mix has them, so a share
+    # of 29.97% (drawn as 30.0) is below 30. Rows without counts (the demo, older snapshots)
+    # only have the percentage.
+    meets = labels.share_at_least(counts[0], counts[1], minimum) if counts else usage >= minimum
+    if meets:
         evidence = t(f"critic.pitch.supported_{role}", usage=f"{usage:g}", pitch=_display_pitch(pitch))
         return {"claim": claim, "status": "supported", "evidence": evidence}
-    return {
-        "claim": claim,
-        "status": "warning",
-        "evidence": t(
+    if counts:
+        evidence = t(
+            "critic.pitch.low_counts",
+            pitch=_display_pitch(pitch),
+            count=f"{counts[0]:,}",
+            total=f"{counts[1]:,}",
+            usage=f"{counts[0] / counts[1] * 100:.2f}",
+            name=starter["name"],
+            minimum=minimum,
+            role=role_name,
+        )
+    else:
+        evidence = t(
             "critic.pitch.low",
             pitch=_display_pitch(pitch),
             usage=f"{usage:g}",
             name=starter["name"],
             minimum=minimum,
             role=role_name,
-        ),
-    }
+        )
+    return {"claim": claim, "status": "warning", "evidence": evidence}
 
 
 def _canonical_pitches(name: str) -> set[str]:
@@ -148,7 +162,7 @@ def _canonical_pitches(name: str) -> set[str]:
 def _thrown_by(matchup_input: dict[str, Any], slot: str) -> set[str]:
     thrown: set[str] = set()
     for row in matchup_input["charts"]["pitch_mix"]:
-        if row[slot]["overall"] > 0:
+        if _was_thrown(row[slot]["overall"], _row_counts(row, slot)):
             thrown |= _canonical_pitches(row["pitch"])
     return thrown
 
@@ -180,29 +194,27 @@ def _unobserved_pitch_check(t: Catalog, report: dict[str, Any], matchup_input: d
     """
     Every pitch the report names must have been thrown in this game's data.
 
-    A sentence that names exactly one starter is held to that starter's pitches; a
-    sentence that names both, or neither, to the two together (free text cannot say
-    whose pitch it is). Aliases count: "two-seam" is a sinker, "cut fastball" a
-    cutter, and "fastball" is any fastball-family pitch.
+    A sentence belongs to the starter it names alone, or, if it names nobody, to the starter in
+    the title of its section (`_owned_sentences`, QA3-04); it is held to that starter's pitches.
+    A sentence that names both, or nobody outside a starter's section, is held to the two
+    together (free text cannot say whose pitch it is). Aliases count: "two-seam" is a sinker,
+    "cut fastball" a cutter, and "fastball" is any fastball-family pitch.
     """
 
-    slots = ("away_starter", "home_starter")
-    thrown = {slot: _thrown_by(matchup_input, slot) for slot in slots}
-    together = thrown["away_starter"] | thrown["home_starter"]
-    names = {slot: matchup_input["starters"][slot]["name"] for slot in slots}
+    thrown = {slot: _thrown_by(matchup_input, slot) for slot in SLOTS}
+    together = thrown[SLOTS[0]] | thrown[SLOTS[1]]
+    names = {slot: matchup_input["starters"][slot]["name"] for slot in SLOTS}
 
     problems: list[str] = []
-    for _, text in _report_locations(report):
-        for sentence in _SENTENCE_BREAK.split(text):
-            mentioned = [slot for slot in slots if names[slot] in sentence]
-            allowed = thrown[mentioned[0]] if len(mentioned) == 1 else together
-            for pitch in sorted(_named_pitches(t, _without_names(sentence, list(names.values())))):
-                if _supports(allowed, pitch):
-                    continue
-                if len(mentioned) == 1:
-                    problems.append(t("critic.names.credited", name=names[mentioned[0]], pitch=pitch))
-                else:
-                    problems.append(t("critic.names.nobody", pitch=pitch))
+    for owner, sentence in _owned_sentences(report, matchup_input):
+        allowed = thrown[owner] if owner else together
+        for pitch in sorted(_named_pitches(t, _without_names(sentence, list(names.values())))):
+            if _supports(allowed, pitch):
+                continue
+            if owner:
+                problems.append(t("critic.names.credited", name=names[owner], pitch=pitch))
+            else:
+                problems.append(t("critic.names.nobody", pitch=pitch))
     claim = t("critic.names.claim")
     if problems:
         return {
@@ -255,7 +267,10 @@ def _limited_arsenal_check(
         # The profile's own pitch names count too, even outside the vocabulary of known pitches.
         for pitch in profile_pitches:
             if _display_pitch(pitch).lower() in text.lower() and not (
-                owner is None and _pitch_usage(matchup_input, other, pitch) > 0
+                owner is None
+                and _was_thrown(
+                    _pitch_usage(matchup_input, other, pitch), _pitch_counts(matchup_input, other, pitch)
+                )
             ):
                 add(_display_pitch(pitch))
     pitches = sample["arsenal"]["pitches"]
@@ -278,8 +293,9 @@ def _limited_arsenal_check(
 def _command_evidence(t: Catalog, matchup_input: dict[str, Any], slot: str) -> str:
     """Evidence for a command claim: the strength profile when there is one, else the walk rate."""
 
-    if matchup_input["charts"].get("strength_profile"):
-        return t("critic.command.strength", value=_strength_value(matchup_input, "Command", slot))
+    strength = _strength_value(matchup_input, "Command", slot)
+    if strength is not None:
+        return t("critic.command.strength", value=strength)
     sample = matchup_input["starters"][slot].get("sample")
     if sample and sample["rates"]["batters_faced"]:
         rates = sample["rates"]
@@ -407,12 +423,39 @@ def _language_scan(t: Catalog, report: dict[str, Any]) -> dict[str, str]:
     return {"claim": claim, "status": "not_present", "evidence": t("critic.betting.absent")}
 
 
-def _pitch_usage(matchup_input: dict[str, Any], slot: str, pitch: str) -> float:
+def _mix_row(matchup_input: dict[str, Any], pitch: str) -> dict[str, Any] | None:
     target = _normalize_pitch(pitch)
     for row in matchup_input["charts"]["pitch_mix"]:
         if _normalize_pitch(row["pitch"]) == target:
-            return float(row[slot]["overall"])
-    return 0
+            return row
+    return None
+
+
+def _pitch_usage(matchup_input: dict[str, Any], slot: str, pitch: str) -> float:
+    """The rounded share the chart shows (display only; decisions use `_pitch_counts`)."""
+
+    row = _mix_row(matchup_input, pitch)
+    return float(row[slot]["overall"]) if row else 0
+
+
+def _row_counts(row: dict[str, Any], slot: str) -> tuple[int, int] | None:
+    """(count, total) of a mix row for a starter, or None when the row has no raw counts."""
+
+    count, total = row[slot].get("count"), row[slot].get("total")
+    if isinstance(count, int) and isinstance(total, int):
+        return count, total
+    return None
+
+
+def _pitch_counts(matchup_input: dict[str, Any], slot: str, pitch: str) -> tuple[int, int] | None:
+    row = _mix_row(matchup_input, pitch)
+    return _row_counts(row, slot) if row else None
+
+
+def _was_thrown(usage: float, counts: tuple[int, int] | None) -> bool:
+    """A pitch counted at least once was thrown, even if its share rounds to 0.0."""
+
+    return counts[0] > 0 if counts else usage > 0
 
 
 def _normalize_pitch(pitch: str) -> str:
@@ -426,11 +469,13 @@ def _display_pitch(pitch: str) -> str:
     return pitch.replace(labels.FASTBALL_SUFFIX, "")
 
 
-def _strength_value(matchup_input: dict[str, Any], dimension: str, slot: str) -> int:
-    for row in matchup_input["charts"]["strength_profile"]:
-        if row["dimension"] == dimension:
+def _strength_value(matchup_input: dict[str, Any], dimension: str, slot: str) -> int | None:
+    """The 0-100 score, or None when there is no such dimension (never a score of zero)."""
+
+    for row in matchup_input["charts"].get("strength_profile") or []:
+        if row["dimension"] == dimension and row.get(slot) is not None:
             return int(row[slot])
-    return 0
+    return None
 
 
 def _report_text(report: dict[str, Any]) -> str:

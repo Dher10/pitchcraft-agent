@@ -18,6 +18,23 @@ from data_pipeline import generate_demo_json as gdj
 SLOTS = ("away_starter", "home_starter")
 
 
+def counted(pitch_mix: list[dict], away_pitches: int, home_pitches: int) -> list[dict]:
+    """
+    Give a hand-made live pitch mix the raw counts the fetcher always writes (QA3-03): each count is
+    the row's share of that starter's pitches. A starter with no pitches has no mix, only zeros.
+    """
+
+    rows = [deepcopy(row) for row in pitch_mix]  # row by row: hand-made rows may share one dict
+    for row in rows:
+        for slot, total in (("away_starter", away_pitches), ("home_starter", home_pitches)):
+            usage = row[slot]
+            if total:
+                usage.update(count=round(total * usage["overall"] / 100), total=total)
+            else:
+                usage.update(overall=0, vs_lhh=0, vs_rhh=0, count=0, total=0)
+    return rows
+
+
 def _fake_live_game(
     template: dict,
     away_team_splits: dict | None = None,
@@ -76,7 +93,7 @@ def _fake_live_game(
         "away_starter": live_starter("Alpha Livearm", "R"),
         "home_starter": live_starter("Bravo Liveleft", "L"),
         "combined_charts": {
-            "pitch_mix": deepcopy(template["charts"]["pitch_mix"]),
+            "pitch_mix": counted(template["charts"]["pitch_mix"], 1500, 1500),
             "velocity_by_pitch": deepcopy(template["charts"]["velocity_by_pitch"]),
         },
         "away_team_splits": away_team_splits or {},

@@ -302,7 +302,7 @@ def test_build_live_snapshot_passes_as_of_to_every_fetcher(monkeypatch):
     }
     starter = {
         "pitch_mix": [
-            {"pitch": "Four-seam", "away_starter": {"overall": 50, "vs_lhh": 50, "vs_rhh": 50}}
+            {"pitch": "Four-seam", "away_starter": {"overall": 50, "vs_lhh": 50, "vs_rhh": 50, "count": 50, "total": 100}}
         ],
         "velocity_by_pitch": [{"pitch": "Four-seam", "away_starter_velocity": 94.0}],
     }

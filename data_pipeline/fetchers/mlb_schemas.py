@@ -172,14 +172,14 @@ SCHEDULE_DAY = Obj(
         "dates": Arr(
             Obj(
                 {
-                    "date": Scalar("date", required=False),
                     "games": Arr(
                         Obj(
                             {
-                                "gamePk": Scalar("int"),
+                                # Copied into the snapshot but read by nothing yet: optional.
+                                "gamePk": Scalar("int", required=False),
                                 "officialDate": Scalar("date"),
                                 "gameDate": Scalar("str"),
-                                "status": Obj({"abstractGameState": Scalar("str")}),
+                                "status": Obj({"abstractGameState": Scalar("str", required=False)}, required=False),
                                 "venue": Obj({"name": Scalar("str", required=False)}, required=False),
                                 "teams": Obj(
                                     {

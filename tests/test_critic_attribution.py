@@ -319,3 +319,81 @@ def test_a_report_without_its_text_fields_is_an_error_not_a_clean_pass(missing):
 
     with pytest.raises(KeyError):
         critic.run(rep, game())
+
+
+# --- the pitch-name check holds a sentence to the starter it is about (QA3-04) ------------------------
+# A throws a Four-seam and a Slider; B throws those and a Changeup too. A changeup said about A,
+# in his own section, is false even though B throws one.
+
+NAMES_CLAIM = "The report names only pitches that appear in the pitch mix."
+
+
+def names_check(rep: dict, matchup: dict | None = None) -> dict:
+    review = critic.run(rep, matchup or game())
+    return next(c for c in review["checks"] if c["claim"] == NAMES_CLAIM)
+
+
+def test_a_pitch_only_the_opponent_threw_in_the_starters_own_section_is_unsupported():
+    rep = report((f"{A} vs Team B", "His changeup is his best weapon."))
+
+    check = names_check(rep)
+
+    assert check["status"] == "unsupported"
+    assert A in check["evidence"] and "changeup" in check["evidence"]
+
+
+def test_the_same_sentence_in_the_section_of_the_starter_who_threw_it_is_supported():
+    rep = report((f"{B} vs Team A", "His changeup is his best weapon."))
+
+    assert names_check(rep)["status"] == "supported"
+
+
+def test_a_pitch_only_the_opponent_threw_in_a_bullet_of_the_starters_own_section_is_unsupported():
+    rep = {
+        "headline": "h",
+        "short_summary": [],
+        "sections": [{"title": f"{A} vs Team B", "body": "A quiet start.", "bullets": ["His changeup plays up."]}],
+    }
+
+    assert names_check(rep)["status"] == "unsupported"
+
+
+def test_a_sentence_naming_the_other_starter_inside_this_section_is_judged_by_the_named_one():
+    rep = report((f"{A} vs Team B", f"{B} counters with a changeup."))
+
+    assert names_check(rep)["status"] == "supported"
+
+
+def test_a_sentence_naming_both_starters_is_held_to_the_two_together():
+    rep = report((f"{A} vs Team B", f"{A} and {B} face a changeup."))
+
+    assert names_check(rep)["status"] == "supported"
+
+
+def test_an_unattributed_sentence_outside_any_starters_section_is_held_to_the_two_together():
+    rep = report(("Summary", "The changeup matters in this game."))
+
+    assert names_check(rep)["status"] == "supported"
+
+
+def test_an_unattributed_pitch_nobody_threw_is_still_unsupported():
+    rep = report(("Summary", "The knuckleball matters in this game."))
+
+    assert names_check(rep)["status"] == "unsupported"
+
+
+def test_the_qa_probe_a_slider_in_the_section_of_the_starter_who_never_threw_one(isolated, monkeypatch):
+    # A: 150 four-seams (healthy, no slider). B: 100 four-seams and 50 sliders.
+    payload = live_payload(monkeypatch, (150, 0), (100, 50))
+    live = next(m for m in payload["matchups"] if m["id"] == "matchup_001")
+    away = live["starters"]["away_starter"]["name"]
+    section = next(s for s in live["report"]["sections"] if away in s["title"])
+    section["body"] += " His slider is his best weapon."
+
+    review = critic.run(live["report"], live)
+
+    check = next(c for c in review["checks"] if c["claim"] == NAMES_CLAIM)
+    assert check["status"] == "unsupported" and "slider" in check["evidence"]
+    live["critic_review"] = review
+    with pytest.raises(Exception, match="unsupported"):
+        validate_payload(payload)

@@ -155,6 +155,10 @@ export interface PitchUsage {
   overall: number;
   vs_lhh: number;
   vs_rhh: number;
+  // Raw pitches behind the rounded shares (live data only; the demo has none): `count` of this
+  // pitch out of the starter's `total`. Decisions use these, the chart shows the rounded share.
+  count?: number;
+  total?: number;
 }
 
 export interface PitchMixRow {

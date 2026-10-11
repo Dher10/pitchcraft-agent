@@ -15,7 +15,7 @@ from agents.language import catalog_for
 from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline.validators import validate_payload
-from tests.test_live_starters_no_demo_fields import _fake_live_game
+from tests.test_live_starters_no_demo_fields import _fake_live_game, counted
 
 REG = labels.make_scope(labels.SCOPE_REGULAR, "2026-07-04")
 REG_POST = labels.make_scope(labels.SCOPE_REGULAR_POSTSEASON, "2026-07-04")
@@ -62,12 +62,16 @@ def build(monkeypatch, away=None, home=None):
         starter["season_summary"]["scope"] = smp["rates"]["scope"]
     # The profile names these pitches, so the game's pitch mix must contain them.
     zero = {"overall": 0, "vs_lhh": 0, "vs_rhh": 0}
-    live_game["combined_charts"]["pitch_mix"] = [
-        {"pitch": AWAY_PRIMARY, "away_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}, "home_starter": zero},
-        {"pitch": AWAY_PUTAWAY, "away_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}, "home_starter": zero},
-        {"pitch": HOME_PRIMARY, "away_starter": zero, "home_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}},
-        {"pitch": HOME_PUTAWAY, "away_starter": zero, "home_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}},
-    ]
+    live_game["combined_charts"]["pitch_mix"] = counted(
+        [
+            {"pitch": AWAY_PRIMARY, "away_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}, "home_starter": zero},
+            {"pitch": AWAY_PUTAWAY, "away_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}, "home_starter": zero},
+            {"pitch": HOME_PRIMARY, "away_starter": zero, "home_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}},
+            {"pitch": HOME_PUTAWAY, "away_starter": zero, "home_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}},
+        ],
+        live_game["away_starter"]["sample"]["arsenal"]["pitches"] or 0,
+        live_game["home_starter"]["sample"]["arsenal"]["pitches"] or 0,
+    )
     monkeypatch.setattr(
         gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [live_game]}
     )

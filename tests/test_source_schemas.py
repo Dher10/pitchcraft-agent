@@ -46,7 +46,6 @@ def schedule_day() -> dict:
     return {
         "dates": [
             {
-                "date": "2026-07-15",
                 "games": [
                     {
                         "gamePk": 1,
