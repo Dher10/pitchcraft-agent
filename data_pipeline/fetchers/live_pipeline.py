@@ -613,6 +613,7 @@ def fetch_team_batting_statcast(
                     f"Savant returned {len(chunk)} rows for {statcast_team} "
                     f"{chunk_start}..{chunk_end}: result may be truncated"
                 )
+            validate_team_batting_rows(chunk, f"team batting {statcast_team} {chunk_start}..{chunk_end}")
             chunk = chunk[[c for c in TEAM_BATTING_COLUMNS if c in chunk.columns]]
         else:
             # A blank answer is a valid empty month (off-season, no games): it is cached
@@ -638,6 +639,9 @@ TEAM_SPLIT_REQUIRED_COLUMNS = (
     "p_throws",
 )
 PITCHER_STATCAST_REQUIRED_COLUMNS = ("game_date", "game_type")
+# Every game type Statcast writes: regular season, spring training, exhibition, all-star, then the
+# postseason rounds (wild card, division, league championship, world series).
+KNOWN_STATCAST_GAME_TYPES = ("R", "S", "E", "A") + POSTSEASON_GAME_TYPES
 
 
 def _require_columns(df: Any, required: tuple[str, ...], source: str) -> None:
@@ -646,6 +650,77 @@ def _require_columns(df: Any, required: tuple[str, ...], source: str) -> None:
     missing = [column for column in required if column not in df.columns]
     if missing:
         raise ValueError(f"{source} data is missing required column(s): {', '.join(missing)}")
+
+
+def validate_statcast_rows(df: Any, source: str) -> None:
+    """
+    Every row of a populated Statcast frame must say when it was played and what kind of game it was.
+
+    A row without a parseable `game_date` or with a `game_type` outside the known set cannot be
+    judged against the cutoff or the season, so it is a malformed answer, not an exclusion (QA4-02):
+    this raises ValueError naming how many rows and the first one, and the fetcher records it as a
+    source failure. Called before any filtering. A frame with no rows is valid (a debut); rows that
+    are well formed but do not count (spring training, dates after the cutoff) are filtered later,
+    legitimately, and are not errors.
+    """
+
+    import pandas as pd
+
+    if len(df) == 0:
+        return
+    _require_columns(df, PITCHER_STATCAST_REQUIRED_COLUMNS, source)
+
+    game_date = df["game_date"]
+    if pd.api.types.is_datetime64_any_dtype(game_date):
+        parsed = game_date
+    else:
+        # Text or date objects only: a number is not a date, however pandas would read it.
+        is_text_or_date = game_date.map(lambda value: isinstance(value, (str, date)))
+        parsed = pd.to_datetime(game_date.where(is_text_or_date), errors="coerce")
+    bad_date = parsed.isna()
+    bad_type = ~df["game_type"].isin(KNOWN_STATCAST_GAME_TYPES)
+    bad = bad_date | bad_type
+    if not bad.any():
+        return
+
+    first = df.index[bad][0]
+    problems = []
+    if bad_date.any():
+        problems.append(f"{int(bad_date.sum())} without a valid game_date")
+    if bad_type.any():
+        problems.append(f"{int(bad_type.sum())} with a missing or unknown game_type")
+    raise ValueError(
+        f"{source} data has {int(bad.sum())} malformed row(s) of {len(df)} ({'; '.join(problems)}); "
+        f"first at row {first}: game_date={df.at[first, 'game_date']!r}, game_type={df.at[first, 'game_type']!r}"
+    )
+
+
+def validate_team_batting_rows(df: Any, source: str) -> None:
+    """
+    `validate_statcast_rows`, plus the columns that decide whether a row is this team's plate
+    appearance and against which hand: the half-inning, both teams and the pitcher's hand. A row
+    missing one would be left out of the split without a word, the same silent undercount. The
+    cached real Savant rows (53,941 on 2026-10-12) have none of them missing.
+    """
+
+    validate_statcast_rows(df, source)
+    if len(df) == 0:
+        return
+    text = lambda column: df[column].map(lambda value: isinstance(value, str) and value.strip() != "")  # noqa: E731
+    bad = (
+        ~df["inning_topbot"].isin(("Top", "Bot"))
+        | ~text("home_team")
+        | ~text("away_team")
+        | ~df["p_throws"].isin(("L", "R"))
+    )
+    if bad.any():
+        first = df.index[bad][0]
+        raise ValueError(
+            f"{source} data has {int(bad.sum())} malformed row(s) of {len(df)} (a missing or unknown "
+            f"inning_topbot, home_team, away_team or p_throws); first at row {first}: "
+            f"inning_topbot={df.at[first, 'inning_topbot']!r}, home_team={df.at[first, 'home_team']!r}, "
+            f"away_team={df.at[first, 'away_team']!r}, p_throws={df.at[first, 'p_throws']!r}"
+        )
 
 
 def _rate3(value: float | None) -> str | None:
@@ -695,6 +770,7 @@ def derive_team_splits(df: Any, statcast_team: str, as_of: str | date | None) ->
     if len(df) == 0:
         return {}
     _require_columns(df, TEAM_SPLIT_REQUIRED_COLUMNS, "team batting")
+    validate_team_batting_rows(df, "team batting")
     batting = ((df["inning_topbot"] == "Top") & (df["away_team"] == statcast_team)) | (
         (df["inning_topbot"] == "Bot") & (df["home_team"] == statcast_team)
     )
@@ -837,7 +913,7 @@ def fetch_pitcher_statcast(
             raise ValueError("Statcast returned no result (None)")
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
-            _require_columns(df, PITCHER_STATCAST_REQUIRED_COLUMNS, "pitcher Statcast")
+            validate_statcast_rows(df, "pitcher Statcast")
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
             # pybaseball asks for regular season, postseason and spring training.
             # Spring never counts; postseason counts only up to the cutoff above.
