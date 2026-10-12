@@ -218,6 +218,14 @@ def _validate_data_cutoff(matchup: Mapping[str, Any], label: str, record: Any) -
     )
 
 
+def _is_share_or_none(value: Any) -> bool:
+    """A percentage (0-100, not a bool) or None: a side the starter never faced has no share."""
+
+    if value is None:
+        return True
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= 100
+
+
 def _is_count(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
@@ -274,6 +282,17 @@ def _validate_pitch_mix(charts: Any, label: str, record: Any, starters: Any = No
                 isinstance(starter_mix, Mapping)
                 and all(split in starter_mix for split in BATTER_HAND_SPLITS),
                 _missing_keys(starter_mix, BATTER_HAND_SPLITS),
+            )
+            record(
+                f"{row_label}.{slot} shares against each side are a percentage or unavailable (null)",
+                isinstance(starter_mix, Mapping)
+                and all(_is_share_or_none(starter_mix.get(split)) for split in BATTER_HAND_SPLITS),
+                "found "
+                + (
+                    ", ".join(f"{split}={starter_mix.get(split)!r}" for split in BATTER_HAND_SPLITS)
+                    if isinstance(starter_mix, Mapping)
+                    else "no object"
+                ),
             )
             starter = starters.get(slot) if isinstance(starters, Mapping) else None
             sample = starter.get("sample") if isinstance(starter, Mapping) else None

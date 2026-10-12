@@ -56,6 +56,21 @@ export function mixRow(pitch: string, away: number, home: number): PitchMixRow {
   return { pitch, away_starter: usage(away), home_starter: usage(home) };
 }
 
+/** The same row with the share against one side replaced (null: that side was never faced). */
+export function withShare(
+  row: PitchMixRow,
+  side: "away_starter" | "home_starter",
+  hand: "vs_lhh" | "vs_rhh",
+  value: number | null,
+): PitchMixRow {
+  return { ...row, [side]: { ...row[side], [hand]: value } };
+}
+
+/** The same row with the raw counts a live mix carries: `count` of `total` pitches for one starter. */
+export function withCount(row: PitchMixRow, side: "away_starter" | "home_starter", count: number, total: number): PitchMixRow {
+  return { ...row, [side]: { ...row[side], count, total } };
+}
+
 export const FASTBALL: PitchMovement = { h_break: 7.8, v_break: 16.2, family: "Fastball" };
 
 export function makeMatchup(options: {

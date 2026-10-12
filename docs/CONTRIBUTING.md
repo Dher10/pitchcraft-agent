@@ -61,6 +61,14 @@ The verification line of a commit comes from `python -m pytest` and `npm test`, 
 - When behavior can depend on the environment (the locale of the shell, the PATH, the OS), the test takes the environment as a parameter and runs every case: the hook tests run the attribution filter under the default locale, `C` and `C.UTF-8`.
 - If a command cannot run (a sandbox, a missing tool), say so in the commit body and in `STATUS.md`; do not report the result of a different command or environment as if it were the default one.
 
+## Sweeps
+
+When a QA finding or a fix exposes a class of error, search the code for other instances of it (a sweep) and list the result in the plan the owner approves. From P0.14 on:
+
+An item from a sweep that touches a decision boundary or a user-visible claim is fixed, not recorded.
+
+An item that touches neither (a note in a comment, a test helper, a cosmetic default) may be recorded in `docs/STATUS.md` with the reason.
+
 ## Workflow
 
 - One task from `docs/PLAN.md` = one commit.

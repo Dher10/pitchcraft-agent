@@ -153,8 +153,9 @@ export interface RecentForm {
 
 export interface PitchUsage {
   overall: number;
-  vs_lhh: number;
-  vs_rhh: number;
+  // null: the starter never faced that side, so there is no share (not 0%).
+  vs_lhh: number | null;
+  vs_rhh: number | null;
   // Raw pitches behind the rounded shares (live data only; the demo has none): `count` of this
   // pitch out of the starter's `total`. Decisions use these, the chart shows the rounded share.
   count?: number;

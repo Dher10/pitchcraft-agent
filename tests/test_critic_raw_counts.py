@@ -101,8 +101,10 @@ def test_a_pitch_the_other_starter_never_threw_has_count_zero_and_his_own_total(
     payload = payload_for(monkeypatch, {"FF": 100, "SL": 50}, {"FF": 120, "CH": 30})
 
     rows = {r["pitch"]: r for r in live_matchup(payload)["charts"]["pitch_mix"]}
+    # The home starter (the frame has only right-handed batters) never threw a slider to the
+    # righties he faced: a real 0. He faced no lefties: unavailable, not 0.
     assert rows["Slider"]["home_starter"] == {
-        "overall": 0, "vs_lhh": 0, "vs_rhh": 0, "count": 0, "total": 150
+        "overall": 0, "vs_lhh": None, "vs_rhh": 0, "count": 0, "total": 150
     }
     assert (rows["Slider"]["away_starter"]["count"], rows["Slider"]["away_starter"]["total"]) == (50, 150)
 

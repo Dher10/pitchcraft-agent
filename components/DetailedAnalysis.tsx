@@ -6,7 +6,7 @@ import StrengthProfile from "@/components/StrengthProfile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram, { getPitchColor } from "@/components/ZoneDiagram";
 import { describePitchMovement } from "@/lib/pitchDescriptions";
-import type { Matchup, PitchFamily, PitchLocationsByHand } from "@/lib/types";
+import type { Matchup, PitchFamily, PitchLocationsByHand, PitchUsage } from "@/lib/types";
 
 type BatterHand = "vs_lhh" | "vs_rhh";
 type StarterSide = "away_starter" | "home_starter";
@@ -44,7 +44,7 @@ function PitcherAttack({
   const starter = matchup.starters[side];
   const velocityKey = side === "away_starter" ? "away_starter_velocity" : "home_starter_velocity";
   // The combined chart lists the pitches of both starters; this panel shows only his own.
-  const arsenal = matchup.charts.pitch_mix.filter((row) => row[side].overall > 0);
+  const arsenal = matchup.charts.pitch_mix.filter((row) => wasThrown(row[side]));
   const arsenalLimited = Boolean(starter.sample?.limited.arsenal);
   const selectedRow = arsenal.find((row) => row.pitch === selectedPitch) ?? arsenal[0];
   const velocityOf = (pitch: string) =>
@@ -55,7 +55,6 @@ function PitcherAttack({
   // Unavailable movement stays null; it is never drawn or described as a measured 0.0.
   const hBreak = selectedMovement?.h_break ?? null;
   const vBreak = selectedMovement?.v_break ?? null;
-  const usage = selectedRow?.[side][hand] ?? 0;
   const throwsHand = normalizeThrows(starter.throws);
 
   return (
@@ -107,17 +106,24 @@ function PitcherAttack({
                     className="mt-1.5 block font-mono text-sm font-semibold text-neutral-900"
                     style={{ fontVariantNumeric: "tabular-nums" }}
                   >
-                    {rowUsage}%
+                    {rowUsage === null ? "—" : `${rowUsage}%`}
                   </span>
-                  <span className="mt-1.5 block h-[5px] rounded-full bg-neutral-200">
-                    <span
-                      className="block h-[5px] rounded-full"
-                      style={{ width: `${rowUsage}%`, backgroundColor: getPitchColor(row.pitch) }}
-                    />
-                  </span>
+                  {rowUsage === null ? null : (
+                    <span className="mt-1.5 block h-[5px] rounded-full bg-neutral-200">
+                      <span
+                        className="block h-[5px] rounded-full"
+                        style={{ width: `${rowUsage}%`, backgroundColor: getPitchColor(row.pitch) }}
+                      />
+                    </span>
+                  )}
                 </button>
               );
             })}
+            {arsenal.every((row) => row[side][hand] === null) ? (
+              <p className="text-xs text-neutral-500">
+                No {hand === "vs_lhh" ? "left-handed" : "right-handed"} batters faced.
+              </p>
+            ) : null}
           </div>
           {arsenalLimited ? (
             <p className="rounded-lg border border-neutral-200 bg-white p-4 text-sm leading-6 text-neutral-600">
@@ -128,7 +134,7 @@ function PitcherAttack({
               pitchName={selectedRow.pitch}
               family={family}
               velocity={selectedVelocity ?? "N/A"}
-              usagePct={usage}
+              usagePct={selectedRow[side][hand]}
               hBreak={hBreak}
               vBreak={vBreak}
               throwsHand={throwsHand}
@@ -139,7 +145,8 @@ function PitcherAttack({
             <aside className="rounded-lg border border-neutral-200 bg-white p-4">
               <h4 className="text-base font-bold text-neutral-900">{selectedRow.pitch}</h4>
               <p className="mt-1 font-mono text-[10.5px] text-neutral-400">
-                {throwsHand}HP &middot; {selectedVelocity === null ? "N/A" : `${selectedVelocity} mph`}
+                {throwsHand ? `${throwsHand}HP · ` : ""}
+                {selectedVelocity === null ? "N/A" : `${selectedVelocity} mph`}
               </p>
               <p className="mt-3 text-sm leading-6 text-neutral-600">Movement data not available for this pitch.</p>
             </aside>
@@ -159,7 +166,11 @@ function PitcherAttack({
       {starter.sample ? (
         <p className="mt-3 font-mono text-[10px] text-neutral-400">
           {starter.sample.limited.arsenal
-            ? `Arsenal data limited: ${starter.sample.arsenal.pitches ?? 0} pitches (${starter.sample.thresholds.arsenal} needed)`
+            ? `Arsenal data limited: ${
+                starter.sample.arsenal.pitches === null || starter.sample.arsenal.pitches === undefined
+                  ? "pitch count not available"
+                  : `${starter.sample.arsenal.pitches} pitches`
+              } (${starter.sample.thresholds.arsenal} needed)`
             : `Pitch data: ${starter.sample.arsenal.scope.label}`}
         </p>
       ) : null}
@@ -177,8 +188,18 @@ function PitcherAttack({
   );
 }
 
-function normalizeThrows(raw: string): "L" | "R" {
-  return raw?.toUpperCase().startsWith("L") ? "L" : "R";
+/** Only a hand the data gives is shown: anything else (a switch pitcher, a missing value) prints no hand. */
+function normalizeThrows(raw: string | null | undefined): "L" | "R" | null {
+  const hand = raw?.toUpperCase().charAt(0);
+  return hand === "L" || hand === "R" ? hand : null;
+}
+
+/**
+ * Whether a starter threw this pitch. The raw count decides when the data has it: a pitch thrown once
+ * in 3,000 has a share that rounds to 0.0 and was still thrown.
+ */
+function wasThrown(usage: PitchUsage): boolean {
+  return typeof usage.count === "number" ? usage.count > 0 : usage.overall > 0;
 }
 
 function inferPitchFamily(pitch: string): PitchFamily {

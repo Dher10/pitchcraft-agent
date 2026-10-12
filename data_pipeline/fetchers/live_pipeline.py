@@ -1339,8 +1339,10 @@ def build_live_snapshot(
     }
     return snapshot
 
-def _usage_pct(part: int, total: int) -> float:
-    return round(part / total * 100, 1) if total > 0 else 0
+def _usage_pct(part: int, total: int) -> float | None:
+    """A share of `total`, or None when there is nothing to take a share of (never 0%)."""
+
+    return round(part / total * 100, 1) if total > 0 else None
 
 
 def _combine_pitch_mix(
@@ -1357,9 +1359,21 @@ def _combine_pitch_mix(
     )
 
     def not_thrown(data: dict[str, Any]) -> dict[str, Any]:
-        # A pitch he never threw: a real zero, out of his own total (every row carries it).
-        total = data["pitch_mix"][0]["away_starter"]["total"] if data["pitch_mix"] else 0
-        return {"overall": 0, "vs_lhh": 0, "vs_rhh": 0, "count": 0, "total": total}
+        # A pitch he never threw: a real zero out of his own total (every row carries it), and a
+        # real zero against a side he faced. Against a side he never faced it is unavailable.
+        rows = [row["away_starter"] for row in data["pitch_mix"]]
+        total = rows[0]["total"] if rows else 0
+
+        def against(side: str) -> int | None:
+            return 0 if any(usage[side] is not None for usage in rows) else None
+
+        return {
+            "overall": 0,
+            "vs_lhh": against("vs_lhh"),
+            "vs_rhh": against("vs_rhh"),
+            "count": 0,
+            "total": total,
+        }
 
     return [
         {
