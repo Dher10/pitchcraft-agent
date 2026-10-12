@@ -1,6 +1,7 @@
 "use client";
 
 import TeamBadge from "@/components/TeamBadge";
+import { formatStartTime } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 import type { ArchiveItem, Matchup } from "@/lib/types";
 
@@ -67,7 +68,7 @@ export default function GameCarousel({
                 <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
                   {matchup.status === "final" && matchup.postgame
                     ? `${matchup.teams.away.abbreviation} ${matchup.postgame.final_score.away_team_runs} - ${matchup.teams.home.abbreviation} ${matchup.postgame.final_score.home_team_runs}`
-                    : matchup.game.start_time_local}
+                    : formatStartTime(matchup.game)}
                 </p>
                 <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-neutral-600">
                   {matchup.report.headline}

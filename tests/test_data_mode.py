@@ -312,12 +312,12 @@ def test_live_matchup_has_no_demo_broadcast_note_or_fallback_promise(monkeypatch
     live_game["featured_game"] = {
         "away_team": "Boston Red Sox", "away_team_abbr": "BOS", "away_team_id": 111,
         "home_team": "New York Yankees", "home_team_abbr": "NYY", "home_team_id": 147,
-        "venue": "Yankee Stadium", "start_time": "2026-07-15T23:05:00Z",
+        "venue": "Yankee Stadium", "start_time_utc": "2026-07-15T23:05:00Z",
         "away_pitcher_id": 11, "home_pitcher_id": 22,
     }
-    monkeypatch.setattr(gdj, "_live", {"fetched_date": "2026-07-15", "live_games": [live_game]})
+    monkeypatch.setattr(gdj, "_live", {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "live_games": [live_game]})
 
-    matchup = gdj._apply_live_game_to_matchup(deepcopy(template), live_game, "matchup_001", True)
+    matchup = gdj._build_live_matchup(live_game, "matchup_001", True)
 
     assert matchup["game"]["broadcast_note"] is None
     assert not any("falls back" in note for note in matchup["data_confidence"]["notes"])

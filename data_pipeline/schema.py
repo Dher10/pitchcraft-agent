@@ -2,7 +2,26 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+import re
+from typing import Any
+
 SCHEMA_VERSION = "0.2.0"
+
+_UTC_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
+
+
+def is_utc_instant(value: Any) -> bool:
+    """True for an explicit UTC instant written as YYYY-MM-DDTHH:MM:SSZ (what the MLB schedule sends)."""
+
+    if not isinstance(value, str) or not _UTC_INSTANT.fullmatch(value):
+        return False
+    try:
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return False
+    return True
+
 
 TOP_LEVEL_REQUIRED_KEYS = (
     "metadata",

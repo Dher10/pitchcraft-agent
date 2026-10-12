@@ -26,13 +26,11 @@ def template() -> dict:
 
 @pytest.fixture(autouse=True)
 def live(monkeypatch):
-    monkeypatch.setattr(gdj, "_live", {"fetched_date": "2026-07-04", "as_of": "2026-07-03"})
+    monkeypatch.setattr(gdj, "_live", {"run_at": "2026-07-04T12:00:00+00:00", "fetched_date": "2026-07-04", "as_of": "2026-07-03"})
 
 
 def apply(template: dict, live_starter: dict) -> dict:
-    starter = deepcopy(template["starters"]["away_starter"])
-    gdj._apply_live_starter(starter, live_starter, "TAW", 111)
-    return starter
+    return gdj.live_matchup.build_starter(live_starter, "TAW", 111, gdj._live_through())
 
 
 def live_starter(template: dict, **overrides) -> dict:

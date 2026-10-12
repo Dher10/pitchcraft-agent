@@ -212,7 +212,7 @@ def test_publication_validation_rejects_a_late_scope_even_if_the_resolver_were_b
     template, monkeypatch
 ):
     game = late_pitcher_game(template, monkeypatch)
-    live = {"fetched_date": "2026-07-15", "as_of": "2026-07-20", "live_games": [game]}
+    live = {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-20", "live_games": [game]}
     status = {"mode": "fetched_snapshot", "reason": "Live run ok", "live_run": None}
 
     with patch.object(gdj, "_live", live), patch.object(gdj, "_live_status", status):
@@ -226,7 +226,7 @@ def test_publication_validation_rejects_a_late_scope_even_if_the_resolver_were_b
 
 def test_a_payload_with_a_safe_scope_still_validates(template, monkeypatch):
     game = live_game(template)
-    live = {"fetched_date": "2026-07-15", "as_of": "2026-07-14", "live_games": [game]}
+    live = {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-14", "live_games": [game]}
     status = {"mode": "fetched_snapshot", "reason": "Live run ok", "live_run": None}
 
     with patch.object(gdj, "_live", live), patch.object(gdj, "_live_status", status):

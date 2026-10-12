@@ -45,10 +45,8 @@ def matchup_with(monkeypatch, template):
             for slot in SLOTS:
                 for field in FIELDS:
                     game[slot]["season_summary"][field] = unavailable
-        monkeypatch.setattr(gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [game]})
-        return gdj._apply_live_game_to_matchup(
-            deepcopy(template), game, matchup_id="matchup_001", is_featured=True
-        )
+        monkeypatch.setattr(gdj, "_live", {"run_at": "2026-07-04T12:00:00+00:00", "fetched_date": "2026-07-04", "live_games": [game]})
+        return gdj._build_live_matchup(game, "matchup_001", True)
 
     return build
 

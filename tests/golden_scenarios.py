@@ -59,8 +59,8 @@ def live(mp, away=None, home=None, splits=False, edit=None) -> dict[str, Any]:
     ]
     if edit:
         edit(game)
-    mp.setattr(gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [game]})
-    return gdj._apply_live_game_to_matchup(deepcopy(template), game, "matchup_001", True)
+    mp.setattr(gdj, "_live", {"run_at": "2026-07-04T12:00:00+00:00", "fetched_date": "2026-07-04", "live_games": [game]})
+    return gdj._build_live_matchup(game, "matchup_001", True)
 
 
 def _no_putaway(game: dict[str, Any]) -> None:

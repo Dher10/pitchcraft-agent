@@ -57,9 +57,17 @@ export interface Matchup {
 
 export interface Game {
   title: string;
-  venue: string;
-  start_time_local: string;
-  timezone: string;
+  /** Null when the schedule did not name the venue (live data). */
+  venue: string | null;
+  /**
+   * Live games (D33): the schedule's UTC instant, YYYY-MM-DDTHH:MM:SSZ. Absent in the demo, whose
+   * times are written pre-formatted in `start_time_local`.
+   */
+  start_time_utc?: string | null;
+  /** Demo games only; null for a live game. */
+  start_time_local: string | null;
+  /** The venue's IANA zone when the source gave one (live), the demo's own zone otherwise; null if unknown. */
+  timezone: string | null;
   broadcast_note: string | null;
   home_team_id: string;
   away_team_id: string;

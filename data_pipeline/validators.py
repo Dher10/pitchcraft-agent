@@ -20,6 +20,7 @@ from data_pipeline.schema import (
     STARTER_SLOTS,
     TEAM_SIDES,
     TOP_LEVEL_REQUIRED_KEYS,
+    is_utc_instant,
 )
 
 
@@ -154,6 +155,7 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
     _validate_pitch_locations(pitch_locations, label, record)
 
     _validate_data_cutoff(matchup, label, record)
+    _validate_live_game_time(matchup, label, record)
     _validate_final_postgame(matchup, label, record)
     _validate_critic_review(matchup.get("critic_review"), label, record)
     _validate_report_betting_terms(matchup.get("report"), label, record)
@@ -215,6 +217,28 @@ def _validate_data_cutoff(matchup: Mapping[str, Any], label: str, record: Any) -
         f"{label}: data cutoff is before the game date",
         not late,
         f"game date {matchup.get('date')!r}: {', '.join(late)}",
+    )
+
+
+def _validate_live_game_time(matchup: Mapping[str, Any], label: str, record: Any) -> None:
+    """
+    A live game's start is an explicit UTC instant and its zone is text or unknown (D33).
+
+    Live means the matchup says so itself (`data_confidence.level`); the demo matchups keep their
+    pre-formatted local time. A live game that lost the field fails: the page would otherwise have no
+    time, or fall back to a demo one.
+    """
+
+    confidence = matchup.get("data_confidence")
+    if not isinstance(confidence, Mapping) or confidence.get("level") != "fetched_snapshot":
+        return
+    game = matchup.get("game")
+    game = game if isinstance(game, Mapping) else {}
+    zone = game.get("timezone")
+    record(
+        f"{label}: live game start time is a UTC instant and its zone is text or unknown",
+        is_utc_instant(game.get("start_time_utc")) and (zone is None or (isinstance(zone, str) and zone.strip() != "")),
+        f"start_time_utc {game.get('start_time_utc')!r}, timezone {zone!r}",
     )
 
 

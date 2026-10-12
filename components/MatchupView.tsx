@@ -8,6 +8,7 @@ import ScoutingReport from "@/components/ScoutingReport";
 import StarterCard from "@/components/StarterCard";
 import TeamBadge from "@/components/TeamBadge";
 import { getPitchColor } from "@/components/ZoneDiagram";
+import { formatStartTime } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 import type { Matchup, ReportSection } from "@/lib/types";
 
@@ -33,7 +34,7 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
     <section className="space-y-4">
       <header className="rounded-xl border border-neutral-200 bg-white p-4">
         <p className="font-mono text-[11px] text-neutral-400">
-          {matchup.game.venue} &middot; {matchup.game.start_time_local} {matchup.game.timezone}
+          {matchup.game.venue ?? "Venue not available"} &middot; {formatStartTime(matchup.game)}
         </p>
         <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-neutral-900">{matchup.report.headline}</h2>
         {matchup.report.short_summary[0] ? (

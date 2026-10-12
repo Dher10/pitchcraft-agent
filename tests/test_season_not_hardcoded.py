@@ -297,7 +297,7 @@ def test_build_live_snapshot_passes_as_of_to_every_fetcher(monkeypatch):
         "home_pitcher_name": "Home Ace",
         "home_pitcher_id": 22,
         "venue": "Yankee Stadium",
-        "start_time": "2026-07-15T23:05:00Z",
+        "start_time_utc": "2026-07-15T23:05:00Z",
         "status": "Final",
     }
     starter = {

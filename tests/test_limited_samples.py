@@ -73,9 +73,9 @@ def build(monkeypatch, away=None, home=None):
         live_game["home_starter"]["sample"]["arsenal"]["pitches"] or 0,
     )
     monkeypatch.setattr(
-        gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [live_game]}
+        gdj, "_live", {"run_at": "2026-07-04T12:00:00+00:00", "fetched_date": "2026-07-04", "live_games": [live_game]}
     )
-    return gdj._apply_live_game_to_matchup(deepcopy(template), live_game, "matchup_001", True)
+    return gdj._build_live_matchup(live_game, "matchup_001", True)
 
 
 def run_agents(matchup):
@@ -260,9 +260,9 @@ def test_an_old_snapshot_without_a_sample_is_limited_everywhere(monkeypatch):
     template = demo_inputs.build_demo_payload()["matchups"][0]
     live_game = _fake_live_game(template)
     del live_game["away_starter"]["sample"]
-    monkeypatch.setattr(gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [live_game]})
+    monkeypatch.setattr(gdj, "_live", {"run_at": "2026-07-04T12:00:00+00:00", "fetched_date": "2026-07-04", "live_games": [live_game]})
 
-    matchup = gdj._apply_live_game_to_matchup(deepcopy(template), live_game, "matchup_001", True)
+    matchup = gdj._build_live_matchup(live_game, "matchup_001", True)
     run_agents(matchup)
 
     limited = matchup["starters"]["away_starter"]["sample"]["limited"]

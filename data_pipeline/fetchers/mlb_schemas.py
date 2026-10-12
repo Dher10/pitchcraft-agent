@@ -24,6 +24,8 @@ from datetime import date
 import re
 from typing import Any, Iterator, Mapping
 
+from data_pipeline.schema import is_utc_instant
+
 
 class SourceShapeError(ValueError):
     """An MLB answer does not have the shape the pipeline needs."""
@@ -34,7 +36,7 @@ _ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 @dataclass(frozen=True)
 class Scalar:
-    kind: str  # "str", "int", "bool" or "date" (YYYY-MM-DD)
+    kind: str  # "str", "int", "bool", "date" (YYYY-MM-DD) or "utc_instant" (YYYY-MM-DDTHH:MM:SSZ)
     required: bool = True
 
 
@@ -87,6 +89,8 @@ def _is_scalar(kind: str, value: Any) -> bool:
         except ValueError:
             return False
         return True
+    if kind == "utc_instant":
+        return is_utc_instant(value)
     raise ValueError(f"unknown scalar kind {kind!r}")
 
 
@@ -166,7 +170,7 @@ def non_empty_paths(root: Any) -> list[tuple[tuple[Any, ...], Obj]]:
 _TEAM_REF = Obj({"id": Scalar("int"), "name": Scalar("str")})
 _PROBABLE_PITCHER = Obj({"id": Scalar("int"), "fullName": Scalar("str")}, required=False)
 
-# schedule?date=...&hydrate=probablePitcher,venue   (fetch_todays_games)
+# schedule?date=...&hydrate=probablePitcher,venue(timezone)   (fetch_todays_games)
 SCHEDULE_DAY = Obj(
     {
         "dates": Arr(
@@ -178,9 +182,17 @@ SCHEDULE_DAY = Obj(
                                 # Copied into the snapshot but read by nothing yet: optional.
                                 "gamePk": Scalar("int", required=False),
                                 "officialDate": Scalar("date"),
-                                "gameDate": Scalar("str"),
+                                # The start as an explicit UTC instant (D33); anything else is not a start time.
+                                "gameDate": Scalar("utc_instant"),
                                 "status": Obj({"abstractGameState": Scalar("str", required=False)}, required=False),
-                                "venue": Obj({"name": Scalar("str", required=False)}, required=False),
+                                "venue": Obj(
+                                    {
+                                        "name": Scalar("str", required=False),
+                                        # The venue's IANA zone, checked on 2026-10-11 for all 15 games of a day.
+                                        "timeZone": Obj({"id": Scalar("str", required=False)}, required=False),
+                                    },
+                                    required=False,
+                                ),
                                 "teams": Obj(
                                     {
                                         side: Obj(

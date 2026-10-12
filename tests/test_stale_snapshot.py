@@ -42,10 +42,21 @@ def good_run(**overrides) -> dict:
 
 
 def good_game(**overrides) -> dict:
-    """The least a live game must say for the generator to trust it (dates and hands)."""
+    """The least a live game must say for the generator to trust it (dates, hands, what the schedule always sends)."""
 
     return {
-        "featured_game": {"official_date": "2026-07-15"},
+        "featured_game": {
+            "official_date": "2026-07-15",
+            "away_team": "Boston Red Sox",
+            "away_team_id": 111,
+            "away_team_abbr": "BOS",
+            "home_team": "New York Yankees",
+            "home_team_id": 147,
+            "home_team_abbr": "NYY",
+            "away_pitcher_id": 11,
+            "home_pitcher_id": 22,
+            "start_time_utc": "2026-07-15T23:05:00Z",
+        },
         "as_of": "2026-07-14",
         "away_starter": {"name": "Alpha Livearm", "throws": "R"},
         "home_starter": {"name": "Bravo Liveleft", "throws": "L"},

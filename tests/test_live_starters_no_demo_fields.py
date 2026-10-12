@@ -87,7 +87,7 @@ def _fake_live_game(
             "home_pitcher_name": "Bravo Liveleft",
             "home_pitcher_id": 222,
             "venue": "Test Park",
-            "start_time": "2026-07-04T15:05:00Z",
+            "start_time_utc": "2026-07-04T15:05:00Z",
             "status": "Preview",
         },
         "away_starter": live_starter("Alpha Livearm", "R"),
@@ -122,10 +122,8 @@ def demo_template() -> dict:
 def build_live_matchup(monkeypatch, demo_template):
     def build(away_team_splits: dict | None = None, home_team_splits: dict | None = None) -> dict:
         live_game = _fake_live_game(demo_template, away_team_splits, home_team_splits)
-        monkeypatch.setattr(gdj, "_live", {"fetched_date": "2026-07-04", "live_games": [live_game]})
-        return gdj._apply_live_game_to_matchup(
-            deepcopy(demo_template), live_game, matchup_id="matchup_001", is_featured=True
-        )
+        monkeypatch.setattr(gdj, "_live", {"run_at": "2026-07-04T12:00:00+00:00", "fetched_date": "2026-07-04", "live_games": [live_game]})
+        return gdj._build_live_matchup(live_game, "matchup_001", True)
 
     return build
 

@@ -332,7 +332,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
     date_str = target_date or today_eastern().isoformat()
     url = (
         "https://statsapi.mlb.com/api/v1/schedule"
-        f"?sportId=1&date={date_str}&hydrate=probablePitcher,venue"
+        f"?sportId=1&date={date_str}&hydrate=probablePitcher,venue(timezone)"
     )
     try:
         req = urllib.request.Request(
@@ -349,6 +349,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
             # Not announced yet is a normal answer: no probablePitcher object at all.
             away_pp = away.get("probablePitcher") or {}
             home_pp = home.get("probablePitcher") or {}
+            venue = game.get("venue") or {}
             games.append(
                 {
                     "game_pk": game.get("gamePk"),
@@ -364,8 +365,10 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
                     "away_pitcher_id": away_pp.get("id"),
                     "home_pitcher_name": home_pp.get("fullName"),
                     "home_pitcher_id": home_pp.get("id"),
-                    "venue": (game.get("venue") or {}).get("name", ""),
-                    "start_time": game["gameDate"],
+                    "venue": venue.get("name"),
+                    # D33: the schedule's UTC instant, and the venue's zone only when it says one.
+                    "start_time_utc": game["gameDate"],
+                    "venue_timezone": (venue.get("timeZone") or {}).get("id"),
                     "status": (game.get("status") or {}).get("abstractGameState"),
                 }
             )
