@@ -11,7 +11,7 @@ If no range is given, use `v1.0.0-kaggle..HEAD`.
 
 ## What counts as the spec
 
-Read these as the source of truth, in this order: `docs/DECISIONS.md`, `docs/PLAN.md` (tasks and Gherkin scenarios for the phase), `docs/PRD_v2.md`, `docs/eval-spec.md`, `AGENTS.md`, `docs/CONTRIBUTING.md`.
+Read these as the source of truth, in this order: `docs/DECISIONS.md`, `docs/DATA_CONTRACT.md` (D34; the field inventory it uses as Annex A, `docs/data-inventory.md`, is a snapshot, not a spec), `docs/PLAN.md` (tasks and Gherkin scenarios for the phase), `docs/PRD_v2.md`, `docs/eval-spec.md`, `AGENTS.md`, `docs/ENGINEERING.md`, `docs/CONTRIBUTING.md`.
 Do **not** read the session log in `docs/STATUS.md` until you have formed your own findings. Then compare: any claim there that you could not reproduce is itself a finding.
 
 ## Rules
@@ -37,6 +37,7 @@ Work through every area. For each one, say what you checked even when you found 
 8. **Frontend.** `tsc`, lint and build pass; `null`/missing data renders an explicit "not available" state, never `undefined`, `NaN` or a crash; no user-facing text claims something the data does not support.
 9. **Docs vs code.** `DECISIONS.md`, `PLAN.md` and `STATUS.md` match what the code does. Decisions marked closed are actually implemented as written.
 10. **Git hygiene.** Every commit in range is authored and committed by `edherdenez@gmail.com`, follows `docs/CONTRIBUTING.md`, carries no AI attribution, and touches only `v2`.
+11. **Data contract compliance (D34).** Verify each of the eight rules of `docs/DATA_CONTRACT.md` against the code and against a payload you build yourself, including unrendered JSON: provenance of every field, unknown never written as zero, scope of every group of figures, every emitted phrase with its condition in the registry, failure contained in the smallest unit (and the documented fail-closed exception), honest mode, real status and time, no internals in the public file. Check that the generic checks (`validate_payload`, the combination matrix) fail on a payload that breaks a rule, and that no `xfail` for a finding of the contract is left. A violation of a rule is a finding with the severity of its effect; a claim in the registry with no condition, or a phrase the registry does not list, is a finding.
 
 ## Severity
 

@@ -14,6 +14,8 @@ These rules apply to every agent working in this repo (Claude Code, Codex or any
 2. `docs/PLAN.md` — phases, tasks and acceptance criteria.
 3. `docs/DECISIONS.md` — decisions already made. Read the ones related to your task.
 4. `docs/PRD_v2.md` and `docs/eval-spec.md` — only the sections your task touches.
+5. `docs/DATA_CONTRACT.md` — what the published data and every text that describes it may say (D34). Read it before changing any field, sentence, error or label that reaches the public file or the page.
+6. `docs/ENGINEERING.md` — how code is written here (validate at the boundary, decide on raw values, red tests first, invariants, fixtures, fix the class, self-review). Read it before coding.
 
 Exception: an agent that runs `docs/QA_PROTOCOL.md` does not read `docs/STATUS.md` at the start. The protocol's own reading order applies, and STATUS is read only after the agent has formed its own findings.
 
@@ -83,3 +85,5 @@ Full rules in `docs/CONTRIBUTING.md`. Read it before your first commit.
 ## Definition of done
 
 A task is done only when its acceptance criteria in `PLAN.md` pass. For Phase 0, the Gherkin scenarios in `PLAN.md` are the criteria; each one needs an automated test or a documented manual check in `STATUS.md`.
+
+A change is also done only when it complies with `docs/DATA_CONTRACT.md` (any new or changed field, scope, sentence, error or label follows its rules and its registry of claims) and the self-review of `docs/ENGINEERING.md` was done before the commit was shown.
