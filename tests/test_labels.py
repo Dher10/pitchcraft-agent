@@ -173,11 +173,19 @@ def test_every_figure_group_in_the_sample_carries_its_scope():
     assert s["rates"]["scope"] == REG
 
 
+def starter_with(s):
+    """A starter around a sample: ERA from the API (regular season) and counts with the sample's scope."""
+
+    regular = labels.make_scope(labels.SCOPE_REGULAR, REG["through"])
+    summary = {"era": "3.10", "whip": "1.05", "innings": "101.0", "scopes": {"season_rates": regular, "counts": s["rates"]["scope"]}}
+    return {"sample": s, "season_summary": summary}
+
+
 def test_scopes_differ_only_when_the_kinds_differ():
-    assert labels.scopes_differ(sample(arsenal_scope=REG_POST, rates_scope=REG)) is True
-    assert labels.scopes_differ(sample(arsenal_scope=REG, rates_scope=REG)) is False
+    assert labels.scopes_differ(starter_with(sample(arsenal_scope=REG_POST, rates_scope=REG))) is True
+    assert labels.scopes_differ(starter_with(sample(arsenal_scope=REG, rates_scope=REG))) is False
     assert labels.scopes_differ(
-        sample(arsenal_scope=labels.make_scope(labels.SCOPE_REGULAR, "2026-07-01"), rates_scope=REG)
+        starter_with(sample(arsenal_scope=labels.make_scope(labels.SCOPE_REGULAR, "2026-07-01"), rates_scope=REG))
     ) is False
 
 

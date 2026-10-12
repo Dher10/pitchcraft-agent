@@ -44,7 +44,7 @@ def live_game(template, official="2026-07-15", as_of="2026-07-14", through=None)
     for slot in SLOTS:
         game[slot]["sample"]["arsenal"]["scope"] = scope
         game[slot]["sample"]["rates"]["scope"] = scope
-        game[slot]["season_summary"]["scope"] = scope
+        game[slot]["season_summary"]["scopes"] = {"season_rates": scope, "counts": scope}
     return game
 
 

@@ -13,6 +13,7 @@ from typing import Any, Iterator
 import pandas as pd
 
 from data_pipeline import generate_demo_json as gdj
+from data_pipeline import labels
 from data_pipeline.fetchers import live_pipeline as lp
 from data_pipeline.validators import ValidationError, validate_payload
 
@@ -33,6 +34,17 @@ def leaves(value: Any, path: tuple = ()) -> Iterator[tuple[tuple, Any]]:
             yield from leaves(child, (*path, index))
     else:
         yield path, value
+
+
+def summary_scopes(sample: dict[str, Any]) -> dict[str, Any]:
+    """The `season_summary.scopes` the pipeline writes for a sample: the API's ERA is regular season, the
+    counts have the sample's own scope (None when the source is unavailable)."""
+
+    rates = sample["rates"]
+    return {
+        "season_rates": labels.make_scope(labels.SCOPE_REGULAR, rates["scope"]["through"]),
+        "counts": None if rates["source"] == "unavailable" else rates["scope"],
+    }
 
 
 def failed_checks(payload: dict[str, Any]) -> list[str]:
@@ -85,6 +97,55 @@ def _debut(name: str, throws: str) -> dict[str, Any]:
     data = lp._empty_pitcher_data(name, throws)
     lp._attach_sample(data, None, {}, date.fromisoformat(CUTOFF))
     return data
+
+
+def featured_game(game_day: str = GAME_DAY) -> dict[str, Any]:
+    """The `featured_game` the pipeline writes, with only what the schedule always sends."""
+
+    return {
+        "game_pk": 777001,
+        "official_date": game_day,
+        "away_team": "Test Away Club",
+        "away_team_id": 901,
+        "away_team_abbr": "TAW",
+        "home_team": "Test Home Club",
+        "home_team_id": 902,
+        "home_team_abbr": "THM",
+        "away_pitcher_name": "Alpha Livearm",
+        "away_pitcher_id": 111,
+        "home_pitcher_name": "Bravo Liveleft",
+        "home_pitcher_id": 222,
+        "start_time_utc": f"{game_day}T18:07:00Z",
+    }
+
+
+def snapshot_from_starters(
+    away: dict[str, Any], home: dict[str, Any], *, game_day: str = GAME_DAY, cutoff: str = CUTOFF
+) -> dict[str, Any]:
+    """A one-game snapshot around starters the real fetchers built (named Alpha Livearm and Bravo Liveleft)."""
+
+    game = {
+        "featured_game": featured_game(game_day),
+        "as_of": cutoff,
+        "away_starter": away,
+        "home_starter": home,
+        "combined_charts": {
+            "pitch_mix": lp._combine_pitch_mix(away, home),
+            "velocity_by_pitch": lp._combine_velocity(away, home),
+        },
+        "away_team_splits": {},
+        "home_team_splits": {},
+    }
+    return {
+        "data_mode": "fetched_snapshot",
+        "run_at": RUN_AT,
+        "fetched_date": game_day,
+        "as_of": cutoff,
+        "live_games": [game],
+    }
+
+
+debut_starter = _debut
 
 
 def hand_snapshot(complete: bool) -> dict[str, Any]:

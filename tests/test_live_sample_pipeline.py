@@ -221,11 +221,12 @@ def test_season_summary_carries_the_scope_of_the_api_figures(monkeypatch):
 
     result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
 
-    assert result["season_summary"]["scope"] == {
+    regular = {
         "kind": "regular_season",
         "through": "2026-07-14",
         "label": "regular season through 2026-07-14",
     }
+    assert result["season_summary"]["scopes"] == {"season_rates": regular, "counts": regular}
 
 
 # --- scopes: postseason pitches are in the arsenal, not in the API stats ----------------------------
@@ -245,7 +246,8 @@ def test_postseason_pitches_make_the_arsenal_scope_different_from_the_api_rates(
     assert sample["arsenal"]["scope"]["kind"] == "regular_and_postseason"
     assert sample["arsenal"]["scope"]["through"] == "2026-10-08"
     assert sample["rates"]["scope"]["kind"] == "regular_season"
-    assert result["season_summary"]["scope"]["kind"] == "regular_season"
+    scopes = result["season_summary"]["scopes"]
+    assert (scopes["season_rates"]["kind"], scopes["counts"]["kind"]) == ("regular_season", "regular_season")
 
 
 def test_postseason_pitches_after_as_of_do_not_change_the_scope(monkeypatch):

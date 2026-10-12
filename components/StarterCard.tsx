@@ -1,4 +1,4 @@
-import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
+import type { PitchLocation, SeasonSummary, Starter, StarterLine } from "@/lib/types";
 import StatTile from "@/components/StatTile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram from "@/components/ZoneDiagram";
@@ -66,11 +66,11 @@ export default function StarterCard({
         <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={formatFigure(starter.season_summary.whip)} />
         <StatTile label="K" title="Strikeouts." value={formatFigure(starter.season_summary.strikeouts)} />
       </dl>
-      {starter.season_summary.scope ? (
-        <p className="mt-1.5 font-mono text-[10px] text-neutral-400">
-          ERA, WHIP and K: {starter.season_summary.scope.label}
+      {scopeCaptions(starter.season_summary).map((caption) => (
+        <p key={caption} className="mt-1.5 font-mono text-[10px] text-neutral-400">
+          {caption}
         </p>
-      ) : null}
+      ))}
       <div className="mt-4 flex items-center gap-3.5">
         <ZoneDiagram locations={locations} width={64} height={76} />
         <p className="text-[13px] leading-5 text-neutral-600">
@@ -125,6 +125,20 @@ function PostgameStarter({
       <p className="mt-3.5 text-[13px] leading-6 text-neutral-600">{starterLine.grade_explanation}</p>
     </article>
   );
+}
+
+/**
+ * Which games the figures on the card cover (QA4-01). ERA and WHIP come from the MLB API and K from the
+ * source that gave the counts, so each group states its own scope; one caption only if they agree.
+ */
+function scopeCaptions(summary: SeasonSummary): string[] {
+  const rates = summary.scopes?.season_rates ?? null;
+  const counts = summary.scopes?.counts ?? null;
+  if (rates && counts && rates.label === counts.label) return [`ERA, WHIP and K: ${rates.label}`];
+  const captions: string[] = [];
+  if (rates) captions.push(`ERA and WHIP: ${rates.label}`);
+  if (counts) captions.push(`K: ${counts.label}`);
+  return captions;
 }
 
 function normalizeThrows(raw: string): "L" | "R" {

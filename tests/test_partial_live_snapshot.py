@@ -97,4 +97,5 @@ def test_a_complete_snapshot_still_fills_every_field(template):
     summary = result["season_summary"]
     assert (summary["era"], summary["whip"], summary["innings"]) == ("3.10", "1.05", "101.0")
     assert (summary["strikeouts"], summary["walks"], summary["home_runs_allowed"]) == (110, 30, 10)
-    assert summary["scope"]["kind"] == "regular_season"
+    assert summary["scopes"]["counts"]["kind"] == "regular_season"
+    assert summary["scopes"]["season_rates"]["kind"] == "regular_season"

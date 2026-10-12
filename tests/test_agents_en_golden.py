@@ -1,7 +1,8 @@
 """The English output of the text-writing agents does not change when the text moves to a
 catalog (P0.12-D). The golden file was captured from the agents before the refactor, over
-thirteen matchups that cover every branch: demo, live, limited and debut arsenals, different
-scopes, missing putaway pitch, unavailable season figures, offense splits.
+fourteen matchups that cover every branch: demo, live, limited and debut arsenals, different
+scopes, missing putaway pitch, unavailable season figures, a debut with no figure at all,
+offense splits.
 
 If the English text is changed on purpose, regenerate the file in the same commit and say so.
 """

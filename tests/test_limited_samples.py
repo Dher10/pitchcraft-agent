@@ -14,6 +14,7 @@ from agents import critic, data_scout, matchup_analyst, report_writer
 from agents.language import catalog_for
 from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
+from tests.live_helpers import summary_scopes
 from data_pipeline.validators import validate_payload
 from tests.test_live_starters_no_demo_fields import _fake_live_game, counted
 
@@ -59,7 +60,8 @@ def build(monkeypatch, away=None, home=None):
         starter["sample"] = smp
         starter["pitching_profile"].update(primary_pitch=primary, putaway_pitch=putaway)
         labels.apply_profile_labels(starter["pitching_profile"], smp)
-        starter["season_summary"]["scope"] = smp["rates"]["scope"]
+        starter["season_summary"].pop("scope", None)
+        starter["season_summary"]["scopes"] = summary_scopes(smp)
     # The profile names these pitches, so the game's pitch mix must contain them.
     zero = {"overall": 0, "vs_lhh": 0, "vs_rhh": 0}
     live_game["combined_charts"]["pitch_mix"] = counted(
@@ -277,7 +279,7 @@ def test_every_group_of_figures_in_the_packet_carries_its_scope(monkeypatch):
 
     for slot in ("away_starter", "home_starter"):
         starter = matchup["starters"][slot]
-        assert starter["season_summary"]["scope"]["label"].startswith("regular season")
+        assert starter["season_summary"]["scopes"]["counts"]["label"].startswith("regular season")
         assert starter["sample"]["arsenal"]["scope"]["through"] == "2026-07-04"
         assert starter["sample"]["rates"]["scope"]["kind"] in ("regular_season", "regular_and_postseason")
     for side in ("home", "away"):

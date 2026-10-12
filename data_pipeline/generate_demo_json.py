@@ -180,6 +180,9 @@ def _game_unsafe(game: Any, target: date, cutoff: date) -> str | None:
             return f"{slot} has no name"
         if starter.get("throws") not in ("L", "R"):
             return f"{slot} throws {starter.get('throws')!r}, not L or R"
+        scopes = (starter.get("season_summary") or {}).get("scopes")
+        if not isinstance(scopes, dict) or set(scopes) != {"season_rates", "counts"}:
+            return f"{slot} has no scope for each group of figures (a snapshot from before P0.15-B)"
         for through in _starter_throughs(starter):
             reached = _parse_date(through)
             if reached is None:
@@ -220,7 +223,7 @@ def _starter_throughs(starter: dict[str, Any]) -> list[Any]:
     sample = starter.get("sample")
     if isinstance(sample, dict):
         scopes += [(sample.get("arsenal") or {}).get("scope"), (sample.get("rates") or {}).get("scope")]
-    scopes.append((starter.get("season_summary") or {}).get("scope"))
+    scopes += ((starter.get("season_summary") or {}).get("scopes") or {}).values()
     return [scope.get("through") for scope in scopes if isinstance(scope, dict)]
 
 

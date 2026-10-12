@@ -129,8 +129,12 @@ def build_starter(
     """A starter made of unavailable defaults plus what the snapshot supplies, never anything else."""
 
     sample = live_starter.get("sample") or unknown_sample(through)
-    summary = {**UNAVAILABLE_SUMMARY, **(live_starter.get("season_summary") or {})}
-    summary.setdefault("scope", sample["rates"]["scope"])
+    # A summary that does not say the scope of a group has none for it: a scope is never invented.
+    summary = {
+        **UNAVAILABLE_SUMMARY,
+        "scopes": {"season_rates": None, "counts": None},
+        **(live_starter.get("season_summary") or {}),
+    }
     profile = {**UNAVAILABLE_PROFILE, **(live_starter.get("pitching_profile") or {})}
     # The sample decides every label. A snapshot from before samples existed has none: every
     # dimension is then limited.

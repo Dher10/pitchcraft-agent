@@ -35,7 +35,7 @@ export function makeStarter(name: string, team: string, overrides: Partial<Start
       strikeouts: 110,
       walks: 30,
       home_runs_allowed: 10,
-      scope: SCOPE,
+      scopes: { season_rates: SCOPE, counts: SCOPE },
     },
     pitching_profile: {
       style_label: "Four-seam starter",

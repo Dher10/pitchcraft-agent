@@ -142,7 +142,11 @@ export interface SeasonSummary {
   strikeouts: number | null;
   walks: number | null;
   home_runs_allowed: number | null;
-  scope?: DataScope;
+  /**
+   * One scope per group of figures (live data only): ERA, WHIP and innings come from the MLB API
+   * (regular season), the counts (K, BB, HR) from the source that gave them. Null: the group has no figures.
+   */
+  scopes?: { season_rates: DataScope | null; counts: DataScope | null };
 }
 
 export interface PitchingProfile {

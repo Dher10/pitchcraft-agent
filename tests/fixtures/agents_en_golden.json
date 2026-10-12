@@ -593,6 +593,132 @@
       ]
     }
   },
+  "live_debut_no_figures": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "Kept the report focused on matchup fit rather than outcome prediction.",
+        "Avoided claiming official Stuff+."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 6 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Alpha Livearm is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Alpha Livearm is limited (no batters faced on record; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Alpha Livearm."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (no batters faced on record; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Bravo Liveleft is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Bravo Liveleft is limited (no batters faced on record; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Bravo Liveleft."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bravo Liveleft is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made. Control data for Bravo Liveleft is limited (no batters faced on record; 170 needed), so no command claim is made. Home runs allowed are not available for Bravo Liveleft. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Alpha Livearm against Bravo Liveleft",
+      "matchup_summary": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: no season figures are available.",
+        "Team offense splits cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm stay ahead of hitters early in counts?",
+        "Can Bravo Liveleft work efficiently through the lineup?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Alpha Livearm against Bravo Liveleft",
+      "sections": [
+        {
+          "body": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Today's Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (no batters faced on record; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bravo Liveleft is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made. Control data for Bravo Liveleft is limited (no batters faced on record; 170 needed), so no command claim is made. Home runs allowed are not available for Bravo Liveleft. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm stay ahead of hitters early in counts?",
+            "Can Bravo Liveleft work efficiently through the lineup?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: no season figures are available. Team offense splits cover the regular season through 2026-07-04. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm has no claimed strength because the data is limited.",
+        "Bravo Liveleft has no claimed strength because the data is limited.",
+        "The early what to watch is whether Alpha Livearm can stay ahead of hitters early in counts."
+      ]
+    }
+  },
   "live_healthy": {
     "critic": {
       "checks": [

@@ -14,6 +14,7 @@ import pytest
 from agents import critic, data_scout, matchup_analyst, report_writer
 from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
+from tests.live_helpers import summary_scopes
 
 SLOTS = ("away_starter", "home_starter")
 
@@ -67,7 +68,7 @@ def _fake_live_game(
                 "strikeouts": 110,
                 "walks": 30,
                 "home_runs_allowed": 10,
-                "scope": reg,
+                "scopes": summary_scopes(sample),
             },
             "sample": sample,
             "pitching_profile": profile,

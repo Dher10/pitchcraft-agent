@@ -89,6 +89,7 @@ EN_MESSAGES: dict[str, object] = {
     "analyst.read.he": "He",
     "analyst.read.shows": "{subject} shows {label}{qualifier}.",
     "analyst.read.qualifier": " (regular-season rates)",
+    "analyst.read.qualifier_both": " (regular season and postseason rates)",
     "analyst.have.pitches": "{count} pitches",
     "analyst.have.no_pitches": "no pitches on record",
     "analyst.have.batters": "{count} batters faced",
@@ -113,6 +114,7 @@ EN_MESSAGES: dict[str, object] = {
     "analyst.figure.whip": "WHIP",
     "analyst.figure.innings": "innings",
     "analyst.figure.counts": "the strikeout, walk and home-run counts",
+    "analyst.figure.pitch_data": "the pitch mix, velocity and movement",
     "analyst.figure.list_and": "{head} and {last}",
     "analyst.scope.season_figures": "{figures} cover the {label}; ",
     "analyst.scope.no_season_figures": "no season figures are available; ",
@@ -120,6 +122,9 @@ EN_MESSAGES: dict[str, object] = {
         "{who}: {season}the pitch mix, velocity and movement cover the {arsenal}. "
         "They are different samples."
     ),
+    "analyst.scope.groups": "{who}: {parts}. They are different samples.",
+    "analyst.scope.group_part": "{figures} cover the {label}",
+    "analyst.scope.none": "{who}: no season figures are available.",
     "analyst.scope.same": "{who}: all pitcher figures cover the {label}.",
     "analyst.scope.offense": "Team offense splits cover the {label}.",
     # --- report writer ------------------------------------------------------------------------------
@@ -225,6 +230,10 @@ EN_MESSAGES: dict[str, object] = {
     "critic.scope.claim": "Pitch data and season figures are not presented as one sample.",
     "critic.scope.same": "Each starter's figures cover the same games.",
     "critic.scope.marker": "different samples",
+    "critic.scope.all_marker": "all pitcher figures cover",
+    "critic.scope.all_claimed": (
+        "The report says all the figures for {who} cover one sample, but they cover different games."
+    ),
     "critic.scope.supported": "The report says the figures for {who} cover different samples.",
     "critic.scope.unsupported": (
         "Pitch data and season figures for {who} cover different games "

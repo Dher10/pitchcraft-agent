@@ -41,6 +41,10 @@ def good_run(**overrides) -> dict:
     }
 
 
+# A group without figures has no scope; the generator only needs the keys to be there.
+NO_SCOPES = {"season_rates": None, "counts": None}
+
+
 def good_game(**overrides) -> dict:
     """The least a live game must say for the generator to trust it (dates, hands, what the schedule always sends)."""
 
@@ -58,8 +62,8 @@ def good_game(**overrides) -> dict:
             "start_time_utc": "2026-07-15T23:05:00Z",
         },
         "as_of": "2026-07-14",
-        "away_starter": {"name": "Alpha Livearm", "throws": "R"},
-        "home_starter": {"name": "Bravo Liveleft", "throws": "L"},
+        "away_starter": {"name": "Alpha Livearm", "throws": "R", "season_summary": {"scopes": NO_SCOPES}},
+        "home_starter": {"name": "Bravo Liveleft", "throws": "L", "season_summary": {"scopes": NO_SCOPES}},
         **overrides,
     }
 

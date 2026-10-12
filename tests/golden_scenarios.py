@@ -13,6 +13,7 @@ from typing import Any
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
 from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
+from tests.live_helpers import summary_scopes
 from tests.test_live_sample_pipeline import frame  # noqa: F401  (kept for scenario helpers)
 from tests.test_live_starters_no_demo_fields import _fake_live_game
 from tests.test_limited_samples import (
@@ -50,7 +51,8 @@ def live(mp, away=None, home=None, splits=False, edit=None) -> dict[str, Any]:
         starter["sample"] = smp
         starter["pitching_profile"].update(primary_pitch=primary, putaway_pitch=putaway)
         labels.apply_profile_labels(starter["pitching_profile"], smp)
-        starter["season_summary"]["scope"] = smp["rates"]["scope"]
+        starter["season_summary"].pop("scope", None)
+        starter["season_summary"]["scopes"] = summary_scopes(smp)
     game["combined_charts"]["pitch_mix"] = [
         {"pitch": AWAY_PRIMARY, "away_starter": {"overall": 60, "vs_lhh": 60, "vs_rhh": 60}, "home_starter": zero},
         {"pitch": AWAY_PUTAWAY, "away_starter": {"overall": 30, "vs_lhh": 30, "vs_rhh": 30}, "home_starter": zero},
@@ -74,6 +76,16 @@ def _unavailable_summary(game: dict[str, Any]) -> None:
             game[slot]["season_summary"][key] = "N/A"
 
 
+def _no_figures(game: dict[str, Any]) -> None:
+    """A real debut: no ERA, WHIP, innings or counts, so there is no figure for a scope to cover."""
+
+    for slot in ("away_starter", "home_starter"):
+        game[slot]["season_summary"].update(
+            era="N/A", whip="N/A", innings="N/A", strikeouts=None, walks=None, home_runs_allowed=None,
+            scopes={"season_rates": None, "counts": None},
+        )
+
+
 def scenarios(mp) -> dict[str, dict[str, Any]]:
     demo = demo_inputs.build_demo_payload()["matchups"]
     return {
@@ -90,6 +102,7 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "live_no_putaway_pitch": live(mp, edit=_no_putaway),
         "live_unavailable_era_whip_ip": live(mp, away=sample(arsenal_scope=REG_POST), edit=_unavailable_summary),
         "live_no_home_runs": live(mp, away=sample(hr=None)),
+        "live_debut_no_figures": live(mp, away=debut_sample(), home=debut_sample(), edit=_no_figures),
     }
 
 

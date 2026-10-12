@@ -224,7 +224,7 @@ def _live_pitcher_read(t: Catalog, starter: dict[str, Any], sample: dict[str, An
 
     name = starter["name"]
     profile = starter["pitching_profile"]
-    qualifier = t("analyst.read.qualifier") if labels.scopes_differ(sample) else ""
+    qualifier = _rate_qualifier(t, starter)
     parts: list[str] = []
     if not sample["limited"]["arsenal"]:
         primary = _pitch_short_name(profile["primary_pitch"]).lower()
@@ -247,6 +247,20 @@ def _live_pitcher_read(t: Catalog, starter: dict[str, Any], sample: dict[str, An
             subject = t("analyst.read.he")
     parts.extend(_data_notes(t, name, sample))
     return " ".join(parts)
+
+
+def _rate_qualifier(t: Catalog, starter: dict[str, Any]) -> str:
+    """
+    A rate claim ("shows above-average swing-and-miss") is made of the counts. When the groups of
+    figures do not all cover the same games it says which games the counts cover.
+    """
+
+    counts = labels.figure_scopes(starter).get("counts")
+    if counts is None or not labels.scopes_differ(starter):
+        return ""
+    if counts["kind"] == labels.SCOPE_REGULAR:
+        return t("analyst.read.qualifier")
+    return t("analyst.read.qualifier_both")
 
 
 def _data_notes(t: Catalog, name: str, sample: dict[str, Any]) -> list[str]:
@@ -284,31 +298,33 @@ def _scope_notes(t: Catalog, packet: dict[str, Any]) -> list[str]:
     """Which games each group of figures covers, so they are never read as one sample."""
 
     notes: list[str] = []
-    groups: dict[tuple[bool, str, str, str], list[str]] = {}
+    groups: dict[tuple, list[str]] = {}
     for slot in ("away_starter", "home_starter"):
         starter = packet["starters"][slot]
-        sample = starter.get("sample")
-        if sample is None:
+        if starter.get("sample") is None:
             continue
-        key = (
-            labels.scopes_differ(sample),
-            sample["rates"]["scope"]["label"],
-            sample["arsenal"]["scope"]["label"],
-            _available_figures(t, starter, sample),
-        )
-        groups.setdefault(key, []).append(starter["name"])
-    for (differ, rates_label, arsenal_label, figures), names in groups.items():
+        groups.setdefault(_scope_note_plan(t, starter), []).append(starter["name"])
+    for plan, names in groups.items():
         who = _names(t, names)
-        if differ:
+        mode = plan[0]
+        if mode == "none":
+            notes.append(t("analyst.scope.none", who=who))
+        elif mode == "same":
+            notes.append(t("analyst.scope.same", who=who, label=plan[1]))
+        elif mode == "season_vs_pitch":
+            _, season_label, pitch_label, figures = plan
             # Only figures that exist are named: "N/A" is never a claim.
             season = (
-                t("analyst.scope.season_figures", figures=figures, label=rates_label)
+                t("analyst.scope.season_figures", figures=figures, label=season_label)
                 if figures
                 else t("analyst.scope.no_season_figures")
             )
-            notes.append(t("analyst.scope.differ", who=who, season=season, arsenal=arsenal_label))
+            notes.append(t("analyst.scope.differ", who=who, season=season, arsenal=pitch_label))
         else:
-            notes.append(t("analyst.scope.same", who=who, label=rates_label))
+            parts = "; ".join(
+                t("analyst.scope.group_part", figures=figures, label=label) for label, figures in plan[1]
+            )
+            notes.append(t("analyst.scope.groups", who=who, parts=parts))
     offense_labels = list(
         dict.fromkeys(
             scope["label"]
@@ -319,6 +335,61 @@ def _scope_notes(t: Catalog, packet: dict[str, Any]) -> list[str]:
     for label in offense_labels:
         notes.append(t("analyst.scope.offense", label=label))
     return notes
+
+
+def _scope_note_plan(t: Catalog, starter: dict[str, Any]) -> tuple:
+    """
+    What the scope note of a starter says, as a hashable plan (starters with the same plan share a note).
+
+    - ("none",): he has no figure at all (a debut): there is nothing for a scope to cover, so none is claimed.
+    - ("same", label, figures): every group he has covers the same games.
+    - ("season_vs_pitch", season label, pitch label, figures): the season figures (API and counts)
+      agree among themselves and differ from the pitch data.
+    - ("groups", ((label, figures), ...)): the season figures themselves differ (the API's ERA is
+      regular season, the Statcast counts are not), so each scope is listed with what it covers.
+    """
+
+    scopes = labels.figure_scopes(starter)
+    if not scopes:
+        return ("none",)
+    if not labels.scopes_differ(starter):
+        # The figures are part of the plan only so that starters are grouped as before (the text ignores them).
+        return ("same", next(iter(scopes.values()))["label"], _available_figures(t, starter, starter["sample"]))
+    season = [scopes[group] for group in ("season_rates", "counts") if group in scopes]
+    if "pitch_data" in scopes and season and len({scope["kind"] for scope in season}) == 1:
+        return (
+            "season_vs_pitch",
+            season[0]["label"],
+            scopes["pitch_data"]["label"],
+            _available_figures(t, starter, starter["sample"]),
+        )
+    by_label: dict[str, list[str]] = {}
+    for group in ("season_rates", "counts", "pitch_data"):
+        if group in scopes:
+            by_label.setdefault(scopes[group]["label"], []).append(_group_figures(t, starter, group))
+    return (
+        "groups",
+        tuple((label, _join(t, figures)) for label, figures in by_label.items()),
+    )
+
+
+def _group_figures(t: Catalog, starter: dict[str, Any], group: str) -> str:
+    """What one group of figures is called in a sentence ("ERA and WHIP", "the pitch mix, ...")."""
+
+    if group == "pitch_data":
+        return t("analyst.figure.pitch_data")
+    if group == "counts":
+        return t("analyst.figure.counts")
+    summary = starter.get("season_summary") or {}
+    return _join(
+        t, [t(f"analyst.figure.{key}") for key in labels.SEASON_RATE_FIELDS if labels.is_available(summary.get(key))]
+    )
+
+
+def _join(t: Catalog, names: list[str]) -> str:
+    if len(names) > 1:
+        return t("analyst.figure.list_and", head=", ".join(names[:-1]), last=names[-1])
+    return names[0] if names else ""
 
 
 def _available_figures(t: Catalog, starter: dict[str, Any], sample: dict[str, Any]) -> str:
@@ -333,9 +404,7 @@ def _available_figures(t: Catalog, starter: dict[str, Any], sample: dict[str, An
     rates = sample["rates"]
     if any(rates[key] is not None for key in ("strikeouts", "walks", "home_runs")):
         names.append(t("analyst.figure.counts"))
-    if len(names) > 1:
-        return t("analyst.figure.list_and", head=", ".join(names[:-1]), last=names[-1])
-    return names[0] if names else ""
+    return _join(t, names)
 
 
 def _lineup_pressure_points(t: Catalog, matchup_packet: dict[str, Any]) -> dict[str, list[str]]:

@@ -22,6 +22,7 @@ from data_pipeline.schema import (
     TOP_LEVEL_REQUIRED_KEYS,
     is_utc_instant,
 )
+from data_pipeline.labels import SCOPE_REGULAR, SEASON_RATE_FIELDS, is_available
 
 
 @dataclass(frozen=True)
@@ -156,6 +157,7 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
 
     _validate_data_cutoff(matchup, label, record)
     _validate_live_game_time(matchup, label, record)
+    _validate_figure_scopes(matchup, label, record)
     _validate_final_postgame(matchup, label, record)
     _validate_critic_review(matchup.get("critic_review"), label, record)
     _validate_report_betting_terms(matchup.get("report"), label, record)
@@ -192,7 +194,9 @@ def _scope_throughs(matchup: Mapping[str, Any]) -> list[tuple[str, Any]]:
                 part = sample.get(group)
                 add(f"{slot} {group}", part.get("scope") if isinstance(part, Mapping) else None)
         summary = starter.get("season_summary")
-        add(f"{slot} season summary", summary.get("scope") if isinstance(summary, Mapping) else None)
+        scopes = summary.get("scopes") if isinstance(summary, Mapping) else None
+        for group, scope in (scopes.items() if isinstance(scopes, Mapping) else ()):
+            add(f"{slot} season summary {group}", scope)
     teams = matchup.get("teams")
     for side in TEAM_SIDES:
         team = teams.get(side) if isinstance(teams, Mapping) else None
@@ -240,6 +244,66 @@ def _validate_live_game_time(matchup: Mapping[str, Any], label: str, record: Any
         is_utc_instant(game.get("start_time_utc")) and (zone is None or (isinstance(zone, str) and zone.strip() != "")),
         f"start_time_utc {game.get('start_time_utc')!r}, timezone {zone!r}",
     )
+
+
+def _scope_problem(starter: Mapping[str, Any]) -> str | None:
+    """
+    Why the scope of a live starter's groups of figures does not match the source of each, or None.
+
+    ERA, WHIP and innings come from the MLB API: regular season only, and no scope when unavailable.
+    The counts have the scope the sample records for them, which must agree with the source that
+    gave them: the API is regular season, Statcast covers the same games as the pitch data.
+    """
+
+    sample = starter.get("sample")
+    summary = starter.get("season_summary")
+    if not isinstance(sample, Mapping) or not isinstance(summary, Mapping):
+        return None  # the demo's starters have no sample and no scopes
+    scopes = summary.get("scopes")
+    if not isinstance(scopes, Mapping) or set(scopes) != {"season_rates", "counts"}:
+        return "the summary has no scope for ERA, WHIP and innings and one for the counts"
+
+    rates_scope, counts_scope = scopes["season_rates"], scopes["counts"]
+    if any(is_available(summary.get(key)) for key in SEASON_RATE_FIELDS):
+        if not isinstance(rates_scope, Mapping) or rates_scope.get("kind") != SCOPE_REGULAR:
+            return (
+                "ERA, WHIP and innings come from the MLB API (regular season only) "
+                f"but are scoped {_kind(rates_scope)}"
+            )
+    elif rates_scope is not None:
+        return "ERA, WHIP and innings are unavailable but carry a scope"
+
+    rates = sample.get("rates") if isinstance(sample.get("rates"), Mapping) else {}
+    source = rates.get("source")
+    if source == "unavailable":
+        return "the counts are unavailable but carry a scope" if counts_scope is not None else None
+    if not isinstance(counts_scope, Mapping) or counts_scope != rates.get("scope"):
+        return "the counts' scope in the summary is not the one in the sample"
+    if source == "mlb_api" and counts_scope.get("kind") != SCOPE_REGULAR:
+        return f"the counts come from the MLB API (regular season only) but are scoped {_kind(counts_scope)}"
+    arsenal = (sample.get("arsenal") or {}).get("scope") or {}
+    if source == "statcast" and counts_scope.get("kind") != arsenal.get("kind"):
+        return f"the counts come from the Statcast pitches ({_kind(arsenal)}) but are scoped {_kind(counts_scope)}"
+    if source not in ("mlb_api", "statcast"):
+        return f"the counts have an unknown source {source!r}"
+    return None
+
+
+def _kind(scope: Any) -> str:
+    return str(scope.get("kind")) if isinstance(scope, Mapping) else "nothing"
+
+
+def _validate_figure_scopes(matchup: Mapping[str, Any], label: str, record: Any) -> None:
+    """Each group of figures of a live starter has the scope of its source (QA4-01)."""
+
+    starters = matchup.get("starters")
+    if not isinstance(starters, Mapping):
+        return
+    for slot in STARTER_SLOTS:
+        starter = starters.get(slot)
+        if isinstance(starter, Mapping) and isinstance(starter.get("sample"), Mapping):
+            problem = _scope_problem(starter)
+            record(f"{label}: {slot} scope of each group of figures matches its source", problem is None, problem or "")
 
 
 def _is_share_or_none(value: Any) -> bool:

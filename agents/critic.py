@@ -296,14 +296,16 @@ def _command_evidence(t: Catalog, matchup_input: dict[str, Any], slot: str) -> s
     strength = _strength_value(matchup_input, "Command", slot)
     if strength is not None:
         return t("critic.command.strength", value=strength)
-    sample = matchup_input["starters"][slot].get("sample")
-    if sample and sample["rates"]["batters_faced"]:
+    starter = matchup_input["starters"][slot]
+    sample = starter.get("sample")
+    counts = labels.figure_scopes(starter).get("counts")
+    if sample and sample["rates"]["batters_faced"] and counts:
         rates = sample["rates"]
         return t(
             "critic.command.walks",
             walks=rates["walks"],
             batters=rates["batters_faced"],
-            scope=rates["scope"]["label"],
+            scope=counts["label"],
         )
     return t("critic.command.none")
 
@@ -315,10 +317,27 @@ def _scope_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, An
     differing = [
         starter["name"]
         for starter in matchup_input["starters"].values()
-        if starter.get("sample") and labels.scopes_differ(starter["sample"])
+        if labels.scopes_differ(starter)
     ]
     if not differing:
         return {"claim": claim, "status": "not_present", "evidence": t("critic.scope.same")}
+    # "All figures cover one sample" about a starter whose groups cover different games is false,
+    # whether or not the report also says somewhere that they differ.
+    all_marker = t("critic.scope.all_marker")
+    claimed = [
+        name
+        for name in differing
+        if any(
+            all_marker in sentence.lower() and name.lower() in sentence.lower()
+            for sentence in re.split(r"(?<=[.!?])\s+", _report_text(report))
+        )
+    ]
+    if claimed:
+        return {
+            "claim": claim,
+            "status": "unsupported",
+            "evidence": t("critic.scope.all_claimed", who=", ".join(claimed)),
+        }
     if t("critic.scope.marker") in _report_text(report).lower():
         return {
             "claim": claim,

@@ -165,7 +165,39 @@ def apply_profile_labels(profile: dict[str, Any], sample: dict[str, Any]) -> Non
         profile["style_label"] = ARSENAL_LIMITED_STYLE
 
 
-def scopes_differ(sample: dict[str, Any]) -> bool:
-    """True when the pitch data and the season rates do not cover the same games."""
+SEASON_RATE_FIELDS = ("era", "whip", "innings")
 
-    return sample["arsenal"]["scope"]["kind"] != sample["rates"]["scope"]["kind"]
+
+def figure_scopes(starter: dict[str, Any]) -> dict[str, dict[str, str]]:
+    """
+    The scope of every group of figures a live starter really has (QA4-01), by group:
+
+    - "pitch_data": pitch mix, velocity, movement (Statcast); only when pitches were counted.
+    - "season_rates": ERA, WHIP and innings (the MLB API, regular season only); only when one is available.
+    - "counts": batters faced, strikeouts, walks, home runs, from whichever source gave them; none if
+      the source is "unavailable".
+
+    A group without figures has no scope: it can neither differ from the others nor be claimed.
+    The analyst, the writer, the critic, the validator and the card all read the scopes from here.
+    A starter without a sample (the demo's) has none.
+    """
+
+    sample = starter.get("sample")
+    if not isinstance(sample, dict):
+        return {}
+    summary = starter.get("season_summary") or {}
+    scopes = summary.get("scopes") or {}
+    found: dict[str, dict[str, str]] = {}
+    if sample["arsenal"]["pitches"]:
+        found["pitch_data"] = sample["arsenal"]["scope"]
+    if scopes.get("season_rates") and any(is_available(summary.get(key)) for key in SEASON_RATE_FIELDS):
+        found["season_rates"] = scopes["season_rates"]
+    if scopes.get("counts") and sample["rates"]["source"] != "unavailable":
+        found["counts"] = scopes["counts"]
+    return found
+
+
+def scopes_differ(starter: dict[str, Any]) -> bool:
+    """True when the groups of figures a starter has do not all cover the same games."""
+
+    return len({scope["kind"] for scope in figure_scopes(starter).values()}) > 1

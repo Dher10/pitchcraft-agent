@@ -1038,15 +1038,23 @@ def _attach_sample(
         rates_scope=rates_scope,
     )
     processed["sample"] = sample
-    processed["season_summary"] = {
+    summary = {
         "era": mlb_stats.get("era", "N/A") if mlb_stats else "N/A",
         "whip": mlb_stats.get("whip", "N/A") if mlb_stats else "N/A",
         "innings": mlb_stats.get("innings", "N/A") if mlb_stats else "N/A",
         "strikeouts": numbers["strikeouts"],
         "walks": numbers["walks"],
         "home_runs_allowed": numbers["home_runs"],
-        "scope": rates_scope,
     }
+    # One scope per group of figures (QA4-01): ERA, WHIP and innings are the API's (regular season only);
+    # the counts have the scope of the source that gave them, which can be Statcast's. A group with no
+    # figures has no scope.
+    has_season_rates = any(labels.is_available(summary[key]) for key in labels.SEASON_RATE_FIELDS)
+    summary["scopes"] = {
+        "season_rates": labels.make_scope(labels.SCOPE_REGULAR, through) if has_season_rates else None,
+        "counts": None if source == "unavailable" else rates_scope,
+    }
+    processed["season_summary"] = summary
     processed.pop("statcast_counts", None)
     labels.apply_profile_labels(processed["pitching_profile"], sample)
 
