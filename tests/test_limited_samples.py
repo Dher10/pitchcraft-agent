@@ -12,8 +12,9 @@ import pytest
 
 from agents import critic, data_scout, matchup_analyst, report_writer
 from agents.language import catalog_for
-from data_pipeline import demo_inputs, labels
+from data_pipeline import claims, demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
+from data_pipeline.generator_texts import generator_catalog
 from tests.live_helpers import summary_scopes
 from data_pipeline.validators import validate_payload
 from tests.test_live_starters_no_demo_fields import _fake_live_game, counted
@@ -244,7 +245,11 @@ def test_a_debut_payload_still_validates(monkeypatch):
     payload["featured_matchup_id"] = matchup["id"]
     monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "", "live_run": None})
 
-    gdj._run_agents(payload["matchups"])
+    total_warnings, graded_starters = gdj._run_agents(payload["matchups"])
+    # What build_payload does after the agents: the generator's own sentences, then the claims of every sentence.
+    payload["metadata"]["last_updated_label"] = generator_catalog()("generator.metadata.last_updated.demo")
+    payload["agent_workflow"] = gdj._build_agent_workflow(len(payload["matchups"]), total_warnings, graded_starters)
+    claims.attach_claims(payload)
 
     assert all(c.passed for c in validate_payload(payload))
 

@@ -24,23 +24,24 @@ def run(
     home_strength = _first(findings["home_starter_strengths"], default_strength)
     first_watch = findings["three_things_to_watch"][0].rstrip("?")
 
+    with t.subject("away_starter"):
+        away_line = _strength_line(t, away, findings["away_starter_strengths"], away_strength)
+        away_title = t("writer.section.vs_team", pitcher=away["name"], team=teams["home"]["name"])
+    with t.subject("home_starter"):
+        home_line = _strength_line(t, home, findings["home_starter_strengths"], home_strength)
+        home_title = t("writer.section.vs_team", pitcher=home["name"], team=teams["away"]["name"])
+
     report = {
         "headline": findings["matchup_headline"],
         "short_summary": [
-            _strength_line(t, away, findings["away_starter_strengths"], away_strength),
-            _strength_line(t, home, findings["home_starter_strengths"], home_strength),
+            away_line,
+            home_line,
             t("writer.watch_line", observation=_watch_observation(t, first_watch, (away["name"], home["name"]))),
         ],
         "sections": [
             {"title": t("writer.section.summary"), "body": findings["matchup_summary"]},
-            {
-                "title": t("writer.section.vs_team", pitcher=away["name"], team=teams["home"]["name"]),
-                "body": findings["away_vs_home_offense"],
-            },
-            {
-                "title": t("writer.section.vs_team", pitcher=home["name"], team=teams["away"]["name"]),
-                "body": findings["home_vs_away_offense"],
-            },
+            {"title": away_title, "body": findings["away_vs_home_offense"]},
+            {"title": home_title, "body": findings["home_vs_away_offense"]},
             {
                 "title": t("writer.section.arsenal"),
                 "body": _arsenal_scout(t, findings, away, home),
@@ -77,16 +78,17 @@ def _arsenal_scout(t: Catalog, findings: dict[str, Any], away: dict[str, Any], h
             home_primary=home["pitching_profile"]["primary_pitch"],
         )
     parts: list[str] = []
-    for starter, notes, style in (
-        (away, findings["away_data_notes"], findings["away_style"]),
-        (home, findings["home_data_notes"], findings["home_style"]),
+    for slot, starter, notes, style in (
+        ("away_starter", away, findings["away_data_notes"], findings["away_style"]),
+        ("home_starter", home, findings["home_data_notes"], findings["home_style"]),
     ):
         if _arsenal_limited(starter):
             parts.append(notes[0])  # the limitation, and nothing more about his pitches
         else:
-            parts.append(t("writer.arsenal.works_off", name=starter["name"], style=style))
+            with t.subject(slot):
+                parts.append(t("writer.arsenal.works_off", name=starter["name"], style=style))
     parts.append(t("writer.arsenal.no_contrast"))
-    return " ".join(parts)
+    return t.join(" ", parts)
 
 
 def _confidence_note(t: Catalog, matchup_input: dict[str, Any], findings: dict[str, Any]) -> str:
@@ -95,7 +97,7 @@ def _confidence_note(t: Catalog, matchup_input: dict[str, Any], findings: dict[s
     starters = matchup_input["starters"].values()
     if any(any(s["sample"]["limited"].values()) for s in starters if s.get("sample")):
         extra.append(t("writer.confidence.limited"))
-    return " ".join([note, *extra]) if extra else note
+    return t.join(" ", [note, *extra]) if extra else note
 
 
 def _base_confidence_note(t: Catalog, matchup_input: dict[str, Any]) -> str:

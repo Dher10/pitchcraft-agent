@@ -15,12 +15,14 @@ if __package__ in (None, ""):
 
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
 from agents.language import DEFAULT_LANGUAGE
+from data_pipeline import claims
 from data_pipeline import config
 from data_pipeline import demo_inputs
 from data_pipeline import labels
 from data_pipeline import live_matchup
 from data_pipeline import schema
 from data_pipeline.fetchers.cache_manager import load_processed
+from data_pipeline.generator_texts import generator_catalog
 from data_pipeline.validators import ValidationError, validate_payload
 
 def _status(mode: str, reason: str, live_run: dict[str, Any] | None) -> dict[str, Any]:
@@ -248,8 +250,12 @@ def build_payload(language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
     payload["metadata"]["data_mode"] = _live_status["mode"]
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
     payload["metadata"]["data_status"] = deepcopy(_live_status)
-    if _live_status["mode"] == config.DATA_MODE_FALLBACK:
-        payload["metadata"]["last_updated_label"] = "Live data unavailable; showing demo data"
+    text = generator_catalog()
+    payload["metadata"]["last_updated_label"] = (
+        text("generator.metadata.last_updated.fallback")
+        if _live_status["mode"] == config.DATA_MODE_FALLBACK
+        else text("generator.metadata.last_updated.demo")
+    )
     _apply_live_snapshot(payload)
     total_warnings, graded_starters = _run_agents(payload["matchups"], language)
     _apply_live_confidence(payload)
@@ -259,6 +265,7 @@ def build_payload(language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
         total_warnings,
         graded_starters,
     )
+    claims.attach_claims(payload, language)
     return payload
 
 
@@ -363,7 +370,9 @@ def _apply_live_snapshot(payload: dict[str, Any]) -> None:
 
     payload["metadata"]["data_mode"] = "fetched_snapshot"
     payload["metadata"]["generated_at"] = _live["run_at"]
-    payload["metadata"]["last_updated_label"] = f"Live data fetched {fetched_date}"
+    payload["metadata"]["last_updated_label"] = generator_catalog()(
+        "generator.metadata.last_updated.live", date=fetched_date
+    )
 
 
 
@@ -430,50 +439,43 @@ def _build_agent_workflow(
     total_warnings: int,
     graded_starters: int,
 ) -> dict[str, Any]:
+    text = generator_catalog()
     postgame_step = (
         {
             "agent": "Postgame Grader Agent",
             "status": "completed",
-            "output": (
-                f"Graded {graded_starters} completed starter(s) with Bill James Game Score."
-            ),
+            "output": text("generator.workflow.graded", count=graded_starters),
         }
         if graded_starters
         else {
             "agent": "Postgame Grader Agent",
             "status": "not_applicable",
-            "output": "Featured game has not been completed.",
+            "output": text("generator.workflow.graded_none"),
         }
     )
 
     return {
-        "description": (
-            "PitchCraft uses a multi-agent workflow to convert matchup data into a "
-            "fan-facing scouting report."
-        ),
+        "description": text("generator.workflow.description"),
         "steps": [
             {
                 "agent": "Data Scout Agent",
                 "status": "completed",
-                "output": f"Loaded cached data for {matchup_count} matchups.",
+                "output": text("generator.workflow.loaded", count=matchup_count),
             },
             {
                 "agent": "Matchup Analyst Agent",
                 "status": "completed",
-                "output": "Identified pitcher strengths, risks, and lineup pressure points.",
+                "output": text("generator.workflow.identified"),
             },
             {
                 "agent": "Report Writer Agent",
                 "status": "completed",
-                "output": "Generated fan-friendly scouting report.",
+                "output": text("generator.workflow.generated"),
             },
             {
                 "agent": "Critic / Fact-check Agent",
                 "status": "completed",
-                "output": (
-                    "Checked every claim against the data: none unsupported, "
-                    f"{total_warnings} warning(s) across all matchups."
-                ),
+                "output": text("generator.workflow.checked", warnings=total_warnings),
             },
             postgame_step,
         ],

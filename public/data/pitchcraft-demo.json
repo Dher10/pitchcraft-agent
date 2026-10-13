@@ -1,7 +1,7 @@
 {
   "metadata": {
     "project_name": "PitchCraft Matchup Agent",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "data_mode": "demo_cached",
     "generated_at": "2026-06-28T09:00:00-05:00",
     "last_updated_label": "Demo data generated for capstone submission",
@@ -14,7 +14,8 @@
       "mode": "demo_cached",
       "reason": "No live run; showing demo data",
       "live_run": null
-    }
+    },
+    "language": "en"
   },
   "featured_matchup_id": "matchup_001",
   "matchups": [
@@ -428,6 +429,550 @@
           {
             "title": "Data Confidence Note",
             "body": "This report is based on cached demo data for the capstone. Live lineup confirmation is not required for this version."
+          }
+        ],
+        "claims": [
+          {
+            "id": "c1",
+            "key": "analyst.label.against",
+            "args": {
+              "away": "Power fastball-slider starter",
+              "home": "Command-oriented sinker-changeup starter"
+            },
+            "subject": null,
+            "location": "report.headline"
+          },
+          {
+            "id": "c2",
+            "key": "writer.strength",
+            "args": {
+              "name": "Demo Pitcher A",
+              "strength": {
+                "claim": "c3"
+              }
+            },
+            "subject": "away_starter",
+            "location": "report.short_summary[0]"
+          },
+          {
+            "id": "c3",
+            "key": "analyst.strength.swing_miss",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c4",
+            "key": "writer.strength",
+            "args": {
+              "name": "Demo Pitcher B",
+              "strength": {
+                "claim": "c5"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.short_summary[1]"
+          },
+          {
+            "id": "c5",
+            "key": "analyst.strength.command",
+            "args": {
+              "label": "Solid command"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c6",
+            "key": "writer.watch_line",
+            "args": {
+              "observation": {
+                "claim": "c7"
+              }
+            },
+            "subject": null,
+            "location": "report.short_summary[2]"
+          },
+          {
+            "id": "c7",
+            "key": "writer.watch_whether",
+            "args": {
+              "name": "Demo Pitcher A",
+              "action": "land the slider early in counts"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c8",
+            "key": "writer.section.summary",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[0].title"
+          },
+          {
+            "id": "c9",
+            "key": "writer.section.vs_team",
+            "args": {
+              "pitcher": "Demo Pitcher A",
+              "team": "San Francisco Giants"
+            },
+            "subject": "away_starter",
+            "location": "report.sections[1].title"
+          },
+          {
+            "id": "c10",
+            "key": "writer.section.vs_team",
+            "args": {
+              "pitcher": "Demo Pitcher B",
+              "team": "Los Angeles Dodgers"
+            },
+            "subject": "home_starter",
+            "location": "report.sections[2].title"
+          },
+          {
+            "id": "c11",
+            "key": "writer.section.arsenal",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[3].title"
+          },
+          {
+            "id": "c12",
+            "key": "writer.section.watch",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[4].title"
+          },
+          {
+            "id": "c13",
+            "key": "writer.section.confidence",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[5].title"
+          },
+          {
+            "id": "c14",
+            "key": "analyst.summary",
+            "args": {
+              "label": {
+                "claim": "c15"
+              }
+            },
+            "subject": null,
+            "location": "report.sections[0].body"
+          },
+          {
+            "id": "c15",
+            "key": "analyst.label.against",
+            "args": {
+              "away": "Power fastball-slider starter",
+              "home": "Command-oriented sinker-changeup starter"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c16",
+            "key": "analyst.demo.away_read",
+            "args": {
+              "name": "Demo Pitcher A",
+              "primary": "four-seam",
+              "putaway": "slider",
+              "swing_miss": "above-average swing-and-miss",
+              "offense": {
+                "claim": "c17"
+              }
+            },
+            "subject": "away_starter",
+            "location": "report.sections[1].body"
+          },
+          {
+            "id": "c17",
+            "key": "analyst.offense.average",
+            "args": {
+              "hand": "RHP",
+              "ops": ".721"
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c18",
+            "key": "analyst.demo.home_read",
+            "args": {
+              "name": "Demo Pitcher B",
+              "command_note": {
+                "claim": "c19"
+              },
+              "putaway": "changeup",
+              "contact_note": {
+                "claim": "c20"
+              },
+              "offense": {
+                "claim": "c21"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.sections[2].body"
+          },
+          {
+            "id": "c19",
+            "key": "analyst.command_note.edge",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c20",
+            "key": "analyst.contact_note.low",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c21",
+            "key": "analyst.offense.with_notes",
+            "args": {
+              "read": {
+                "claim": "c22"
+              },
+              "notes": {
+                "claim": "c23"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c22",
+            "key": "analyst.offense.strong",
+            "args": {
+              "hand": "LHP",
+              "ops": ".768",
+              "name": "Demo Pitcher B"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c23",
+            "key": "@join",
+            "args": {
+              "sep": "; ",
+              "parts": [
+                {
+                  "claim": "c24"
+                }
+              ]
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c24",
+            "key": "analyst.offense.note_walks",
+            "args": {
+              "name": "Demo Pitcher B"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c25",
+            "key": "writer.arsenal.contrast",
+            "args": {
+              "away_style": {
+                "claim": "c26"
+              },
+              "home_style": {
+                "claim": "c27"
+              },
+              "away_primary": "Four-seam fastball",
+              "home_primary": "Sinker"
+            },
+            "subject": null,
+            "location": "report.sections[3].body"
+          },
+          {
+            "id": "c26",
+            "key": "analyst.style.pair",
+            "args": {
+              "primary": "Four-seam fastball",
+              "putaway": "Slider"
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c27",
+            "key": "analyst.style.pair",
+            "args": {
+              "primary": "Sinker",
+              "putaway": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c28",
+            "key": "writer.confidence.demo",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[5].body"
+          },
+          {
+            "id": "c29",
+            "key": "analyst.watch.land",
+            "args": {
+              "name": "Demo Pitcher A",
+              "putaway": "slider"
+            },
+            "subject": "away_starter",
+            "location": "report.sections[4].bullets[0]"
+          },
+          {
+            "id": "c30",
+            "key": "analyst.watch.keep",
+            "args": {
+              "name": "Demo Pitcher B",
+              "goal": {
+                "claim": "c31"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.sections[4].bullets[1]"
+          },
+          {
+            "id": "c31",
+            "key": "analyst.goal.low",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c32",
+            "key": "analyst.watch.deep",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[4].bullets[2]"
+          },
+          {
+            "id": "c33",
+            "key": "critic.summary.supported",
+            "args": {
+              "checked": 8
+            },
+            "subject": null,
+            "location": "critic_review.summary"
+          },
+          {
+            "id": "c34",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher A",
+              "role": {
+                "claim": "c35"
+              },
+              "pitch": "Four-seam"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[0].claim"
+          },
+          {
+            "id": "c35",
+            "key": "critic.role.primary",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c36",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher A",
+              "role": {
+                "claim": "c37"
+              },
+              "pitch": "Slider"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[1].claim"
+          },
+          {
+            "id": "c37",
+            "key": "critic.role.putaway",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c38",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher B",
+              "role": {
+                "claim": "c39"
+              },
+              "pitch": "Sinker"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[2].claim"
+          },
+          {
+            "id": "c39",
+            "key": "critic.role.primary",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c40",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher B",
+              "role": {
+                "claim": "c41"
+              },
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[3].claim"
+          },
+          {
+            "id": "c41",
+            "key": "critic.role.putaway",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c42",
+            "key": "critic.names.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[4].claim"
+          },
+          {
+            "id": "c43",
+            "key": "critic.command.label_claim",
+            "args": {
+              "name": "Demo Pitcher B"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[5].claim"
+          },
+          {
+            "id": "c44",
+            "key": "critic.scope.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[6].claim"
+          },
+          {
+            "id": "c45",
+            "key": "critic.betting.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[7].claim"
+          },
+          {
+            "id": "c46",
+            "key": "critic.pitch.supported_primary",
+            "args": {
+              "usage": "42",
+              "pitch": "Four-seam"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[0].evidence"
+          },
+          {
+            "id": "c47",
+            "key": "critic.pitch.supported_putaway",
+            "args": {
+              "usage": "28",
+              "pitch": "Slider"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[1].evidence"
+          },
+          {
+            "id": "c48",
+            "key": "critic.pitch.supported_primary",
+            "args": {
+              "usage": "39",
+              "pitch": "Sinker"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[2].evidence"
+          },
+          {
+            "id": "c49",
+            "key": "critic.pitch.supported_putaway",
+            "args": {
+              "usage": "24",
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[3].evidence"
+          },
+          {
+            "id": "c50",
+            "key": "critic.names.supported",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[4].evidence"
+          },
+          {
+            "id": "c51",
+            "key": "critic.command.strength",
+            "args": {
+              "value": 74
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[5].evidence"
+          },
+          {
+            "id": "c52",
+            "key": "critic.scope.same",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[6].evidence"
+          },
+          {
+            "id": "c53",
+            "key": "critic.betting.absent",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[7].evidence"
+          },
+          {
+            "id": "c54",
+            "key": "critic.note.focus",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.revision_notes[0]"
+          },
+          {
+            "id": "c55",
+            "key": "critic.note.stuff_plus",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.revision_notes[1]"
+          },
+          {
+            "id": "c56",
+            "key": "scout.demo.note_1",
+            "args": {},
+            "subject": null,
+            "location": "data_confidence.notes[0]"
+          },
+          {
+            "id": "c57",
+            "key": "scout.demo.note_2",
+            "args": {},
+            "subject": null,
+            "location": "data_confidence.notes[1]"
           }
         ]
       },
@@ -956,6 +1501,749 @@
             "title": "Data Confidence Note",
             "body": "This report is based on cached demo data for the capstone. Live lineup confirmation is not required for this version."
           }
+        ],
+        "claims": [
+          {
+            "id": "c1",
+            "key": "analyst.label.against",
+            "args": {
+              "away": "High-velocity fastball-curveball starter",
+              "home": "Command-first cutter-changeup starter"
+            },
+            "subject": null,
+            "location": "report.headline"
+          },
+          {
+            "id": "c2",
+            "key": "writer.strength",
+            "args": {
+              "name": "Demo Pitcher C",
+              "strength": {
+                "claim": "c3"
+              }
+            },
+            "subject": "away_starter",
+            "location": "report.short_summary[0]"
+          },
+          {
+            "id": "c3",
+            "key": "analyst.strength.swing_miss",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c4",
+            "key": "writer.strength",
+            "args": {
+              "name": "Demo Pitcher D",
+              "strength": {
+                "claim": "c5"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.short_summary[1]"
+          },
+          {
+            "id": "c5",
+            "key": "analyst.strength.command",
+            "args": {
+              "label": "Plus command"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c6",
+            "key": "writer.watch_line",
+            "args": {
+              "observation": {
+                "claim": "c7"
+              }
+            },
+            "subject": null,
+            "location": "report.short_summary[2]"
+          },
+          {
+            "id": "c7",
+            "key": "writer.watch_whether",
+            "args": {
+              "name": "Demo Pitcher C",
+              "action": "land the changeup early in counts"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c8",
+            "key": "writer.section.summary",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[0].title"
+          },
+          {
+            "id": "c9",
+            "key": "writer.section.vs_team",
+            "args": {
+              "pitcher": "Demo Pitcher C",
+              "team": "Boston Red Sox"
+            },
+            "subject": "away_starter",
+            "location": "report.sections[1].title"
+          },
+          {
+            "id": "c10",
+            "key": "writer.section.vs_team",
+            "args": {
+              "pitcher": "Demo Pitcher D",
+              "team": "New York Yankees"
+            },
+            "subject": "home_starter",
+            "location": "report.sections[2].title"
+          },
+          {
+            "id": "c11",
+            "key": "writer.section.arsenal",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[3].title"
+          },
+          {
+            "id": "c12",
+            "key": "writer.section.watch",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[4].title"
+          },
+          {
+            "id": "c13",
+            "key": "writer.section.confidence",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[5].title"
+          },
+          {
+            "id": "c14",
+            "key": "analyst.summary",
+            "args": {
+              "label": {
+                "claim": "c15"
+              }
+            },
+            "subject": null,
+            "location": "report.sections[0].body"
+          },
+          {
+            "id": "c15",
+            "key": "analyst.label.against",
+            "args": {
+              "away": "High-velocity fastball-curveball starter",
+              "home": "Command-first cutter-changeup starter"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c16",
+            "key": "analyst.demo.away_read",
+            "args": {
+              "name": "Demo Pitcher C",
+              "primary": "four-seam",
+              "putaway": "changeup",
+              "swing_miss": "above-average swing-and-miss",
+              "offense": {
+                "claim": "c17"
+              }
+            },
+            "subject": "away_starter",
+            "location": "report.sections[1].body"
+          },
+          {
+            "id": "c17",
+            "key": "analyst.offense.average",
+            "args": {
+              "hand": "RHP",
+              "ops": ".744"
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c18",
+            "key": "analyst.demo.home_read",
+            "args": {
+              "name": "Demo Pitcher D",
+              "command_note": {
+                "claim": "c19"
+              },
+              "putaway": "changeup",
+              "contact_note": {
+                "claim": "c20"
+              },
+              "offense": {
+                "claim": "c21"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.sections[2].body"
+          },
+          {
+            "id": "c19",
+            "key": "analyst.command_note.edge",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c20",
+            "key": "analyst.contact_note.low",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c21",
+            "key": "analyst.offense.with_notes",
+            "args": {
+              "read": {
+                "claim": "c22"
+              },
+              "notes": {
+                "claim": "c23"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c22",
+            "key": "analyst.offense.strong",
+            "args": {
+              "hand": "LHP",
+              "ops": ".756",
+              "name": "Demo Pitcher D"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c23",
+            "key": "@join",
+            "args": {
+              "sep": "; ",
+              "parts": [
+                {
+                  "claim": "c24"
+                }
+              ]
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c24",
+            "key": "analyst.offense.note_walks",
+            "args": {
+              "name": "Demo Pitcher D"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c25",
+            "key": "writer.arsenal.contrast",
+            "args": {
+              "away_style": {
+                "claim": "c26"
+              },
+              "home_style": {
+                "claim": "c27"
+              },
+              "away_primary": "Four-seam fastball",
+              "home_primary": "Cutter"
+            },
+            "subject": null,
+            "location": "report.sections[3].body"
+          },
+          {
+            "id": "c26",
+            "key": "analyst.style.pair",
+            "args": {
+              "primary": "Four-seam fastball",
+              "putaway": "Changeup"
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c27",
+            "key": "analyst.style.pair",
+            "args": {
+              "primary": "Cutter",
+              "putaway": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c28",
+            "key": "writer.confidence.demo",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[5].body"
+          },
+          {
+            "id": "c29",
+            "key": "analyst.watch.land",
+            "args": {
+              "name": "Demo Pitcher C",
+              "putaway": "changeup"
+            },
+            "subject": "away_starter",
+            "location": "report.sections[4].bullets[0]"
+          },
+          {
+            "id": "c30",
+            "key": "analyst.watch.keep",
+            "args": {
+              "name": "Demo Pitcher D",
+              "goal": {
+                "claim": "c31"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.sections[4].bullets[1]"
+          },
+          {
+            "id": "c31",
+            "key": "analyst.goal.zone",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c32",
+            "key": "analyst.watch.deep",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[4].bullets[2]"
+          },
+          {
+            "id": "c33",
+            "key": "critic.summary.warnings",
+            "args": {
+              "checked": 8,
+              "warnings": 1
+            },
+            "subject": null,
+            "location": "critic_review.summary"
+          },
+          {
+            "id": "c34",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher C",
+              "role": {
+                "claim": "c35"
+              },
+              "pitch": "Four-seam"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[0].claim"
+          },
+          {
+            "id": "c35",
+            "key": "critic.role.primary",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c36",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher C",
+              "role": {
+                "claim": "c37"
+              },
+              "pitch": "Changeup"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[1].claim"
+          },
+          {
+            "id": "c37",
+            "key": "critic.role.putaway",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c38",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher D",
+              "role": {
+                "claim": "c39"
+              },
+              "pitch": "Cutter"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[2].claim"
+          },
+          {
+            "id": "c39",
+            "key": "critic.role.primary",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c40",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Demo Pitcher D",
+              "role": {
+                "claim": "c41"
+              },
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[3].claim"
+          },
+          {
+            "id": "c41",
+            "key": "critic.role.putaway",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c42",
+            "key": "critic.names.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[4].claim"
+          },
+          {
+            "id": "c43",
+            "key": "critic.command.label_claim",
+            "args": {
+              "name": "Demo Pitcher D"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[5].claim"
+          },
+          {
+            "id": "c44",
+            "key": "critic.scope.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[6].claim"
+          },
+          {
+            "id": "c45",
+            "key": "critic.betting.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[7].claim"
+          },
+          {
+            "id": "c46",
+            "key": "critic.pitch.supported_primary",
+            "args": {
+              "usage": "48",
+              "pitch": "Four-seam"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[0].evidence"
+          },
+          {
+            "id": "c47",
+            "key": "critic.pitch.low",
+            "args": {
+              "pitch": "Changeup",
+              "usage": "12",
+              "name": "Demo Pitcher C",
+              "minimum": 15,
+              "role": {
+                "claim": "c37"
+              }
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[1].evidence"
+          },
+          {
+            "id": "c48",
+            "key": "critic.pitch.supported_primary",
+            "args": {
+              "usage": "41",
+              "pitch": "Cutter"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[2].evidence"
+          },
+          {
+            "id": "c49",
+            "key": "critic.pitch.supported_putaway",
+            "args": {
+              "usage": "30",
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[3].evidence"
+          },
+          {
+            "id": "c50",
+            "key": "critic.names.supported",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[4].evidence"
+          },
+          {
+            "id": "c51",
+            "key": "critic.command.strength",
+            "args": {
+              "value": 81
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[5].evidence"
+          },
+          {
+            "id": "c52",
+            "key": "critic.scope.same",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[6].evidence"
+          },
+          {
+            "id": "c53",
+            "key": "critic.betting.absent",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[7].evidence"
+          },
+          {
+            "id": "c54",
+            "key": "critic.pitch.low",
+            "args": {
+              "pitch": "Changeup",
+              "usage": "12",
+              "name": "Demo Pitcher C",
+              "minimum": 15,
+              "role": {
+                "claim": "c37"
+              }
+            },
+            "subject": "away_starter",
+            "location": "critic_review.revision_notes[0]"
+          },
+          {
+            "id": "c55",
+            "key": "critic.note.focus",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.revision_notes[1]"
+          },
+          {
+            "id": "c56",
+            "key": "critic.note.stuff_plus",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.revision_notes[2]"
+          },
+          {
+            "id": "c57",
+            "key": "scout.final.note_1",
+            "args": {},
+            "subject": null,
+            "location": "data_confidence.notes[0]"
+          },
+          {
+            "id": "c58",
+            "key": "scout.final.note_2",
+            "args": {},
+            "subject": null,
+            "location": "data_confidence.notes[1]"
+          },
+          {
+            "id": "c59",
+            "key": "grader.explanation.rough",
+            "args": {
+              "score": 35
+            },
+            "subject": "away_starter",
+            "location": "postgame.starter_lines.away_starter.grade_explanation"
+          },
+          {
+            "id": "c60",
+            "key": "grader.explanation.solid",
+            "args": {
+              "score": 61
+            },
+            "subject": "home_starter",
+            "location": "postgame.starter_lines.home_starter.grade_explanation"
+          },
+          {
+            "id": "c61",
+            "key": "grader.plan.walks",
+            "args": {
+              "primary": "four-seam fastball",
+              "putaway": "changeup",
+              "walks": {
+                "claim": "c62"
+              }
+            },
+            "subject": "away_starter",
+            "location": "postgame.starter_lines.away_starter.plan_vs_execution"
+          },
+          {
+            "id": "c62",
+            "key": "count.walk.other",
+            "args": {
+              "count": 4
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c63",
+            "key": "grader.plan.matched",
+            "args": {
+              "primary": "cutter",
+              "putaway": "changeup",
+              "walks": {
+                "claim": "c64"
+              },
+              "earned_runs": {
+                "claim": "c65"
+              }
+            },
+            "subject": "home_starter",
+            "location": "postgame.starter_lines.home_starter.plan_vs_execution"
+          },
+          {
+            "id": "c64",
+            "key": "count.walk.one",
+            "args": {
+              "count": 1
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c65",
+            "key": "count.earned_run.other",
+            "args": {
+              "count": 2
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c66",
+            "key": "grader.next.walks",
+            "args": {},
+            "subject": "away_starter",
+            "location": "postgame.starter_lines.away_starter.what_to_watch_next"
+          },
+          {
+            "id": "c67",
+            "key": "grader.next.default",
+            "args": {},
+            "subject": "home_starter",
+            "location": "postgame.starter_lines.home_starter.what_to_watch_next"
+          },
+          {
+            "id": "c68",
+            "key": "grader.call.command.note",
+            "args": {
+              "name": "Demo Pitcher D"
+            },
+            "subject": "home_starter",
+            "location": "postgame.call_check[0].pregame_note"
+          },
+          {
+            "id": "c69",
+            "key": "grader.call.walk_risk.note",
+            "args": {
+              "name": "Demo Pitcher C"
+            },
+            "subject": "away_starter",
+            "location": "postgame.call_check[1].pregame_note"
+          },
+          {
+            "id": "c70",
+            "key": "grader.call.swing_miss.note",
+            "args": {
+              "name": "Demo Pitcher C"
+            },
+            "subject": "away_starter",
+            "location": "postgame.call_check[2].pregame_note"
+          },
+          {
+            "id": "c71",
+            "key": "grader.call.command.evidence",
+            "args": {
+              "walks": {
+                "claim": "c72"
+              },
+              "innings": "6.2"
+            },
+            "subject": "home_starter",
+            "location": "postgame.call_check[0].postgame_evidence"
+          },
+          {
+            "id": "c72",
+            "key": "count.walk.one",
+            "args": {
+              "count": 1
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c73",
+            "key": "grader.call.walk_risk.evidence",
+            "args": {
+              "batters": {
+                "claim": "c74"
+              },
+              "innings": "4.2"
+            },
+            "subject": "away_starter",
+            "location": "postgame.call_check[1].postgame_evidence"
+          },
+          {
+            "id": "c74",
+            "key": "count.batter.other",
+            "args": {
+              "count": 4
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c75",
+            "key": "grader.call.swing_miss.evidence",
+            "args": {
+              "strikeouts": {
+                "claim": "c76"
+              },
+              "score": 35
+            },
+            "subject": "away_starter",
+            "location": "postgame.call_check[2].postgame_evidence"
+          },
+          {
+            "id": "c76",
+            "key": "count.strikeout.other",
+            "args": {
+              "count": 5
+            },
+            "subject": "away_starter",
+            "location": null
+          }
         ]
       },
       "critic_review": {
@@ -1117,5 +2405,62 @@
     "The analysis explains matchup fit and what to watch, not guaranteed outcomes.",
     "Cached demo data may be used to ensure stable public evaluation.",
     "Any internal Stuff or Strength signals are PitchCraft-specific and are not official Stuff+ metrics."
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "key": "generator.metadata.last_updated.demo",
+      "args": {},
+      "subject": null,
+      "location": "metadata.last_updated_label"
+    },
+    {
+      "id": "c2",
+      "key": "generator.workflow.description",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.description"
+    },
+    {
+      "id": "c3",
+      "key": "generator.workflow.loaded",
+      "args": {
+        "count": 2
+      },
+      "subject": null,
+      "location": "agent_workflow.steps[0].output"
+    },
+    {
+      "id": "c4",
+      "key": "generator.workflow.identified",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.steps[1].output"
+    },
+    {
+      "id": "c5",
+      "key": "generator.workflow.generated",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.steps[2].output"
+    },
+    {
+      "id": "c6",
+      "key": "generator.workflow.checked",
+      "args": {
+        "warnings": 1
+      },
+      "subject": null,
+      "location": "agent_workflow.steps[3].output"
+    },
+    {
+      "id": "c7",
+      "key": "generator.workflow.graded",
+      "args": {
+        "count": 2
+      },
+      "subject": null,
+      "location": "agent_workflow.steps[4].output"
+    }
   ]
 }

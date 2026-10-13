@@ -19,20 +19,24 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
     home_team = teams["home"]
     away_team = teams["away"]
 
-    away_strengths, away_risks = _starter_findings(t, away_starter)
-    home_strengths, home_risks = _starter_findings(t, home_starter)
+    with t.subject("away_starter"):
+        away_strengths, away_risks = _starter_findings(t, away_starter)
+    with t.subject("home_starter"):
+        home_strengths, home_risks = _starter_findings(t, home_starter)
     pressure_points = _lineup_pressure_points(t, matchup_packet)
 
     away_profile = away_starter["pitching_profile"]
     home_profile = home_starter["pitching_profile"]
-    away_style = _style_description(t, away_profile)
-    home_style = _style_description(t, home_profile)
+    with t.subject("away_starter"):
+        away_style = _style_description(t, away_profile)
+    with t.subject("home_starter"):
+        home_style = _style_description(t, home_profile)
 
     away_sample = away_starter.get("sample")
     home_sample = home_starter.get("sample")
 
-    three_things = [
-        (
+    with t.subject("away_starter"):
+        away_watch = (
             t("analyst.watch.ahead", name=away_starter["name"])
             if _arsenal_limited(away_sample) or not labels.pitch_named(away_profile["putaway_pitch"])
             else t(
@@ -40,8 +44,9 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
                 name=away_starter["name"],
                 putaway=_pitch_short_name(away_profile["putaway_pitch"]).lower(),
             )
-        ),
-        (
+        )
+    with t.subject("home_starter"):
+        home_watch = (
             t("analyst.watch.efficient", name=home_starter["name"])
             if _arsenal_limited(home_sample)
             else t(
@@ -49,33 +54,38 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
                 name=home_starter["name"],
                 goal=_location_goal(t, home_profile["primary_pitch"]),
             )
-        ),
-        t("analyst.watch.deep"),
-    ]
-
-    if away_sample is None:
-        away_vs_home = t(
-            "analyst.demo.away_read",
-            name=away_starter["name"],
-            primary=_pitch_short_name(away_profile["primary_pitch"]).lower(),
-            putaway=_pitch_short_name(away_profile["putaway_pitch"]).lower(),
-            swing_miss=_safe_label(away_profile.get("swing_miss_label"), t("analyst.fallback.swing_path")).lower(),
-            offense=_offense_read(t, home_team, away_starter),
         )
-    else:
-        away_vs_home = f"{_live_pitcher_read(t, away_starter, away_sample)} {_offense_read(t, home_team, away_starter)}"
+    three_things = [away_watch, home_watch, t("analyst.watch.deep")]
 
-    if home_sample is None:
-        home_vs_away = t(
-            "analyst.demo.home_read",
-            name=home_starter["name"],
-            command_note=_command_note(t, home_profile["command_label"]),
-            putaway=_pitch_short_name(home_profile["putaway_pitch"]).lower(),
-            contact_note=_contact_note(t, home_profile["contact_risk_label"]),
-            offense=_offense_read(t, away_team, home_starter),
-        )
-    else:
-        home_vs_away = f"{_live_pitcher_read(t, home_starter, home_sample)} {_offense_read(t, away_team, home_starter)}"
+    with t.subject("away_starter"):
+        if away_sample is None:
+            away_vs_home = t(
+                "analyst.demo.away_read",
+                name=away_starter["name"],
+                primary=_pitch_short_name(away_profile["primary_pitch"]).lower(),
+                putaway=_pitch_short_name(away_profile["putaway_pitch"]).lower(),
+                swing_miss=_safe_label(away_profile.get("swing_miss_label"), t("analyst.fallback.swing_path")).lower(),
+                offense=_offense_read(t, home_team, away_starter),
+            )
+        else:
+            away_vs_home = t.join(
+                " ", [_live_pitcher_read(t, away_starter, away_sample), _offense_read(t, home_team, away_starter)]
+            )
+
+    with t.subject("home_starter"):
+        if home_sample is None:
+            home_vs_away = t(
+                "analyst.demo.home_read",
+                name=home_starter["name"],
+                command_note=_command_note(t, home_profile["command_label"]),
+                putaway=_pitch_short_name(home_profile["putaway_pitch"]).lower(),
+                contact_note=_contact_note(t, home_profile["contact_risk_label"]),
+                offense=_offense_read(t, away_team, home_starter),
+            )
+        else:
+            home_vs_away = t.join(
+                " ", [_live_pitcher_read(t, home_starter, home_sample), _offense_read(t, away_team, home_starter)]
+            )
 
     return {
         "away_starter_strengths": away_strengths,
@@ -93,12 +103,21 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
         "away_vs_home_offense": away_vs_home,
         "home_vs_away_offense": home_vs_away,
         "matchup_summary": t("analyst.summary", label=_matchup_label(t, away_starter, home_starter)),
-        "away_data_notes": _data_notes(t, away_starter["name"], away_sample) if away_sample else [],
-        "home_data_notes": _data_notes(t, home_starter["name"], home_sample) if home_sample else [],
+        "away_data_notes": _subject_notes(t, "away_starter", away_starter["name"], away_sample),
+        "home_data_notes": _subject_notes(t, "home_starter", home_starter["name"], home_sample),
         "scope_notes": _scope_notes(t, matchup_packet),
         "away_style": away_style,
         "home_style": home_style,
     }
+
+
+def _subject_notes(t: Catalog, slot: str, name: str, sample: dict[str, Any] | None) -> list[str]:
+    """The data notes of one starter, written as sentences about him."""
+
+    if not sample:
+        return []
+    with t.subject(slot):
+        return _data_notes(t, name, sample)
 
 
 def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> str:
@@ -125,7 +144,7 @@ def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> 
     if bb_rate is not None and bb_rate >= labels.OFFENSE_BB_NOTE_PCT:
         notes.append(t("analyst.offense.note_walks", name=starter_name))
     if notes:
-        read = t("analyst.offense.with_notes", read=read, notes="; ".join(notes))
+        read = t("analyst.offense.with_notes", read=read, notes=t.join("; ", notes))
     return read
 
 
@@ -246,7 +265,7 @@ def _live_pitcher_read(t: Catalog, starter: dict[str, Any], sample: dict[str, An
             parts.append(t("analyst.read.shows", subject=subject, label=_lower_first(label), qualifier=qualifier))
             subject = t("analyst.read.he")
     parts.extend(_data_notes(t, name, sample))
-    return " ".join(parts)
+    return t.join(" ", parts)
 
 
 def _rate_qualifier(t: Catalog, starter: dict[str, Any]) -> str:
@@ -321,8 +340,8 @@ def _scope_notes(t: Catalog, packet: dict[str, Any]) -> list[str]:
             )
             notes.append(t("analyst.scope.differ", who=who, season=season, arsenal=pitch_label))
         else:
-            parts = "; ".join(
-                t("analyst.scope.group_part", figures=figures, label=label) for label, figures in plan[1]
+            parts = t.join(
+                "; ", [t("analyst.scope.group_part", figures=figures, label=label) for label, figures in plan[1]]
             )
             notes.append(t("analyst.scope.groups", who=who, parts=parts))
     offense_labels = list(
@@ -388,7 +407,7 @@ def _group_figures(t: Catalog, starter: dict[str, Any], group: str) -> str:
 
 def _join(t: Catalog, names: list[str]) -> str:
     if len(names) > 1:
-        return t("analyst.figure.list_and", head=", ".join(names[:-1]), last=names[-1])
+        return t("analyst.figure.list_and", head=t.join(", ", names[:-1]), last=names[-1])
     return names[0] if names else ""
 
 

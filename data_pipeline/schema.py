@@ -1,4 +1,4 @@
-"""Schema constants for the PitchCraft v0.2.0 demo payload."""
+"""Schema constants for the PitchCraft v0.3.0 demo payload."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import datetime
 import re
 from typing import Any
 
-SCHEMA_VERSION = "0.2.0"
+SCHEMA_VERSION = "0.3.0"
 
 _UTC_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
 
@@ -30,6 +30,7 @@ TOP_LEVEL_REQUIRED_KEYS = (
     "archive",
     "agent_workflow",
     "disclaimers",
+    "claims",
 )
 
 MATCHUP_REQUIRED_KEYS = (

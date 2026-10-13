@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 from data_pipeline import labels
+from data_pipeline.generator_texts import generator_catalog
 
 # What a live starter shows for a field its snapshot does not supply (never a demo value).
 UNAVAILABLE_SUMMARY = {
@@ -216,7 +217,7 @@ def confidence_note(matchup_id: str, fetched_date: str) -> dict[str, Any]:
         "level": "fetched_snapshot",
         "lineup_status": "probable_pitchers",
         "pitch_data_status": "fetched_snapshot",
-        "notes": [f"Live snapshot fetched {fetched_date} for {matchup_id}."],
+        "notes": [generator_catalog()("generator.confidence.live_note", date=fetched_date, matchup_id=matchup_id)],
     }
 
 

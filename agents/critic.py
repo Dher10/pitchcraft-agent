@@ -109,6 +109,19 @@ def _pitch_role_check(
     pitch: str,
     minimum: int,
 ) -> dict[str, str]:
+    with t.subject(slot):
+        return _pitch_role_result(t, matchup_input, slot, starter, role, pitch, minimum)
+
+
+def _pitch_role_result(
+    t: Catalog,
+    matchup_input: dict[str, Any],
+    slot: str,
+    starter: dict[str, Any],
+    role: str,
+    pitch: str,
+    minimum: int,
+) -> dict[str, str]:
     usage = _pitch_usage(matchup_input, slot, pitch)
     counts = _pitch_counts(matchup_input, slot, pitch)
     role_name = t(f"critic.role.{role}")
@@ -212,7 +225,8 @@ def _unobserved_pitch_check(t: Catalog, report: dict[str, Any], matchup_input: d
             if _supports(allowed, pitch):
                 continue
             if owner:
-                problems.append(t("critic.names.credited", name=names[owner], pitch=pitch))
+                with t.subject(owner):
+                    problems.append(t("critic.names.credited", name=names[owner], pitch=pitch))
             else:
                 problems.append(t("critic.names.nobody", pitch=pitch))
     claim = t("critic.names.claim")
@@ -220,7 +234,7 @@ def _unobserved_pitch_check(t: Catalog, report: dict[str, Any], matchup_input: d
         return {
             "claim": claim,
             "status": "unsupported",
-            "evidence": t("critic.names.unsupported", problems="; ".join(dict.fromkeys(problems))),
+            "evidence": t("critic.names.unsupported", problems=t.join("; ", list(dict.fromkeys(problems)))),
         }
     return {"claim": claim, "status": "supported", "evidence": t("critic.names.supported")}
 
@@ -274,20 +288,21 @@ def _limited_arsenal_check(
             ):
                 add(_display_pitch(pitch))
     pitches = sample["arsenal"]["pitches"]
-    have = t("critic.limited.pitches", count=pitches) if pitches else t("critic.limited.none")
-    needed = sample["thresholds"]["arsenal"]
-    claim = t("critic.limited.claim", name=starter["name"])
-    if named:
+    with t.subject(slot):
+        have = t("critic.limited.pitches", count=pitches) if pitches else t("critic.limited.none")
+        needed = sample["thresholds"]["arsenal"]
+        claim = t("critic.limited.claim", name=starter["name"])
+        if named:
+            return {
+                "claim": claim,
+                "status": "unsupported",
+                "evidence": t("critic.limited.unsupported", have=have, needed=needed, named=", ".join(named)),
+            }
         return {
             "claim": claim,
-            "status": "unsupported",
-            "evidence": t("critic.limited.unsupported", have=have, needed=needed, named=", ".join(named)),
+            "status": "supported",
+            "evidence": t("critic.limited.supported", have=have.capitalize(), needed=needed),
         }
-    return {
-        "claim": claim,
-        "status": "supported",
-        "evidence": t("critic.limited.supported", have=have.capitalize(), needed=needed),
-    }
 
 
 def _command_evidence(t: Catalog, matchup_input: dict[str, Any], slot: str) -> str:
@@ -382,14 +397,15 @@ def _command_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, 
             wording = next((phrase for phrase in strong_phrases if phrase in said[slot]), None)
         if wording:
             starter = matchup_input["starters"][slot]
-            label = starter["pitching_profile"].get("command_label") or t("critic.command.no_label")
-            return {
-                "claim": t("critic.command.wrong_claim", name=starter["name"]),
-                "status": "unsupported",
-                "evidence": t(
-                    "critic.command.wrong_evidence", name=starter["name"], wording=wording, label=label
-                ),
-            }
+            with t.subject(slot):
+                label = starter["pitching_profile"].get("command_label") or t("critic.command.no_label")
+                return {
+                    "claim": t("critic.command.wrong_claim", name=starter["name"]),
+                    "status": "unsupported",
+                    "evidence": t(
+                        "critic.command.wrong_evidence", name=starter["name"], wording=wording, label=label
+                    ),
+                }
 
     claimed_below = [slot for slot in SLOTS if below in said[slot]]
     if not claimed_below and below in said[None]:
@@ -397,11 +413,12 @@ def _command_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, 
     if claimed_below:
         slot = claimed_below[0]
         starter = matchup_input["starters"][slot]
-        return {
-            "claim": t("critic.command.below_claim", name=starter["name"]),
-            "status": "supported",
-            "evidence": _command_evidence(t, matchup_input, slot),
-        }
+        with t.subject(slot):
+            return {
+                "claim": t("critic.command.below_claim", name=starter["name"]),
+                "status": "supported",
+                "evidence": _command_evidence(t, matchup_input, slot),
+            }
 
     claimed_command = [slot for slot in plus_or_solid if word in said[slot]]
     if not claimed_command and word in said[None]:
@@ -409,11 +426,12 @@ def _command_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, 
     if claimed_command:
         slot = claimed_command[0]
         starter = matchup_input["starters"][slot]
-        return {
-            "claim": t("critic.command.label_claim", name=starter["name"]),
-            "status": "supported",
-            "evidence": _command_evidence(t, matchup_input, slot),
-        }
+        with t.subject(slot):
+            return {
+                "claim": t("critic.command.label_claim", name=starter["name"]),
+                "status": "supported",
+                "evidence": _command_evidence(t, matchup_input, slot),
+            }
 
     return {
         "claim": t("critic.command.absent_claim"),
@@ -436,7 +454,7 @@ def _language_scan(t: Catalog, report: dict[str, Any]) -> dict[str, str]:
         return {
             "claim": claim,
             "status": "unsupported",
-            "evidence": t("critic.betting.unsupported", flagged=", ".join(flagged)),
+            "evidence": t("critic.betting.unsupported", flagged=t.join(", ", flagged)),
         }
 
     return {"claim": claim, "status": "not_present", "evidence": t("critic.betting.absent")}

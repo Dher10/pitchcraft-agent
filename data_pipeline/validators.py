@@ -1,4 +1,4 @@
-"""Lightweight stdlib validation for the PitchCraft v0.2.0 demo payload."""
+"""Lightweight stdlib validation for the PitchCraft v0.3.0 demo payload."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from datetime import date
 import re
 from typing import Any
 
+from data_pipeline.claims import verify_claims
 from data_pipeline.schema import (
     BATTER_HAND_SPLITS,
     BETTING_TERMS,
@@ -66,7 +67,7 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
 
     metadata = payload.get("metadata")
     record(
-        "metadata.version is 0.2.0",
+        f"metadata.version is {SCHEMA_VERSION}",
         isinstance(metadata, Mapping) and metadata.get("version") == SCHEMA_VERSION,
         f"found {metadata.get('version')!r}" if isinstance(metadata, Mapping) else "metadata missing",
     )
@@ -90,6 +91,13 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
             _validate_matchup(matchup, matchup_label, record)
     else:
         record("matchups is a list", False, f"found {type(matchups).__name__}")
+
+    # Contract rule 4: every sentence is a registered phrase and the text is exactly what it renders to.
+    claim_problems = verify_claims(payload)
+    for problem in claim_problems:
+        record(f"claims: {problem}", False)
+    if not claim_problems:
+        record("claims: every sentence is registered and matches its text", True)
 
     failures = [check for check in checks if not check.passed]
     if failures:

@@ -75,9 +75,10 @@ def run(matchup_input: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dict
         line["game_score"] = score
         line["pitchcraft_grade"] = pitchcraft_grade(score)
         starter = matchup_input["starters"][slot]
-        line["grade_explanation"] = _grade_explanation(t, score)
-        line["plan_vs_execution"] = _plan_vs_execution(t, starter, line)
-        line["what_to_watch_next"] = _what_to_watch_next(t, starter, line)
+        with t.subject(slot):
+            line["grade_explanation"] = _grade_explanation(t, score)
+            line["plan_vs_execution"] = _plan_vs_execution(t, starter, line)
+            line["what_to_watch_next"] = _what_to_watch_next(t, starter, line)
         starter_lines[slot] = line
 
     duel_winner_slot = _starter_duel_winner_slot(starter_lines)
@@ -181,11 +182,12 @@ def _call_check(
     away_line = starter_lines["away_starter"]
     home_line = starter_lines["home_starter"]
 
-    return [
-        _command_check(t, home_starter, home_line),
-        _walk_risk_check(t, away_starter, away_line),
-        _swing_miss_check(t, away_starter, away_line),
-    ]
+    with t.subject("home_starter"):
+        command = _command_check(t, home_starter, home_line)
+    with t.subject("away_starter"):
+        walk_risk = _walk_risk_check(t, away_starter, away_line)
+        swing_miss = _swing_miss_check(t, away_starter, away_line)
+    return [command, walk_risk, swing_miss]
 
 
 def _command_check(t: Catalog, starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:

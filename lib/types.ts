@@ -4,6 +4,16 @@ export type ConfidenceLevel = "live_confirmed" | "fetched_snapshot" | "partial" 
 export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
 export type AgentStatus = "completed" | "not_applicable" | "pending";
 
+// One sentence of the file, recorded with the catalog key and the arguments it was made from
+// (docs/DATA_CONTRACT.md, rule 4). The page does not read claims; the validator does.
+export interface Claim {
+  id: string;
+  key: string;
+  args: Record<string, unknown>;
+  subject: "away_starter" | "home_starter" | null;
+  location: string | null;
+}
+
 export interface PitchCraftData {
   metadata: Metadata;
   featured_matchup_id: string;
@@ -11,11 +21,13 @@ export interface PitchCraftData {
   archive: ArchiveItem[];
   agent_workflow: AgentWorkflow;
   disclaimers: string[];
+  claims?: Claim[];
 }
 
 export interface Metadata {
   project_name: string;
   version: string;
+  language?: string;
   data_mode: string;
   generated_at: string;
   last_updated_label: string;
@@ -238,6 +250,7 @@ export interface Report {
   headline: string;
   short_summary: string[];
   sections: ReportSection[];
+  claims?: Claim[];
 }
 
 export interface CriticCheck {
