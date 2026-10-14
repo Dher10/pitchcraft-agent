@@ -309,13 +309,18 @@ def test_rule_4_a_note_about_betting_language_needs_the_check_to_have_run(live):
     assert "rule4:critic.note.focus#check" in added(live, edit)
 
 
-def test_rule_4_a_critic_check_that_the_critic_does_not_find_again_is_found(live):
+def test_rule_4_a_critic_check_about_the_data_is_judged_on_the_data_not_on_the_critic(live):
+    """D3.3a: the old test asked the critic again (`#recomputed`); the condition now reads the pitch mix."""
+
     def edit(m):
         for row in m["charts"]["pitch_mix"]:
             row[AWAY]["count"] = 0
             row[AWAY]["overall"] = 0.0
 
-    assert any(c.endswith("#recomputed") for c in added(live, edit))
+    new = added(live, edit)
+
+    assert "rule4:critic.names.supported#thrown" in new
+    assert not any(c.endswith("#recomputed") for c in new)
 
 
 def test_rule_4_a_stuff_plus_note_has_no_check_behind_it(live):

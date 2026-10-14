@@ -20,9 +20,9 @@ from fnmatch import fnmatchcase
 import re
 from typing import Any
 
-from agents import critic as critic_agent
 from agents.language import SUBJECT_SLOTS, Catalog
 from data_pipeline import labels
+from data_pipeline import report_facts as facts
 from data_pipeline.claims import render_text
 
 LIVE_LEVEL = "fetched_snapshot"
@@ -791,23 +791,104 @@ def _pitch_absent(c: Ctx) -> None:
     c.require(not thrown, "thrown", "the pitch is in his pitch mix")
 
 
-def _critic_recomputed(c: Ctx) -> None:
-    """The check the sentence belongs to is what the critic finds again on the published matchup."""
+def _catalog(c: Ctx) -> Any:
+    return c.index.catalogs[0]
 
-    root = next((a for a in (c.claim, *c.index.ancestors(c.claim["id"])) if a["location"]), None)
-    match = re.fullmatch(r"critic_review\.checks\[(\d+)\]\.(claim|evidence)", (root or {}).get("location") or "")
-    if match is None:
-        c.fail("location", "the sentence is not part of a check of the critic")
+
+def _report(c: Ctx) -> Mapping[str, Any]:
+    return c.matchup["report"]  # type: ignore[index]
+
+
+def _problem_published(c: Ctx) -> None:
+    """A sentence that reports a problem the data has is never in a published file (the generator stops)."""
+
+    c.fail("published", "a sentence that reports an unsupported claim is in a published file")
+
+
+def _names(c: Ctx) -> None:
+    problems = facts.pitches_not_thrown(c.matchup, _report(c), _catalog(c))  # type: ignore[arg-type]
+    shown = ", ".join(pitch for _, pitch in problems)
+    c.require(not problems, "thrown", f"the report names {shown}, which the starter it is credited to did not throw")
+
+
+def _limited_claim(c: Ctx) -> None:
+    c.require(c.text("name") == c.starter["name"], "name", "the sentence is about another starter")
+    c.require(_limited(c.starter, "arsenal"), "not_limited", "his arsenal is not limited")
+
+
+def _limited_supported(c: Ctx) -> None:
+    sample = _sample(c.starter)
+    if sample is None or not _limited(c.starter, "arsenal"):
+        c.fail("not_limited", "his arsenal is not limited")
         return
-    matchup = c.matchup
-    cache = c.shared.setdefault("critic", {})
-    if id(matchup) not in cache:
-        language = c.metadata.get("language", "en")
-        cache[id(matchup)] = critic_agent.run(matchup["report"], matchup, language)["checks"]  # type: ignore[index]
-    again, index = cache[id(matchup)], int(match[1])
-    published = _checks(c)[index]
-    same = index < len(again) and all(again[index][f] == published[f] for f in ("claim", "status", "evidence"))
-    c.require(same, "recomputed", "the critic does not find the same check again on the published matchup")
+    pitches = sample["arsenal"]["pitches"]
+    have = c.ref("have")
+    if have["key"] == "@capitalize":  # the evidence starts a sentence with it
+        have = c.index.by_id[have["args"]["of"]["claim"]]
+    if have["key"] == "critic.limited.pitches":
+        c.require(pitches and have["args"].get("count") == pitches, "count", "the count of pitches is not the sample's")
+    else:
+        c.require(pitches == 0, "count", "he has pitches on record, or the count is unknown, and the sentence says none")
+    c.require(c.args["needed"] == sample["thresholds"]["arsenal"], "needed", "the minimum is not the sample's threshold")
+    named = facts.pitches_named_for(c.matchup, _report(c), c.slot, _catalog(c))  # type: ignore[arg-type]
+    c.require(not named, "named", f"the report names {', '.join(named)} for him")
+
+
+def _command(c: Ctx) -> None:
+    kind = c.key.rsplit(".", 1)[1]
+    if kind in ("wrong_claim", "wrong_evidence"):
+        _problem_published(c)
+    elif kind in ("absent_claim", "absent_evidence"):
+        found, _ = facts.command_finding(c.matchup, _report(c), _catalog(c))  # type: ignore[arg-type]
+        c.require(found == "absent", "claim_made", "the report makes a command claim")
+    elif kind == "below_claim":
+        c.require(c.text("name") == c.starter["name"], "name", "the sentence is about another starter")
+        c.require(labels.COMMAND_BELOW.lower() in _label(c.starter, "command_label"), "label", "his command label is not below average")
+    elif kind == "label_claim":
+        c.require(c.text("name") == c.starter["name"], "name", "the sentence is about another starter")
+        label = _label(c.starter, "command_label")
+        c.require(any(term in label for term in facts.COMMAND_STRONG_TERMS), "label", "his command label is not plus or solid")
+    elif kind == "strength":
+        score = facts.command_strength(c.matchup, c.slot)  # type: ignore[arg-type]
+        c.require(score is not None and c.args["value"] == score, "value", "the strength profile has no such Command score")
+    elif kind == "walks":
+        rates = (_sample(c.starter) or {}).get("rates") or {}
+        counts = labels.figure_scopes(c.starter).get("counts")  # type: ignore[arg-type]
+        c.require(rates.get("walks") is not None and c.args["walks"] == rates.get("walks"), "walks", "the walks are not the sample's")
+        c.require(bool(rates.get("batters_faced")) and c.args["batters"] == rates.get("batters_faced"), "batters", "the batters faced are not the sample's")
+        c.require(counts is not None and c.args["scope"] == counts["label"], "scope", "the scope is not the scope of the counts")
+    elif kind == "none":
+        rates = (_sample(c.starter) or {}).get("rates") or {}
+        has_sample = bool(rates.get("batters_faced")) and labels.figure_scopes(c.starter).get("counts") is not None  # type: ignore[arg-type]
+        c.require(
+            facts.command_strength(c.matchup, c.slot) is None and not has_sample,  # type: ignore[arg-type]
+            "available",
+            "a Command score or a walk-rate sample is available",
+        )
+    else:
+        c.fail("key", f"no condition is written for {c.key}")
+
+
+def _scope_claim(c: Ctx) -> None:
+    kind, _ = facts.scope_finding(c.matchup, _report(c), _catalog(c))  # type: ignore[arg-type]
+    c.require(kind != "all_claimed", "all_claimed", "the report says all the figures cover one sample about a starter whose groups differ")
+    c.require(kind != "unsupported", "unsaid", "the report does not say the figures cover different samples, and for some starter they do")
+
+
+def _critic_scope_same(c: Ctx) -> None:
+    c.require(not facts.differing_starters(c.matchup), "differs", "the groups of figures of some starter cover different games")  # type: ignore[arg-type]
+
+
+def _scope_supported(c: Ctx) -> None:
+    differing = set(facts.differing_starters(c.matchup))  # type: ignore[arg-type]
+    named = {s["name"] for s in c.who()}
+    c.require(named == differing and bool(differing), "who", "the starters named are not the ones whose groups differ")
+    c.require(facts.says_samples_differ(_report(c), _catalog(c)), "marker", "the report does not say the figures cover different samples")
+
+
+def _betting(c: Ctx) -> None:
+    found = facts.betting_terms(_report(c), _catalog(c))
+    c.require(not found, "language", f"the report uses outcome or betting language: {', '.join(term for term, _ in found)}")
 
 
 # --- postgame grader -----------------------------------------------------------------------------
@@ -1032,23 +1113,23 @@ RULES: dict[str, Rule] = {
     "critic.pitch.low": _pitch_evidence,
     "critic.pitch.low_counts": _pitch_evidence,
     "critic.pitch.absent": _pitch_absent,
-    "critic.names.claim": _critic_recomputed,
-    "critic.names.supported": _critic_recomputed,
-    "critic.names.credited": _critic_recomputed,
-    "critic.names.nobody": _critic_recomputed,
-    "critic.names.unsupported": _critic_recomputed,
-    "critic.limited.claim": _critic_recomputed,
-    "critic.limited.supported": _critic_recomputed,
-    "critic.limited.unsupported": _critic_recomputed,
-    "critic.command.*": _critic_recomputed,
-    "critic.scope.claim": _critic_recomputed,
-    "critic.scope.same": _critic_recomputed,
-    "critic.scope.supported": _critic_recomputed,
-    "critic.scope.unsupported": _critic_recomputed,
-    "critic.scope.all_claimed": _critic_recomputed,
-    "critic.betting.claim": _critic_recomputed,
-    "critic.betting.absent": _critic_recomputed,
-    "critic.betting.unsupported": _critic_recomputed,
+    "critic.names.claim": _names,
+    "critic.names.supported": _names,
+    "critic.names.credited": _problem_published,
+    "critic.names.nobody": _problem_published,
+    "critic.names.unsupported": _problem_published,
+    "critic.limited.claim": _limited_claim,
+    "critic.limited.supported": _limited_supported,
+    "critic.limited.unsupported": _problem_published,
+    "critic.command.*": _command,
+    "critic.scope.claim": _scope_claim,
+    "critic.scope.same": _critic_scope_same,
+    "critic.scope.supported": _scope_supported,
+    "critic.scope.unsupported": _problem_published,
+    "critic.scope.all_claimed": _problem_published,
+    "critic.betting.claim": _betting,
+    "critic.betting.absent": _betting,
+    "critic.betting.unsupported": _problem_published,
     # postgame grader and demo notes
     "grader.explanation.*": _grader_explanation,
     "grader.plan.*": _grader_plan,
