@@ -36,25 +36,22 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
     home_sample = home_starter.get("sample")
 
     with t.subject("away_starter"):
-        away_watch = (
-            t("analyst.watch.ahead", name=away_starter["name"])
+        away_action = (
+            t("analyst.watch.action.ahead")
             if _arsenal_limited(away_sample) or not labels.pitch_named(away_profile["putaway_pitch"])
             else t(
-                "analyst.watch.land",
-                name=away_starter["name"],
+                "analyst.watch.action.land",
                 putaway=_pitch_short_name(away_profile["putaway_pitch"]).lower(),
             )
         )
+        away_watch = t("analyst.watch.question", name=away_starter["name"], action=away_action)
     with t.subject("home_starter"):
-        home_watch = (
-            t("analyst.watch.efficient", name=home_starter["name"])
+        home_action = (
+            t("analyst.watch.action.efficient")
             if _arsenal_limited(home_sample)
-            else t(
-                "analyst.watch.keep",
-                name=home_starter["name"],
-                goal=_location_goal(t, home_profile["primary_pitch"]),
-            )
+            else t("analyst.watch.action.keep", goal=_location_goal(t, home_profile["primary_pitch"]))
         )
+        home_watch = t("analyst.watch.question", name=home_starter["name"], action=home_action)
     three_things = [away_watch, home_watch, t("analyst.watch.deep")]
 
     with t.subject("away_starter"):

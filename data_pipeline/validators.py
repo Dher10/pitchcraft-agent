@@ -9,6 +9,8 @@ import re
 from typing import Any
 
 from data_pipeline.claims import verify_claims
+from data_pipeline.contract_checks import check_contract
+from data_pipeline.known_violations import KNOWN_VIOLATIONS
 from data_pipeline.schema import (
     BATTER_HAND_SPLITS,
     BETTING_TERMS,
@@ -98,6 +100,24 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
         record(f"claims: {problem}", False)
     if not claim_problems:
         record("claims: every sentence is registered and matches its text", True)
+
+    # Contract rules 3, 4, 6 and 8 (D34). The violations the code has today are tolerated until the
+    # fix of their class lands (known_violations.py); any other violation stops publication.
+    try:
+        violations = check_contract(payload)
+    except (AttributeError, KeyError, TypeError) as exc:
+        record("contract: the payload has the shape the checks read", False, f"{type(exc).__name__}: {exc}")
+        violations = []
+    unknown = [v for v in violations if v.code not in KNOWN_VIOLATIONS]
+    for violation in unknown:
+        record(f"contract: {violation.code}", False, f"{violation.where}: {violation.message}")
+    if not unknown:
+        tolerated = sorted({finding for v in violations for finding in KNOWN_VIOLATIONS[v.code]})
+        record(
+            "contract: rules 3, 4, 6 and 8 hold except the known violations"
+            + (f" ({', '.join(tolerated)})" if tolerated else ""),
+            True,
+        )
 
     failures = [check for check in checks if not check.passed]
     if failures:

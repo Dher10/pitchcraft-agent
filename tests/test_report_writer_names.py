@@ -77,10 +77,23 @@ def test_home_starter_name_is_not_split_either():
     )
 
 
-def test_an_unknown_subject_is_left_untouched_instead_of_guessing_a_split():
-    assert (
-        report_writer._watch_observation(
-            catalog_for("en"), "Can Somebody Else keep it down?", ("Corbin Burnes",)
-        )
-        == "Can Somebody Else keep it down"
+def test_the_name_and_the_action_come_from_the_question_not_from_its_text():
+    t = catalog_for("en")
+    action = t("analyst.watch.action.keep", goal=t("analyst.goal.low"))
+    question = t("analyst.watch.question", name="Somebody Else", action=action)
+
+    observation = report_writer._watch_observation(t, question)
+
+    assert observation == "whether Somebody Else can keep the ball low"
+    assert (observation.key, observation.args) == (
+        "writer.watch_whether",
+        {"name": "Somebody Else", "action": action},
     )
+
+
+def test_a_first_watch_item_that_is_not_a_question_about_a_starter_is_refused():
+    t = catalog_for("en")
+
+    for first in ("Can Somebody Else keep it down?", t("analyst.watch.deep")):
+        with pytest.raises(ValueError, match="not a question about a starter"):
+            report_writer._watch_observation(t, first)

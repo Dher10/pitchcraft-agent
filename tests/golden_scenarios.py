@@ -71,9 +71,12 @@ def _no_putaway(game: dict[str, Any]) -> None:
 
 
 def _unavailable_summary(game: dict[str, Any]) -> None:
+    """ERA, WHIP and innings are unavailable, so (as `_attach_sample` writes it) their group has no scope."""
+
     for slot in ("away_starter", "home_starter"):
         for key in ("era", "whip", "innings"):
             game[slot]["season_summary"][key] = "N/A"
+        game[slot]["season_summary"]["scopes"]["season_rates"] = None
 
 
 def _no_figures(game: dict[str, Any]) -> None:
@@ -84,6 +87,7 @@ def _no_figures(game: dict[str, Any]) -> None:
             era="N/A", whip="N/A", innings="N/A", strikeouts=None, walks=None, home_runs_allowed=None,
             scopes={"season_rates": None, "counts": None},
         )
+        game[slot]["sample"]["rates"]["source"] = "unavailable"  # as `_attach_sample` writes a starter with no counts
 
 
 def scenarios(mp) -> dict[str, dict[str, Any]]:

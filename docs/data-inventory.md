@@ -1,6 +1,6 @@
 # Inventory of the published payload (live mode)
 
-Read-only inventory of every field of `public/data/pitchcraft-demo.json` when it is built from a live run. Written to be the input of the data contract. It is **Annex A of `docs/DATA_CONTRACT.md`** (D34): findings F1 to F16 below are the known violations of that contract at HEAD `043db03`, and the contract's section 4 says which commit closes each. The inventory is a snapshot and is not updated as the findings are closed. Nothing in the code was changed to produce it.
+Read-only inventory of every field of `public/data/pitchcraft-demo.json` when it is built from a live run. Written to be the input of the data contract. It is **Annex A of `docs/DATA_CONTRACT.md`** (D34): findings F1 to F18 below are the known violations of that contract at HEAD `043db03`, and the contract's section 4 says which commit closes each. The inventory is a snapshot and is not updated as the findings are closed. Nothing in the code was changed to produce it.
 
 - **Code state:** branch `v2`, HEAD `043db03` (P0.15-A, B and C done; D paused).
 - **Date:** 2026-10-12.
@@ -85,6 +85,8 @@ These are places where a published or visible statement does not match the data,
 - **F14: an unknown count is written as "no ... on record".** Found while building the registry of claims, not in the first pass. `matchup_analyst._data_notes` builds `have_batters` with `... if batters else t("analyst.have.no_batters")` and `have` with `... if pitches else t("analyst.have.no_pitches")`, so a `null` count (a Statcast frame without `events`, F6b's neighbour) reads "Strikeout data for X is limited (no batters faced on record; 70 needed)". A `null` is unknown; "no batters faced" asserts a measured zero.
 - **F15: the analyst guesses a throwing hand.** `matchup_analyst._offense_read` takes `offense.get("vs_pitcher_hand") or _throws_label(starter.get("throws", "R"))` and `_throws_label` defaults to `"R"`. Unreachable for L/R today (snapshots are validated), but a switch pitcher (hand `S`, F11) would read "SHP" and a missing hand "RHP".
 - **F16: time claims with no condition.** The section title "Today's Matchup Summary" (`writer.section.summary`) and the sentence "Lineups can still change before first pitch" (`writer.confidence.live_*`) assert that the game is today and that first pitch has not happened. The file can be read days later and the game may be `Live` or `Final` (F5).
+- **F17: a scope for counts that are unavailable.** Found by the rule 3 check (P0.15-D3.2), not in the first pass. `_attach_sample` writes `season_summary.scopes.counts = null` when the counts are unavailable but keeps `sample.rates.scope` set (section 3.4 says "always set, even when source is `unavailable`"). Same class as F2. `sample.arsenal.scope` with 0 pitches is not part of it: the zero is measured.
+- **F18: a put-away pitch under 15% in a sentence.** Found by the rule 4 check (P0.15-D3.2). The demo's `matchup_002` gives Demo Pitcher C a put-away pitch (Changeup) at 12% of his pitches; the analyst writes "Can Demo Pitcher C land the changeup early in counts?" while D30 says a second pitch is a put-away pitch only from 15%, and the critic warns about the same pitch. The live profile never names such a pitch, so only the demo data shows it.
 
 ## 3. Field inventory
 

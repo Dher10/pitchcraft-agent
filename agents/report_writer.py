@@ -22,7 +22,7 @@ def run(
     default_strength = t("writer.default_strength")
     away_strength = _first(findings["away_starter_strengths"], default_strength)
     home_strength = _first(findings["home_starter_strengths"], default_strength)
-    first_watch = findings["three_things_to_watch"][0].rstrip("?")
+    first_watch = findings["three_things_to_watch"][0]
 
     with t.subject("away_starter"):
         away_line = _strength_line(t, away, findings["away_starter_strengths"], away_strength)
@@ -36,7 +36,7 @@ def run(
         "short_summary": [
             away_line,
             home_line,
-            t("writer.watch_line", observation=_watch_observation(t, first_watch, (away["name"], home["name"]))),
+            t("writer.watch_line", observation=_watch_observation(t, first_watch)),
         ],
         "sections": [
             {"title": t("writer.section.summary"), "body": findings["matchup_summary"]},
@@ -117,24 +117,19 @@ def _first(values: list[str], fallback: str) -> str:
     return values[0] if values else fallback
 
 
-def _watch_observation(t: Catalog, watch_item: str, starter_names: tuple[str, ...] = ()) -> str:
+def _watch_observation(t: Catalog, first_watch: str) -> str:
     """
-    Turn "Can <starter> <action>?" into "whether <starter> can <action>".
+    "whether <starter> can <action>", from the first thing to watch.
 
-    The subject is matched against the full starter names of the packet. Where a
-    name ends is never guessed from word positions: names have one to four words
-    ("Corbin Burnes", "Luis Garcia Jr."), so an unmatched subject is left as is.
+    The question was written as "Can <name> <action>?" from a starter and an action, and the phrase
+    keeps both, so neither is cut out of its text: the name is never guessed (names have one to four
+    words) and the action is the same claim the question is made of.
     """
 
-    prefix = t("writer.watch_prefix")
-    item = watch_item.rstrip("?")
-    if not item.startswith(prefix):
-        return item[:1].lower() + item[1:]
-    rest = item[len(prefix):]
-    for name in sorted(starter_names, key=len, reverse=True):
-        if rest.startswith(f"{name} "):
-            return t("writer.watch_whether", name=name, action=rest[len(name) + 1:])
-    return item
+    args = getattr(first_watch, "args", {})
+    if getattr(first_watch, "key", None) != "analyst.watch.question" or not {"name", "action"} <= set(args):
+        raise ValueError(f"the first thing to watch is not a question about a starter: {str(first_watch)[:80]!r}")
+    return t("writer.watch_whether", name=args["name"], action=args["action"])
 
 
 def _enforce_language_rules(t: Catalog, report: dict[str, Any]) -> None:

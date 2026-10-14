@@ -12,7 +12,7 @@ If no range is given, use `v1.0.0-kaggle..HEAD`.
 ## What counts as the spec
 
 Read these as the source of truth, in this order: `docs/DECISIONS.md`, `docs/DATA_CONTRACT.md` (D34; the field inventory it uses as Annex A, `docs/data-inventory.md`, is a snapshot, not a spec), `docs/PLAN.md` (tasks and Gherkin scenarios for the phase), `docs/PRD_v2.md`, `docs/eval-spec.md`, `AGENTS.md`, `docs/ENGINEERING.md`, `docs/CONTRIBUTING.md`.
-Do **not** read the session log in `docs/STATUS.md` until you have formed your own findings. Then compare: any claim there that you could not reproduce is itself a finding.
+Do **not** read `docs/STATUS.md` or the session log in `docs/status-archive.md` until you have formed your own findings. Then compare: any claim there that you could not reproduce is itself a finding.
 
 ## Rules
 

@@ -296,7 +296,7 @@ def _limited_arsenal_check(
             return {
                 "claim": claim,
                 "status": "unsupported",
-                "evidence": t("critic.limited.unsupported", have=have, needed=needed, named=", ".join(named)),
+                "evidence": t("critic.limited.unsupported", have=have, needed=needed, named=t.join(", ", named)),
             }
         return {
             "claim": claim,
@@ -351,18 +351,18 @@ def _scope_check(t: Catalog, report: dict[str, Any], matchup_input: dict[str, An
         return {
             "claim": claim,
             "status": "unsupported",
-            "evidence": t("critic.scope.all_claimed", who=", ".join(claimed)),
+            "evidence": t("critic.scope.all_claimed", who=t.join(", ", claimed)),
         }
     if t("critic.scope.marker") in _report_text(report).lower():
         return {
             "claim": claim,
             "status": "supported",
-            "evidence": t("critic.scope.supported", who=", ".join(differing)),
+            "evidence": t("critic.scope.supported", who=t.join(", ", differing)),
         }
     return {
         "claim": claim,
         "status": "unsupported",
-        "evidence": t("critic.scope.unsupported", who=", ".join(differing)),
+        "evidence": t("critic.scope.unsupported", who=t.join(", ", differing)),
     }
 
 

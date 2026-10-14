@@ -19,15 +19,13 @@ t = catalog_for("en")
 
 
 def test_a_message_is_a_phrase_that_equals_its_text():
-    phrase = t("analyst.watch.ahead", name="Alpha Livearm")
+    phrase = t("analyst.watch.deep")
+    greeting = t("writer.strength_none", name="Alpha Livearm")
 
     assert isinstance(phrase, Phrase)
-    assert phrase == "Can Alpha Livearm stay ahead of hitters early in counts?"
-    assert (phrase.key, phrase.args, phrase.subject) == (
-        "analyst.watch.ahead",
-        {"name": "Alpha Livearm"},
-        None,
-    )
+    assert phrase == "Which lineup forces more deep counts by the third inning?"
+    assert (phrase.key, phrase.args, phrase.subject) == ("analyst.watch.deep", {}, None)
+    assert (greeting.key, greeting.args) == ("writer.strength_none", {"name": "Alpha Livearm"})
     assert json.dumps(phrase) == json.dumps(str(phrase))
 
 

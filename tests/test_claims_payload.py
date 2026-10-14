@@ -8,46 +8,21 @@ is that every sentence is registered with the key and arguments it was made from
 
 from __future__ import annotations
 
-from copy import deepcopy
 import json
-from pathlib import Path
 
 import pytest
 
-from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
-from data_pipeline import generate_demo_json as gdj
 from data_pipeline.schema import SCHEMA_VERSION
-from tests.golden_scenarios import scenarios
-from tests.live_helpers import GAME_DAY, failed_checks, hand_snapshot, use_snapshot
+from tests.corpus import GOLDEN_NAMES, KINDS, SERVED, build, golden_payload, published
+from tests.live_helpers import GAME_DAY, failed_checks
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SERVED = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
-KINDS = ("demo", "fallback", "live_complete", "live_debuts")
 LABEL_KEY = {
     "demo": "generator.metadata.last_updated.demo",
     "fallback": "generator.metadata.last_updated.fallback",
     "live_complete": "generator.metadata.last_updated.live",
     "live_debuts": "generator.metadata.last_updated.live",
+    "live_errors": "generator.metadata.last_updated.live",
 }
-
-
-def build(monkeypatch, kind: str) -> dict:
-    if kind == "demo":
-        monkeypatch.setattr(gdj, "_live", None)
-        monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "Demo data", "live_run": None})
-    elif kind == "fallback":
-        monkeypatch.setattr(gdj, "_live", None)
-        status = {"mode": "demo_fallback", "reason": "Live run failed; showing demo data", "live_run": None}
-        monkeypatch.setattr(gdj, "_live_status", status)
-    else:
-        use_snapshot(monkeypatch, hand_snapshot(complete=kind == "live_complete"))
-    return gdj.build_payload()
-
-
-def published(payload: dict) -> dict:
-    """What the file holds: the payload after a trip through JSON."""
-
-    return json.loads(json.dumps(payload))
 
 
 @pytest.fixture(params=KINDS)
@@ -329,33 +304,13 @@ def test_the_validator_refuses_a_payload_without_claims(monkeypatch):
 # --- the golden scenarios ------------------------------------------------------------------------
 
 
-GOLDEN = Path(__file__).parent / "fixtures" / "agents_en_golden.json"
-
-
-@pytest.mark.parametrize("name", list(json.loads(GOLDEN.read_text(encoding="utf-8"))))
+@pytest.mark.parametrize("name", GOLDEN_NAMES)
 def test_every_golden_scenario_registers_all_of_its_text(monkeypatch, name):
     from agents.language import catalog_for
-    from data_pipeline.claims import attach_claims, verify_claims
-    from data_pipeline.generator_texts import generator_catalog
+    from data_pipeline.claims import verify_claims
 
-    matchup = scenarios(monkeypatch)[name]
-    packet = data_scout.run(matchup)
-    findings = matchup_analyst.run(packet)
-    report = report_writer.run(findings, matchup)
-    review = critic.run(report, matchup)
-    wrapped = deepcopy(matchup)
-    wrapped.update(report=report, critic_review=review, data_confidence=packet["data_confidence"], postgame=None)
-    if matchup["status"] == "final":
-        wrapped["postgame"] = postgame_grader.run(matchup)
-    if wrapped["data_confidence"]["level"] == "fetched_snapshot":
-        wrapped["data_confidence"] = dict(
-            wrapped["data_confidence"],
-            notes=[generator_catalog()("generator.confidence.live_note", date=GAME_DAY, matchup_id=wrapped["id"])],
-        )
-    payload = {"metadata": {"data_mode": "demo_cached"}, "matchups": [wrapped]}
+    payload = golden_payload(monkeypatch, name)
     assert catalog_for("en")  # the language the scenarios are written in
-
-    attach_claims(payload)
 
     assert verify_claims(published(payload)) == []
 

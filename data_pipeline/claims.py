@@ -326,6 +326,23 @@ def _verify_list(
     return problems
 
 
+def catalogs_of(payload: Mapping[str, Any]) -> tuple[Catalog, Catalog] | None:
+    """The catalogs the claims of `payload` are written in (agents', generator's), or None if its language has none."""
+
+    metadata = payload.get("metadata")
+    language = metadata.get("language") if isinstance(metadata, Mapping) else None
+    try:
+        return catalog_for(language), generator_catalog()  # type: ignore[arg-type]
+    except UnknownLanguageError:
+        return None
+
+
+def render_text(key: str, args: dict[str, Any], catalogs: tuple[Catalog, Catalog]) -> str | None:
+    """The text of a claim from its key and its arguments (references already replaced by their text), or None."""
+
+    return _render(key, args, catalogs, lambda message: None)
+
+
 def _render(key: str, args: dict[str, Any], catalogs: tuple[Catalog, Catalog], fail: Any) -> str | None:
     if key == JOIN_KEY:
         separator, parts = args.get("sep"), args.get("parts")

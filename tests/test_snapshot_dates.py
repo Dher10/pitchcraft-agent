@@ -38,6 +38,9 @@ def template() -> dict:
 
 def live_game(template, official="2026-07-15", as_of="2026-07-14", through=None) -> dict:
     game = _fake_live_game(template)
+    # `_fake_live_game` gives both starters the away starter's profile; the home starter's put-away pitch must
+    # be one he throws at least 15% of the time in the mix it is paired with (D30), as the pipeline writes it.
+    game["home_starter"]["pitching_profile"].update(primary_pitch="Sinker", putaway_pitch="Changeup")
     game["featured_game"]["official_date"] = official
     game["as_of"] = as_of
     scope = labels.make_scope(labels.SCOPE_REGULAR, through or as_of)

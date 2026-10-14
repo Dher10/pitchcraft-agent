@@ -2,7 +2,7 @@
 
 Normative (decision D34). This contract defines what `public/data/pitchcraft-demo.json`, and every text that describes it, may contain. It does not replace `docs/DECISIONS.md`: where they differ, the decision wins and the difference is reported. QA (`docs/QA_PROTOCOL.md`) verifies compliance with this contract. A rule changes only through a new decision.
 
-- **Annex A:** `docs/data-inventory.md`, the field-by-field inventory of the live payload at HEAD `043db03`. Its findings F1 to F13 (and F14 to F16, added below) are the **known violations** of this contract. Each is closed by the commit named in section 4; until then, the generic checks of P0.15-D3 mark it as a strict `xfail`.
+- **Annex A:** `docs/data-inventory.md`, the field-by-field inventory of the live payload at HEAD `043db03`. Its findings F1 to F13 (and F14 to F18, added below) are the **known violations** of this contract. Each is closed by the commit named in section 4; until then, `data_pipeline/known_violations.py` tolerates it and the generic checks of P0.15-D3 report it.
 - **Scope of "published":** every field of the JSON file, whether or not a component renders it, and every text that describes the file: agent text, generator text (workflow, metadata, archive labels), frontend text and workflow text.
 - **Words used.** A *field* is a path in the file. A *group of figures* is a set of fields that come from one source with one scope (section 2, rule 3). An *unavailable state* is the explicit way a field says "no value": `null` for a scalar, `[]` for a list, `{}` for a map, and the documented sentinel for the few fields that are text by type (`"N/A"` for `season_summary.era`, `whip`, `innings`; `"Not available"` for `primary_pitch` and `putaway_pitch`). The sentinels are listed in the manifest of P0.15-D3; none may be a number.
 
@@ -52,6 +52,8 @@ Examples:
 
 *Each group of figures carries the scope of its source. No scope is stated for a group without figures.*
 
+A group has a figure when a value is known, **a measured zero included** (rule 2): a debut's 0 pitches come from a valid Statcast answer, so `sample.arsenal.scope` stays and says which games the zero was measured over. An unknown value (`null`, `"N/A"`, a `sample.rates.source` of `"unavailable"`) is not a figure: the group has no scope in any field that carries one. A scope is a field; the sentence that states it (rule 4) follows the same rule.
+
 Groups at HEAD: pitch data (Statcast; `sample.arsenal.scope`, `charts.*`), season rates (ERA, WHIP, innings; MLB API; `scopes.season_rates`), counts (strikeouts, walks, home runs, batters faced; the API or Statcast; `scopes.counts`, `sample.rates.scope`), team offense (Savant; `offense_profile.scope`). Scope is `regular_season` or `regular_and_postseason`, through the cutoff (D29).
 
 Examples:
@@ -59,8 +61,9 @@ Examples:
 - ERA from the regular-season API labelled "regular season and postseason" because the counts came from Statcast (QA4-01, closed in P0.15-B).
 - `offense_profile.scope` is set while every offense figure is `null`, and the analyst writes "Team offense splits cover the regular season through D" one sentence after "Season offense splits were not available" (F2).
 - A starter with no figure in any group has no scope (closed in P0.15-B: "no season figures are available").
+- `sample.rates.scope` is set while the counts are unavailable (`sample.rates.source` is `"unavailable"`), though `season_summary.scopes.counts` is `null` (F17). `sample.arsenal.scope` with `pitches == 0` is **not** this: the zero was measured.
 
-**Check:** one table of groups (figure paths, scope path, source rule). A figure without a scope, a scope without a figure, or a scope that disagrees with the source of its group fails. No sentence says "all figures" about a starter whose groups differ.
+**Check (`data_pipeline/contract_checks.py`, `GROUPS`):** one table of groups (pitch data, season rates, counts, offense), each with how to tell that it has a figure, every field that carries its scope, and the source rule. A figure without a scope, a scope without a figure, or a scope that disagrees with the source of its group fails (`rule3:<group>#figures_without_scope`, `#scope_without_figures`, `#scope_disagrees_with_source`). Only live matchups are asked. No sentence says "all figures" about a starter whose groups differ.
 
 ### Rule 4. Claims
 
@@ -69,7 +72,15 @@ Examples:
 - Each emitted phrase is recorded as a claim `{id, key, args, subject, location}`. The sentences of a matchup (report, critic review, data confidence notes, postgame) are in `matchups[i].report.claims[]`, with locations relative to the matchup (`report.sections[1].body`); the sentences the generator writes (workflow, data label) are in `claims[]` at the root, with locations from the root. `subject` is the starter the sentence is about (`away_starter`, `home_starter`) or `null`; `location` is `null` for a part of another sentence. `metadata.language` says which catalog the keys belong to.
 - `args` are values copied from the payload (a name, a number, a label, a scope) or `{"claim": id}`, a reference to a claim that is part of the sentence (a plural such as "3 home runs" inside a longer sentence). Never an internal (a path, an exception, a function name, an object). Two pseudo keys build sentences out of sentences: `@join` (args `sep` and `parts`) and `@capitalize` (arg `of`); they assert nothing themselves.
 - The text of a report is exactly the join of its registered phrases. The validator renders each claim again from its key and args and requires the text of the field to be exactly that; a text field with no claim, a claim for a field that does not exist, a part that no sentence uses, or a sentence edited after the fact fails. Which fields are text is a list in `data_pipeline/claims.py` (`MATCHUP_TEXT_PATHS`, `ROOT_TEXT_PATHS`); the static content of the demo (archive rows, disclaimers, bios) is not agent or generator text and joins the list when it becomes mode-dependent (D2.4).
-- Each key has a condition in the registry (section 3). The validator evaluates it on the payload and the args. A phrase whose condition is false fails.
+- Each key has a condition in the registry (section 3). The validator evaluates it on the payload and the args. A phrase whose condition is false fails (`rule4:<key>#<reason>`).
+- **A text argument is a payload value, a reference, or one of the forms below.** `tests/test_claim_args.py` fails over the four generated payloads, the fourteen golden scenarios and the served file if a text argument of any claim is none of these: a reference `{"claim": id}`; the separator of an `@join`; the empty text (a qualifier that is not written); or a value of the payload outside the sentences, written in one of these forms. The list is closed: a new form needs its reason written here and a test.
+  1. *As is*: a name, a label, a scope or a pitch exactly as the payload has it. The sentence quotes the value.
+  2. *Lower case*: `solid command`, `four-seam fastball`. A label or a pitch in the middle of a sentence is written in lower case; the value does not change.
+  3. *First letter in lower case*: `above-average swing-and-miss ability`. A rate label ("Above-average swing-and-miss ability") that follows its subject ("He shows …") loses its capital and nothing else.
+  4. *Without ` fastball`, then lower case*: `four-seam`, `sinker`. The data says "Four-seam Fastball"; a sentence says the pitch by its short name.
+  5. *A number written as text*: the number of the payload as Python writes it (`str(n)`) or without a trailing zero (`12.0` is `12`). The critic writes a share inside a sentence. A figure computed from two payload numbers (a percentage of two counts) or grouped with thousands separators is not a form of a payload value; the condition of its key in the registry checks it against the raw counts (`critic.pitch.low_counts`).
+  A piece cut out of another sentence (the action of a question, the names of two starters joined with `", "`) is none of these: it is its own phrase, referenced (`analyst.watch.action.*`, `@join`).
+- **The condition of a claim about data is evaluated on the payload, never by running the critic again.** A claim about data (`critic.pitch.*`, `critic.names.*`, `critic.limited.*`, `critic.command.*`, `critic.scope.*`, `critic.betting.*`) is checked against the fields it speaks about: `count`/`total` of the pitch mix, `sample.rates`, `scopes`, the text of the report. Running the critic again is only for claims about the process (`critic_review.summary` and the counts of the checks), because the critic is the only definition of what a check is. Until P0.15-D3.3 the registry still runs the critic again for `names`, `limited`, `command`, `scope` and `betting` (section 3.1 says so); D3.3 replaces that and adds a test that fails if a data condition calls the critic.
 - No agent phrase names a pitch that is not in the mapped set (see rule 8, warnings).
 - A text that says a game is upcoming ("upcoming", "tonight", "before first pitch", "today") is emitted only when the source state is `Preview` (and for "today", the game's date is today in its official zone). It never appears for a game whose state is `Live` or `Final`.
 
@@ -119,7 +130,7 @@ Examples: F3 (the Hero says "Cached Demo" over live data), F4 (`matchup_002`, "B
 
 ## 3. Registry of claims
 
-Every key that asserts a fact, with its condition on the payload. `m` = the matchup; `s` = the starter the phrase is about; `o` = his opponent's starter; `team` = the lineup the phrase is about (the opponent of `s`, so `team.offense_profile` is the offense `s` faces). Paths are relative to `m`. "Live" conditions are evaluated on live files; demo-only keys are emitted only in a demo file (rule 6). The machine form is `data_pipeline/claims_registry.py` (P0.15-D3); a test fails if the two differ, or if a catalog key is neither here nor in section 3.5.
+Every key that asserts a fact, with its condition on the payload. `m` = the matchup; `s` = the starter the phrase is about; `o` = his opponent's starter; `team` = the lineup the phrase is about (the opponent of `s`, so `team.offense_profile` is the offense `s` faces). Paths are relative to `m`. "Live" conditions are evaluated on live files; demo-only keys are emitted only in a demo file (rule 6). The machine form is `data_pipeline/claims_registry.py` (P0.15-D3.2); a test fails if the two differ, or if a catalog key is neither here nor in section 3.5.
 
 ### 3.1 Agent phrases (`agents/messages_en.py`)
 
@@ -162,15 +173,16 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `analyst.scope.offense` | Team offense splits cover the `{label}`. | `team.offense_profile.scope == {label}` **and** at least one of `ops_vs_hand`, `k_rate_vs_hand`, `bb_rate_vs_hand` is not `null` (F2: today the second part is not checked) |
 | `writer.strength` | `s` brings this strength. | `{strength}` is the first item of the strengths derived from labels that cleared their threshold (rows `analyst.strength.*` and `analyst.style.*`) |
 | `writer.strength_none` | `s` has no claimed strength because the data is limited. | `s` has a `sample` and no strength was derived |
-| `writer.arsenal.contrast` | The main contrast is `{away_style}` versus `{home_style}`; the primary pitches are `{away_primary}` and `{home_primary}`. | Neither arsenal limited; `{*_style}` are the `style_label`s, `{*_primary}` the `primary_pitch`es |
+| `writer.arsenal.contrast` | The main contrast is `{away_style}` versus `{home_style}`; the primary pitches are `{away_primary}` and `{home_primary}`. | Neither arsenal limited; `{*_style}` are `analyst.style.*` sentences (made of the primary and put-away pitch), `{*_primary}` the `primary_pitch`es |
 | `writer.arsenal.works_off` | `s` works off `{style}`. | `{style}` is `s`'s `style_label`; `s` arsenal limited is false |
 | `writer.arsenal.no_contrast` | No arsenal contrast is drawn because at least one arsenal has too little data. | At least one `sample.limited.arsenal` |
 | `writer.confidence.limited` | Samples below the minimum are flagged as limited. | Some `sample.limited.*` is true |
-| `writer.confidence.live_full` | The report uses a live snapshot with probable pitchers, Statcast pitch data and season offense splits. | Game state is `Preview`; **some starter has `sample.arsenal.pitches > 0`; both teams have `ops_vs_hand`** (F1: today the pitch-data part is not checked) |
-| `writer.confidence.live_no_offense` | Live snapshot with probable pitchers and Statcast pitch data; offense splits not available; lineups can change before first pitch. | Game state is `Preview`; **some starter has `sample.arsenal.pitches > 0`**; some team lacks `ops_vs_hand` (F1) |
-| `writer.confidence.demo` | The report is based on cached demo data. | `data_mode` is `demo_cached` or `demo_fallback` |
-| `writer.watch_line`, `writer.watch_whether` | The first thing to watch. | Equals the first of `three_things_to_watch` |
-| `analyst.watch.land` | Can `s` land the `{putaway}` early? | `putaway_pitch == {putaway}` named, at least 15% of his pitches, `not sample.limited.arsenal` |
+| `writer.confidence.live_full` | The report uses a live snapshot with probable pitchers, Statcast pitch data and season offense splits. | Game state is `Preview` (F5, F16); **some starter has `sample.arsenal.pitches > 0`; both teams have `ops_vs_hand`** (F1: today the pitch-data part is not checked) |
+| `writer.confidence.live_no_offense` | Live snapshot with probable pitchers and Statcast pitch data; offense splits not available; lineups can change before first pitch. | Game state is `Preview` (F5, F16); **some starter has `sample.arsenal.pitches > 0`**; some team lacks `ops_vs_hand` (F1) |
+| `writer.confidence.demo` | The report is based on cached demo data. | The matchup is not live (`data_confidence.level` is not `fetched_snapshot`); a demo sentence in a live matchup is a violation, and a demo matchup inside a live file is rule 6 (F4) |
+| `writer.watch_line`, `writer.watch_whether` | The first thing to watch. | `{name}` and `{action}` are those of the first question of `three_things_to_watch`: the same claim, not a copy of its text |
+| `analyst.watch.action.land` | `s` can land the `{putaway}` early (the action of a question). | `putaway_pitch == {putaway}` named, at least 15% of his pitches, `not sample.limited.arsenal` |
+| `writer.section.summary` | The game is today ("Today's Matchup Summary"). | The state of the game is known and is `Preview` (F16; a live matchup's published `status` is not yet the schedule's state, F5) |
 | `critic.summary.supported` / `.warnings` / `.unsupported` | The critic checked `{checked}` claims, none unsupported, `{warnings}` warnings. | `{checked} == len(checks)`; counts equal the statuses in `checks`; `unsupported` never published (the generator stops) |
 | `critic.note.focus` | The report is focused on matchup fit, not outcome prediction. | The check `critic.betting.claim` ran and has status `not_present` (F8) |
 | `critic.note.stuff_plus` | Avoided claiming official Stuff+. | **No condition can be stated; removed in D2.1** (F8) |
@@ -182,8 +194,10 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `critic.scope.claim` / `.same` / `.supported` / `.unsupported` / `.all_claimed` | The report says the figures cover different samples, when they do. | `labels.scopes_differ(s)` matches what the report says; "all pitcher figures cover" never about a starter whose groups differ |
 | `critic.betting.claim` / `.absent` / `.unsupported` | The report does not predict the winner. | No term of `critic.betting_terms` in any report text |
 | `grader.explanation.*`, `grader.plan.*`, `grader.next.*`, `grader.call.*` | Facts about a completed start (Game Score band, walks, hits, earned runs, strikeouts, innings). | `m.postgame` is not `null` and the figure comes from `postgame.starter_lines.s` (box score from the source); never emitted for `Preview` or `Live` games; at HEAD `postgame` is `null` for live files, so none is emitted |
-| `scout.final.*`, `scout.demo.*` | Demo notes. | Demo files only (rule 6) |
-| `analyst.demo.*`, `analyst.fallback.*`, `analyst.command_note.*`, `analyst.contact_note.*`, `writer.default_strength` | Demo reads built from demo labels and fallbacks. | Demo files only (a live starter always has `sample`, which routes to the live reads) |
+| `scout.final.*`, `scout.demo.*` | Demo notes. | The matchup is a demo one (not live): final for `scout.final.*`, not final for `scout.demo.*` (a demo matchup inside a live file is rule 6, F4) |
+| `analyst.demo.*`, `analyst.fallback.*`, `analyst.command_note.*`, `analyst.contact_note.*`, `writer.default_strength` | Demo reads built from demo labels and fallbacks. | A demo matchup and a starter with no `sample` (a live starter always has one, which routes to the live reads) |
+
+The conditions of `critic.names.*`, `critic.limited.*`, `critic.command.*`, `critic.scope.*` and `critic.betting.*` are evaluated by running the critic again on the published matchup: the sentence is part of check *i* of `critic_review`, and the check the critic finds again at *i* must have the same claim, status and evidence. The pitch checks (`critic.pitch.*`) and the summary are checked against the raw counts and the list of checks, not by running the critic again. `analyst.pressure.*` are internal findings: any appearance in the published text is a violation.
 
 ### 3.2 Generator text (`data_pipeline/`), registered by the same function
 
@@ -191,14 +205,15 @@ Keys have the form `generator.*`; their text stays in the generator, in English 
 
 | Key | Asserts | Condition |
 |---|---|---|
-| `generator.workflow.loaded` | Loaded data for `{N}` matchups. | `{N} == len(matchups)`; the word "cached" only when `data_mode` is a demo mode (F3, F4) |
-| `generator.workflow.identified`, `.generated` | The agents identified findings and wrote reports. | Every matchup has a `report` |
-| `generator.workflow.checked` | The critic checked every claim: none unsupported, `{w}` warnings. | `{w}` equals the warnings across the matchups of the file; no `unsupported` |
-| `generator.workflow.graded` | Graded `{n}` completed starters. | `{n}` equals the number of `postgame.starter_lines` in the file; otherwise the step is `not_applicable` |
-| `generator.metadata.last_updated` | Live data fetched `{date}`. | `data_mode == fetched_snapshot`, `{date}` is the date of `data_fetched_at` |
-| `generator.metadata.data_sources` | Each listed source was used. | MLB Stats API and Baseball Savant listed only when the file has fields from them; "Cached demo snapshots" only in demo modes (F3) |
-| `generator.confidence.note` | Live snapshot fetched `{date}` for `{id}`. | `{date}` equals the date of `data_fetched_at`; `{id}` is the matchup's `id` |
-| `generator.archive.result_label` | Pregame report available. | Game state is `Preview` (for other states the label follows the state) |
+| `generator.workflow.loaded` | Loaded data for `{count}` matchups. | `{count}` is the number of matchups the file counts: every matchup of a demo file, only the live ones of a live file (F4); the word "cached" only in a demo file (F3) |
+| `generator.workflow.identified`, `.generated` | The agents identified findings and wrote reports. | Every matchup the file counts has a `report` |
+| `generator.workflow.checked` | The critic checked every claim: none unsupported, `{warnings}` warnings. | `{warnings}` equals the warnings across the matchups the file counts; no `unsupported` |
+| `generator.workflow.graded`, `.graded_none` | Graded `{count}` completed starters / the featured game has not been completed. | `{count}` equals the number of `postgame.starter_lines` of the matchups the file counts; `.graded_none` only when that number is 0 |
+| `generator.metadata.last_updated.live` | Live data fetched `{date}`. | `data_mode == fetched_snapshot`; `metadata.data_fetched_at` exists and `{date}` is its date (F9: the field does not exist yet) |
+| `generator.metadata.last_updated.fallback`, `.demo` | Live data is unavailable and the page shows demo data / the data is a demo. | `data_mode` is `demo_fallback` / `demo_cached` |
+| `generator.confidence.live_note` | Live snapshot fetched `{date}` for `{matchup_id}`. | The matchup is live, `{matchup_id}` is its `id`, `{date}` is the date of `metadata.data_fetched_at` (F9) |
+
+Texts of the generator that are not keys yet (they become keys in P0.15-D2.4, with F3): `metadata.data_sources` (each listed source is used: MLB Stats API and Baseball Savant only when the file has fields from them, "Cached demo snapshots" only in demo modes, F3) and the archive's `result_label` ("Pregame report available" only when the game state is `Preview`). Rule 6 already checks the wording of `metadata.data_sources` and `disclaimers` in a live file.
 
 ### 3.3 Frontend text
 
@@ -222,7 +237,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 
 ### 3.5 Catalog entries that assert nothing
 
-`@join` and `@capitalize` (they only combine other sentences), `count.*` (plurals), `analyst.list_and`, `analyst.goal.*`, `analyst.read.he`, `analyst.figure.*`, `analyst.figure.list_and`, `analyst.watch.ahead`, `analyst.watch.efficient`, `analyst.watch.keep`, `analyst.watch.deep` (questions), `analyst.offense.with_notes` (joins two phrases), `writer.watch_prefix`, `writer.section.*` (titles, except the F16 title), `writer.forbidden_terms`, `writer.required_terms`, `critic.role.*`, `critic.generic_fastball`, `critic.pitch_aliases`, `critic.limited.pitches`, `critic.limited.none`, `critic.command.word`, `critic.command.no_label`, `critic.scope.marker`, `critic.scope.all_marker`, `critic.betting_terms`, `critic.betting.item`. (Fragments and vocabularies used by the phrases above.)
+`@join` and `@capitalize` (they only combine other sentences), `count.*` (plurals), `analyst.list_and`, `analyst.goal.*`, `analyst.read.he`, `analyst.figure.*`, `analyst.figure.list_and`, `analyst.watch.question`, `analyst.watch.action.ahead`, `analyst.watch.action.efficient`, `analyst.watch.action.keep`, `analyst.watch.deep` (questions and the actions they are made of; the land action asserts a put-away pitch and is registered above), `analyst.offense.with_notes` (joins two phrases), `writer.section.*` (titles, except the F16 title), `writer.forbidden_terms`, `writer.required_terms`, `critic.role.*`, `critic.generic_fastball`, `critic.pitch_aliases`, `critic.limited.pitches`, `critic.limited.none`, `critic.command.word`, `critic.command.no_label`, `critic.scope.marker`, `critic.scope.all_marker`, `critic.betting_terms`, `critic.betting.item`, `generator.workflow.description` (describes the product, not the data). (Fragments and vocabularies used by the phrases above.)
 
 ## 4. Known violations at HEAD `043db03` and where each is closed
 
@@ -244,6 +259,8 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F14 | 2, 4 | P0.15-D2.2 | "no batters (pitches) faced on record" written for a `null` count (`agents/matchup_analyst.py`) |
 | F15 | 2 | P0.15-D2.3 | The analyst falls back to the right hand (`starter.get("throws", "R")`, `_throws_label`); with hand `S` it would write "SHP" |
 | F16 | 4, 7 | P0.15-D2.5 | "Today's Matchup Summary" and "before first pitch" are time claims with no condition |
+| F17 | 3 | P0.15-D2.1 | `sample.rates.scope` is set while the counts are unavailable (found by the rule 3 check in P0.15-D3.2) |
+| F18 | 4 | P0.15-D2.1 | "Can X land the changeup early in counts?" for a put-away pitch under 15% of his pitches: the demo's `matchup_002` (Demo Pitcher C, 12%), where the critic warns about the same pitch (found by the rule 4 check in P0.15-D3.2) |
 
 F13 is not a violation of a rule but a note on how little of the JSON the page shows; the contract still applies to what is not rendered.
 
