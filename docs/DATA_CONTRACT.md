@@ -42,7 +42,7 @@ Examples from Annex A:
 Examples:
 
 - `events` null in every row of a Statcast frame published `batters_faced 0`, `strikeouts 0`, `walks 0`, `home_runs 0` from source `statcast`, and the card showed K "0" (F6b). The code could not tell "no plate appearance completed" from "unusable column". The column is unusable: the counts are `null`, `sample.rates.source` is `"unavailable"`, and an error is recorded. (F6b, closed in P0.15-D2.2a; the fix is in `_statcast_counts`: the counts are `None` when no row ends a plate appearance).
-- The analyst writes "no batters faced on record" and "no pitches on record" when the count is `null`, because it tests `if batters` (F14). A missing count is not a zero count.
+- The analyst writes "no batters faced on record" and "no pitches on record" when the count is `null`, because it tested `if batters` (F14, closed in P0.15-D2.2b). A missing count is not a zero count: an unknown has its own sentence ("batters faced not available", "pitch count not available"), and so does the critic's evidence for a limited arsenal; the detail panel says "Pitch data is not available for X" instead of "has no pitches on record" when the pitch count is `null`.
 - `_usage_pct` returning `None` for a side the starter never faced (P0.14-C) is correct; a real `0%` against a side he did face stays `0%`.
 - `pitch_type` null in every row of a populated frame produced a debut with `pitches 0` and no error (F6a, closed in P0.15-D2.2a): the answer is rejected whole, as is a frame with no `stand` of `L` or `R` in any row, whose per-side shares would be `null` and which the page reads as "No left-handed batters faced.", a claim the data does not support.
 
@@ -159,9 +159,11 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `analyst.read.shows` | `s` shows `{label}`. | `{label}` is `swing_miss_label` (requires `not sample.limited.strikeout`) or `command_label` (requires `not sample.limited.control`) |
 | `analyst.read.qualifier` / `.qualifier_both` | The rates are from the regular season (or regular season and postseason). | `scopes.counts` is `regular_season` (or `regular_and_postseason`) and the groups of `s` differ |
 | `analyst.have.pitches` | `s` has `{count}` pitches. | `{count} == sample.arsenal.pitches`, which is not `null` |
-| `analyst.have.no_pitches` | `s` has no pitches on record. | `sample.arsenal.pitches == 0`, measured (F14: today also written for `null`) |
+| `analyst.have.no_pitches` | `s` has no pitches on record. | `sample.arsenal.pitches == 0`, measured (F14, closed in P0.15-D2.2b) |
+| `analyst.have.pitches_unavailable` | `s`'s pitch count is not available. | `sample.arsenal.pitches` is `null` (F14, closed in P0.15-D2.2b) |
 | `analyst.have.batters` | `s` faced `{count}` batters. | `{count} == sample.rates.batters_faced`, which is not `null` |
-| `analyst.have.no_batters` | `s` has no batters faced on record. | `sample.rates.batters_faced == 0`, measured, with `sample.rates.source != "unavailable"` (F14: today also written for `null`) |
+| `analyst.have.no_batters` | `s` has no batters faced on record. | `sample.rates.batters_faced == 0`, measured, with `sample.rates.source != "unavailable"` (F14, closed in P0.15-D2.2b) |
+| `analyst.have.batters_unavailable` | `s`'s batters faced are not available. | `sample.rates.batters_faced` is `null` (F14, closed in P0.15-D2.2b) |
 | `analyst.data.arsenal` | `s`'s arsenal data is limited, with the count and threshold, and no arsenal claim follows. | `sample.limited.arsenal`, `{needed} == sample.thresholds.arsenal`; no other phrase about `s` names a pitch or an arsenal fact |
 | `analyst.data.strikeout` / `.control` | Strikeout (control) data is limited, with count and threshold. | `sample.limited.strikeout` (`.control`), `{needed} == sample.thresholds.strikeout` (`.control`) |
 | `analyst.data.contact` | `s` allowed `{home_runs}` over `{batters}` batters faced. | `sample.rates.home_runs` and `batters_faced` are not `null`, `batters_faced > 0`, and equal the arguments |
@@ -205,7 +207,7 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `critic.pitch.claim` + `.supported_primary` / `.supported_putaway` / `.low` / `.low_counts` | `s`'s primary (put-away) pitch is `{pitch}`, with usage. | `{pitch} == primary_pitch` (`putaway_pitch`); `{count}`/`{total}` are `pitch_mix[].s.count`/`total`; `supported` needs `count/total >= 30%` (`15%`), else a warning |
 | `critic.pitch.absent` | `{pitch}` is not in `s`'s pitch mix. | `pitch_mix[].s.count == 0` or the pitch is missing from the mix |
 | `critic.names.claim` / `.supported` / `.credited` / `.nobody` / `.unsupported` | The report names only pitches thrown by the starter it credits. | Every pitch named in `s`'s own sentences has `pitch_mix[].s.count > 0` |
-| `critic.limited.claim` / `.supported` / `.unsupported` | `s`'s arsenal is limited and the report names no pitch for him. | `sample.limited.arsenal`; no pitch named in `s`'s own sentences |
+| `critic.limited.claim` / `.supported` / `.unsupported` / `.supported_unavailable` / `.unsupported_unavailable` | `s`'s arsenal is limited and the report names no pitch for him. | `sample.limited.arsenal`; no pitch named in `s`'s own sentences; the `_unavailable` evidence needs `sample.arsenal.pitches` to be `null`, the others a count that is not `null` (a measured 0 says "no pitches on record") (F14) |
 | `critic.command.*` | The report's command claim about `s` matches his label. | `command_label` for `s` (or "not available"); `walks`/`batters` equal `sample.rates`; `{scope}` equals `scopes.counts` |
 | `critic.scope.claim` / `.same` / `.supported` / `.unsupported` / `.all_claimed` | The report says the figures cover different samples, when they do. | `labels.scopes_differ(s)` matches what the report says; "all pitcher figures cover" never about a starter whose groups differ |
 | `critic.betting.claim` / `.absent` / `.unsupported` | The report does not predict the winner. | No term of `critic.betting_terms` in any report text |
@@ -272,7 +274,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F11 | 5 | P0.15-D2.3 | One unsafe game (or hand `S`) rejects the whole snapshot |
 | F12 | 7 | P0.15-D2.5 | "Today" compared with the UTC date |
 | F13 | — | not touched | What the page renders of the report is a small part of it |
-| F14 | 2, 4 | P0.15-D2.2 | "no batters (pitches) faced on record" written for a `null` count (`agents/matchup_analyst.py`) |
+| F14 | 2, 4 | P0.15-D2.2b (done) | "no batters (pitches) faced on record" written for a `null` count (`agents/matchup_analyst.py`) |
 | F15 | 2 | P0.15-D2.3 | The analyst falls back to the right hand (`starter.get("throws", "R")`, `_throws_label`); with hand `S` it would write "SHP" |
 | F16 | 4, 7 | P0.15-D2.5 | "Today's Matchup Summary" and "before first pitch" are time claims with no condition |
 | F17 | 3 | P0.15-D2.1a (done) | `sample.rates.scope` is set while the counts are unavailable (found by the rule 3 check in P0.15-D3.2) |

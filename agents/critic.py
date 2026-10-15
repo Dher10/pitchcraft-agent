@@ -292,9 +292,18 @@ def _limited_arsenal_check(
                 add(_display_pitch(pitch))
     pitches = sample["arsenal"]["pitches"]
     with t.subject(slot):
-        have = t("critic.limited.pitches", count=pitches) if pitches else t("critic.limited.none")
         needed = sample["thresholds"]["arsenal"]
         claim = t("critic.limited.claim", name=starter["name"])
+        if pitches is None:  # an unknown count is not "no pitches on record" (F14)
+            if named:
+                evidence = t("critic.limited.unsupported_unavailable", needed=needed, named=t.join(", ", named))
+                return {"claim": claim, "status": "unsupported", "evidence": evidence}
+            return {
+                "claim": claim,
+                "status": "supported",
+                "evidence": t("critic.limited.supported_unavailable", needed=needed),
+            }
+        have = t("critic.limited.pitches", count=pitches) if pitches else t("critic.limited.none")
         if named:
             return {
                 "claim": claim,

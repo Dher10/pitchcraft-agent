@@ -160,7 +160,9 @@ function PitcherAttack({
         </div>
       ) : (
         <p className="mt-4 rounded-lg border border-neutral-200 bg-white p-4 text-sm leading-6 text-neutral-600">
-          {starter.name} has no pitches on record, so there is no arsenal to show.
+          {starter.sample && starter.sample.arsenal.pitches === null
+            ? `Pitch data is not available for ${starter.name}, so there is no arsenal to show.`
+            : `${starter.name} has no pitches on record, so there is no arsenal to show.`}
         </p>
       )}
       {starter.sample ? (

@@ -286,11 +286,18 @@ def _data_notes(t: Catalog, name: str, sample: dict[str, Any]) -> list[str]:
     rates = sample["rates"]
     limited = sample["limited"]
     batters = rates["batters_faced"]
-    have_batters = t("analyst.have.batters", count=batters) if batters else t("analyst.have.no_batters")
+    # An unknown count is not a count of none (F14): `None` and a measured 0 are different sentences.
+    if batters is None:
+        have_batters = t("analyst.have.batters_unavailable")
+    else:
+        have_batters = t("analyst.have.batters", count=batters) if batters else t("analyst.have.no_batters")
     notes: list[str] = []
     if limited["arsenal"]:
         pitches = sample["arsenal"]["pitches"]
-        have = t("analyst.have.pitches", count=pitches) if pitches else t("analyst.have.no_pitches")
+        if pitches is None:
+            have = t("analyst.have.pitches_unavailable")
+        else:
+            have = t("analyst.have.pitches", count=pitches) if pitches else t("analyst.have.no_pitches")
         notes.append(t("analyst.data.arsenal", name=name, have=have, needed=needed["arsenal"]))
     if limited["strikeout"]:
         notes.append(t("analyst.data.strikeout", name=name, have=have_batters, needed=needed["strikeout"]))

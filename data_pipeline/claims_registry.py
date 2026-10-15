@@ -419,6 +419,16 @@ def _have_no_pitches(c: Ctx) -> None:
     c.require(pitches == 0, "unknown_not_zero", "his pitch count is not a measured zero")
 
 
+def _have_pitches_unavailable(c: Ctx) -> None:
+    pitches = ((_sample(c.starter) or {}).get("arsenal") or {}).get("pitches")
+    c.require(pitches is None, "known", "his pitch count is known")
+
+
+def _have_batters_unavailable(c: Ctx) -> None:
+    batters = ((_sample(c.starter) or {}).get("rates") or {}).get("batters_faced")
+    c.require(batters is None, "known", "his batters faced is known")
+
+
 def _have_batters(c: Ctx) -> None:
     batters = ((_sample(c.starter) or {}).get("rates") or {}).get("batters_faced")
     c.require(batters is not None and c.args["count"] == batters, "count", "the count is not his batters faced")
@@ -883,6 +893,17 @@ def _limited_supported(c: Ctx) -> None:
     c.require(not named, "named", f"the report names {', '.join(named)} for him")
 
 
+def _limited_supported_unavailable(c: Ctx) -> None:
+    sample = _sample(c.starter)
+    if sample is None or not _limited(c.starter, "arsenal"):
+        c.fail("not_limited", "his arsenal is not limited")
+        return
+    c.require(sample["arsenal"]["pitches"] is None, "count", "his pitch count is known, and the sentence says it is not available")
+    c.require(c.args["needed"] == sample["thresholds"]["arsenal"], "needed", "the minimum is not the sample's threshold")
+    named = facts.pitches_named_for(c.matchup, _report(c), c.slot, _catalog(c))  # type: ignore[arg-type]
+    c.require(not named, "named", f"the report names {', '.join(named)} for him")
+
+
 def _command(c: Ctx) -> None:
     kind = c.key.rsplit(".", 1)[1]
     if kind in ("wrong_claim", "wrong_evidence"):
@@ -1106,6 +1127,8 @@ RULES: dict[str, Rule] = {
     "analyst.have.pitches": _have_pitches,
     "analyst.have.no_pitches": _have_no_pitches,
     "analyst.have.batters": _have_batters,
+    "analyst.have.pitches_unavailable": _have_pitches_unavailable,
+    "analyst.have.batters_unavailable": _have_batters_unavailable,
     "analyst.have.no_batters": _have_no_batters,
     "analyst.data.arsenal": _data_limited,
     "analyst.data.strikeout": _data_limited,
@@ -1176,6 +1199,8 @@ RULES: dict[str, Rule] = {
     "critic.limited.claim": _limited_claim,
     "critic.limited.supported": _limited_supported,
     "critic.limited.unsupported": _problem_published,
+    "critic.limited.supported_unavailable": _limited_supported_unavailable,
+    "critic.limited.unsupported_unavailable": _problem_published,
     "critic.command.*": _command,
     "critic.scope.claim": _scope_claim,
     "critic.scope.same": _critic_scope_same,

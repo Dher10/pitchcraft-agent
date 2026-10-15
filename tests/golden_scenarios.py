@@ -17,6 +17,7 @@ from tests.live_helpers import summary_scopes
 from tests.test_live_sample_pipeline import frame  # noqa: F401  (kept for scenario helpers)
 from tests.test_live_starters_no_demo_fields import _fake_live_game
 from tests.test_limited_samples import (
+    REG,
     AWAY_PRIMARY,
     AWAY_PUTAWAY,
     HOME_PRIMARY,
@@ -30,6 +31,15 @@ SPLITS_VR = {"vr": {"ops": ".801", "avg": ".270", "strikeouts": 300, "walks": 15
                     "plate_appearances": 1500, "k_rate": 24.5, "bb_rate": 10.2}}
 SPLITS_VL = {"vl": {"ops": ".655", "avg": ".231", "strikeouts": 280, "walks": 90,
                     "plate_appearances": 1400, "k_rate": 20.0, "bb_rate": 6.4}}
+
+
+def measured_zero_sample() -> dict[str, Any]:
+    """An API line that measured zero batters faced: a figure, with its scope (rule 2, rule 3)."""
+
+    return labels.build_sample(
+        pitches=0, arsenal_scope=REG, batters_faced=0, strikeouts=0, walks=0, home_runs=0,
+        rates_source="mlb_api", rates_scope=REG,
+    )
 
 
 def live(mp, away=None, home=None, splits=None, edit=None) -> dict[str, Any]:
@@ -98,6 +108,37 @@ def _no_figures(game: dict[str, Any]) -> None:
         game[slot]["sample"]["rates"]["scope"] = None
 
 
+def _measured_zero_counts(game: dict[str, Any]) -> None:
+    """The away starter has a line of zero batters faced from the API: a measured zero, not an unknown."""
+
+    summary = game["away_starter"]["season_summary"]
+    summary.update(era="N/A", whip="N/A", innings="0.0", strikeouts=0, walks=0, home_runs_allowed=0)
+
+
+def _unknown_figures(game: dict[str, Any]) -> None:
+    """
+    The away starter's pitch count and counts are unknown (not 0): as the pipeline writes a starter whose
+    Statcast answer cannot be trusted and whose API line is missing (`unknown_sample`).
+    """
+
+    starter = game["away_starter"]
+    starter["sample"] = labels.build_sample(
+        pitches=None,
+        arsenal_scope=None,
+        batters_faced=None,
+        strikeouts=None,
+        walks=None,
+        home_runs=None,
+        rates_source="unavailable",
+        rates_scope=None,
+    )
+    starter["season_summary"].update(
+        era="N/A", whip="N/A", innings="N/A", strikeouts=None, walks=None, home_runs_allowed=None,
+        scopes={"season_rates": None, "counts": None},
+    )
+    labels.apply_profile_labels(starter["pitching_profile"], starter["sample"])
+
+
 def scenarios(mp) -> dict[str, dict[str, Any]]:
     demo = demo_inputs.build_demo_payload()["matchups"]
     return {
@@ -116,6 +157,8 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "live_unavailable_era_whip_ip": live(mp, away=sample(arsenal_scope=REG_POST), edit=_unavailable_summary),
         "live_no_home_runs": live(mp, away=sample(hr=None)),
         "live_debut_no_figures": live(mp, away=debut_sample(), home=debut_sample(), edit=_no_figures),
+        "live_measured_zero_counts": live(mp, away=measured_zero_sample(), edit=_measured_zero_counts),
+        "live_unknown_figures": live(mp, away=debut_sample(), edit=_unknown_figures),
     }
 
 

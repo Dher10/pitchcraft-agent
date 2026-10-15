@@ -44,6 +44,19 @@ describe("a debut starter (QA-03)", () => {
     expect(away.textContent).toContain("Arsenal data limited: 0 pitches (100 needed)");
   });
 
+  it("does not say there are no pitches on record when the pitch count is unknown (F14)", () => {
+    // Statcast cannot be trusted for him (or the sample is unknown): `pitches` is null, not 0.
+    const matchup = debut();
+    matchup.starters.away_starter.sample = makeSample(null);
+
+    render(<DetailedAnalysis matchup={matchup} />);
+    const away = article("Debut Lefty");
+
+    expect(away.textContent).not.toMatch(/no pitches on record/i);
+    expect(within(away).getByText(/pitch data is not available for Debut Lefty/i)).toBeTruthy();
+    expect(away.textContent).toContain("Arsenal data limited: pitch count not available (100 needed)");
+  });
+
   it("does not change what the opponent shows", () => {
     render(<DetailedAnalysis matchup={debut()} />);
     const home = article("Veteran Righty");

@@ -20,7 +20,6 @@ KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
     "rule1:invented_derivation#matchups[].charts.pitch_movement.*.*.family": ("F6",),
     "rule1:placeholder#matchups[].teams.*.abbreviation": ("F7",),
     "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.overall": ("F20",),
-    "rule4:analyst.have.no_batters#unknown_not_zero": ("F14",),
     "rule4:generator.confidence.live_note#fetched_at": ("F9",),
     "rule4:generator.metadata.last_updated.live#fetched_at": ("F9",),
     "rule4:generator.workflow.graded#count": ("F4",),

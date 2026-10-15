@@ -1,6 +1,6 @@
 """The English output of the text-writing agents does not change when the text moves to a
 catalog (P0.12-D). The golden file was captured from the agents before the refactor, over
-fifteen matchups that cover every branch: demo, live, limited and debut arsenals, different
+seventeen matchups that cover every branch: demo, live, limited and debut arsenals, different
 scopes, missing putaway pitch, unavailable season figures, a debut with no figure at all,
 offense splits.
 

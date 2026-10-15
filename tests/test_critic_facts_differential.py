@@ -214,13 +214,20 @@ def disagreements(matchup: dict[str, Any], report: dict[str, Any]) -> list[str]:
             continue
         named = facts.pitches_named_for(matchup, report, slot, T)
         pitches = sample["arsenal"]["pitches"]
-        have = T("critic.limited.pitches", count=pitches) if pitches else T("critic.limited.none")
         needed = sample["thresholds"]["arsenal"]
-        want = (
-            ("unsupported", T("critic.limited.unsupported", have=have, needed=needed, named=T.join(", ", named)))
-            if named
-            else ("supported", T("critic.limited.supported", have=have.capitalize(), needed=needed))
-        )
+        if pitches is None:  # an unknown count is not "none on record" (F14)
+            want = (
+                ("unsupported", T("critic.limited.unsupported_unavailable", needed=needed, named=T.join(", ", named)))
+                if named
+                else ("supported", T("critic.limited.supported_unavailable", needed=needed))
+            )
+        else:
+            have = T("critic.limited.pitches", count=pitches) if pitches else T("critic.limited.none")
+            want = (
+                ("unsupported", T("critic.limited.unsupported", have=have, needed=needed, named=T.join(", ", named)))
+                if named
+                else ("supported", T("critic.limited.supported", have=have.capitalize(), needed=needed))
+            )
         if len(published) != 1 or (published[0]["status"], published[0]["evidence"]) != want:
             wrong.append(f"limited arsenal of {name}: critic {[(c['status'], c['evidence']) for c in published]} / facts {want}")
 
@@ -367,6 +374,9 @@ def confidence_sentences(matchup: dict[str, Any]) -> list[tuple[str, str]]:
         ("offense one (home)", T("writer.confidence.offense.one", with_split=team_h, without_split=team_a)),
         ("offense none", T("writer.confidence.offense.none")),
         ("lineups", T("writer.confidence.lineups")),
+        ("unavailable pitch count", T("analyst.have.pitches_unavailable")),
+        ("unavailable batters faced", T("analyst.have.batters_unavailable")),
+        ("critic: pitch count not available", T("critic.limited.supported_unavailable", needed=100)),
     ]
 
 

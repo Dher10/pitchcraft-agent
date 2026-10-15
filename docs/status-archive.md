@@ -4,6 +4,17 @@ The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so th
 
 ## Session log
 
+### 2026-10-15 — P0.15-D2.2b an unknown count is not "none on record" (F14) (Claude Code, gated)
+
+- **Owner's instructions:** commit b of `docs/plans/P0.15-D2.2.md`; tests red first; the full list of the process before the commit.
+- **Class:** a falsy test (`if batters`, `if pitches`) cannot tell an unknown from a measured zero, so a sentence about "none" was written for a `null` count (rule 2, rule 4).
+- **Sweep (ENGINEERING 6):** the same mistake was in three places, not one: `matchup_analyst._data_notes` (two sites), the critic's evidence for a limited arsenal (`critic.limited.none` for a `null` pitch count), and the detail panel ("has no pitches on record" when `pitches` is `null`). All three fixed, since they are sentences the fan reads. The contact sentence (`analyst.data.contact`) needs `batters_faced > 0` by the contract; I changed it first to allow a measured 0 and reverted: it is the contract's design, not part of F14, and is now a control test.
+- **What changed:** `messages_en.py` (`analyst.have.pitches_unavailable`, `analyst.have.batters_unavailable`, `critic.limited.supported_unavailable`, `critic.limited.unsupported_unavailable`), `matchup_analyst._data_notes`, `critic._limited_arsenal_check`, `claims_registry.py` (two rules for the analyst phrases and one for the critic's evidence), `known_violations.py` (`rule4:analyst.have.no_batters#unknown_not_zero` out, 22 left), `components/DetailedAnalysis.tsx`, `DATA_CONTRACT.md` (3.1 rows, rule 2, F14 done), the mirror and the injections of the differential test, `tests/golden_scenarios.py` (two new scenarios) and the golden file.
+- **Golden:** `live_debut` and `live_debut_no_figures` change (their "no batters faced on record" becomes "batters faced not available", since the API gave no batters faced there); `live_measured_zero_counts` (control: a measured zero keeps "no pitches / no batters faced on record") and `live_unknown_figures` (pitch count and counts unknown) are new. Nothing else moves; the served demo file is unchanged.
+- **Seen failing first:** 8 tests (7 Python, 1 component); controls that passed before: 5 (measured zeros keep their sentences, positive counts, the critic's measured zero, the contact sentence over 0 batters, the rule that forbids "none on record" for an unknown).
+- **Differential:** the three new sentences (and the critic's) are injected with the others: 0 disagreements.
+- **Verification:** see the commit.
+
 ### 2026-10-15 — P0.15-D2.2a a Statcast frame is usable, or a recorded failure, or unavailable counts (F6c, F6a, F6b) (Claude Code, gated)
 
 - **Owner's instructions:** plan of P0.15-D2.2 approved in six gated commits (`docs/plans/P0.15-D2.2.md`); decision A: reject the whole Statcast answer when it is malformed, degrade when it is well formed but incomplete, and write the criterion in the contract; before leaving `stand`, `release_speed`, `plate_x` and `plate_z` null in every row out, prove with a test that they publish no zeros (and move `stand` into this commit if it does); auto mode covers edits and tests, not the commit or the push.

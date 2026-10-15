@@ -95,6 +95,8 @@ EN_MESSAGES: dict[str, object] = {
     "analyst.have.no_pitches": "no pitches on record",
     "analyst.have.batters": "{count} batters faced",
     "analyst.have.no_batters": "no batters faced on record",
+    "analyst.have.pitches_unavailable": "pitch count not available",
+    "analyst.have.batters_unavailable": "batters faced not available",
     "analyst.data.arsenal": (
         "{name}'s arsenal data is limited ({have}; {needed} needed), "
         "so this report makes no arsenal claim for him."
@@ -225,6 +227,12 @@ EN_MESSAGES: dict[str, object] = {
     "critic.limited.none": "no pitches on record",
     "critic.limited.unsupported": "Only {have} (minimum {needed}), but the report names {named}.",
     "critic.limited.supported": "{have}, below the {needed} needed; the report makes no arsenal claim.",
+    "critic.limited.unsupported_unavailable": (
+        "Pitch count not available (the minimum is {needed}), but the report names {named}."
+    ),
+    "critic.limited.supported_unavailable": (
+        "Pitch count not available (the minimum is {needed}); the report makes no arsenal claim."
+    ),
     "critic.command.word": "command",
     "critic.command.below_claim": "{name} carries below-average command risk.",
     "critic.command.label_claim": "{name}'s command label is supported.",
