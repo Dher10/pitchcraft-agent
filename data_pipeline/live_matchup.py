@@ -57,6 +57,10 @@ def build_matchup(
     away = live_game["away_starter"]
     home = live_game["home_starter"]
     offense_scope = labels.make_scope(labels.SCOPE_REGULAR, through)
+    starters = {
+        "away_starter": build_starter(away, fg["away_team_abbr"], fg["away_pitcher_id"], through),
+        "home_starter": build_starter(home, fg["home_team_abbr"], fg["home_pitcher_id"], through),
+    }
     return {
         "id": matchup_id,
         "date": fetched_date,
@@ -91,10 +95,7 @@ def build_matchup(
                 "offense_profile": build_offense(home["throws"], live_game.get("away_team_splits"), offense_scope),
             },
         },
-        "starters": {
-            "away_starter": build_starter(away, fg["away_team_abbr"], fg["away_pitcher_id"], through),
-            "home_starter": build_starter(home, fg["home_team_abbr"], fg["home_pitcher_id"], through),
-        },
+        "starters": starters,
         "charts": {
             "pitch_mix": live_game["combined_charts"]["pitch_mix"],
             "velocity_by_pitch": live_game["combined_charts"]["velocity_by_pitch"],
@@ -117,7 +118,7 @@ def build_matchup(
             },
         },
         "postgame": None,
-        "data_confidence": confidence_note(matchup_id, fetched_date),
+        "data_confidence": confidence_note(matchup_id, fetched_date, starters),
     }
 
 
@@ -221,11 +222,21 @@ def archive_row(live_game: dict[str, Any], *, matchup_id: str, fetched_date: str
     }
 
 
-def confidence_note(matchup_id: str, fetched_date: str) -> dict[str, Any]:
+PITCH_DATA_FETCHED = "fetched_snapshot"
+PITCH_DATA_UNAVAILABLE = "unavailable"  # the word `sample.rates.source` uses for a figure that was not given
+
+
+def confidence_note(matchup_id: str, fetched_date: str, starters: dict[str, Any]) -> dict[str, Any]:
+    """
+    The confidence block of a live matchup. `pitch_data_status` is computed: `fetched_snapshot` when at
+    least one starter has a pitch on record, `unavailable` when none has (DATA_CONTRACT, F1).
+    """
+
+    pitched = any(labels.has_pitch_data(starter) for starter in starters.values())
     return {
         "level": "fetched_snapshot",
         "lineup_status": "probable_pitchers",
-        "pitch_data_status": "fetched_snapshot",
+        "pitch_data_status": PITCH_DATA_FETCHED if pitched else PITCH_DATA_UNAVAILABLE,
         "notes": [generator_catalog()("generator.confidence.live_note", date=fetched_date, matchup_id=matchup_id)],
     }
 

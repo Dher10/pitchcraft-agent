@@ -9,7 +9,7 @@ so the claim could not say where its text came from. A string argument passes on
 - it equals a value of the payload outside the sentences, in one of the forms listed in
   `ACCEPTED_FORMS` (each form, and its reason, is written in `docs/DATA_CONTRACT.md`, rule 4).
 
-The payloads are the corpus of the contract tests: four generator payloads, the fourteen golden
+The payloads are the corpus of the contract tests: four generator payloads, the fifteen golden
 scenarios and the served file.
 """
 

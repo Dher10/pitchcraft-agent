@@ -125,7 +125,6 @@ def test_rule_1_a_constant_that_asserts_a_fact_is_a_violation_whatever_its_value
     for pattern in (
         "matchups[].status",
         "matchups[].data_confidence.lineup_status",
-        "matchups[].data_confidence.pitch_data_status",
         "archive[].status",
         "archive[].result_label",
         "metadata.data_sources[]",
@@ -366,3 +365,20 @@ def test_the_pitch_family_table_is_the_one_the_pipeline_uses():
 
     for name in set(live_pipeline.PITCH_NAME_MAP.values()):
         assert name in labels.PITCH_FAMILY, f"{name} has no family: it would be published as an invented one"
+
+
+def test_rule_1_pitch_data_status_follows_the_starters_it_summarizes(live):
+    """F1: `fetched_snapshot` when at least one starter has pitches, `unavailable` when none has."""
+
+    assert "rule1:derivation_mismatch#matchups[].data_confidence.pitch_data_status" not in codes(live)
+    assert "rule1:constant_asserts_fact#matchups[].data_confidence.pitch_data_status" not in codes(live)
+
+    both_unpitched = deepcopy(live)
+    for slot in ("away_starter", "home_starter"):
+        matchup(both_unpitched, slot)["sample"]["arsenal"]["pitches"] = 0
+    assert "rule1:derivation_mismatch#matchups[].data_confidence.pitch_data_status" in codes(both_unpitched)
+
+    one_pitched = deepcopy(both_unpitched)
+    matchup(one_pitched, "home_starter")["sample"]["arsenal"]["pitches"] = 30
+    matchup(one_pitched)["data_confidence"]["pitch_data_status"] = "unavailable"
+    assert "rule1:derivation_mismatch#matchups[].data_confidence.pitch_data_status" in codes(one_pitched)

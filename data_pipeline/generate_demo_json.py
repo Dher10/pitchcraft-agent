@@ -428,7 +428,7 @@ def _apply_live_confidence(payload: dict[str, Any]) -> None:
     live_ids.update(f"matchup_live_{index}" for index in range(2, len(_live_game_entries()) + 1))
     for matchup in payload["matchups"]:
         if matchup["id"] in live_ids:
-            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _live["fetched_date"])
+            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _live["fetched_date"], matchup["starters"])
 
 def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
     matchups_by_id = {matchup["id"]: matchup for matchup in payload["matchups"]}

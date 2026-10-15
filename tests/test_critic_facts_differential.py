@@ -343,6 +343,33 @@ def sentences(kind: str, names: list[str], salt: int | None = None):
             yield term, "nobody", f"This one is a {term} tonight.", ("headline", "short summary", "neutral section", "bullet")
 
 
+def confidence_sentences(matchup: dict[str, Any]) -> list[tuple[str, str]]:
+    """
+    (label, text) of every sentence the confidence note is built from (P0.15-D2.1b), in every state of its
+    parts and whether or not the matchup is in that state: the readers must not see a claim about a pitch, a
+    command, a scope or a bet in them, wherever they are said.
+    """
+
+    away, home = (matchup["starters"][slot]["name"] for slot in SLOTS)
+    team_a, team_h = (matchup["teams"][side]["name"] for side in ("away", "home"))
+    items = [T("writer.confidence.item.pitchers"), T("writer.confidence.item.pitch_data"), T("writer.confidence.item.offense")]
+    return [
+        ("snapshot, one item", T("writer.confidence.snapshot", items=items[0])),
+        ("snapshot, two items", T("writer.confidence.snapshot", items=T("writer.confidence.list_two", first=items[0], second=items[1]))),
+        (
+            "snapshot, three items",
+            T("writer.confidence.snapshot", items=T("writer.confidence.list_three", first=items[0], second=items[1], third=items[2])),
+        ),
+        ("pitch data one (away)", T("writer.confidence.pitch_data.one", with_data=away, without_data=home)),
+        ("pitch data one (home)", T("writer.confidence.pitch_data.one", with_data=home, without_data=away)),
+        ("pitch data none", T("writer.confidence.pitch_data.none")),
+        ("offense one (away)", T("writer.confidence.offense.one", with_split=team_a, without_split=team_h)),
+        ("offense one (home)", T("writer.confidence.offense.one", with_split=team_h, without_split=team_a)),
+        ("offense none", T("writer.confidence.offense.none")),
+        ("lineups", T("writer.confidence.lineups")),
+    ]
+
+
 def variants(matchup: dict[str, Any], salt: int | None = None):
     """(label, report) for each injected sentence in each place it can sit (all of them without a `salt`)."""
 
@@ -356,6 +383,9 @@ def variants(matchup: dict[str, Any], salt: int | None = None):
         for label, subject, text, placements in sentences(kind, names, salt):
             for placement in placements:
                 yield f"{kind} {label!r} about {subject} in {placement}", place(base, placement, text, names)
+    for label, text in confidence_sentences(matchup):
+        for placement in (*PLACEMENTS, "bullet", "short summary"):
+            yield f"confidence {label!r} in {placement}", place(report_of(matchup), placement, text, names)
 
 
 def awkward(matchup: dict[str, Any]):
@@ -474,3 +504,17 @@ def test_the_worlds_cover_the_cases_that_have_been_a_problem():
 
     assert limited and differ and shared
     assert len(distinct_worlds()) >= 6
+
+
+def test_the_sentences_of_the_confidence_note_are_no_claim_for_either_reader():
+    """A sentence of the note says nothing about a pitch, a command, a scope or a bet, wherever it sits."""
+
+    read = 0
+    for label, matchup in few_worlds():
+        base = verdicts(matchup, report_of(matchup))
+        for variant, report in variants(matchup):
+            if variant.startswith("confidence "):
+                assert verdicts(matchup, report) == base, f"{label} / {variant}"
+                read += 1
+
+    assert read >= 10 * 6 * len(few_worlds())  # ten sentences, six places, every world

@@ -151,15 +151,27 @@ EN_MESSAGES: dict[str, object] = {
     "writer.confidence.limited": (
         "Samples below the minimum are flagged as limited and no claim is made from them."
     ),
-    "writer.confidence.live_no_offense": (
-        "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. "
-        "Season offense splits were not available for this game, so the lineup read makes no "
-        "offense claims. Lineups can still change before first pitch."
+    "writer.confidence.snapshot": "This report uses a fetched live snapshot with {items}.",
+    "writer.confidence.item.pitchers": "probable pitchers",
+    "writer.confidence.item.pitch_data": "Statcast pitch data",
+    "writer.confidence.item.offense": "season offense splits",
+    "writer.confidence.list_two": "{first} and {second}",
+    "writer.confidence.list_three": "{first}, {second}, and {third}",
+    "writer.confidence.pitch_data.one": (
+        "Statcast pitch data was available for {with_data} but not for {without_data}, "
+        "so the pitch read makes no arsenal claims about {without_data}."
     ),
-    "writer.confidence.live_full": (
-        "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, "
-        "and season offense splits. Lineups can still change before first pitch."
+    "writer.confidence.pitch_data.none": (
+        "Statcast pitch data was not available for either starter, so the pitch read makes no arsenal claims."
     ),
+    "writer.confidence.offense.one": (
+        "Season offense splits were available for the {with_split} lineup but not for the {without_split} "
+        "lineup, so the lineup read makes no offense claims about the {without_split} lineup."
+    ),
+    "writer.confidence.offense.none": (
+        "Season offense splits were not available for this game, so the lineup read makes no offense claims."
+    ),
+    "writer.confidence.lineups": "Lineups can still change before first pitch.",
     "writer.confidence.demo": (
         "This report is based on cached demo data for the capstone. Live lineup "
         "confirmation is not required for this version."

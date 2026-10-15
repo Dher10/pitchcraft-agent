@@ -21,7 +21,7 @@ from data_pipeline.contract_checks import (
     Violation,
     check_contract,
 )
-from tests.corpus import build, published
+from tests.corpus import build, golden_payload, published
 
 AWAY, HOME = "away_starter", "home_starter"
 
@@ -287,13 +287,70 @@ def test_rule_4_a_time_claim_for_a_game_that_is_not_known_to_be_a_preview_is_fou
 
 def test_rule_4_a_live_game_has_no_known_state_so_its_time_claims_fail(live):
     assert "rule4:writer.section.summary#game_state" in codes(live)
-    assert "rule4:writer.confidence.live_full#game_state" in codes(live)
+    assert "rule4:writer.confidence.lineups#game_state" in codes(live)
 
 
-def test_rule_4_the_confidence_note_must_have_pitch_data_to_say_so(debuts):
-    """F1: a game of two debuts says 'Statcast pitch data'."""
+def _pitches(m, slot, pitches):
+    m["starters"][slot]["sample"]["arsenal"]["pitches"] = pitches
 
-    assert any(c.startswith("rule4:writer.confidence.live_") and c.endswith("#pitch_data") for c in codes(debuts))
+
+def _split(m, side, has):
+    for field in ("ops_vs_hand", "k_rate_vs_hand", "bb_rate_vs_hand"):
+        m["teams"][side]["offense_profile"][field] = ".801" if has else None
+
+
+def test_rule_4_the_list_cannot_include_pitch_data_when_one_starter_has_none(live):
+    """F1: the first sentence lists "Statcast pitch data" only when both starters have a pitch on record."""
+
+    assert "rule4:writer.confidence.item.pitch_data#pitch_data" in added(live, lambda m: _pitches(m, AWAY, 0))
+
+
+def test_rule_4_the_note_cannot_say_no_starter_has_pitch_data_when_one_has(debuts):
+    assert "rule4:writer.confidence.pitch_data.none#pitch_data" in added(debuts, lambda m: _pitches(m, HOME, 12))
+
+
+def test_rule_4_the_note_of_one_starter_with_pitch_data_names_him_and_the_one_without(monkeypatch):
+    payload = published(golden_payload(monkeypatch, "live_debut"))  # the away starter is a debut, the home starter is not
+    assert not {c for c in codes(payload) if c.startswith("rule4:writer.confidence.pitch_data.one#")}
+
+    def swap(m):
+        _pitches(m, AWAY, 1500)
+        _pitches(m, HOME, 0)
+
+    assert "rule4:writer.confidence.pitch_data.one#names" in added(payload, swap)
+    assert "rule4:writer.confidence.pitch_data.one#pitch_data" in added(payload, lambda m: _pitches(m, AWAY, 1500))
+
+
+def test_rule_4_the_consequence_of_missing_pitch_data_is_checked_on_the_report(monkeypatch):
+    """
+    "The pitch read makes no arsenal claims about X" is false if the report names a pitch for X. The report
+    of this game names the home starter's pitches; if his pitch data were missing, the sentence would be false.
+    (Rule 4 is not evaluated on a text that no longer verifies against its claims, so the data is what changes.)
+    """
+
+    payload = published(golden_payload(monkeypatch, "live_debut"))  # away: no pitch data; home: pitch data and a report on his pitches
+
+    assert "rule4:writer.confidence.pitch_data.one#arsenal_claims" in added(payload, lambda m: _pitches(m, HOME, 0))
+
+
+def test_rule_4_the_list_cannot_include_offense_splits_when_one_lineup_has_none(live):
+    assert "rule4:writer.confidence.item.offense#offense" in added(live, lambda m: _split(m, "home", False))
+
+
+def test_rule_4_the_note_cannot_say_no_lineup_has_splits_when_one_has(debuts):
+    assert "rule4:writer.confidence.offense.none#offense" in added(debuts, lambda m: _split(m, "away", True))
+
+
+def test_rule_4_the_note_of_one_lineup_with_a_split_names_it_and_the_one_without(monkeypatch):
+    payload = published(golden_payload(monkeypatch, "live_one_offense_split"))
+    assert not {c for c in codes(payload) if c.startswith("rule4:writer.confidence.offense.one#")}
+
+    def swap(m):
+        _split(m, "away", True)
+        _split(m, "home", False)
+
+    assert "rule4:writer.confidence.offense.one#names" in added(payload, swap)
+    assert "rule4:writer.confidence.offense.one#offense" in added(payload, lambda m: (_split(m, "away", True), _split(m, "home", True)))
 
 
 def test_rule_4_a_pitch_that_is_under_the_minimum_of_its_role_is_found(live):
@@ -569,7 +626,14 @@ def test_rule_4_a_demo_note_in_a_live_matchup_is_found(live):
     def edit(m):
         m["data_confidence"]["level"] = "demo_cached"
 
-    assert any(c.startswith("rule4:writer.confidence.live") and c.endswith("#not_live") for c in added(live, edit))
+    parts = {c for c in added(live, edit) if c.startswith("rule4:writer.confidence.") and c.endswith("#not_live")}
+    assert {
+        "rule4:writer.confidence.snapshot#not_live",
+        "rule4:writer.confidence.item.pitchers#not_live",
+        "rule4:writer.confidence.item.pitch_data#not_live",
+        "rule4:writer.confidence.item.offense#not_live",
+        "rule4:writer.confidence.lineups#not_live",
+    } <= parts
 
 
 def test_rule_4_a_final_note_for_a_game_that_is_not_final_is_found(demo):

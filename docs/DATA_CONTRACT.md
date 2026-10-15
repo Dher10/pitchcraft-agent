@@ -28,7 +28,7 @@ Anything else is a violation, in particular a constant that asserts a fact (a st
 Examples from Annex A:
 
 - `status: "upcoming"` for every live game was a constant asserting a fact (F5).
-- `data_confidence.lineup_status: "probable_pitchers"` and `pitch_data_status: "fetched_snapshot"` are constants that assert what the data contains (F5, F1). The second one is written even for a starter with no pitch data.
+- `data_confidence.lineup_status: "probable_pitchers"` and `pitch_data_status: "fetched_snapshot"` are constants that assert what the data contains (F5). `pitch_data_status` was one too (F1) until P0.15-D2.1b: it is now computed, `fetched_snapshot` when at least one starter has pitch data and `unavailable` (the word `sample.rates.source` uses) when none has.
 - `charts.pitch_movement.*.*.family: "Fastball"` for an unmapped pitch is an invented derivation (F6e).
 - `family` for a mapped pitch, `teams.*.record: null`, `bio: null` are correct: the first is a derivation from a name map, the others are explicit unavailable states.
 - `critic_review.revision_notes` ending with "Avoided claiming official Stuff+." is a constant asserting that a check happened; no check exists (F8).
@@ -91,7 +91,7 @@ Examples:
 
 Examples:
 
-- "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data" was written for a game of two debuts, with no pitch data (F1). The condition of the Statcast part is that a starter has `sample.arsenal.pitches > 0`; the condition of "season offense splits" is that both teams have a split.
+- "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data" was written for a game of two debuts, with no pitch data (F1, closed in P0.15-D2.1b: the note is now built from parts, one per starter and per lineup). The condition of the Statcast part is that a starter has `sample.arsenal.pitches > 0`; the condition of "season offense splits" is that both teams have a split.
 - "Lineups can still change before first pitch" for a game already in progress (F5, F16).
 - "Today's Matchup Summary" asserts a date that the file cannot guarantee (F16).
 - "Kept the report focused on matchup fit rather than outcome prediction." is supported by the betting-language check; the check's result is its condition (F8).
@@ -182,8 +182,10 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `writer.arsenal.works_off` | `s` works off `{style}`. | `{style}` is `s`'s `style_label`; `s` arsenal limited is false |
 | `writer.arsenal.no_contrast` | No arsenal contrast is drawn because at least one arsenal has too little data. | At least one `sample.limited.arsenal` |
 | `writer.confidence.limited` | Samples below the minimum are flagged as limited. | Some `sample.limited.*` is true |
-| `writer.confidence.live_full` | The report uses a live snapshot with probable pitchers, Statcast pitch data and season offense splits. | Game state is `Preview` (F5, F16); **some starter has `sample.arsenal.pitches > 0`; both teams have `ops_vs_hand`** (F1: today the pitch-data part is not checked) |
-| `writer.confidence.live_no_offense` | Live snapshot with probable pitchers and Statcast pitch data; offense splits not available; lineups can change before first pitch. | Game state is `Preview` (F5, F16); **some starter has `sample.arsenal.pitches > 0`**; some team lacks `ops_vs_hand` (F1) |
+| `writer.confidence.snapshot` + `writer.confidence.item.pitchers` / `.pitch_data` / `.offense` | This report uses a fetched live snapshot with `{items}`: probable pitchers, Statcast pitch data, season offense splits ("A, B, and C" / "A and B" / "A"). | The matchup is live. The list names only what is complete: `item.pitch_data` only if **both** starters have pitch data (`sample.arsenal.pitches > 0`; zero or unknown is none); `item.offense` only if **both** lineups have a split (an OPS, a K% or a BB% is not `null`, as `offense_profile.scope` is set; F2). With everything complete the text is the one of before D2.1b (F1) |
+| `writer.confidence.pitch_data.one` / `.none` | Statcast pitch data was available for `{with_data}` but not for `{without_data}`, so the pitch read makes no arsenal claims about `{without_data}` / was not available for either starter, so the pitch read makes no arsenal claims. | `one`: exactly one starter has pitch data, `{with_data}` is his name and `{without_data}` the other's; `none`: neither has it. The consequence is checked on the report: no sentence names a pitch for a starter without pitch data (`report_facts.pitches_named_for`; his arsenal is then limited, and the analyst writes no style, primary or put-away pitch for him) (F1, closed in P0.15-D2.1b) |
+| `writer.confidence.offense.one` / `.none` | Season offense splits were available for the `{with_split}` lineup but not for the `{without_split}` lineup, so the lineup read makes no offense claims about the `{without_split}` lineup / were not available for this game, so the lineup read makes no offense claims. | `one`: exactly one lineup has a split, `{with_split}` is its team name and `{without_split}` the other's; `none`: neither has one. The consequence is the rule of `analyst.offense.*` (a read of OPS, strikeouts or walks needs the figure it names), so a lineup without a split has only "not available for this lineup yet" (F1, closed in P0.15-D2.1b) |
+| `writer.confidence.lineups` | Lineups can still change before first pitch. | The matchup is live, and the game state is `Preview` (F5, F16). Last of the parts of the note, after what is missing |
 | `writer.confidence.demo` | The report is based on cached demo data. | The matchup is not live (`data_confidence.level` is not `fetched_snapshot`); a demo sentence in a live matchup is a violation, and a demo matchup inside a live file is rule 6 (F4) |
 | `writer.watch_line`, `writer.watch_whether` | The first thing to watch. | `{name}` and `{action}` are those of the first question of `three_things_to_watch`: the same claim, not a copy of its text |
 | `analyst.watch.action.land` | `s` can land the `{putaway}` early (the action of a question). | `putaway_pitch == {putaway}` named, at least 15% of his pitches, `not sample.limited.arsenal` |
@@ -242,13 +244,13 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 
 ### 3.5 Catalog entries that assert nothing
 
-`@join` and `@capitalize` (they only combine other sentences), `count.*` (plurals), `analyst.list_and`, `analyst.goal.*`, `analyst.read.he`, `analyst.figure.*`, `analyst.figure.list_and`, `analyst.watch.question`, `analyst.watch.action.ahead`, `analyst.watch.action.efficient`, `analyst.watch.action.keep`, `analyst.watch.deep` (questions and the actions they are made of; the land action asserts a put-away pitch and is registered above), `analyst.offense.with_notes` (joins two phrases), `writer.section.*` (titles, except the F16 title), `writer.forbidden_terms`, `writer.required_terms`, `critic.role.*`, `critic.generic_fastball`, `critic.pitch_aliases`, `critic.limited.pitches`, `critic.limited.none`, `critic.command.word`, `critic.command.no_label`, `critic.scope.marker`, `critic.scope.all_marker`, `critic.betting_terms`, `critic.betting.item`, `generator.workflow.description` (describes the product, not the data). (Fragments and vocabularies used by the phrases above.)
+`@join` and `@capitalize` (they only combine other sentences), `count.*` (plurals), `analyst.list_and`, `writer.confidence.list_two`, `writer.confidence.list_three` (the list of the first sentence of the note), `analyst.goal.*`, `analyst.read.he`, `analyst.figure.*`, `analyst.figure.list_and`, `analyst.watch.question`, `analyst.watch.action.ahead`, `analyst.watch.action.efficient`, `analyst.watch.action.keep`, `analyst.watch.deep` (questions and the actions they are made of; the land action asserts a put-away pitch and is registered above), `analyst.offense.with_notes` (joins two phrases), `writer.section.*` (titles, except the F16 title), `writer.forbidden_terms`, `writer.required_terms`, `critic.role.*`, `critic.generic_fastball`, `critic.pitch_aliases`, `critic.limited.pitches`, `critic.limited.none`, `critic.command.word`, `critic.command.no_label`, `critic.scope.marker`, `critic.scope.all_marker`, `critic.betting_terms`, `critic.betting.item`, `generator.workflow.description` (describes the product, not the data). (Fragments and vocabularies used by the phrases above.)
 
 ## 4. Known violations at HEAD `043db03` and where each is closed
 
 | Id | Rule | Closed in | One line |
 |---|---|---|---|
-| F1 | 4 | P0.15-D2.1 | Confidence note claims "Statcast pitch data" without checking it |
+| F1 | 4 | P0.15-D2.1b (done) | Confidence note claims "Statcast pitch data" without checking it |
 | F2 | 3, 4 | P0.15-D2.1a (done) | Offense scope stated when no offense figure exists |
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
 | F4 | 6 | P0.15-D2.4 | Demo matchups and archive rows inside a live file |
@@ -308,7 +310,7 @@ The owner's criterion (2026-10-13): a status is a documented derivation if it is
 | `matchups[].status`, `archive[].status` | The literal `upcoming` | Constant that asserts a fact: **F5**. The archive row joins the finding. |
 | `archive[].result_label` | The literal "Pregame report available" | Constant that asserts a fact: **F5**. |
 | `data_confidence.lineup_status` | The literal `probable_pitchers` | Constant that asserts a fact: **F5**. |
-| `data_confidence.pitch_data_status` | The literal `fetched_snapshot`, even for a starter with no pitch data | Constant that asserts a fact: **F1**. |
+| `data_confidence.pitch_data_status` | `fetched_snapshot` when at least one starter has pitch data (`sample.arsenal.pitches > 0`), `unavailable` (the word `sample.rates.source` uses) when none has | Derivation, recomputed from the starters (F1, closed in P0.15-D2.1b). |
 | `metadata.data_sources[]` | A list that includes "Cached demo snapshots" in a live file | Constant that asserts a fact: **F3**. |
 | `data_confidence.level` | Set only by the constructor of a live matchup, from a snapshot game | Derivation by construction (it is what rule 6 reads to tell a live matchup). |
 | `metadata.data_mode`, `data_status.mode` | The generator's reading of the run record | Derivation. |

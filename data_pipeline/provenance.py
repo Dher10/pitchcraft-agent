@@ -435,6 +435,13 @@ def featured_is_live(c: Ctx) -> Problem | None:
     return None if c.value in _live_ids(c) else _mismatch(f"featured_matchup_id {c.value!r} is not a live matchup of the file")
 
 
+def pitch_data_status(c: Ctx) -> str:
+    """`fetched_snapshot` when at least one starter has a pitch on record (`sample.arsenal.pitches`), else `unavailable`."""
+
+    pitched = any(labels.has_pitch_data(starter) for starter in c.matchup["starters"].values())
+    return "fetched_snapshot" if pitched else "unavailable"
+
+
 def critic_review_status(c: Ctx) -> Problem | None:
     """
     The critic writes `reviewed` at the end of its own run, so the status is a derivation (owner, 2026-10-14) -
@@ -644,7 +651,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "postgame", "no live postgame until P1.2", (), True, is_none),
         _derived(M + "data_confidence.level", "set only for a matchup built from a snapshot game", STR, False, equals(lambda c: LIVE_LEVEL, "a live matchup")),
         _fact(M + "data_confidence.lineup_status", "F5", "written as `probable_pitchers` without reading the schedule"),
-        _fact(M + "data_confidence.pitch_data_status", "F1", "written as `fetched_snapshot` even for a starter with no pitch data"),
+        _derived(M + "data_confidence.pitch_data_status", "`fetched_snapshot` when at least one starter has pitch data, else `unavailable`", STR, False, equals(pitch_data_status, "the status of the starters' pitch data")),
         _claim(M + "data_confidence.notes[]"),
         _record(M + "report.claims[].**"),
         _claim(M + "report.**"),

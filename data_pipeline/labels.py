@@ -221,6 +221,21 @@ def figure_scopes(starter: dict[str, Any]) -> dict[str, dict[str, str]]:
     return found
 
 
+def has_pitch_data(starter: dict[str, Any]) -> bool:
+    """True when a live starter has a pitch on record (the group `pitch_data` of `figure_scopes`); a zero or an unknown count is none."""
+
+    return "pitch_data" in figure_scopes(starter)
+
+
+OFFENSE_FIGURES = ("ops_vs_hand", "k_rate_vs_hand", "bb_rate_vs_hand")
+
+
+def has_offense_figure(offense: dict[str, Any]) -> bool:
+    """True when a lineup has an OPS, a K% or a BB% against the hand it faces: the lineup has a split (and a scope)."""
+
+    return any(offense.get(key) is not None for key in OFFENSE_FIGURES)
+
+
 def scopes_differ(starter: dict[str, Any]) -> bool:
     """True when the groups of figures a starter has do not all cover the same games."""
 

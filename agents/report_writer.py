@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from agents.language import DEFAULT_LANGUAGE, Catalog, catalog_for
+from data_pipeline import labels
 
 
 def run(
@@ -102,15 +103,56 @@ def _confidence_note(t: Catalog, matchup_input: dict[str, Any], findings: dict[s
 
 def _base_confidence_note(t: Catalog, matchup_input: dict[str, Any]) -> str:
     confidence = matchup_input.get("data_confidence", {})
-    if confidence.get("level") == "fetched_snapshot":
-        has_offense = all(
-            matchup_input["teams"][side]["offense_profile"].get("ops_vs_hand") is not None
-            for side in ("home", "away")
-        )
-        if not has_offense:
-            return t("writer.confidence.live_no_offense")
-        return t("writer.confidence.live_full")
-    return t("writer.confidence.demo")
+    if confidence.get("level") != "fetched_snapshot":
+        return t("writer.confidence.demo")
+    starters, teams = matchup_input["starters"], matchup_input["teams"]
+    both_pitched = all(labels.has_pitch_data(starters[slot]) for slot in ("away_starter", "home_starter"))
+    both_split = all(labels.has_offense_figure(teams[side]["offense_profile"]) for side in ("away", "home"))
+    # The first sentence lists only what is complete; what is missing is said apart, with its consequence.
+    items = [t("writer.confidence.item.pitchers")]
+    if both_pitched:
+        items.append(t("writer.confidence.item.pitch_data"))
+    if both_split:
+        items.append(t("writer.confidence.item.offense"))
+    parts = [t("writer.confidence.snapshot", items=_listed(t, items))]
+    if not both_pitched:
+        parts.append(_pitch_data_missing(t, starters))
+    if not both_split:
+        parts.append(_offense_missing(t, teams))
+    parts.append(t("writer.confidence.lineups"))
+    return t.join(" ", parts)
+
+
+def _listed(t: Catalog, items: list[str]) -> str:
+    """"A", "A and B" or "A, B, and C"."""
+
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return t("writer.confidence.list_two", first=items[0], second=items[1])
+    return t("writer.confidence.list_three", first=items[0], second=items[1], third=items[2])
+
+
+def _pitch_data_missing(t: Catalog, starters: dict[str, Any]) -> str:
+    """Which starter has no Statcast pitch data (one, named) or that neither has."""
+
+    away, home = starters["away_starter"], starters["home_starter"]
+    having = [s for s in (away, home) if labels.has_pitch_data(s)]
+    if not having:
+        return t("writer.confidence.pitch_data.none")
+    without = home if having[0] is away else away
+    return t("writer.confidence.pitch_data.one", with_data=having[0]["name"], without_data=without["name"])
+
+
+def _offense_missing(t: Catalog, teams: dict[str, Any]) -> str:
+    """Which lineup has no season offense split (one, named) or that neither has."""
+
+    away, home = teams["away"], teams["home"]
+    having = [team for team in (away, home) if labels.has_offense_figure(team["offense_profile"])]
+    if not having:
+        return t("writer.confidence.offense.none")
+    without = home if having[0] is away else away
+    return t("writer.confidence.offense.one", with_split=having[0]["name"], without_split=without["name"])
 
 
 def _first(values: list[str], fallback: str) -> str:

@@ -1,7 +1,7 @@
 """The published payload records every sentence it contains (P0.15-D3.1, contract rule 4).
 
 The same checks run over four real payloads (demo, demo after a failed live run, a live game with
-everything the pipeline can give, a live game of two debuts), over the fourteen golden scenarios of
+everything the pipeline can give, a live game of two debuts), over the fifteen golden scenarios of
 the agents, and over the file the app serves. The text of the agents does not change; what changes
 is that every sentence is registered with the key and arguments it was made from.
 """
@@ -242,7 +242,7 @@ def test_a_sentence_made_of_other_sentences_keeps_them_as_claims(monkeypatch):
 
     assert confidence["key"] == "@join"
     keys = {part["key"] for part in descendants(confidence, by_id)}
-    assert "writer.confidence.live_full" in keys
+    assert {"writer.confidence.snapshot", "writer.confidence.item.offense", "writer.confidence.lineups"} <= keys
 
 
 def test_a_numbered_noun_inside_a_sentence_is_a_claim_with_its_count(monkeypatch):

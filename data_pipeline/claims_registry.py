@@ -281,14 +281,16 @@ def _mix_row(matchup: Mapping[str, Any], pitch: Any) -> Mapping[str, Any] | None
     return next((row for row in matchup["charts"]["pitch_mix"] if _mix_name(row["pitch"]) == target), None)
 
 
-def _has_offense(team: Mapping[str, Any]) -> bool:
-    return _percent(team["offense_profile"].get("ops_vs_hand")) is not None
+def _pitched_slots(matchup: Mapping[str, Any]) -> list[str]:
+    """The starters that have pitch data (a counted pitch), in the order away, home."""
+
+    return [slot for slot in SUBJECT_SLOTS if labels.has_pitch_data(matchup["starters"][slot])]
 
 
-def _pitched(matchup: Mapping[str, Any]) -> bool:
-    """True when some starter has pitch data (a counted pitch)."""
+def _split_sides(matchup: Mapping[str, Any]) -> list[str]:
+    """The lineups that have a split (an OPS, a K% or a BB%), in the order away, home."""
 
-    return any(((_sample(s) or {}).get("arsenal") or {}).get("pitches") for s in matchup["starters"].values())
+    return [side for side in ("away", "home") if labels.has_offense_figure(matchup["teams"][side]["offense_profile"])]
 
 
 def _expected_strengths(starter: Mapping[str, Any]) -> list[str]:
@@ -647,16 +649,67 @@ def _preview(c: Ctx, what: str) -> None:
     c.require(c.state == "Preview", "game_state", f"{what} needs the game to be known as Preview; its state is {c.state!r}")
 
 
-def _confidence_live(c: Ctx) -> None:
-    matchup = c.matchup
+def _confidence_snapshot(c: Ctx) -> None:
+    c.require(c.live, "not_live", "the matchup is not live")
+
+
+def _item_pitch_data(c: Ctx) -> None:
+    """The list names Statcast pitch data only when BOTH starters have a pitch on record."""
+
+    c.require(c.live, "not_live", "the matchup is not live")
+    c.require(len(_pitched_slots(c.matchup)) == 2, "pitch_data", "a starter has no pitch data, the list says Statcast pitch data")  # type: ignore[arg-type]
+
+
+def _item_offense(c: Ctx) -> None:
+    """The list names season offense splits only when BOTH lineups have a split."""
+
+    c.require(c.live, "not_live", "the matchup is not live")
+    c.require(len(_split_sides(c.matchup)) == 2, "offense", "a lineup has no split, the list says season offense splits")  # type: ignore[arg-type]
+
+
+def _confidence_lineups(c: Ctx) -> None:
     c.require(c.live, "not_live", "the matchup is not live")
     _preview(c, "'before first pitch'")
-    c.require(_pitched(matchup), "pitch_data", "no starter has pitch data, the sentence says Statcast pitch data")  # type: ignore[arg-type]
-    both = all(_has_offense(t) for t in matchup["teams"].values())  # type: ignore[index]
-    if c.key.endswith("live_full"):
-        c.require(both, "offense", "a team has no offense split, the sentence says season offense splits")
-    else:
-        c.require(not both, "offense", "both teams have an offense split")
+
+
+def _confidence_pitch_data(c: Ctx) -> None:
+    """
+    What is said of missing pitch data: `one` (the one named has it, the other does not) or `none`. The
+    consequence is checked on the report: no sentence names a pitch for a starter without pitch data.
+    """
+
+    matchup = c.matchup
+    c.require(c.live, "not_live", "the matchup is not live")
+    pitched = _pitched_slots(matchup)  # type: ignore[arg-type]
+    names = {slot: matchup["starters"][slot]["name"] for slot in SUBJECT_SLOTS}  # type: ignore[index]
+    part = c.key.rsplit(".", 1)[1]
+    c.require(len(pitched) == {"one": 1, "none": 0}[part], "pitch_data", f"the sentence says {part} starter has Statcast pitch data, {len(pitched)} do")
+    if part == "one" and len(pitched) == 1:
+        c.require(c.text("with_data") == names[pitched[0]], "names", "the starter with pitch data is not the one named")
+        c.require(c.text("without_data") == names[other_slot(pitched[0])], "names", "the starter without pitch data is not the one named")
+    report = (matchup or {}).get("report")  # type: ignore[union-attr]
+    if report is None:
+        return
+    for slot in SUBJECT_SLOTS:
+        if slot in pitched:
+            continue
+        named = facts.pitches_named_for(matchup, report, slot, _catalog(c))  # type: ignore[arg-type]
+        c.require(not named, "arsenal_claims", f"the report names {', '.join(named)} for {names[slot]}, who has no pitch data")
+
+
+def _confidence_offense(c: Ctx) -> None:
+    """What is said of a missing offense split: `one` (the team named has one, the other does not) or `none`."""
+
+    matchup = c.matchup
+    c.require(c.live, "not_live", "the matchup is not live")
+    sides = _split_sides(matchup)  # type: ignore[arg-type]
+    teams = {side: matchup["teams"][side]["name"] for side in ("away", "home")}  # type: ignore[index]
+    part = c.key.rsplit(".", 1)[1]
+    c.require(len(sides) == {"one": 1, "none": 0}[part], "offense", f"the sentence says {part} lineup has a season offense split, {len(sides)} do")
+    if part == "one" and len(sides) == 1:
+        lacking = "home" if sides[0] == "away" else "away"
+        c.require(c.text("with_split") == teams[sides[0]], "names", "the lineup with a split is not the one named")
+        c.require(c.text("without_split") == teams[lacking], "names", "the lineup without a split is not the one named")
 
 
 def _confidence_demo(c: Ctx) -> None:
@@ -1094,8 +1147,15 @@ RULES: dict[str, Rule] = {
     "writer.arsenal.works_off": _arsenal_works_off,
     "writer.arsenal.no_contrast": _arsenal_no_contrast,
     "writer.confidence.limited": _confidence_limited,
-    "writer.confidence.live_full": _confidence_live,
-    "writer.confidence.live_no_offense": _confidence_live,
+    "writer.confidence.snapshot": _confidence_snapshot,
+    "writer.confidence.item.pitchers": _confidence_snapshot,
+    "writer.confidence.item.pitch_data": _item_pitch_data,
+    "writer.confidence.item.offense": _item_offense,
+    "writer.confidence.pitch_data.one": _confidence_pitch_data,
+    "writer.confidence.pitch_data.none": _confidence_pitch_data,
+    "writer.confidence.offense.one": _confidence_offense,
+    "writer.confidence.offense.none": _confidence_offense,
+    "writer.confidence.lineups": _confidence_lineups,
     "writer.confidence.demo": _confidence_demo,
     "writer.section.summary": _section_summary,
     "writer.watch_line": _watch_line,
@@ -1159,6 +1219,8 @@ ASSERTS_NOTHING: tuple[str, ...] = (
     "@capitalize",
     "count.*",
     "analyst.list_and",
+    "writer.confidence.list_two",
+    "writer.confidence.list_three",
     "analyst.goal.*",
     "analyst.read.he",
     "analyst.figure.*",

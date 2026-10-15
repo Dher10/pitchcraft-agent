@@ -72,6 +72,7 @@ An item that touches neither (a note in a comment, a test helper, a cosmetic def
 ## Workflow
 
 - One task from `docs/PLAN.md` = one commit.
+- An approved plan, with the reviewer's adjustments, is saved in docs/plans/<task>.md and committed with its task.
 - Staging is always complete: `git add -A` or whole files. Never `git add -p` or hand-edited hunks.
 - Agents may `git add -A`, `git commit` and `git push origin v2` **only after** showing the owner the changed files and the full message and getting an explicit yes (D20).
 - Agents never: touch `main`, merge into `main`, force push, rebase, reset, rewrite history, or create/move/delete tags.

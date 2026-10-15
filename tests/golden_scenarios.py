@@ -32,14 +32,20 @@ SPLITS_VL = {"vl": {"ops": ".655", "avg": ".231", "strikeouts": 280, "walks": 90
                     "plate_appearances": 1400, "k_rate": 20.0, "bb_rate": 6.4}}
 
 
-def live(mp, away=None, home=None, splits=False, edit=None) -> dict[str, Any]:
-    """A live-shaped matchup like test_limited_samples.build, optionally with offense splits."""
+def live(mp, away=None, home=None, splits=None, edit=None) -> dict[str, Any]:
+    """
+    A live-shaped matchup like test_limited_samples.build, optionally with offense splits.
+
+    `splits` is "both", "away" or "home": the lineups that get a split. The away starter throws R and the
+    home starter L, so the home lineup is read against "vr" and the away lineup against "vl" (the pipeline
+    reads the key of the hand it faces, tests/test_offense_reads_opposing_hand.py).
+    """
 
     template = demo_inputs.build_demo_payload()["matchups"][0]
     game = _fake_live_game(
         template,
-        away_team_splits=SPLITS_VR if splits else None,
-        home_team_splits=SPLITS_VL if splits else None,
+        away_team_splits=SPLITS_VL if splits in ("both", "away") else None,
+        home_team_splits=SPLITS_VR if splits in ("both", "home") else None,
     )
     zero = {"overall": 0, "vs_lhh": 0, "vs_rhh": 0}
     for slot, given, primary, putaway in (
@@ -98,10 +104,11 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "demo_upcoming": deepcopy(demo[0]),
         "demo_final": deepcopy(demo[1]),
         "live_healthy": live(mp),
-        "live_with_offense_splits": live(mp, splits=True),
+        "live_with_offense_splits": live(mp, splits="both"),
+        "live_one_offense_split": live(mp, splits="home"),
         "live_limited_arsenal": live(mp, away=sample(pitches=40)),
         "live_debut": live(mp, away=debut_sample()),
-        "live_both_limited": live(mp, away=sample(pitches=10), home=debut_sample()),
+        "live_both_limited": live(mp, away=sample(pitches=10), home=sample(pitches=40)),
         "live_scopes_differ": live(mp, away=sample(arsenal_scope=REG_POST), home=sample(arsenal_scope=REG_POST)),
         "live_strong_strikeouts_weak_command": live(mp, away=sample(k=110, bb=50), home=sample(k=60, bb=15)),
         "live_limited_rates_only": live(mp, away=sample(bf=50, k=20, bb=2), home=sample(bf=100, k=10, bb=3)),
