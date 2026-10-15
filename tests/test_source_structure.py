@@ -15,7 +15,7 @@ import pytest
 from data_pipeline.fetchers import cache_manager
 from data_pipeline.fetchers import live_pipeline as lp
 from tests.test_fetchers_as_of import _series_router, install_urlopen, query
-from tests.test_live_sample_pipeline import API_STATS, frame, route
+from tests.test_live_sample_pipeline import API_STATS, events_frame, frame, route
 
 
 @pytest.fixture(autouse=True)
@@ -236,7 +236,7 @@ def test_the_qa_probe_the_hidden_season_stats_failure_is_logged_and_statcast_sta
     monkeypatch,
 ):
     route(monkeypatch, [("/stats?", {"message": "Internal error"})])
-    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: frame())
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
 
     result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
 
@@ -270,13 +270,15 @@ def test_a_frame_without_events_makes_the_counts_unavailable_not_zero(monkeypatc
 
 
 def test_a_frame_with_events_records_no_error(monkeypatch):
+    """The frame the source sends has plate appearances in `events`; an `events` with none is unusable (F6b)."""
+
     route(monkeypatch, [("/stats?", {"stats": []})])
-    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: frame(n_plain=200))
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame(n_plain=200))
 
     result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
 
     assert result["sample"]["rates"]["source"] == "statcast"
-    assert result["sample"]["rates"]["batters_faced"] == 0  # a real count of zero plate appearances
+    assert result["sample"]["rates"]["batters_faced"] == 19  # the plate appearances of events_frame
     assert lp._run_errors == []
 
 

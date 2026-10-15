@@ -122,9 +122,9 @@ def test_rows_after_the_cutoff_are_excluded_without_an_error(monkeypatch):
 
 @pytest.mark.parametrize("game_type", ["F", "D", "L", "W"])
 def test_postseason_rows_up_to_the_cutoff_are_kept(monkeypatch, game_type):
-    result = pitcher(monkeypatch, frame(n_plain=120, game_type=game_type, game_date="2026-07-10"))
+    result = pitcher(monkeypatch, events_frame(n_plain=120, game_type=game_type, game_date="2026-07-10"))
 
-    assert result["sample"]["arsenal"]["pitches"] == 120
+    assert result["sample"]["arsenal"]["pitches"] == 120 + len(e2e_events())
     assert result["sample"]["arsenal"]["scope"]["kind"] == "regular_and_postseason" and lp._run_errors == []
 
 

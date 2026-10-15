@@ -75,6 +75,8 @@ class FakeResponse:
 
 
 def pitcher_rows(game_date: str, game_type: str, pitch_type: str, n: int) -> list[dict]:
+    """Rows as Statcast sends them: a plate appearance ends on about every fourth pitch (`events`)."""
+
     return [
         {
             "game_date": pd.Timestamp(game_date),
@@ -87,9 +89,9 @@ def pitcher_rows(game_date: str, game_type: str, pitch_type: str, n: int) -> lis
             "pfx_z": 1.1,
             "plate_x": 0.1,
             "plate_z": 2.5,
-            "events": None,
+            "events": "field_out" if index % 4 == 3 else None,
         }
-        for _ in range(n)
+        for index in range(n)
     ]
 
 

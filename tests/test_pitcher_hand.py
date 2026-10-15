@@ -15,7 +15,7 @@ import pytest
 
 from data_pipeline.fetchers import cache_manager
 from data_pipeline.fetchers import live_pipeline as lp
-from tests.test_live_sample_pipeline import API_STATS, frame, route
+from tests.test_live_sample_pipeline import API_STATS, events_frame, frame, route
 
 
 @pytest.fixture(autouse=True)
@@ -58,7 +58,7 @@ class Counter:
 
 def test_a_frame_without_p_throws_takes_the_hand_from_the_people_endpoint(monkeypatch):
     stub = Counter(monkeypatch, {11: person("L")})
-    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: frame().drop(columns=["p_throws"]))
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame().drop(columns=["p_throws"]))
 
     result = lp.fetch_pitcher_statcast(11, "Lefty", as_of="2026-07-14")
 
@@ -88,7 +88,7 @@ def test_a_frame_with_p_throws_makes_no_extra_request(monkeypatch):
 
 def test_when_nothing_can_say_the_hand_the_pitcher_is_an_error_not_a_right_hander(monkeypatch):
     Counter(monkeypatch, {11: OSError("down")})
-    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: frame().drop(columns=["p_throws"]))
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame().drop(columns=["p_throws"]))
 
     result = lp.fetch_pitcher_statcast(11, "Nobody Knows", as_of="2026-07-14")
 

@@ -640,6 +640,10 @@ TEAM_SPLIT_REQUIRED_COLUMNS = (
     "p_throws",
 )
 PITCHER_STATCAST_REQUIRED_COLUMNS = ("game_date", "game_type")
+# What the pitch data of a starter reads from every row (F6c). `events` is not here: without it the counts
+# are unavailable and the game stays (F6b). `p_throws` is not here: the hand has its own lookup. `pfx_x`
+# and `pfx_z` are not here: without them the movement is `null`, on purpose (`compute_movement`).
+PITCH_DATA_REQUIRED_COLUMNS = ("pitch_type", "stand", "release_speed", "plate_x", "plate_z")
 # Every game type Statcast writes: regular season, spring training, exhibition, all-star, then the
 # postseason rounds (wild card, division, league championship, world series).
 KNOWN_STATCAST_GAME_TYPES = ("R", "S", "E", "A") + POSTSEASON_GAME_TYPES
@@ -694,6 +698,41 @@ def validate_statcast_rows(df: Any, source: str) -> None:
         f"{source} data has {int(bad.sum())} malformed row(s) of {len(df)} ({'; '.join(problems)}); "
         f"first at row {first}: game_date={df.at[first, 'game_date']!r}, game_type={df.at[first, 'game_type']!r}"
     )
+
+
+def validate_pitcher_frame(df: Any, source: str) -> None:
+    """
+    `validate_statcast_rows`, plus the columns the pitch data of a starter reads (F6c).
+
+    A populated frame without one of them cannot be turned into a pitch mix: it is a malformed answer,
+    rejected whole with the column named, instead of a `KeyError` deep inside the processing. A frame
+    with no rows (a debut) is valid and has no columns at all.
+    """
+
+    validate_statcast_rows(df, source)
+    if len(df) == 0:
+        return
+    _require_columns(df, PITCH_DATA_REQUIRED_COLUMNS, source)
+
+
+def require_usable_pitch_columns(df: Any, source: str) -> None:
+    """
+    A frame that has rows must have a usable value where the pitch data needs one (F6a).
+
+    `pitch_type` null or empty in every row is a pitch table with no pitch in it: published as a debut it
+    would say he threw nothing. `stand` with no `L` or `R` in any row makes every share against a side
+    `null`, which the page reads as "No left-handed batters faced.", a claim the data does not support.
+    Both are malformed answers (contract rule 2, "Malformed or incomplete"), rejected whole. A partial
+    null is normal (0.26% of the pitch types of a real season) and stays.
+    """
+
+    if len(df) == 0:
+        return
+    typed = df["pitch_type"].map(lambda value: isinstance(value, str) and value.strip() != "")
+    if not typed.any():
+        raise ValueError(f"{source} data has {len(df)} row(s) and no usable pitch_type")
+    if not df["stand"].isin(("L", "R")).any():
+        raise ValueError(f"{source} data has {len(df)} row(s) and no usable stand (no L or R in any row)")
 
 
 def validate_team_batting_rows(df: Any, source: str) -> None:
@@ -914,21 +953,25 @@ def fetch_pitcher_statcast(
             raise ValueError("Statcast returned no result (None)")
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
-            validate_statcast_rows(df, "pitcher Statcast")
+            validate_pitcher_frame(df, "pitcher Statcast")
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
             # pybaseball asks for regular season, postseason and spring training.
             # Spring never counts; postseason counts only up to the cutoff above.
             df = df[df["game_type"].isin(("R",) + POSTSEASON_GAME_TYPES)]
+            require_usable_pitch_columns(df, "pitcher Statcast")
         processed = None
         counts = None
         if len(df) > 0:
             print(f"[LIVE] {pitcher_name}: {len(df)} pitches fetched")
             counts = _statcast_counts(df)
             if counts["batters_faced"] is None:
+                # Recorded whatever the API gave: the counts it gave are used, but the plate appearances
+                # of Statcast cannot be counted to compare with them (F21).
                 _record_error(
                     "statcast_pitcher",
-                    "pitcher Statcast data has no 'events' column: batters faced, strikeouts, "
-                    "walks and home runs are unavailable",
+                    "pitcher Statcast data has no usable 'events' (the column is missing or has no plate "
+                    "appearance in any row): batters faced, strikeouts, walks and home runs are "
+                    "unavailable from it",
                     pitcher_id=pitcher_id,
                 )
             processed = process_pitcher_statcast(df, pitcher_name)
@@ -1014,23 +1057,28 @@ def fetch_pitcher_hand(pitcher_id: int) -> str | None:
 
 def _statcast_counts(df: Any) -> dict[str, Any]:
     """
-    Pitch and plate-appearance counts from the Statcast frame (regular season + postseason).
+    Plate-appearance counts from the Statcast frame (regular season + postseason).
 
-    A frame without `events` cannot say how many batters he faced: the counts are None
-    (unavailable), never a measured zero.
+    A frame whose `events` cannot say how many batters he faced, because the column is missing or no row
+    ends a plate appearance, has unavailable counts (None), never a measured zero (F6b). The limit: a
+    starter hurt on his first pitch has pitches and no plate appearance, and cannot be told from an
+    unusable column; his counts are unavailable rather than 0 (contract 6.4).
     """
 
     has_postseason = "game_type" in df.columns and bool((df["game_type"] != "R").any())
+    unavailable = {
+        "batters_faced": None,
+        "strikeouts": None,
+        "walks": None,
+        "home_runs": None,
+        "has_postseason": has_postseason,
+    }
     if "events" not in df.columns:
-        return {
-            "batters_faced": None,
-            "strikeouts": None,
-            "walks": None,
-            "home_runs": None,
-            "has_postseason": has_postseason,
-        }
+        return unavailable
     events = df["events"].dropna()
     plate_appearances = events[~events.isin(NON_PA_EVENTS)]
+    if len(plate_appearances) == 0:
+        return unavailable
     return {
         "batters_faced": int(len(plate_appearances)),
         "strikeouts": int(plate_appearances.isin(STRIKEOUT_EVENTS).sum()),

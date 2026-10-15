@@ -325,15 +325,16 @@ def test_a_debut_whose_hand_cannot_be_fetched_fails_with_a_recorded_error(monkey
     assert [e["source"] for e in lp._run_errors] == ["mlb_person"]
 
 
-def test_rows_without_a_usable_pitch_type_are_treated_as_no_pitches(monkeypatch):
+def test_rows_without_a_usable_pitch_type_are_a_rejected_answer_not_a_debut(monkeypatch):
+    """They used to be published as 0 pitches (F6a). Rows with no pitch type are a malformed answer."""
+
     route(monkeypatch, [("/stats?", NO_SPLITS), ("/people/", PERSON_LEFTY)])
     blank = frame(n_plain=5)
     blank["pitch_type"] = None
     monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: blank)
 
-    result = lp.fetch_pitcher_statcast(22, "Debut Lefty", as_of="2026-07-14")
-
-    assert result["sample"]["arsenal"]["pitches"] == 0
+    assert lp.fetch_pitcher_statcast(22, "Debut Lefty", as_of="2026-07-14") is None
+    assert [e["source"] for e in lp._run_errors] == ["statcast_pitcher"]
 
 
 SCHEDULE = {

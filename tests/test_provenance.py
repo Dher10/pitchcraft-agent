@@ -236,10 +236,18 @@ def test_rule_1_a_clean_payload_has_only_the_known_findings(live):
 # --- rule 2: unknown is never zero ---------------------------------------------------------------
 
 
-def test_rule_2_a_count_of_zero_from_statcast_with_pitches_but_no_batter_has_no_evidence():
-    """F6b: an unusable `events` column used to publish measured zeros."""
+def test_rule_2_a_count_of_zero_from_statcast_with_pitches_but_no_batter_has_no_evidence(live):
+    """
+    F6b: an unusable `events` column used to publish measured zeros. The pipeline no longer produces them
+    (`tests/test_statcast_frame_usable.py`), so the payload is the one it used to produce, written by hand:
+    the manifest must still refuse it.
+    """
 
-    found = codes(hard_outcome("events_null_in_every_row").payload)
+    payload = deepcopy(live)
+    rates = matchup(payload, "away_starter")["sample"]["rates"]
+    rates.update(source="statcast", batters_faced=0, strikeouts=0, walks=0, home_runs=0)
+
+    found = codes(payload)
 
     assert "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.batters_faced" in found
     assert "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.strikeouts" in found

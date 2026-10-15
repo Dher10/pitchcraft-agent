@@ -41,10 +41,20 @@ Examples from Annex A:
 
 Examples:
 
-- `events` null in every row of a Statcast frame published `batters_faced 0`, `strikeouts 0`, `walks 0`, `home_runs 0` from source `statcast`, and the card showed K "0" (F6b). The code could not tell "no plate appearance completed" from "unusable column". The column is unusable: the counts are `null`, `sample.rates.source` is `"unavailable"`, and an error is recorded.
+- `events` null in every row of a Statcast frame published `batters_faced 0`, `strikeouts 0`, `walks 0`, `home_runs 0` from source `statcast`, and the card showed K "0" (F6b). The code could not tell "no plate appearance completed" from "unusable column". The column is unusable: the counts are `null`, `sample.rates.source` is `"unavailable"`, and an error is recorded. (F6b, closed in P0.15-D2.2a; the fix is in `_statcast_counts`: the counts are `None` when no row ends a plate appearance).
 - The analyst writes "no batters faced on record" and "no pitches on record" when the count is `null`, because it tests `if batters` (F14). A missing count is not a zero count.
 - `_usage_pct` returning `None` for a side the starter never faced (P0.14-C) is correct; a real `0%` against a side he did face stays `0%`.
-- `pitch_type` null in every row of a populated frame produced a debut with `pitches 0` and no error (F6a). Same class.
+- `pitch_type` null in every row of a populated frame produced a debut with `pitches 0` and no error (F6a, closed in P0.15-D2.2a): the answer is rejected whole, as is a frame with no `stand` of `L` or `R` in any row, whose per-side shares would be `null` and which the page reads as "No left-handed batters faced.", a claim the data does not support.
+
+**Malformed or incomplete (the criterion, owner 2026-10-15).** A source answer is one of three things, and each has one treatment:
+
+| The answer | Example | Treatment |
+|---|---|---|
+| **Malformed**: a column the code needs is missing, or is present with no usable value where one is needed, or a row cannot say when or what it was | no `stand`, `pitch_type`, `release_speed`, `plate_x` or `plate_z` column (F6c); `pitch_type` or `stand` with no usable value in any row (F6a); a row with no valid `game_date` or `game_type` (QA4-02) | Rejected whole: a recorded `statcast_pitcher` error that names the column, and the game is not built from that answer. |
+| **Unusable in one part**: the rest of the answer is sound but one figure cannot be read from it | `events` missing, or with no plate appearance in any row (F6b) | That figure is unavailable (`null`, `sample.rates.source = "unavailable"`) and an error is recorded; the game is kept. |
+| **Well formed but incomplete**: it parses, and it says less than the world did | Statcast has fewer plate appearances than the API line (F21) | Degraded: the part that cannot be trusted is unavailable, an error is recorded, and the rest is kept. |
+
+A well-formed answer that is merely thin (a debut, a short season, a partial null in `pitch_type`) is a sample, not an error. `release_speed`, `plate_x`, `plate_z`, `pfx_x` and `pfx_z` with no value in any row are *columns that exist*, so they are not rejected: they leave velocity, locations and movement unavailable (`null` or an empty list, never `0`), which `tests/test_statcast_frame_usable.py` pins.
 - A starter who threw no pitch has `charts.pitch_mix[].<slot>.overall = 0` for each pitch his opponent threw (F20): a share of zero pitches is unknown, `null`, not 0%. His `count` of 0 out of a `total` of 0 is the measured zero; the share is what cannot be computed.
 
 **Check (`data_pipeline/provenance.py`, section 6):** the manifest names, for every numeric field, the evidence a `0` requires (section 6.3). A `0` without its evidence fails (`rule2:zero_without_evidence`); so does an unknown value written as a number for a source that is `unavailable`, or as `"0"`, `""` or `"N/A"` text in a numeric field (`rule2:unknown_written_as_value`). A guessed default such as a throwing hand is found by the matrix, not by the payload: the hand is a source value and the payload cannot say which source gave it (`tests/test_matrix.py` makes the people endpoint answer the opposite of the guess).
@@ -254,7 +264,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
 | F4 | 6 | P0.15-D2.4 (open) | Demo matchups and archive rows inside a live file. The workflow of a live file still counts the demo matchups too; its entry `rule4:generator.workflow.checked#count` left `known_violations.py` in P0.15-D2.1c only because the count coincides by chance (the demo has no warning since F18), and `tests/test_contract_checks.py` shows the rule still fires if the demo has one |
 | F5 | 7 | P0.15-D2.5 | `status` is always `upcoming`, in the matchup and in its archive row (with the row's `result_label` and `lineup_status`) |
-| F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2 | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
+| F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2: a, b and c done in D2.2a; e in D2.2e | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
 | F7 | 1, 2 | P0.15-D2.2 | `"???"` team abbreviation |
 | F8 | 1, 4 | P0.15-D2.1c (done) | Two constant critic notes |
 | F9 | 6 | P0.15-D2.4 | `generated_at` is the fetch time, or a demo constant |
@@ -322,7 +332,7 @@ The owner's criterion (2026-10-13): a status is a documented derivation if it is
 |---|---|---|
 | `sample.arsenal.pitches` | The pitch mix has no pitch thrown by that starter | `zero_without_evidence` |
 | `sample.rates.*` (source `mlb_api`) | The MLB line gave it | Accepted |
-| `sample.rates.batters_faced` (source `statcast`) | The starter threw no pitch | `zero_without_evidence` (F6b) |
+| `sample.rates.batters_faced` (source `statcast`) | The starter threw no pitch | `zero_without_evidence` (F6b, closed in P0.15-D2.2a: the pipeline no longer produces it; the check stays for any other writer) |
 | `sample.rates.strikeouts`, `walks`, `home_runs` (source `statcast`) | At least one plate appearance was counted | `zero_without_evidence` (F6b) |
 | `sample.rates.*` (source `unavailable`) | Not applicable: every count is `null` | `unknown_written_as_value` |
 | `charts.pitch_mix[].<slot>.total` | The starter threw no pitch (a total above 0 equals his pitches) | `zero_without_evidence` |
@@ -334,4 +344,4 @@ The owner's criterion (2026-10-13): a status is a documented derivation if it is
 
 ### 6.4 The limit of the zero check
 
-The payload does not carry the Statcast `events` column, so a zero count is judged by what must hold around it. A starter hurt on his first pitch has pitches and no batter faced; the payload cannot tell him from a frame whose `events` is unusable (F6b), and the check reports him as a zero without evidence. That is the safe direction: a false alarm stops publication, and the case is extremely rare. A real zero that the MLB API measured is accepted, and so is a Statcast zero that sits next to counted plate appearances. Percent strings of a lineup (`k_rate_vs_hand: "0.0%"`) are not checked for evidence: the payload does not carry the plate appearances behind them.
+The payload does not carry the Statcast `events` column, so a zero count is judged by what must hold around it. A starter hurt on his first pitch has pitches and no batter faced; the pipeline cannot tell him from a frame whose `events` is unusable (F6b) either, so his counts are unavailable instead of `0` (the safe direction), and the check reports a Statcast zero next to pitches as a zero without evidence. That is the safe direction: a false alarm stops publication, and the case is extremely rare. A real zero that the MLB API measured is accepted, and so is a Statcast zero that sits next to counted plate appearances. Percent strings of a lineup (`k_rate_vs_hand: "0.0%"`) are not checked for evidence: the payload does not carry the plate appearances behind them.

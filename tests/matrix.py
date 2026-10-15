@@ -98,6 +98,7 @@ class Pitcher:
     events: str = "ok"  # ok | null (the column exists and is null in every row)
     drop: tuple[str, ...] = ()  # columns missing from the frame
     null_pitch_type: bool = False  # `pitch_type` null in every row
+    null_stand: bool = False  # `stand` null in every row
     mix: dict[str, int] | None = None  # pitches by code, instead of the kind's own
 
 
@@ -213,7 +214,7 @@ def pitcher_frame(pitcher: Pitcher) -> pd.DataFrame:
                 "game_date": pd.Timestamp(POSTSEASON_ROW_DATE if late else "2026-06-20"),
                 "game_type": "D" if late else "R",
                 "pitch_type": None if pitcher.null_pitch_type else code,
-                "stand": "L" if index % 2 else "R",
+                "stand": None if pitcher.null_stand else ("L" if index % 2 else "R"),
                 "p_throws": pitcher.throws,
                 "release_speed": 88.0 + len(code) + (index % 7) * 0.5,
                 "pfx_x": 0.3 + 0.01 * (index % 7),
@@ -435,6 +436,7 @@ def _hard_cases() -> dict[str, Scenario]:
         _world("no_offense_data", savant="blank"),
         _world("events_null_in_every_row", replace(away, events="null", api="absent")),
         _world("pitch_type_null_in_every_row", replace(away, null_pitch_type=True)),
+        _world("stand_null_in_every_row", replace(away, null_stand=True)),
         _world("unmapped_pitch_code", replace(away, mix={"XX": 120, "SL": 60})),
         _world("unknown_team", away_team=(999, "Brand New Club")),
         _world("hand_lookup_fails", replace(away, **debut, lookup="FAIL")),

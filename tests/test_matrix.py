@@ -289,7 +289,6 @@ def test_hard_a_hand_that_no_source_gives_drops_the_game_and_says_why():
 # --- findings of the contract that today's code still has (xfail until their fix in P0.15-D2) -------
 
 
-@pytest.mark.xfail(strict=True, reason="F6b: an unusable `events` column is published as measured zeros")
 def test_hard_events_unusable_means_unavailable_counts_and_a_recorded_error():
     outcome = hard_outcome("events_null_in_every_row")
     rates = outcome.matchup["starters"]["away_starter"]["sample"]["rates"]
@@ -299,11 +298,20 @@ def test_hard_events_unusable_means_unavailable_counts_and_a_recorded_error():
     assert "statcast_pitcher" in outcome.error_sources()
 
 
-@pytest.mark.xfail(strict=True, reason="F6a: a populated frame with no usable pitch_type is a silent debut")
 def test_hard_pitch_type_unusable_in_a_populated_frame_is_a_recorded_source_error():
     outcome = hard_outcome("pitch_type_null_in_every_row")
 
     assert "statcast_pitcher" in outcome.error_sources()
+    assert not outcome.live  # a malformed answer is rejected whole (contract rule 2, "Malformed or incomplete")
+
+
+def test_hard_stand_unusable_in_a_populated_frame_is_a_recorded_source_error():
+    """With no `stand` the shares against each side are null and the page would say he faced no lefties."""
+
+    outcome = hard_outcome("stand_null_in_every_row")
+
+    assert "statcast_pitcher" in outcome.error_sources()
+    assert not outcome.live
 
 
 @pytest.mark.xfail(strict=True, reason="F6e: a pitch code outside the name map gets the family Fastball")
@@ -334,7 +342,6 @@ def test_hard_a_switch_pitcher_is_published_and_no_sentence_names_his_hand():
 
 
 @pytest.mark.parametrize("column", ["stand", "release_speed", "plate_x", "plate_z", "pitch_type"])
-@pytest.mark.xfail(strict=True, reason="F6c: a column the pitch data needs is not in the required-columns check")
 def test_hard_a_frame_without_a_needed_column_fails_as_a_missing_required_column(column):
     outcome = hard_outcome(f"frame_without_{column}")
     messages = [e["message"] for e in outcome.record["errors"] if e["source"] == "statcast_pitcher"]

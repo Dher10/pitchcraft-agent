@@ -8,6 +8,7 @@ Check every answer from outside (MLB API, Statcast, Savant, a cache file, the sn
 
 - One explicit schema per endpoint (`data_pipeline/fetchers/mlb_schemas.py`); one row check per Statcast frame (`validate_statcast_rows`). Inside the boundary, access mandatory fields directly: no `.get(<mandatory>, [])` and no `or []` that turns an error into emptiness.
 - Unknown is `null`, never `0` and never a guessed default (a throwing hand of "R"). Contract rule 2.
+- A malformed answer (a needed column missing or with no usable value) is rejected whole; a figure that cannot be read from a sound answer is unavailable plus a recorded error; a well-formed but incomplete answer is degraded. The criterion and its examples are in the contract, rule 2 ("Malformed or incomplete").
 
 ## 2. Decide on raw values
 
