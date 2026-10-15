@@ -1,0 +1,471 @@
+"""The combination matrix and the hard cases of the data contract (PLAN.md P0.15-D3.3b). Not a test module.
+
+Every scenario runs the whole way with sources that are faked at the network edge only: the schedule, the
+MLB stats and people endpoints, Statcast and Savant answer from here; `run_live_pipeline`, the snapshot on
+disk, `_resolve_live_input`, `build_payload`, `validate_payload` and `check_contract` are the real ones.
+
+The matrix is the product of five conditions (docs/DATA_CONTRACT.md, section 5.3), 72 cases:
+
+    API         complete (a whole line), partial (ERA, WHIP, innings and strikeouts only), absent (the request fails)
+    season      regular only, or with postseason rows before the cutoff
+    starter     debut (no pitch on record), limited (60 pitches), healthy (1,150 pitches)
+    day         normal, or opening day (the cutoff falls before the season, so Statcast is never asked)
+    hand        in the Statcast frame, or missing from it and answered by the people endpoint (L)
+
+Only the away starter varies; the home starter is always healthy. The hard cases (`HARD_CASES`) cover the
+other side of the pair and the awkward members of ENGINEERING.md section 5.
+
+Outcomes are computed once per process (`outcomes()`), so the tests of the matrix, of the table of known
+violations and of the differential test share one run.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field, replace
+from datetime import date
+from functools import cache
+import itertools
+import json
+from pathlib import Path
+import re
+import tempfile
+from typing import Any
+from urllib.parse import parse_qs, urlparse
+
+import pandas as pd
+import pytest
+
+from data_pipeline import generate_demo_json as gdj
+from data_pipeline.contract_checks import Violation, check_contract
+from data_pipeline.fetchers import cache_manager
+from data_pipeline.fetchers import live_pipeline as lp
+from tests.corpus import published
+from tests.live_helpers import failed_checks
+
+SEASON_START, SEASON_END = date(2026, 3, 25), date(2026, 9, 27)
+OPENING_DAY, REGULAR_DAY, POSTSEASON_DAY = "2026-03-25", "2026-07-04", "2026-10-10"
+POSTSEASON_ROW_DATE = "2026-10-02"
+
+API_KINDS = ("complete", "partial", "absent")
+SEASONS = ("regular", "postseason")
+STARTERS = ("debut", "limited", "healthy")
+DAYS = ("normal", "opening")
+HANDS = ("present", "missing")
+
+# What the stats endpoint answers for a pitcher (the keys the MLB API uses).
+STAT_LINES = {
+    "complete": {
+        "era": "3.10", "whip": "1.05", "inningsPitched": "101.0",
+        "strikeOuts": 100, "baseOnBalls": 30, "homeRuns": 10, "battersFaced": 400,
+    },
+    # A line without most counts: the API is the source of the counts only when it has all four, or when it
+    # has some and Statcast has none (labels/live_pipeline `_attach_sample`).
+    "partial": {"era": "3.10", "whip": "1.05", "inningsPitched": "101.0", "strikeOuts": 100},
+    # A line whose counts are real zeros (a control that must stay zero).
+    "zeros": {
+        "era": "0.00", "whip": "0.50", "inningsPitched": "20.0",
+        "strikeOuts": 25, "baseOnBalls": 0, "homeRuns": 0, "battersFaced": 70,
+    },
+}
+
+# Pitches by code. Away: 1,150 (sinker, slider, changeup); home: 900 (four-seam, curveball, slider).
+HEALTHY_MIX = {
+    "away": {"SI": 700, "SL": 300, "CH": 150},
+    "home": {"FF": 560, "CU": 240, "SL": 100},
+}
+LIMITED_MIX = {"away": {"SI": 40, "SL": 20}, "home": {"FF": 40, "CU": 20}}
+# A plate appearance ends every fourth pitch, in this order.
+EVENT_CYCLE = ("strikeout", "field_out", "walk", "single", "strikeout", "field_out", "home_run", "field_out")
+FRAME_COLUMNS = (
+    "game_date", "game_type", "pitch_type", "stand", "p_throws",
+    "release_speed", "pfx_x", "pfx_z", "plate_x", "plate_z", "events",
+)
+
+
+@dataclass(frozen=True)
+class Pitcher:
+    """One starter as the sources describe him."""
+
+    pid: int
+    name: str
+    side: str  # "away" or "home"
+    throws: str  # what the Statcast frame says, or what the people endpoint answers when the frame does not
+    kind: str = "healthy"  # debut | limited | healthy
+    api: str = "complete"  # complete | partial | zeros | absent (the request fails) | empty (a valid empty answer)
+    postseason: bool = False  # the frame has postseason rows before the cutoff
+    hand_in_frame: bool = True
+    lookup: str | None = None  # what the people endpoint answers; None: his hand; "FAIL": the request fails
+    events: str = "ok"  # ok | null (the column exists and is null in every row)
+    drop: tuple[str, ...] = ()  # columns missing from the frame
+    null_pitch_type: bool = False  # `pitch_type` null in every row
+    mix: dict[str, int] | None = None  # pitches by code, instead of the kind's own
+
+
+@dataclass(frozen=True)
+class Scenario:
+    """A whole day of the world: the game, both starters and what each source answers."""
+
+    name: str
+    game_day: str
+    away: Pitcher
+    home: Pitcher
+    savant: str = "ok"  # ok | blank (a valid empty month for every team)
+    away_team: tuple[int, str] = (111, "Boston Red Sox")
+    home_team: tuple[int, str] = (147, "New York Yankees")
+
+
+@dataclass(frozen=True)
+class Case:
+    """One cell of the matrix."""
+
+    api: str
+    season: str
+    starter: str
+    day: str
+    hand: str
+
+    @property
+    def id(self) -> str:
+        return "-".join((self.api, self.season, self.starter, self.day, self.hand))
+
+    @property
+    def game_day(self) -> str:
+        if self.day == "opening":
+            return OPENING_DAY
+        return POSTSEASON_DAY if self.season == "postseason" else REGULAR_DAY
+
+    @property
+    def effective_starter(self) -> str:
+        """Opening day has no pitch to count: whatever the starter was, he is a debut."""
+
+        return "debut" if self.day == "opening" else self.starter
+
+    @property
+    def effective_postseason(self) -> bool:
+        return self.season == "postseason" and self.day == "normal" and self.effective_starter != "debut"
+
+    @property
+    def canonical(self) -> tuple:
+        """Cells that must give the same payload: what no source can tell apart."""
+
+        debut = self.effective_starter == "debut"
+        return (
+            self.api,
+            self.game_day if self.day == "normal" else OPENING_DAY,
+            self.effective_starter,
+            self.effective_postseason,
+            "lookup" if debut else self.hand,
+        )
+
+
+MATRIX: tuple[Case, ...] = tuple(
+    Case(*combination) for combination in itertools.product(API_KINDS, SEASONS, STARTERS, DAYS, HANDS)
+)
+
+
+def scenario_of(case: Case) -> Scenario:
+    away = Pitcher(
+        11, "Away Ace", "away", "L",
+        kind=case.starter, api=case.api,
+        postseason=case.season == "postseason",
+        hand_in_frame=case.hand == "present",
+    )
+    home = Pitcher(22, "Home Ace", "home", "R", postseason=case.season == "postseason")
+    return Scenario(case.id, case.game_day, away, home)
+
+
+# --- the faked sources -----------------------------------------------------------------------------
+
+
+class FakeResponse:
+    def __init__(self, payload: Any):
+        self._body = json.dumps(payload).encode()
+
+    def read(self) -> bytes:
+        return self._body
+
+    def __enter__(self) -> "FakeResponse":
+        return self
+
+    def __exit__(self, *exc: Any) -> bool:
+        return False
+
+
+def mix_of(pitcher: Pitcher) -> dict[str, int]:
+    if pitcher.mix is not None:
+        return pitcher.mix
+    if pitcher.kind == "debut":
+        return {}
+    return (HEALTHY_MIX if pitcher.kind == "healthy" else LIMITED_MIX)[pitcher.side]
+
+
+def pitcher_frame(pitcher: Pitcher) -> pd.DataFrame:
+    """The Statcast frame of a pitcher. A debut has none: an empty frame, with no columns."""
+
+    codes = [code for code, count in mix_of(pitcher).items() for _ in range(count)]
+    if not codes:
+        return pd.DataFrame()
+    rows = []
+    for index, code in enumerate(codes):
+        late = pitcher.postseason and index % 5 == 0
+        rows.append(
+            {
+                "game_date": pd.Timestamp(POSTSEASON_ROW_DATE if late else "2026-06-20"),
+                "game_type": "D" if late else "R",
+                "pitch_type": None if pitcher.null_pitch_type else code,
+                "stand": "L" if index % 2 else "R",
+                "p_throws": pitcher.throws,
+                "release_speed": 88.0 + len(code) + (index % 7) * 0.5,
+                "pfx_x": 0.3 + 0.01 * (index % 7),
+                "pfx_z": 1.0 + 0.01 * (index % 5),
+                "plate_x": -0.4 + 0.05 * (index % 9),
+                "plate_z": 1.9 + 0.05 * (index % 11),
+                "events": None if pitcher.events == "null" or index % 4 != 3 else EVENT_CYCLE[(index // 4) % len(EVENT_CYCLE)],
+            }
+        )
+    frame = pd.DataFrame(rows, columns=list(FRAME_COLUMNS))
+    drop = set(pitcher.drop) | (set() if pitcher.hand_in_frame else {"p_throws"})
+    return frame.drop(columns=sorted(drop))
+
+
+def savant_csv(team_code: str, month_start: str, away_code: str, home_code: str) -> str:
+    """Plate appearances of one team in a month, against both hands, in the columns Savant sends."""
+
+    top = team_code == away_code
+    rows = []
+    for index in range(40):
+        rows.append(
+            {
+                "game_date": f"{month_start[:8]}{2 + index % 20:02d}",
+                "game_type": "R",
+                "game_pk": 1000 + index,
+                "home_team": home_code,
+                "away_team": away_code,
+                "inning_topbot": "Top" if top else "Bot",
+                "p_throws": "L" if index % 3 == 0 else "R",
+                "stand": "R",
+                "batter": index,
+                "at_bat_number": index,
+                "events": EVENT_CYCLE[index % len(EVENT_CYCLE)],
+            }
+        )
+    return pd.DataFrame(rows).to_csv(index=False)
+
+
+@dataclass
+class Asked:
+    """What the pipeline asked of each source, for the tests that check the sources were or were not used."""
+
+    statcast: list[int] = field(default_factory=list)
+    savant: list[str] = field(default_factory=list)
+    people: list[int] = field(default_factory=list)
+    stats: list[int] = field(default_factory=list)
+
+
+def install_sources(monkeypatch: pytest.MonkeyPatch, scenario: Scenario, tmp: Path) -> Asked:
+    pitchers = {scenario.away.pid: scenario.away, scenario.home.pid: scenario.home}
+    asked = Asked()
+    away_id, away_name = scenario.away_team
+    home_id, home_name = scenario.home_team
+    schedule = {
+        "dates": [
+            {
+                "games": [
+                    {
+                        "gamePk": 777001,
+                        "officialDate": scenario.game_day,
+                        "gameDate": f"{scenario.game_day}T23:05:00Z",
+                        "status": {"abstractGameState": "Preview"},
+                        "venue": {"name": "Test Park", "timeZone": {"id": "America/New_York"}},
+                        "teams": {
+                            "away": {
+                                "team": {"id": away_id, "name": away_name},
+                                "probablePitcher": {"id": scenario.away.pid, "fullName": scenario.away.name},
+                            },
+                            "home": {
+                                "team": {"id": home_id, "name": home_name},
+                                "probablePitcher": {"id": scenario.home.pid, "fullName": scenario.home.name},
+                            },
+                        },
+                    }
+                ]
+            }
+        ]
+    }
+
+    def urlopen(req: Any, timeout: Any = None) -> FakeResponse:
+        url = req.full_url if hasattr(req, "full_url") else req
+        if "schedule" in url:
+            return FakeResponse(schedule)
+        if "/stats?" in url:
+            pitcher = pitchers[int(re.search(r"/people/(\d+)/stats", url).group(1))]
+            asked.stats.append(pitcher.pid)
+            if pitcher.api == "absent":
+                raise OSError("MLB stats API unreachable")
+            if pitcher.api == "empty":
+                return FakeResponse({"stats": [{"splits": []}]})
+            return FakeResponse({"stats": [{"splits": [{"stat": STAT_LINES[pitcher.api]}]}]})
+        person = re.search(r"/people/(\d+)$", url)
+        if person:
+            pitcher = pitchers[int(person.group(1))]
+            asked.people.append(pitcher.pid)
+            if pitcher.lookup == "FAIL":
+                raise OSError("MLB people endpoint unreachable")
+            return FakeResponse({"people": [{"pitchHand": {"code": pitcher.lookup or pitcher.throws}}]})
+        raise AssertionError(f"unexpected URL {url}")
+
+    def statcast(start: str, end: str, player_id: int) -> pd.DataFrame:
+        asked.statcast.append(player_id)
+        return pitcher_frame(pitchers[player_id])
+
+    away_code = lp.MLB_TEAM_ABBR_BY_ID.get(away_id, "AAA")
+    home_code = lp.MLB_TEAM_ABBR_BY_ID.get(home_id, "HHH")
+
+    def savant(url: str, timeout: int = 60) -> str:
+        asked.savant.append(url)
+        if scenario.savant == "blank":
+            return ""
+        query = {key: values[0] for key, values in parse_qs(urlparse(url).query).items()}
+        return savant_csv(query["team"], query["game_date_gt"], away_code, home_code)
+
+    monkeypatch.setattr(cache_manager, "PROCESSED_DIR", tmp / "processed")
+    monkeypatch.setattr(lp, "TEAM_BATTING_CACHE_DIR", tmp / "team_batting")
+    monkeypatch.setattr(lp, "PITCHER_HAND_CACHE_DIR", tmp / "pitcher_hand")
+    monkeypatch.setattr(lp, "_run_errors", [])
+    monkeypatch.setattr(lp, "_savant_run", {"requests": 0, "open_requests": 0})
+    monkeypatch.setattr(lp, "_pitcher_hand_run", {"requests": 0})
+    monkeypatch.setattr(lp.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(lp, "season_dates", lambda season: (date(season, 3, 25), date(season, 9, 27)))
+    monkeypatch.setattr(lp.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(lp, "statcast_pitcher", statcast)
+    monkeypatch.setattr(lp, "_get_text", savant)
+    return asked
+
+
+# --- running a scenario ----------------------------------------------------------------------------
+
+
+@dataclass
+class Outcome:
+    """What a scenario produced, from the run record to the contract."""
+
+    scenario: Scenario
+    asked: Asked
+    record: dict[str, Any]
+    snapshot: dict[str, Any] | None
+    status: dict[str, Any]  # the generator's reading of the run: mode, reason
+    payload: dict[str, Any] | None  # after a trip through JSON; None if the generator stopped
+    blocked: str | None  # the critic's message when it stopped the generator
+    failed: list[str]  # publication checks that fail (`validate_payload`)
+    violations: list[Violation]  # every violation of the contract, tolerated or not
+
+    @property
+    def live(self) -> bool:
+        return self.status["mode"] == "fetched_snapshot"
+
+    @property
+    def matchup(self) -> dict[str, Any]:
+        """The live matchup (`matchup_001`) of a live outcome."""
+
+        assert self.payload is not None and self.live, f"{self.scenario.name} was not published as live"
+        return next(m for m in self.payload["matchups"] if m["id"] == "matchup_001")
+
+    def error_sources(self) -> set[str]:
+        return {error["source"] for error in self.record["errors"]}
+
+
+def run_scenario(scenario: Scenario) -> Outcome:
+    """The pipeline, the generator, the publication checks and the contract, over faked sources."""
+
+    with pytest.MonkeyPatch.context() as monkeypatch, tempfile.TemporaryDirectory() as directory:
+        asked = install_sources(monkeypatch, scenario, Path(directory))
+        lp.main_with_args(scenario.game_day, None)
+        record = cache_manager.load_processed("live_run")
+        snapshot, status = gdj._resolve_live_input()
+        monkeypatch.setattr(gdj, "_live", snapshot)
+        monkeypatch.setattr(gdj, "_live_status", status)
+        payload, blocked, failed, violations = None, None, [], []
+        try:
+            built = gdj.build_payload()
+        except gdj.CriticBlocked as exc:
+            blocked = str(exc)
+        else:
+            payload = published(built)
+            failed = failed_checks(built)
+            violations = check_contract(payload)
+        return Outcome(scenario, asked, record, snapshot, status, payload, blocked, failed, violations)
+
+
+def fingerprint(outcome: Outcome) -> str:
+    """The payload without the clock of the run, to compare cells that must be the same."""
+
+    payload = json.loads(json.dumps(outcome.payload))
+    payload["metadata"]["generated_at"] = None
+    run = payload["metadata"]["data_status"].get("live_run")
+    if run:
+        run["run_at"] = None
+    return json.dumps(payload, sort_keys=True)
+
+
+# --- the hard cases --------------------------------------------------------------------------------
+
+
+def _world(name: str, away: Pitcher | None = None, home: Pitcher | None = None, **changes: Any) -> Scenario:
+    base = Scenario(
+        name,
+        REGULAR_DAY,
+        away or Pitcher(11, "Away Ace", "away", "L"),
+        home or Pitcher(22, "Home Ace", "home", "R"),
+    )
+    return replace(base, **changes)
+
+
+def _hard_cases() -> dict[str, Scenario]:
+    away = Pitcher(11, "Away Ace", "away", "L")
+    home = Pitcher(22, "Home Ace", "home", "R")
+    debut = {"kind": "debut", "api": "empty"}
+    cases = [
+        # the pair, from the side the matrix does not vary
+        _world("two_debuts", replace(away, **debut), replace(home, **debut)),
+        _world("two_limited", replace(away, kind="limited"), replace(home, kind="limited")),
+        _world("home_limited_away_healthy", away, replace(home, kind="limited")),
+        _world("home_debut_away_healthy", away, replace(home, **debut)),
+        # awkward members (ENGINEERING.md section 5)
+        _world("api_zeros_are_zeros", replace(away, api="zeros")),
+        _world("no_offense_data", savant="blank"),
+        _world("events_null_in_every_row", replace(away, events="null", api="absent")),
+        _world("pitch_type_null_in_every_row", replace(away, null_pitch_type=True)),
+        _world("unmapped_pitch_code", replace(away, mix={"XX": 120, "SL": 60})),
+        _world("unknown_team", away_team=(999, "Brand New Club")),
+        _world("hand_lookup_fails", replace(away, **debut, lookup="FAIL")),
+        _world("switch_pitcher", replace(away, **debut, lookup="S")),
+    ]
+    cases += [
+        _world(f"frame_without_{column}", replace(away, drop=(column,)))
+        for column in ("stand", "release_speed", "plate_x", "plate_z", "pitch_type")
+    ]
+    return {scenario.name: scenario for scenario in cases}
+
+
+HARD_CASES: dict[str, Scenario] = _hard_cases()
+
+
+# --- all the outcomes, once ------------------------------------------------------------------------
+
+
+@cache
+def matrix_outcome(case: Case) -> Outcome:
+    return run_scenario(scenario_of(case))
+
+
+@cache
+def hard_outcome(name: str) -> Outcome:
+    return run_scenario(HARD_CASES[name])
+
+
+def outcomes() -> dict[str, Outcome]:
+    """Every outcome of the matrix and of the hard cases, by name."""
+
+    found = {f"matrix:{case.id}": matrix_outcome(case) for case in MATRIX}
+    found.update({f"hard:{name}": hard_outcome(name) for name in HARD_CASES})
+    return found

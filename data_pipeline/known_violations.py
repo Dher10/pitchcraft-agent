@@ -24,6 +24,7 @@ KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
     "rule4:generator.workflow.loaded#cached": ("F3",),
     "rule4:generator.workflow.loaded#count": ("F4",),
     "rule4:writer.confidence.live_full#game_state": ("F5", "F16"),
+    "rule4:writer.confidence.live_full#pitch_data": ("F1",),
     "rule4:writer.confidence.live_no_offense#game_state": ("F5", "F16"),
     "rule4:writer.confidence.live_no_offense#pitch_data": ("F1",),
     "rule4:writer.section.summary#game_state": ("F5", "F16"),

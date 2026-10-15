@@ -1,9 +1,10 @@
-"""The table of violations the code has today matches the corpus exactly (P0.15-D3.2).
+"""The table of violations the code has today matches the corpus exactly (P0.15-D3.2, D3.3b).
 
 `known_violations.KNOWN_VIOLATIONS` maps a violation code to the findings (F numbers) of
 `docs/DATA_CONTRACT.md` it belongs to. `validate_payload` tolerates exactly those codes, so the generator
 keeps publishing as it does today while the fixes land one class at a time (P0.15-D2.1 to D2.5). The table
-must match in both directions on the payloads of the tests: a violation that is not in it is a new
+must match in both directions on the payloads of the tests (the corpus, the 72 cases of the matrix and the
+hard cases of `tests/matrix.py`): a violation that is not in it is a new
 violation and fails publication; an entry that no longer occurs must be deleted. The last fix deletes
 the module (the guard test of that commit makes sure nothing replaces it).
 """
@@ -20,6 +21,7 @@ from data_pipeline.contract_checks import check_contract
 from data_pipeline.known_violations import KNOWN_VIOLATIONS
 from tests.corpus import GOLDEN_NAMES, KINDS, build, golden_payload, published, served
 from tests.live_helpers import failed_checks
+from tests.matrix import outcomes
 
 CONTRACT = Path(__file__).resolve().parents[1] / "docs" / "DATA_CONTRACT.md"
 
@@ -43,6 +45,9 @@ def observed():
         for name, payload in corpus(monkeypatch):
             for violation in check_contract(payload):
                 found.setdefault(violation.code, set()).add(name)
+    for name, outcome in outcomes().items():
+        for violation in outcome.violations:
+            found.setdefault(violation.code, set()).add(name)
     return found
 
 
