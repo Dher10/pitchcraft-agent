@@ -1,0 +1,368 @@
+"""The manifest of a live payload: rules 1 and 2 of the data contract (P0.15-D3.3b-2).
+
+`data_pipeline/provenance.py` says, for every leaf of a live file, whether it is a source value, a documented
+derivation, a label, a recorded sentence or an unavailable state, and checks what it can: the type, a value
+that stands for something the source did not give, a derivation recomputed, and the evidence a zero needs.
+
+The negative tests feed it a payload that breaks one rule and require the code of that rule. The structure
+tests hold the manifest to the payloads: no leaf without an entry, no entry that nothing uses.
+"""
+
+from __future__ import annotations
+
+from copy import deepcopy
+
+import pytest
+
+from data_pipeline import labels, provenance
+from data_pipeline.contract_checks import check_contract
+from data_pipeline.known_violations import KNOWN_VIOLATIONS
+from tests.corpus import build, published
+from tests.matrix import hard_outcome, outcomes
+
+AWAY, HOME = "away_starter", "home_starter"
+
+
+@pytest.fixture(scope="module")
+def live():
+    """A live payload with everything the pipeline can give: the base for the negative tests."""
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        return published(build(monkeypatch, "live_complete"))
+
+
+def codes(payload) -> set[str]:
+    return {code for code, _, _ in provenance.findings(payload)}
+
+
+def matchup(payload, slot=None):
+    found = payload["matchups"][0]
+    return found if slot is None else found["starters"][slot]
+
+
+# --- the manifest holds the payloads ----------------------------------------------------------------
+
+
+def test_every_leaf_of_every_live_payload_has_an_entry():
+    unlisted = {
+        code
+        for outcome in outcomes().values()
+        if outcome.payload
+        for code in codes(outcome.payload)
+        if code.startswith("rule1:unlisted")
+    }
+
+    assert unlisted == set()
+
+
+def test_every_entry_of_the_manifest_is_used_by_some_payload():
+    """A dead entry is a field that no longer exists (or never did): it is deleted, not kept."""
+
+    used = set()
+    for outcome in outcomes().values():
+        if not outcome.payload or not outcome.live:
+            continue
+        for path, _ in provenance._leaves(outcome.payload):
+            if provenance._in_scope(outcome.payload, path):
+                entry = provenance.entry_for(provenance.normalize(path))
+                if entry:
+                    used.add(entry.pattern)
+    dead = sorted({entry.pattern for entry in provenance.MANIFEST} - used)
+
+    assert dead == []
+
+
+def test_the_patterns_of_the_manifest_are_unique():
+    patterns = [entry.pattern for entry in provenance.MANIFEST]
+
+    assert len(patterns) == len(set(patterns))
+
+
+def test_a_fact_names_its_finding_and_only_a_fact_does():
+    for entry in provenance.MANIFEST:
+        assert (entry.kind == provenance.FACT) == bool(entry.finding), entry.pattern
+
+
+def test_a_demo_file_is_not_asked_and_neither_are_the_demo_matchups_of_a_live_file(live):
+    demo = deepcopy(live)
+    demo["metadata"]["data_mode"] = "demo_cached"
+    demo["matchups"][0]["new_field"] = 1
+
+    assert provenance.findings(demo) == []
+    mixed = deepcopy(live)
+    mixed["matchups"][1]["a_demo_field_nobody_listed"] = 1  # matchup_002 is a demo matchup: rule 6's finding (F4)
+
+    assert not any("a_demo_field_nobody_listed" in where for _, where, _ in provenance.findings(mixed))
+
+
+# --- rule 1: provenance --------------------------------------------------------------------------
+
+
+def test_rule_1_a_field_with_no_entry_is_unlisted(live):
+    payload = deepcopy(live)
+    payload["matchups"][0]["game"]["weather"] = "sunny"
+
+    assert "rule1:unlisted#matchups[].game.weather" in codes(payload)
+
+
+def test_rule_1_a_null_where_the_entry_does_not_allow_one_is_not_declared(live):
+    payload = deepcopy(live)
+    matchup(payload)["game"]["title"] = None
+
+    assert "rule1:null_not_declared#matchups[].game.title" in codes(payload)
+
+
+def test_rule_1_a_value_of_the_wrong_type_is_found(live):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["throws"] = 1
+
+    assert "rule1:wrong_type#matchups[].starters.*.throws" in codes(payload)
+
+
+def test_rule_1_a_constant_that_asserts_a_fact_is_a_violation_whatever_its_value(live):
+    found = codes(live)
+
+    for pattern in (
+        "matchups[].status",
+        "matchups[].data_confidence.lineup_status",
+        "matchups[].data_confidence.pitch_data_status",
+        "archive[].status",
+        "archive[].result_label",
+        "metadata.data_sources[]",
+        "agent_workflow.steps[].status",
+    ):
+        assert f"rule1:constant_asserts_fact#{pattern}" in found, pattern
+
+
+def test_rule_1_the_postgame_step_reads_its_result_and_the_other_four_do_not(live):
+    where = {w for code, w, _ in provenance.findings(live) if code.startswith("rule1:constant_asserts_fact#agent_workflow")}
+
+    assert where == {f"agent_workflow.steps[{i}].status" for i in range(4)}
+
+
+def test_rule_1_the_postgame_step_must_agree_with_what_it_reports(live):
+    payload = deepcopy(live)
+    payload["agent_workflow"]["steps"][4]["status"] = "not_applicable"  # its output says graded starters
+
+    assert "rule1:derivation_mismatch#agent_workflow.steps[].status" in codes(payload)
+
+
+@pytest.mark.parametrize(
+    "checks",
+    [[], None, [{"claim": "c", "status": "revised", "evidence": "e"}]],
+    ids=["no checks", "no list", "a status outside the closed set"],
+)
+def test_rule_1_the_critic_status_needs_checks_that_ran(live, checks):
+    """Owner, 2026-10-14: `reviewed` is a derivation, but with evidence; without it, a constant that asserts a fact."""
+
+    payload = deepcopy(live)
+    review = matchup(payload)["critic_review"]
+    if checks is None:
+        del review["checks"]
+    else:
+        review["checks"] = checks
+
+    assert "rule1:constant_asserts_fact#matchups[].critic_review.status" in codes(payload)
+
+
+def test_rule_1_the_critic_status_is_clean_when_the_checks_ran(live):
+    assert "rule1:constant_asserts_fact#matchups[].critic_review.status" not in codes(live)
+
+
+def test_rule_1_a_team_abbreviation_that_is_a_placeholder_is_found(live):
+    payload = deepcopy(live)
+    matchup(payload)["teams"]["away"]["abbreviation"] = "???"
+
+    assert "rule1:placeholder#matchups[].teams.*.abbreviation" in codes(payload)
+
+
+def test_rule_1_a_family_for_a_pitch_the_map_does_not_know_is_invented(live):
+    payload = deepcopy(live)
+    movement = matchup(payload)["charts"]["pitch_movement"][AWAY]
+    movement["Mystery"] = {"h_break": 1.0, "v_break": 2.0, "family": "Fastball"}
+
+    assert "rule1:invented_derivation#matchups[].charts.pitch_movement.*.*.family" in codes(payload)
+
+
+def test_rule_1_a_family_that_is_not_the_one_of_its_pitch_is_a_mismatch(live):
+    payload = deepcopy(live)
+    movement = matchup(payload)["charts"]["pitch_movement"][AWAY]
+    movement["Slider"]["family"] = "Fastball"
+
+    assert "rule1:derivation_mismatch#matchups[].charts.pitch_movement.*.*.family" in codes(payload)
+
+
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("primary_pitch", "Cutter"),  # not the most thrown
+        ("putaway_pitch", "Not available"),  # the second pitch is above 15%
+        ("style_label", "Cutter-Slider starter"),
+        ("command_label", "Plus command"),
+        ("swing_miss_label", "Below-average swing-and-miss ability"),
+    ],
+)
+def test_rule_1_the_profile_is_recomputed_from_the_mix_and_the_sample(live, field, value):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["pitching_profile"][field] = value
+
+    assert f"rule1:derivation_mismatch#matchups[].starters.*.pitching_profile.{field}" in codes(payload)
+
+
+def test_rule_1_a_limited_flag_that_the_sample_does_not_give_is_a_mismatch(live):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["sample"]["limited"]["arsenal"] = True  # 1,150 pitches
+
+    assert "rule1:derivation_mismatch#matchups[].starters.*.sample.limited.*" in codes(payload)
+
+
+def test_rule_1_a_scope_whose_label_is_not_made_of_its_parts_is_a_mismatch(live):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["sample"]["arsenal"]["scope"]["label"] = "regular season through never"
+
+    assert "rule1:derivation_mismatch#matchups[].starters.*.sample.arsenal.scope.label" in codes(payload)
+
+
+def test_rule_1_a_lineup_that_faces_the_wrong_hand_is_a_mismatch(live):
+    payload = deepcopy(live)
+    matchup(payload)["teams"]["home"]["offense_profile"]["vs_pitcher_hand"] = "RHP"  # the away starter throws left
+
+    assert "rule1:derivation_mismatch#matchups[].teams.*.offense_profile.vs_pitcher_hand" in codes(payload)
+
+
+def test_rule_1_a_clean_payload_has_only_the_known_findings(live):
+    assert codes(live) <= set(KNOWN_VIOLATIONS)
+
+
+# --- rule 2: unknown is never zero ---------------------------------------------------------------
+
+
+def test_rule_2_a_count_of_zero_from_statcast_with_pitches_but_no_batter_has_no_evidence():
+    """F6b: an unusable `events` column used to publish measured zeros."""
+
+    found = codes(hard_outcome("events_null_in_every_row").payload)
+
+    assert "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.batters_faced" in found
+    assert "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.strikeouts" in found
+
+
+def test_rule_2_a_zero_the_api_measured_is_a_zero():
+    payload = hard_outcome("api_zeros_are_zeros").payload
+
+    assert not [c for c in codes(payload) if c.startswith("rule2:zero_without_evidence#matchups[].starters")]
+
+
+def test_rule_2_a_zero_that_statcast_counted_around_is_a_zero(live):
+    payload = deepcopy(live)
+    rates = matchup(payload, AWAY)["sample"]["rates"]
+    rates.update(source="statcast", batters_faced=120, strikeouts=0, walks=0, home_runs=0)
+
+    assert not [c for c in codes(payload) if c.startswith("rule2:zero_without_evidence#matchups[].starters")]
+
+
+def test_rule_2_a_count_for_counts_that_are_unavailable_is_an_unknown_written_as_a_value(live):
+    payload = deepcopy(live)
+    rates = matchup(payload, AWAY)["sample"]["rates"]
+    rates.update(source="unavailable")
+
+    assert "rule2:unknown_written_as_value#matchups[].starters.*.sample.rates.strikeouts" in codes(payload)
+
+
+@pytest.mark.parametrize("text", ["N/A", "0", ""])
+def test_rule_2_an_unknown_written_as_text_in_a_numeric_field_is_found(live, text):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["sample"]["rates"]["walks"] = text
+
+    assert "rule2:unknown_written_as_value#matchups[].starters.*.sample.rates.walks" in codes(payload)
+
+
+@pytest.mark.parametrize("value", [0, 3, "3.10 ERA", 4.5])
+def test_rule_2_era_is_text_by_type_and_unknown_is_the_sentinel(live, value):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["season_summary"]["era"] = value
+
+    assert codes(payload) & {
+        "rule2:unknown_written_as_value#matchups[].starters.*.season_summary.era",
+        "rule1:wrong_type#matchups[].starters.*.season_summary.era",
+    }
+
+
+def test_rule_2_the_sentinel_and_a_number_written_as_text_are_clean(live):
+    payload = deepcopy(live)
+    summary = matchup(payload, AWAY)["season_summary"]
+    summary.update(era="N/A", whip="1.05", innings="101.1")
+
+    assert not [c for c in codes(payload) if "season_summary.era" in c or "season_summary.whip" in c]
+
+
+def test_rule_2_a_share_of_no_pitches_is_unknown_not_zero():
+    """F20: a starter who threw nothing has a 0% share of each pitch his opponent threw."""
+
+    payload = hard_outcome("home_debut_away_healthy").payload
+
+    assert "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.overall" in codes(payload)
+
+
+def test_rule_2_a_share_of_real_pitches_that_is_zero_is_a_zero(live):
+    found = [c for c in codes(live) if c.startswith("rule2:zero_without_evidence#matchups[].charts")]
+
+    assert found == []  # the home starter threw 700 pitches, none of them a sinker: 0% is a real zero
+
+
+def test_rule_2_a_total_of_zero_with_pitches_thrown_has_no_evidence(live):
+    payload = deepcopy(live)
+    matchup(payload)["charts"]["pitch_mix"][0][AWAY]["total"] = 0
+
+    assert "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.total" in codes(payload)
+
+
+def test_rule_2_a_pitch_count_of_zero_out_of_nothing_for_a_starter_with_pitches_is_found(live):
+    payload = deepcopy(live)
+    cell = matchup(payload)["charts"]["pitch_mix"][0][AWAY]
+    cell.update(count=0, total=0)
+
+    assert codes(payload) & {
+        "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.count",
+        "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.total",
+    }
+
+
+def test_rule_2_a_velocity_of_zero_is_not_a_measurement(live):
+    payload = deepcopy(live)
+    matchup(payload)["charts"]["velocity_by_pitch"][0]["away_starter_velocity"] = 0
+
+    assert "rule2:zero_without_evidence#matchups[].charts.velocity_by_pitch[].*" in codes(payload)
+
+
+def test_rule_2_pitches_of_zero_while_the_mix_has_pitches_has_no_evidence(live):
+    payload = deepcopy(live)
+    matchup(payload, AWAY)["sample"]["arsenal"]["pitches"] = 0
+
+    assert "rule2:zero_without_evidence#matchups[].starters.*.sample.arsenal.pitches" in codes(payload)
+
+
+# --- wired into the contract ---------------------------------------------------------------------
+
+
+def test_the_contract_runs_the_manifest_on_a_live_file_and_only_there(live):
+    assert any(v.code.startswith("rule1:") for v in check_contract(live))
+    demo = deepcopy(live)
+    demo["metadata"]["data_mode"] = "demo_cached"
+
+    assert not any(v.code.startswith(("rule1:", "rule2:")) for v in check_contract(demo))
+
+
+def test_a_violation_of_rule_1_or_2_that_is_not_in_the_table_fails_publication(live):
+    from tests.live_helpers import failed_checks
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        payload = build(monkeypatch, "live_complete")
+        payload["matchups"][0]["game"]["weather"] = "sunny"
+
+        assert any("rule1:unlisted#matchups[].game.weather" in d for d in failed_checks(payload))
+
+
+def test_the_pitch_family_table_is_the_one_the_pipeline_uses():
+    from data_pipeline.fetchers import live_pipeline
+
+    for name in set(live_pipeline.PITCH_NAME_MAP.values()):
+        assert name in labels.PITCH_FAMILY, f"{name} has no family: it would be published as an invented one"

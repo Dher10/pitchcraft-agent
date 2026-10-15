@@ -1,16 +1,19 @@
 """The generic checks of the data contract (decision D34, `docs/DATA_CONTRACT.md`).
 
-`check_contract(payload)` applies rules 3, 4, 6 and 8 to a payload and returns every violation, each
+`check_contract(payload)` applies rules 1 to 4, 6 and 8 to a payload and returns every violation, each
 with a code, the place and a message. It does not decide what is tolerated: `validate_payload` does,
 with `known_violations.KNOWN_VIOLATIONS`.
 
+- Rules 1 and 2 (provenance, unknown is never zero): the manifest of a live file (`provenance`): every leaf is
+  a source value, a documented derivation, a label, a recorded sentence or an unavailable state, and a
+  number that stands for an unknown or a zero has the evidence it needs.
 - Rule 3 (scope): one table of groups of figures (`GROUPS`). A scope field with no figure behind it, a
   figure with no scope, or a scope that disagrees with the source of its group is a violation. A
   measured zero is a figure and has its scope; an unknown value is not.
 - Rule 4 (claims): the condition of every recorded claim (`claims_registry`) holds on the payload.
 - Rule 6 (honest mode) and rule 8 (no internals): a live file only; a demo file is asked nothing.
 
-Violation codes: `rule3:<group>#<reason>`, `rule4:<catalog key>#<reason>`, `rule6:<reason>`, `rule8:<reason>`.
+Violation codes: `rule1:<reason>#<path>` and `rule2:<reason>#<path>` (see `provenance`), `rule3:<group>#<reason>`, `rule4:<catalog key>#<reason>`, `rule6:<reason>`, `rule8:<reason>`.
 """
 
 from __future__ import annotations
@@ -21,7 +24,7 @@ from datetime import datetime
 import re
 from typing import Any
 
-from data_pipeline import labels
+from data_pipeline import labels, provenance
 from data_pipeline.claims import catalogs_of, verify_claims
 from data_pipeline.claims_registry import LIVE_LEVEL, ClaimIndex, Ctx, classify, run_rule
 
@@ -313,7 +316,7 @@ def _rule8(payload: Mapping[str, Any]) -> list[Violation]:
 
 
 def check_contract(payload: Mapping[str, Any]) -> list[Violation]:
-    """Every violation of rules 3, 4, 6 and 8 in `payload` (rules 6 and 8 only for a live file)."""
+    """Every violation of rules 1 to 4, 6 and 8 in `payload` (rules 1, 2, 6 and 8 only for a live file)."""
 
     found: list[Violation] = []
     for position, matchup in enumerate(payload.get("matchups") or []):
@@ -321,6 +324,7 @@ def check_contract(payload: Mapping[str, Any]) -> list[Violation]:
             found += _rule3(matchup, str(matchup.get("id") or f"matchups[{position}]"))
     found += _rule4(payload)
     if (payload.get("metadata") or {}).get("data_mode") == LIVE_MODE:
+        found += [Violation(code, where, message) for code, where, message in provenance.findings(payload)]
         found += _rule6(payload)
         found += _rule8(payload)
     return found

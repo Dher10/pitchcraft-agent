@@ -165,6 +165,24 @@ def apply_profile_labels(profile: dict[str, Any], sample: dict[str, Any]) -> Non
         profile["style_label"] = ARSENAL_LIMITED_STYLE
 
 
+# The family of each mapped pitch (the colour and copy of the movement chart). A documented derivation from
+# the pitch name (DATA_CONTRACT.md, rule 1): a name this table does not have has no family.
+PITCH_FAMILY = {
+    "Four-seam": "Fastball",
+    "Sinker": "Fastball",
+    "Cutter": "Fastball",
+    "Slider": "Breaking",
+    "Curveball": "Breaking",
+    "Sweeper": "Breaking",
+    "Slurve": "Breaking",
+    "Changeup": "Offspeed",
+    "Splitter": "Offspeed",
+    "Forkball": "Offspeed",
+    "Knuckleball": "Offspeed",
+    "Screwball": "Offspeed",
+    "Eephus": "Offspeed",
+}
+
 SEASON_RATE_FIELDS = ("era", "whip", "innings")
 
 

@@ -2,7 +2,7 @@
 
 Normative (decision D34). This contract defines what `public/data/pitchcraft-demo.json`, and every text that describes it, may contain. It does not replace `docs/DECISIONS.md`: where they differ, the decision wins and the difference is reported. QA (`docs/QA_PROTOCOL.md`) verifies compliance with this contract. A rule changes only through a new decision.
 
-- **Annex A:** `docs/data-inventory.md`, the field-by-field inventory of the live payload at HEAD `043db03`. Its findings F1 to F13 (and F14 to F18, added below) are the **known violations** of this contract. Each is closed by the commit named in section 4; until then, `data_pipeline/known_violations.py` tolerates it and the generic checks of P0.15-D3 report it.
+- **Annex A:** `docs/data-inventory.md`, the field-by-field inventory of the live payload at HEAD `043db03`. Its findings F1 to F13 (and F14 to F20, added below) are the **known violations** of this contract. Each is closed by the commit named in section 4; until then, `data_pipeline/known_violations.py` tolerates it and the generic checks of P0.15-D3 report it.
 - **Scope of "published":** every field of the JSON file, whether or not a component renders it, and every text that describes the file: agent text, generator text (workflow, metadata, archive labels), frontend text and workflow text.
 - **Words used.** A *field* is a path in the file. A *group of figures* is a set of fields that come from one source with one scope (section 2, rule 3). An *unavailable state* is the explicit way a field says "no value": `null` for a scalar, `[]` for a list, `{}` for a map, and the documented sentinel for the few fields that are text by type (`"N/A"` for `season_summary.era`, `whip`, `innings`; `"Not available"` for `primary_pitch` and `putaway_pitch`). The sentinels are listed in the manifest of P0.15-D3; none may be a number.
 
@@ -33,7 +33,7 @@ Examples from Annex A:
 - `family` for a mapped pitch, `teams.*.record: null`, `bio: null` are correct: the first is a derivation from a name map, the others are explicit unavailable states.
 - `critic_review.revision_notes` ending with "Avoided claiming official Stuff+." is a constant asserting that a check happened; no check exists (F8).
 
-**Check (P0.15-D3):** a manifest lists every path of a live file with its kind and, for a source value, its source. A leaf outside the manifest, or a constant that is not a label, fails validation.
+**Check (`data_pipeline/provenance.py`, section 6):** a manifest lists every path of a live file with its kind and, for a source value, its source. A leaf outside the manifest (`rule1:unlisted`), a constant that asserts a fact (`rule1:constant_asserts_fact`), a wrong type, a placeholder given as a value (`rule1:placeholder`), a family invented for a pitch the map does not know (`rule1:invented_derivation`) and a derivation that does not recompute (`rule1:derivation_mismatch`) fail validation.
 
 ### Rule 2. Unknown is never zero
 
@@ -45,8 +45,9 @@ Examples:
 - The analyst writes "no batters faced on record" and "no pitches on record" when the count is `null`, because it tests `if batters` (F14). A missing count is not a zero count.
 - `_usage_pct` returning `None` for a side the starter never faced (P0.14-C) is correct; a real `0%` against a side he did face stays `0%`.
 - `pitch_type` null in every row of a populated frame produced a debut with `pitches 0` and no error (F6a). Same class.
+- A starter who threw no pitch has `charts.pitch_mix[].<slot>.overall = 0` for each pitch his opponent threw (F20): a share of zero pitches is unknown, `null`, not 0%. His `count` of 0 out of a `total` of 0 is the measured zero; the share is what cannot be computed.
 
-**Check:** the manifest names, for every numeric field, the evidence a `0` requires (for a count: the source and that the column was usable). A `0` without its evidence fails; so does an unknown value written as `0`, `"0"` or `"N/A"` text in a numeric field, and so does a guessed default such as a throwing hand.
+**Check (`data_pipeline/provenance.py`, section 6):** the manifest names, for every numeric field, the evidence a `0` requires (section 6.3). A `0` without its evidence fails (`rule2:zero_without_evidence`); so does an unknown value written as a number for a source that is `unavailable`, or as `"0"`, `""` or `"N/A"` text in a numeric field (`rule2:unknown_written_as_value`). A guessed default such as a throwing hand is found by the matrix, not by the payload: the hand is a source value and the payload cannot say which source gave it (`tests/test_matrix.py` makes the people endpoint answer the opposite of the guess).
 
 ### Rule 3. Scope
 
@@ -55,6 +56,8 @@ Examples:
 A group has a figure when a value is known, **a measured zero included** (rule 2): a debut's 0 pitches come from a valid Statcast answer, so `sample.arsenal.scope` stays and says which games the zero was measured over. An unknown value (`null`, `"N/A"`, a `sample.rates.source` of `"unavailable"`) is not a figure: the group has no scope in any field that carries one. A scope is a field; the sentence that states it (rule 4) follows the same rule.
 
 Groups at HEAD: pitch data (Statcast; `sample.arsenal.scope`, `charts.*`), season rates (ERA, WHIP, innings; MLB API; `scopes.season_rates`), counts (strikeouts, walks, home runs, batters faced; the API or Statcast; `scopes.counts`, `sample.rates.scope`), team offense (Savant; `offense_profile.scope`). Scope is `regular_season` or `regular_and_postseason`, through the cutoff (D29).
+
+**Source of the counts** (QA3-02, P0.14-A). The four counts (batters faced, strikeouts, walks, home runs) come from the MLB API line when it gives all four. Otherwise they come from the valid Statcast plate appearances, if the starter has pitches. Otherwise they come from a partial API line, if it has any count. Otherwise they are unavailable (`sample.rates.source` is `"unavailable"`, every count `null`). Sources are never mixed field by field. `sample.rates.source` says which one gave them, and the scope of the group is that of the source: regular season for the API, the scope of the pitch data for Statcast.
 
 Examples:
 
@@ -247,7 +250,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F2 | 3, 4 | P0.15-D2.1 | Offense scope stated when no offense figure exists |
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
 | F4 | 6 | P0.15-D2.4 | Demo matchups and archive rows inside a live file |
-| F5 | 7 | P0.15-D2.5 | `status` is always `upcoming` |
+| F5 | 7 | P0.15-D2.5 | `status` is always `upcoming`, in the matchup and in its archive row (with the row's `result_label` and `lineup_status`) |
 | F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2 | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
 | F7 | 1, 2 | P0.15-D2.2 | `"???"` team abbreviation |
 | F8 | 1, 4 | P0.15-D2.1 | Two constant critic notes |
@@ -261,6 +264,8 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F16 | 4, 7 | P0.15-D2.5 | "Today's Matchup Summary" and "before first pitch" are time claims with no condition |
 | F17 | 3 | P0.15-D2.1 | `sample.rates.scope` is set while the counts are unavailable (found by the rule 3 check in P0.15-D3.2) |
 | F18 | 4 | P0.15-D2.1 | "Can X land the changeup early in counts?" for a put-away pitch under 15% of his pitches: the demo's `matchup_002` (Demo Pitcher C, 12%), where the critic warns about the same pitch (found by the rule 4 check in P0.15-D3.2) |
+| F19 | 1 | P0.15-D2.4 | The status of the first four steps of `agent_workflow` (`completed`) is written fixed: no step reads its own result (found by the manifest in P0.15-D3.3b-2, classified with the owner's criterion, section 6.2) |
+| F20 | 2 | P0.15-D2.2 | `charts.pitch_mix[].<slot>.overall` is `0` when the starter has no pitch (`total` 0): a share of nothing written as 0% (found by the manifest in P0.15-D3.3b-2 over the debut cells of the matrix) |
 
 F13 is not a violation of a rule but a note on how little of the JSON the page shows; the contract still applies to what is not rendered.
 
@@ -271,3 +276,58 @@ F13 is not a violation of a rule but a note on how little of the JSON the page s
 3. **Matrix** (P0.15-D3): 72 combinations, API (complete, partial, absent) × season (regular only, with postseason) × starter (debut, limited, healthy) × day (normal, opening day) × throwing hand (present, missing), each through pipeline → generator → `validate_payload`; per case the game is published or fails with an explicit recorded error, and the contract holds. The cells are defined in `tests/matrix.py`: the away starter varies and the home starter is healthy; "hand missing" means the Statcast frame has no `p_throws` and the people endpoint answers `L` (the opposite of a guessed right hand); on opening day the cutoff is before the season, so every starter is a debut and the cells that no source can tell apart must publish the same file. The hard cases outside the product (two debuts, two limited, the other side of the pair, real API zeros, no Savant data, `events` or `pitch_type` null, an unmapped pitch code, an unknown team, a failed hand lookup, a switch pitcher, a frame without a needed column, a starter without a hand) are in the same module. A finding the payload cannot show (F6a, F6b, F6c, F6e, F7, F11, F15) is an `xfail(strict=True)` labelled with its F until its fix in P0.15-D2.
 4. **Frontend phrases** (3.3) are not in the JSON, so `validate_payload` cannot see them: each row of 3.3 has a component test that checks its condition, added in the D2 commit that owns it.
 5. **QA gate** (D27): QA checks compliance with this contract as a finding area of its own.
+
+## 6. The manifest of a live file (rules 1 and 2)
+
+`data_pipeline/provenance.py` (P0.15-D3.3b-2). `MANIFEST` is a table of entries `(pattern, kind, origin, types, nullable, check)`. Every leaf of a live file, and every empty list or map (the unavailable state of what it would hold), must match one entry. Demo matchups and archive rows inside a live file are not walked: they are rule 6's finding (F4). A demo file is not asked.
+
+### 6.1 Kinds
+
+| Kind | Meaning | The check |
+|---|---|---|
+| `source` | A value the source gave. | The type, the format (a date, a UTC instant, a team abbreviation) and the evidence a zero needs. |
+| `derivation` | Computed by a documented rule. | The value is recomputed from its inputs and compared: the pitching profile from the pitch mix and the sample (D24, D25, D30), `limited` from the sample, the family from the pitch map, the lineup's hand from the opposing starter, the title of an archive row from the teams. |
+| `label` | A constant that asserts nothing about data. | The type, and a closed set where there is one (the schema version, the names of the agents, the thresholds of D24). |
+| `claim` | A sentence, or the record of the sentences. | Rule 4 owns the condition. |
+| `fact` | A constant that asserts a fact, written fixed without looking at the outcome. | It is a violation by definition, with the finding it belongs to. The fix of that finding turns the entry into a derivation with its evidence. |
+
+A `null` is allowed only where the entry says `nullable`. The codes are `rule1:unlisted`, `rule1:null_not_declared`, `rule1:wrong_type`, `rule1:constant_asserts_fact`, `rule1:derivation_mismatch`, `rule1:placeholder`, `rule1:invented_derivation`, `rule2:zero_without_evidence` and `rule2:unknown_written_as_value`, each followed by `#` and the pattern of the entry. A check that cannot read its neighbours (a malformed sample) fails closed with `rule1:derivation_mismatch`.
+
+### 6.2 Statuses: derivation or constant that asserts a fact
+
+The owner's criterion (2026-10-13): a status is a documented derivation if it is set from the real outcome of the step (the agent ran and finished); it is a constant that asserts a fact if it is written fixed without looking at the outcome. Applied to every status the manifest finds:
+
+| Field | How the code sets it | Classification |
+|---|---|---|
+| `agent_workflow.steps[4].status` (postgame) | `completed` or `not_applicable` from the number of graded starters | Derivation. The check requires it to agree with the step's own recorded sentence (`generator.workflow.graded` or `.graded_none`). |
+| `agent_workflow.steps[0..3].status` | The literal `completed` in `_build_agent_workflow`; nothing reads the result of the step. It is true today only because any failure stops the generator (rule 5, exception). | Constant that asserts a fact: **F19**, closed in P0.15-D2.4. |
+| `critic_review.status` | `reviewed`, written by the critic at the end of its own run (owner, 2026-10-14) | Derivation, with evidence: `checks[]` is not empty and every `checks[].status` is in the closed set. Without it, `rule1:constant_asserts_fact#matchups[].critic_review.status`. |
+| `critic_review.checks[].status` | The verdict of each check | Derivation (closed set). |
+| `matchups[].status`, `archive[].status` | The literal `upcoming` | Constant that asserts a fact: **F5**. The archive row joins the finding. |
+| `archive[].result_label` | The literal "Pregame report available" | Constant that asserts a fact: **F5**. |
+| `data_confidence.lineup_status` | The literal `probable_pitchers` | Constant that asserts a fact: **F5**. |
+| `data_confidence.pitch_data_status` | The literal `fetched_snapshot`, even for a starter with no pitch data | Constant that asserts a fact: **F1**. |
+| `metadata.data_sources[]` | A list that includes "Cached demo snapshots" in a live file | Constant that asserts a fact: **F3**. |
+| `data_confidence.level` | Set only by the constructor of a live matchup, from a snapshot game | Derivation by construction (it is what rule 6 reads to tell a live matchup). |
+| `metadata.data_mode`, `data_status.mode` | The generator's reading of the run record | Derivation. |
+| `sample.rates.source`, `sample.limited.*`, the rate labels | Which source gave the counts; the minimum samples (D24, D25) | Derivation, recomputed. |
+
+### 6.3 The evidence a zero needs
+
+| Field | A `0` is evidenced by | Otherwise |
+|---|---|---|
+| `sample.arsenal.pitches` | The pitch mix has no pitch thrown by that starter | `zero_without_evidence` |
+| `sample.rates.*` (source `mlb_api`) | The MLB line gave it | Accepted |
+| `sample.rates.batters_faced` (source `statcast`) | The starter threw no pitch | `zero_without_evidence` (F6b) |
+| `sample.rates.strikeouts`, `walks`, `home_runs` (source `statcast`) | At least one plate appearance was counted | `zero_without_evidence` (F6b) |
+| `sample.rates.*` (source `unavailable`) | Not applicable: every count is `null` | `unknown_written_as_value` |
+| `charts.pitch_mix[].<slot>.total` | The starter threw no pitch (a total above 0 equals his pitches) | `zero_without_evidence` |
+| `charts.pitch_mix[].<slot>.count` | A `total` above 0 (a real zero out of his own total), or no pitch at all | `zero_without_evidence` |
+| `charts.pitch_mix[].<slot>.overall`, `vs_lhh`, `vs_rhh` | A `total` above 0: the share is `count / total`; out of nothing it is `null` | `zero_without_evidence` (F20) |
+| `charts.velocity_by_pitch[].*` | A velocity is never 0 | `zero_without_evidence` |
+
+`season_summary.strikeouts`, `walks` and `home_runs_allowed` are the counts of `sample.rates` and are checked by equality. `era`, `whip` and `innings` are text by type: a number written as text, or the sentinel `"N/A"`.
+
+### 6.4 The limit of the zero check
+
+The payload does not carry the Statcast `events` column, so a zero count is judged by what must hold around it. A starter hurt on his first pitch has pitches and no batter faced; the payload cannot tell him from a frame whose `events` is unusable (F6b), and the check reports him as a zero without evidence. That is the safe direction: a false alarm stops publication, and the case is extremely rare. A real zero that the MLB API measured is accepted, and so is a Statcast zero that sits next to counted plate appearances. Percent strings of a lineup (`k_rate_vs_hand: "0.0%"`) are not checked for evidence: the payload does not carry the plate appearances behind them.

@@ -1270,21 +1270,6 @@ def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
     keys stay so the JSON shape is stable, but a zero would read as a measured shape.
     """
 
-    family_map = {
-        "Four-seam": "Fastball",
-        "Sinker": "Fastball",
-        "Cutter": "Fastball",
-        "Slider": "Breaking",
-        "Curveball": "Breaking",
-        "Sweeper": "Breaking",
-        "Slurve": "Breaking",
-        "Changeup": "Offspeed",
-        "Splitter": "Offspeed",
-        "Forkball": "Offspeed",
-        "Knuckleball": "Offspeed",
-        "Screwball": "Offspeed",
-        "Eephus": "Offspeed",
-    }
     result = {}
     for name in pitch_types_kept:
         codes = [code for code, display_name in PITCH_NAME_MAP.items() if display_name == name]
@@ -1300,7 +1285,7 @@ def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
         result[name] = {
             "h_break": h_break,
             "v_break": v_break,
-            "family": family_map.get(name, "Fastball"),
+            "family": labels.PITCH_FAMILY.get(name, "Fastball"),
         }
     return result
 

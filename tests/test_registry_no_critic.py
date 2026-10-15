@@ -27,7 +27,7 @@ from tests.test_known_violations import corpus
 DATA_PIPELINE = Path(__file__).resolve().parents[1] / "data_pipeline"
 # The modules that decide whether a payload keeps the contract. `report_facts` is where the conditions read
 # the text of the report; it appears with D3.3a and is held to the same rule.
-CHECKERS = ("claims_registry.py", "contract_checks.py", "report_facts.py")
+CHECKERS = ("claims_registry.py", "contract_checks.py", "provenance.py", "report_facts.py")
 
 
 def imported_names(path: Path) -> set[str]:

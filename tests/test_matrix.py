@@ -45,8 +45,10 @@ def expected_starter(pitcher: Pitcher, opening: bool) -> dict:
     """
     What the sources give for `pitcher`, written from the case and not from the pipeline's code.
 
-    The counts come from the MLB line when it has all four, otherwise from Statcast when there are pitches,
-    otherwise from a partial line, otherwise they are unavailable (`live_pipeline._attach_sample`, QA3-02).
+    The source of the counts follows the contract (docs/DATA_CONTRACT.md, rule 3, "Source of the counts"):
+    the MLB line when it has all four counts, otherwise the Statcast plate appearances when the starter has
+    pitches, otherwise a partial MLB line, otherwise unavailable. Sources are never mixed field by field. The
+    pitches, the scopes and the limited flags follow D24 (minimum samples) and the cutoff of D29.
     """
 
     pitches = 0 if opening or pitcher.kind == "debut" else sum(mix_of(pitcher).values())

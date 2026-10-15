@@ -11,6 +11,20 @@ it. The commit of P0.15-D2.5 deletes this module and the code of `validate_paylo
 from __future__ import annotations
 
 KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
+    "rule1:constant_asserts_fact#agent_workflow.steps[].status": ("F19",),
+    "rule1:constant_asserts_fact#archive[].result_label": ("F5",),
+    "rule1:constant_asserts_fact#archive[].status": ("F5",),
+    "rule1:constant_asserts_fact#matchups[].data_confidence.lineup_status": ("F5",),
+    "rule1:constant_asserts_fact#matchups[].data_confidence.pitch_data_status": ("F1",),
+    "rule1:constant_asserts_fact#matchups[].status": ("F5",),
+    "rule1:constant_asserts_fact#metadata.data_sources[]": ("F3",),
+    "rule1:invented_derivation#matchups[].charts.pitch_movement.*.*.family": ("F6",),
+    "rule1:placeholder#matchups[].teams.*.abbreviation": ("F7",),
+    "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.overall": ("F20",),
+    "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.batters_faced": ("F6",),
+    "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.home_runs": ("F6",),
+    "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.strikeouts": ("F6",),
+    "rule2:zero_without_evidence#matchups[].starters.*.sample.rates.walks": ("F6",),
     "rule3:counts#scope_without_figures": ("F17",),
     "rule3:offense#scope_without_figures": ("F2",),
     "rule4:analyst.have.no_batters#unknown_not_zero": ("F14",),
