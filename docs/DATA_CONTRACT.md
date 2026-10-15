@@ -33,6 +33,8 @@ Examples from Annex A:
 - `family` for a mapped pitch, `teams.*.record: null`, `bio: null` are correct: the first is a derivation from a name map, the others are explicit unavailable states.
 - `critic_review.revision_notes` ended with "Avoided claiming official Stuff+." and "Kept the report focused on matchup fit rather than outcome prediction.", constants that asserted a check happened; no check stood behind the first (F8, closed in P0.15-D2.1c). The one note left, "No betting or outcome-prediction language found.", is written only when the betting-language check ran and found nothing.
 
+**Nullable by schema (0.5.0, D37, P0.15-D2.2c).** Three fields may be `null` because the world has no value for them: `charts.pitch_movement.*.*.family` for a pitch the family map does not know (F6e), `teams.*.abbreviation` and `starters.*.team` for a team the schedule and the maps do not know (F7), and `charts.pitch_mix[].<slot>.overall` for a starter who threw no pitch (F20). Every reader treats a `null` as unknown: a null share is a pitch not thrown, a team without abbreviation is shown by its name (`labels.team_label`, `lib/teamLabel.ts`), a pitch without family has no description and none is inferred from its name. Commit D2.2c makes the readers ready; the producers write the nulls in D2.2d (share) and D2.2e (family, abbreviation).
+
 **Check (`data_pipeline/provenance.py`, section 6):** a manifest lists every path of a live file with its kind and, for a source value, its source. A leaf outside the manifest (`rule1:unlisted`), a constant that asserts a fact (`rule1:constant_asserts_fact`), a wrong type, a placeholder given as a value (`rule1:placeholder`), a family invented for a pitch the map does not know (`rule1:invented_derivation`) and a derivation that does not recompute (`rule1:derivation_mismatch`) fail validation.
 
 ### Rule 2. Unknown is never zero
@@ -339,7 +341,7 @@ The owner's criterion (2026-10-13): a status is a documented derivation if it is
 | `sample.rates.*` (source `unavailable`) | Not applicable: every count is `null` | `unknown_written_as_value` |
 | `charts.pitch_mix[].<slot>.total` | The starter threw no pitch (a total above 0 equals his pitches) | `zero_without_evidence` |
 | `charts.pitch_mix[].<slot>.count` | A `total` above 0 (a real zero out of his own total), or no pitch at all | `zero_without_evidence` |
-| `charts.pitch_mix[].<slot>.overall`, `vs_lhh`, `vs_rhh` | A `total` above 0: the share is `count / total`; out of nothing it is `null` | `zero_without_evidence` (F20) |
+| `charts.pitch_mix[].<slot>.overall`, `vs_lhh`, `vs_rhh` | A `total` above 0: the share is `count / total`; out of nothing it is `null`. A `null` `overall` out of a positive `total` is `derivation_mismatch` (a share exists), checked since D2.2c | `zero_without_evidence` (F20) |
 | `charts.velocity_by_pitch[].*` | A velocity is never 0 | `zero_without_evidence` |
 
 `season_summary.strikeouts`, `walks` and `home_runs_allowed` are the counts of `sample.rates` and are checked by equality. `era`, `whip` and `innings` are text by type: a number written as text, or the sentinel `"N/A"`.

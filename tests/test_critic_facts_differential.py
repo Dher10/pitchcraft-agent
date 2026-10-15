@@ -542,3 +542,26 @@ def test_the_critics_own_note_is_flagged_by_both_readers_when_it_sits_in_a_repor
             if variant.startswith("critic note"):
                 assert disagreements(matchup, report) == [], f"{label} / {variant}"
                 assert facts.betting_terms(report, T), f"{label} / {variant}"
+
+
+def test_the_two_readers_agree_when_a_share_is_null():
+    """P0.15-D2.2c: the critic and `report_facts` read `overall`; a null is a pitch not thrown for both, with or without raw counts."""
+
+    from tests.matrix import hard_outcome
+
+    matchup = json.loads(json.dumps(hard_outcome("home_debut_away_healthy").matchup))
+    nulled = 0
+    for row in matchup["charts"]["pitch_mix"]:
+        for slot in SLOTS:
+            if row[slot]["total"] == 0:
+                row[slot]["overall"] = None
+                nulled += 1
+    assert nulled > 0
+
+    assert disagreements(matchup, report_of(matchup)) == []
+
+    for row in matchup["charts"]["pitch_mix"]:  # the demo's shape: no raw counts, only the share
+        for slot in SLOTS:
+            row[slot].pop("count", None)
+            row[slot].pop("total", None)
+    assert disagreements(matchup, report_of(matchup)) == []

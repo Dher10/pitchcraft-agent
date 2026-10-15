@@ -1,13 +1,18 @@
 import type { PitchFamily } from "@/lib/types";
 
 interface PitchDescriptionInput {
-  family: PitchFamily;
+  family: PitchFamily | null;
   velocity: number | string;
   hBreak: number;
   vBreak: number;
 }
 
 export function describePitchMovement({ family, velocity, hBreak, vBreak }: PitchDescriptionInput) {
+  // A pitch the family map does not know has no family, and none is inferred from its name.
+  if (family === null) {
+    return "This pitch is not in the pitch-family map, so no shape description is given.";
+  }
+
   const velo = typeof velocity === "number" ? velocity : Number.parseFloat(String(velocity));
   const hasVelo = Number.isFinite(velo);
   const horizontal = Math.abs(hBreak);

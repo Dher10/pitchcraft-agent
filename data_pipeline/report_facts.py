@@ -147,7 +147,7 @@ def _was_thrown(cell: Mapping[str, Any]) -> bool:
     count, total = cell.get("count"), cell.get("total")
     if isinstance(count, int) and isinstance(total, int):
         return count > 0
-    return float(cell["overall"]) > 0
+    return cell["overall"] is not None and float(cell["overall"]) > 0  # a null share was not thrown
 
 
 def _canonical_pitches(name: str) -> set[str]:

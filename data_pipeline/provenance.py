@@ -33,7 +33,7 @@ This module never imports the critic or the agents (`tests/test_registry_no_crit
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 import re
 from typing import Any
@@ -110,6 +110,7 @@ class Entry:
     nullable: bool = False
     check: Check | None = None
     finding: str | None = None  # for `fact`: the finding of DATA_CONTRACT.md section 4
+    check_null: bool = False  # the check also runs on an unavailable value (a null that is allowed only in some cases)
 
     def __post_init__(self) -> None:
         assert self.kind in KINDS, self.kind
@@ -201,6 +202,8 @@ def is_none(c: Ctx) -> Problem | None:
 
 
 def team_abbreviation(c: Ctx) -> Problem | None:
+    """A team abbreviation the source or the maps gave; a team they do not know has none (null), never a placeholder."""
+
     if isinstance(c.value, str) and _TEAM_ABBR.fullmatch(c.value):
         return None
     return ("rule1:placeholder", f"{c.value!r} stands for a team abbreviation the source did not give (F7)")
@@ -362,6 +365,8 @@ def mix_cell(c: Ctx) -> Problem | None:
             return ("rule2:zero_without_evidence", "a pitch count of 0 out of no total")
         return None
     if value is None:
+        if field == "overall" and total:
+            return _mismatch(f"overall is the share count/total ({round(count / total * 100, 1)}), found null: out of {total} pitches there is a share")
         return None
     if not total:
         return ("rule2:zero_without_evidence", f"{field} is {value!r} out of {total!r} pitches: a share of nothing is unknown, not zero")
@@ -471,7 +476,7 @@ def step_status(c: Ctx) -> Problem | None:
 def archive_title(c: Ctx) -> Problem | None:
     matchup = next(m for m in c.root["matchups"] if m["id"] == c.around(1)["id"])
     teams = matchup["teams"]
-    want = f"{teams['away']['abbreviation']} vs {teams['home']['abbreviation']}"
+    want = " vs ".join(labels.team_label(teams[side]["abbreviation"], teams[side]["name"]) for side in ("away", "home"))
     return None if c.value == want else _mismatch(f"the title is made of the teams: expected {want!r}")
 
 
@@ -586,7 +591,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _derived(M + "game.away_team_id", "the id of teams.away", STR, False, team_id_matches),
         _source(M + "teams.*.id", "schedule team id", STR, False, is_digits),
         _source(M + "teams.*.name", "schedule team name", STR),
-        _source(M + "teams.*.abbreviation", "schedule team abbreviation, or the id and name maps", STR, False, team_abbreviation),
+        _source(M + "teams.*.abbreviation", "schedule team abbreviation, or the id and name maps; none for a team they do not know", STR, True, team_abbreviation),
         _source(M + "teams.*.record", "no live source", (), True, is_none),
         _derived(M + "teams.*.offense_profile.summary_label", "present iff the lineup has a figure", STR, True, offense_text),
         _derived(M + "teams.*.offense_profile.vs_pitcher_hand", "the hand of the starter this lineup faces", STR, False, equals(lambda c: f"{_opposing_hand(c)}HP", "the hand of the opposing starter")),
@@ -598,7 +603,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         # -- the starters
         _source(M + "starters.*.id", "schedule probable pitcher id", STR, False, is_digits),
         _source(M + "starters.*.name", "schedule probable pitcher name", STR),
-        _derived(M + "starters.*.team", "the abbreviation of his team", STR, False, starter_team),
+        _derived(M + "starters.*.team", "the abbreviation of his team; none when his team has none", STR, True, starter_team),
         _source(M + "starters.*.throws", "the Statcast frame, or the MLB people endpoint; never guessed", STR, False, in_set(HANDS)),
         _source(M + "starters.*.bio", "no live source yet (P1.5)", (), True, is_none),
         _source(M + "starters.*.recent_form", "no live source yet", (), True, is_none),
@@ -631,7 +636,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "charts.pitch_mix[].pitch", "Statcast `pitch_type` through the name map", STR),
         _source(M + "charts.pitch_mix[].*.count", "Statcast pitch rows", (int,), False, mix_cell),
         _source(M + "charts.pitch_mix[].*.total", "Statcast pitch rows", (int,), False, mix_cell),
-        _derived(M + "charts.pitch_mix[].*.overall", "count / total", NUMERIC, True, mix_cell),
+        replace(_derived(M + "charts.pitch_mix[].*.overall", "count / total; null out of no pitches", NUMERIC, True, mix_cell), check_null=True),
         _derived(M + "charts.pitch_mix[].*.vs_lhh", "share against left-handed batters; unknown if he faced none", NUMERIC, True, mix_cell),
         _derived(M + "charts.pitch_mix[].*.vs_rhh", "share against right-handed batters; unknown if he faced none", NUMERIC, True, mix_cell),
         _source(M + "charts.velocity_by_pitch", "Statcast release speed (empty: no pitch)"),
@@ -765,6 +770,13 @@ def findings(payload: Mapping[str, Any]) -> list[tuple[str, str, str]]:
         if value is None:
             if not entry.nullable:
                 add("rule1:null_not_declared", entry.pattern, where, "the field is unavailable but its entry does not allow it")
+            elif entry.check_null and entry.check is not None:
+                try:
+                    null_problem = entry.check(Ctx(payload, path, value))
+                except (AttributeError, IndexError, KeyError, StopIteration, TypeError, ValueError) as exc:
+                    null_problem = _mismatch(f"cannot be checked against its neighbours ({type(exc).__name__}: {exc})")
+                if null_problem is not None:
+                    add(null_problem[0], entry.pattern, where, null_problem[1])
             continue
         problem = _type_problem(entry, value)
         if problem is None and entry.check is not None:

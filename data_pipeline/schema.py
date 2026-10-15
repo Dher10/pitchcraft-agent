@@ -1,4 +1,4 @@
-"""Schema constants for the PitchCraft v0.4.0 demo payload."""
+"""Schema constants for the PitchCraft v0.5.0 demo payload."""
 
 from __future__ import annotations
 
@@ -6,7 +6,10 @@ from datetime import datetime
 import re
 from typing import Any
 
-SCHEMA_VERSION = "0.4.0"
+SCHEMA_VERSION = "0.5.0"
+# 0.5.0 (P0.15-D2.2c, D37): a pitch family, a team abbreviation (`teams.*.abbreviation`, `starters.*.team`) and
+# a pitch share (`charts.pitch_mix[].<slot>.overall`) are null when unknown (an unmapped pitch, an unknown team,
+# a starter with no pitches), so a reader of 0.4.0 breaks.
 # 0.4.0 (P0.15-D2.1a): the scope of a group of figures is null when the group has no figure
 # (`sample.rates.scope`, `sample.arsenal.scope`, `offense_profile.scope`), so a reader of 0.3.0 breaks.
 # A live snapshot carries the schema it was written under and is read only if that is exactly this one.

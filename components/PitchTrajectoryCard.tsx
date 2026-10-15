@@ -5,13 +5,13 @@ import type { PitchFamily } from "@/lib/types";
 
 interface PitchTrajectoryCardProps {
   pitchName: string;
-  family: PitchFamily;
+  family: PitchFamily | null;
   velocity: number | string;
   usagePct: number | null;
   hBreak: number;
   vBreak: number;
   throwsHand: "L" | "R" | null;
-  team: string;
+  team: string | null;
   description: string;
 }
 
@@ -44,12 +44,15 @@ export default function PitchTrajectoryCard({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h4 className="text-base font-bold text-neutral-900">{pitchName}</h4>
-          <span
-            className="rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide"
-            style={{ background: teamColor.bg, color: teamColor.ink }}
-          >
-            {family}
-          </span>
+          {family ? (
+            <span
+              data-testid="pitch-family"
+              className="rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide"
+              style={{ background: teamColor.bg, color: teamColor.ink }}
+            >
+              {family}
+            </span>
+          ) : null}
         </div>
         <TeamBadge abbreviation={team} size={20} fontSize={7.5} />
       </div>

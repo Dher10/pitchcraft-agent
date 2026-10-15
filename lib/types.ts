@@ -88,7 +88,8 @@ export interface Game {
 export interface Team {
   id: string;
   name: string;
-  abbreviation: string;
+  /** null when the schedule and the maps do not know the team: the page shows the name. */
+  abbreviation: string | null;
   record: string | null;
   offense_profile: OffenseProfile;
 }
@@ -123,7 +124,8 @@ export interface StarterBio {
 export interface Starter {
   id: string;
   name: string;
-  team: string;
+  /** The abbreviation of his team; null when the team has none. */
+  team: string | null;
   throws: string;
   bio: StarterBio | null;
   season_summary: SeasonSummary;
@@ -178,7 +180,8 @@ export interface RecentForm {
 }
 
 export interface PitchUsage {
-  overall: number;
+  // null: the starter threw no pitch, so there is no share to take (not 0%).
+  overall: number | null;
   // null: the starter never faced that side, so there is no share (not 0%).
   vs_lhh: number | null;
   vs_rhh: number | null;
@@ -212,7 +215,8 @@ export interface PitchMovement {
   /** Inches; null when the movement was not measured (never 0 for "unknown"). */
   h_break: number | null;
   v_break: number | null;
-  family: PitchFamily;
+  /** null for a pitch the family map does not know: it is never given one. */
+  family: PitchFamily | null;
 }
 
 export interface Charts {

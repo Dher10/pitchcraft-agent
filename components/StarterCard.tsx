@@ -11,6 +11,8 @@ interface StarterCardProps {
   mode: "pregame" | "postgame";
   starterLine?: StarterLine;
   locations?: PitchLocation[];
+  /** Shown in place of the abbreviation when his team has none. */
+  teamName?: string;
 }
 
 const sideLabel = {
@@ -24,9 +26,10 @@ export default function StarterCard({
   mode,
   starterLine,
   locations = [],
+  teamName,
 }: StarterCardProps) {
   if (mode === "postgame" && starterLine) {
-    return <PostgameStarter starter={starter} side={side} starterLine={starterLine} />;
+    return <PostgameStarter starter={starter} side={side} starterLine={starterLine} teamName={teamName} />;
   }
 
   const bio = starter.bio
@@ -51,7 +54,7 @@ export default function StarterCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-            {starter.team} &middot; {sideLabel[side]}
+            {starter.team ?? teamName ?? "Team not available"} &middot; {sideLabel[side]}
           </p>
           <h3 className="mt-2 text-xl font-bold leading-tight text-neutral-900">{starter.name}</h3>
         </div>
@@ -85,10 +88,12 @@ function PostgameStarter({
   starter,
   side,
   starterLine,
+  teamName,
 }: {
   starter: Starter;
   side: "away" | "home";
   starterLine: StarterLine;
+  teamName?: string;
 }) {
   const teamColor = getTeamColor(starter.team);
 
@@ -101,7 +106,7 @@ function PostgameStarter({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-              {starter.team} &middot; {sideLabel[side]}
+              {starter.team ?? teamName ?? "Team not available"} &middot; {sideLabel[side]}
             </span>
             <span className="rounded-md bg-neutral-100 px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide text-neutral-500">
               Game Score {starterLine.game_score}

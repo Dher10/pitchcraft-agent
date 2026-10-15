@@ -124,7 +124,7 @@ def build_matchup(
 
 def build_starter(
     live_starter: dict[str, Any],
-    team_abbr: str,
+    team_abbr: str | None,
     pitcher_id: int,
     through: str,
 ) -> dict[str, Any]:
@@ -213,7 +213,7 @@ def archive_row(live_game: dict[str, Any], *, matchup_id: str, fetched_date: str
     return {
         "id": matchup_id,
         "date": fetched_date,
-        "title": f"{fg['away_team_abbr']} vs {fg['home_team_abbr']}",
+        "title": f"{labels.team_label(fg['away_team_abbr'], fg['away_team'])} vs {labels.team_label(fg['home_team_abbr'], fg['home_team'])}",
         "status": "upcoming",
         "featured": True,
         "starter_summary": f"{live_game['away_starter']['name']} vs {live_game['home_starter']['name']}",

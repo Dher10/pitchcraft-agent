@@ -243,6 +243,12 @@ def figure_scopes(starter: dict[str, Any]) -> dict[str, dict[str, str]]:
     return found
 
 
+def team_label(abbreviation: str | None, name: str) -> str:
+    """How a team is written where there is room for an abbreviation: the abbreviation, or the name when it has none (F7)."""
+
+    return abbreviation or name
+
+
 def has_pitch_data(starter: dict[str, Any]) -> bool:
     """True when a live starter has a pitch on record (the group `pitch_data` of `figure_scopes`); a zero or an unknown count is none."""
 

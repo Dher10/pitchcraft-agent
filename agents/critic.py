@@ -484,7 +484,8 @@ def _pitch_usage(matchup_input: dict[str, Any], slot: str, pitch: str) -> float:
     """The rounded share the chart shows (display only; decisions use `_pitch_counts`)."""
 
     row = _mix_row(matchup_input, pitch)
-    return float(row[slot]["overall"]) if row else 0
+    overall = row[slot]["overall"] if row else None
+    return float(overall) if overall is not None else 0  # a null share is a pitch he did not throw
 
 
 def _row_counts(row: dict[str, Any], slot: str) -> tuple[int, int] | None:
@@ -501,10 +502,10 @@ def _pitch_counts(matchup_input: dict[str, Any], slot: str, pitch: str) -> tuple
     return _row_counts(row, slot) if row else None
 
 
-def _was_thrown(usage: float, counts: tuple[int, int] | None) -> bool:
-    """A pitch counted at least once was thrown, even if its share rounds to 0.0."""
+def _was_thrown(usage: float | None, counts: tuple[int, int] | None) -> bool:
+    """A pitch counted at least once was thrown, even if its share rounds to 0.0; a null share was not thrown."""
 
-    return counts[0] > 0 if counts else usage > 0
+    return counts[0] > 0 if counts else usage is not None and usage > 0
 
 
 def _normalize_pitch(pitch: str) -> str:

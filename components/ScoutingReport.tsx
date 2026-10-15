@@ -1,5 +1,6 @@
 import StatTile from "@/components/StatTile";
 import TeamBadge from "@/components/TeamBadge";
+import { teamLabel } from "@/lib/teamLabel";
 import type { ReportSection, Starter, Team } from "@/lib/types";
 
 const UNAVAILABLE = "—";
@@ -25,13 +26,13 @@ export default function ScoutingReport({
     <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
       <ReportCard
         team={awayStarter.team}
-        title={`${awayStarter.name} vs ${awayOpponent.abbreviation}`}
+        title={`${awayStarter.name} vs ${teamLabel(awayOpponent)}`}
         section={awaySection}
         offense={awayOpponent}
       />
       <ReportCard
         team={homeStarter.team}
-        title={`${homeStarter.name} vs ${homeOpponent.abbreviation}`}
+        title={`${homeStarter.name} vs ${teamLabel(homeOpponent)}`}
         section={homeSection}
         offense={homeOpponent}
       />
@@ -45,7 +46,7 @@ function ReportCard({
   section,
   offense,
 }: {
-  team: string;
+  team: string | null;
   title: string;
   section?: ReportSection;
   offense: Team;

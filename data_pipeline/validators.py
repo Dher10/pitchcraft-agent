@@ -1,4 +1,4 @@
-"""Lightweight stdlib validation for the PitchCraft v0.4.0 demo payload."""
+"""Lightweight stdlib validation for the PitchCraft v0.5.0 demo payload."""
 
 from __future__ import annotations
 
@@ -376,6 +376,10 @@ def _validate_pitch_counts(starter_mix: Any, sample: Any, row_label: str, slot: 
             f"total {total}, sample pitches {pitches}",
         )
     shown = starter_mix.get("overall")
+    if total == 0 and shown is None:
+        # A share of nothing is unknown (F20): `null` is the right state, and the only one once the pipeline writes it.
+        record(f"{row_label}.{slot} share matches its counts", True, "no pitches: the share is unknown")
+        return
     expected = round(count / total * 100, 1) if total else 0
     record(
         f"{row_label}.{slot} share matches its counts",

@@ -206,7 +206,9 @@ def _game_unsafe(game: Any, target: date, cutoff: date) -> str | None:
     return None
 
 
-_REQUIRED_GAME_TEXT = ("away_team", "home_team", "away_team_abbr", "home_team_abbr")
+_REQUIRED_GAME_TEXT = ("away_team", "home_team")
+# The schedule and the maps may not know a team's abbreviation (F7): the field is there and says so with null.
+_NULLABLE_GAME_TEXT = ("away_team_abbr", "home_team_abbr")
 _REQUIRED_GAME_IDS = ("away_team_id", "home_team_id", "away_pitcher_id", "home_pitcher_id")
 
 
@@ -220,6 +222,9 @@ def _featured_game_problem(featured: dict[str, Any]) -> str | None:
     for field in _REQUIRED_GAME_TEXT:
         value = featured.get(field)
         if not isinstance(value, str) or not value.strip():
+            return f"featured_game.{field} is missing"
+    for field in _NULLABLE_GAME_TEXT:
+        if field not in featured or not (featured[field] is None or (isinstance(featured[field], str) and featured[field].strip())):
             return f"featured_game.{field} is missing"
     for field in _REQUIRED_GAME_IDS:
         value = featured.get(field)

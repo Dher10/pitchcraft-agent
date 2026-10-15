@@ -3,6 +3,7 @@
 import TeamBadge from "@/components/TeamBadge";
 import { formatStartTime } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
+import { teamLabel } from "@/lib/teamLabel";
 import type { ArchiveItem, Matchup } from "@/lib/types";
 
 interface GameCarouselProps {
@@ -59,15 +60,15 @@ export default function GameCarousel({
                 <div className="mt-3 flex items-center gap-2">
                   <TeamBadge abbreviation={matchup.teams.away.abbreviation} size={26} />
                   <p className="font-semibold text-neutral-900">
-                    {matchup.teams.away.abbreviation}
+                    {teamLabel(matchup.teams.away)}
                     <span className="mx-1 font-normal text-neutral-400">@</span>
-                    {matchup.teams.home.abbreviation}
+                    {teamLabel(matchup.teams.home)}
                   </p>
                   <TeamBadge abbreviation={matchup.teams.home.abbreviation} size={26} />
                 </div>
                 <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
                   {matchup.status === "final" && matchup.postgame
-                    ? `${matchup.teams.away.abbreviation} ${matchup.postgame.final_score.away_team_runs} - ${matchup.teams.home.abbreviation} ${matchup.postgame.final_score.home_team_runs}`
+                    ? `${teamLabel(matchup.teams.away)} ${matchup.postgame.final_score.away_team_runs} - ${teamLabel(matchup.teams.home)} ${matchup.postgame.final_score.home_team_runs}`
                     : formatStartTime(matchup.game)}
                 </p>
                 <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-neutral-600">

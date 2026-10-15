@@ -6,7 +6,7 @@ import StrengthProfile from "@/components/StrengthProfile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram, { getPitchColor } from "@/components/ZoneDiagram";
 import { describePitchMovement } from "@/lib/pitchDescriptions";
-import type { Matchup, PitchFamily, PitchLocationsByHand, PitchUsage } from "@/lib/types";
+import type { Matchup, PitchLocationsByHand, PitchUsage } from "@/lib/types";
 
 type BatterHand = "vs_lhh" | "vs_rhh";
 type StarterSide = "away_starter" | "home_starter";
@@ -51,7 +51,8 @@ function PitcherAttack({
     matchup.charts.velocity_by_pitch.find((row) => row.pitch === pitch)?.[velocityKey] ?? null;
   const selectedVelocity = selectedRow ? velocityOf(selectedRow.pitch) : null;
   const selectedMovement = selectedRow ? matchup.charts.pitch_movement?.[side]?.[selectedRow.pitch] : undefined;
-  const family = selectedMovement?.family ?? inferPitchFamily(selectedRow?.pitch ?? "");
+  // No family is invented: a pitch the map does not know (or a missing movement entry) has none.
+  const family = selectedMovement?.family ?? null;
   // Unavailable movement stays null; it is never drawn or described as a measured 0.0.
   const hBreak = selectedMovement?.h_break ?? null;
   const vBreak = selectedMovement?.v_break ?? null;
@@ -203,16 +204,5 @@ function normalizeThrows(raw: string | null | undefined): "L" | "R" | null {
  * in 3,000 has a share that rounds to 0.0 and was still thrown.
  */
 function wasThrown(usage: PitchUsage): boolean {
-  return typeof usage.count === "number" ? usage.count > 0 : usage.overall > 0;
-}
-
-function inferPitchFamily(pitch: string): PitchFamily {
-  const value = pitch.toLowerCase();
-  if (value.includes("slider") || value.includes("curve") || value.includes("sweeper") || value.includes("slurve")) {
-    return "Breaking";
-  }
-  if (value.includes("change") || value.includes("split") || value.includes("fork") || value.includes("knuckle")) {
-    return "Offspeed";
-  }
-  return "Fastball";
+  return typeof usage.count === "number" ? usage.count > 0 : usage.overall !== null && usage.overall > 0;
 }

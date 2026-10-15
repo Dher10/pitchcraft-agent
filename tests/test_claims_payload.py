@@ -49,7 +49,7 @@ def descendants(claim: dict, by_id: dict[str, dict]):
 
 
 def test_the_schema_version_is_0_4_0():
-    assert SCHEMA_VERSION == "0.4.0"
+    assert SCHEMA_VERSION == "0.5.0"
 
 
 def test_every_payload_says_its_version_and_language(built):

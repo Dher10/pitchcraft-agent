@@ -349,6 +349,13 @@ def _style(c: Ctx) -> None:
         c.require(not named(profile["putaway_pitch"]), "pitch", "he has a put-away pitch")
 
 
+def _share(cell: Mapping[str, Any]) -> float | None:
+    """The share of a mix cell, or None when it is unknown (a starter who threw nothing has no share, F20)."""
+
+    overall = cell.get("overall")
+    return None if overall is None else float(overall)
+
+
 def _thrown_share(matchup: Mapping[str, Any], slot: str, pitch: Any, minimum: float) -> tuple[bool, bool]:
     """(thrown, at least `minimum` percent), on the raw counts when the row has them."""
 
@@ -359,8 +366,8 @@ def _thrown_share(matchup: Mapping[str, Any], slot: str, pitch: Any, minimum: fl
     count, total = cell.get("count"), cell.get("total")
     if isinstance(count, int) and isinstance(total, int):
         return count > 0, labels.share_at_least(count, total, minimum)
-    overall = float(cell["overall"])
-    return overall > 0, overall >= minimum
+    overall = _share(cell)
+    return (overall or 0) > 0, (overall or 0) >= minimum
 
 
 def _combination(c: Ctx) -> None:
@@ -827,9 +834,10 @@ def _pitch_evidence(c: Ctx) -> None:
     cell = row[slot]
     count, total = cell.get("count"), cell.get("total")
     counted = isinstance(count, int) and isinstance(total, int)
-    meets = labels.share_at_least(count, total, minimum) if counted else float(cell["overall"]) >= minimum
+    shown = _share(cell)
+    meets = labels.share_at_least(count, total, minimum) if counted else (shown or 0) >= minimum
     if key.startswith("supported"):
-        c.require(float(c.text("usage")) == float(cell["overall"]), "usage", "the usage is not the mix's")
+        c.require(shown is not None and float(c.text("usage")) == shown, "usage", "the usage is not the mix's")
         c.require(meets, "minimum", f"the pitch is under {minimum}% of his pitches")
         return
     c.require(not meets, "minimum", f"the pitch reaches {minimum}%, the sentence says it does not")
@@ -841,7 +849,7 @@ def _pitch_evidence(c: Ctx) -> None:
             c.require(shown == (str(count), str(total)), "counts", "the counts are not the mix's")
     else:
         c.require(not counted, "counts", "the mix row has raw counts, the sentence should use them")
-        c.require(float(c.text("usage")) == float(cell["overall"]), "usage", "the usage is not the mix's")
+        c.require(shown is not None and float(c.text("usage")) == shown, "usage", "the usage is not the mix's")
 
 
 def _pitch_absent(c: Ctx) -> None:

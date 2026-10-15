@@ -18,12 +18,21 @@ interface PitchMixChartProps {
   homeStarterName: string;
 }
 
-export default function PitchMixChart({ data, awayStarterName, homeStarterName }: PitchMixChartProps) {
-  const chartData = data.map((row) => ({
+/** The series of the chart: a starter's share of a pitch he did not throw at all is null (no bar), never 0%. */
+export function chartSeries(data: PitchMixRow[]) {
+  return data.map((row) => ({
     pitch: row.pitch,
     away_starter_usage: row.away_starter.overall,
     home_starter_usage: row.home_starter.overall,
   }));
+}
+
+export function formatUsage(value: number | null): string {
+  return value === null ? "not available" : `${value}%`;
+}
+
+export default function PitchMixChart({ data, awayStarterName, homeStarterName }: PitchMixChartProps) {
+  const chartData = chartSeries(data);
 
   return (
     <section className="rounded-xl border border-neutral-200 bg-white p-4">
@@ -35,7 +44,7 @@ export default function PitchMixChart({ data, awayStarterName, homeStarterName }
             <CartesianGrid stroke="#e5e5e5" vertical={false} />
             <XAxis dataKey="pitch" tick={{ fill: "#737373", fontSize: 12 }} />
             <YAxis tick={{ fill: "#737373", fontSize: 12 }} tickFormatter={(value) => `${value}%`} />
-            <Tooltip formatter={(value) => [`${value}%`, "Usage"]} />
+            <Tooltip formatter={(value) => [formatUsage(typeof value === "number" ? value : null), "Usage"]} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Bar dataKey="away_starter_usage" name={awayStarterName} fill="#1d4ed8" radius={[4, 4, 0, 0]} />
             <Bar dataKey="home_starter_usage" name={homeStarterName} fill="#16a34a" radius={[4, 4, 0, 0]} />
