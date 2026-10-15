@@ -2,7 +2,7 @@
 
 Normative (decision D34). This contract defines what `public/data/pitchcraft-demo.json`, and every text that describes it, may contain. It does not replace `docs/DECISIONS.md`: where they differ, the decision wins and the difference is reported. QA (`docs/QA_PROTOCOL.md`) verifies compliance with this contract. A rule changes only through a new decision.
 
-- **Annex A:** `docs/data-inventory.md`, the field-by-field inventory of the live payload at HEAD `043db03`. Its findings F1 to F13 (and F14 to F20, added below) are the **known violations** of this contract. Each is closed by the commit named in section 4; until then, `data_pipeline/known_violations.py` tolerates it and the generic checks of P0.15-D3 report it.
+- **Annex A:** `docs/data-inventory.md`, the field-by-field inventory of the live payload at HEAD `043db03`. Its findings F1 to F13 (and F14 to F21, added below) are the **known violations** of this contract. Each is closed by the commit named in section 4; until then, `data_pipeline/known_violations.py` tolerates it and the generic checks of P0.15-D3 report it.
 - **Scope of "published":** every field of the JSON file, whether or not a component renders it, and every text that describes the file: agent text, generator text (workflow, metadata, archive labels), frontend text and workflow text.
 - **Words used.** A *field* is a path in the file. A *group of figures* is a set of fields that come from one source with one scope (section 2, rule 3). An *unavailable state* is the explicit way a field says "no value": `null` for a scalar, `[]` for a list, `{}` for a map, and the documented sentinel for the few fields that are text by type (`"N/A"` for `season_summary.era`, `whip`, `innings`; `"Not available"` for `primary_pitch` and `putaway_pitch`). The sentinels are listed in the manifest of P0.15-D3; none may be a number.
 
@@ -31,7 +31,7 @@ Examples from Annex A:
 - `data_confidence.lineup_status: "probable_pitchers"` and `pitch_data_status: "fetched_snapshot"` are constants that assert what the data contains (F5). `pitch_data_status` was one too (F1) until P0.15-D2.1b: it is now computed, `fetched_snapshot` when at least one starter has pitch data and `unavailable` (the word `sample.rates.source` uses) when none has.
 - `charts.pitch_movement.*.*.family: "Fastball"` for an unmapped pitch is an invented derivation (F6e).
 - `family` for a mapped pitch, `teams.*.record: null`, `bio: null` are correct: the first is a derivation from a name map, the others are explicit unavailable states.
-- `critic_review.revision_notes` ending with "Avoided claiming official Stuff+." is a constant asserting that a check happened; no check exists (F8).
+- `critic_review.revision_notes` ended with "Avoided claiming official Stuff+." and "Kept the report focused on matchup fit rather than outcome prediction.", constants that asserted a check happened; no check stood behind the first (F8, closed in P0.15-D2.1c). The one note left, "No betting or outcome-prediction language found.", is written only when the betting-language check ran and found nothing.
 
 **Check (`data_pipeline/provenance.py`, section 6):** a manifest lists every path of a live file with its kind and, for a source value, its source. A leaf outside the manifest (`rule1:unlisted`), a constant that asserts a fact (`rule1:constant_asserts_fact`), a wrong type, a placeholder given as a value (`rule1:placeholder`), a family invented for a pitch the map does not know (`rule1:invented_derivation`) and a derivation that does not recompute (`rule1:derivation_mismatch`) fail validation.
 
@@ -94,7 +94,7 @@ Examples:
 - "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data" was written for a game of two debuts, with no pitch data (F1, closed in P0.15-D2.1b: the note is now built from parts, one per starter and per lineup). The condition of the Statcast part is that a starter has `sample.arsenal.pitches > 0`; the condition of "season offense splits" is that both teams have a split.
 - "Lineups can still change before first pitch" for a game already in progress (F5, F16).
 - "Today's Matchup Summary" asserts a date that the file cannot guarantee (F16).
-- "Kept the report focused on matchup fit rather than outcome prediction." is supported by the betting-language check; the check's result is its condition (F8).
+- "No betting or outcome-prediction language found." is supported by the betting-language check; the check's result is its condition (F8, closed in P0.15-D2.1c).
 
 ### Rule 5. Isolated failure
 
@@ -191,8 +191,7 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `analyst.watch.action.land` | `s` can land the `{putaway}` early (the action of a question). | `putaway_pitch == {putaway}` named, at least 15% of his pitches, `not sample.limited.arsenal` |
 | `writer.section.summary` | The game is today ("Today's Matchup Summary"). | The state of the game is known and is `Preview` (F16; a live matchup's published `status` is not yet the schedule's state, F5) |
 | `critic.summary.supported` / `.warnings` / `.unsupported` | The critic checked `{checked}` claims, none unsupported, `{warnings}` warnings. | `{checked} == len(checks)`; counts equal the statuses in `checks`; `unsupported` never published (the generator stops) |
-| `critic.note.focus` | The report is focused on matchup fit, not outcome prediction. | The check `critic.betting.claim` ran and has status `not_present` (F8) |
-| `critic.note.stuff_plus` | Avoided claiming official Stuff+. | **No condition can be stated; removed in D2.1** (F8) |
+| `critic.note.no_betting` | No betting or outcome-prediction language found. | The check `critic.betting.claim` ran and has status `not_present` (F8, closed in P0.15-D2.1c) |
 | `critic.pitch.claim` + `.supported_primary` / `.supported_putaway` / `.low` / `.low_counts` | `s`'s primary (put-away) pitch is `{pitch}`, with usage. | `{pitch} == primary_pitch` (`putaway_pitch`); `{count}`/`{total}` are `pitch_mix[].s.count`/`total`; `supported` needs `count/total >= 30%` (`15%`), else a warning |
 | `critic.pitch.absent` | `{pitch}` is not in `s`'s pitch mix. | `pitch_mix[].s.count == 0` or the pitch is missing from the mix |
 | `critic.names.claim` / `.supported` / `.credited` / `.nobody` / `.unsupported` | The report names only pitches thrown by the starter it credits. | Every pitch named in `s`'s own sentences has `pitch_mix[].s.count > 0` |
@@ -253,11 +252,11 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F1 | 4 | P0.15-D2.1b (done) | Confidence note claims "Statcast pitch data" without checking it |
 | F2 | 3, 4 | P0.15-D2.1a (done) | Offense scope stated when no offense figure exists |
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
-| F4 | 6 | P0.15-D2.4 | Demo matchups and archive rows inside a live file |
+| F4 | 6 | P0.15-D2.4 (open) | Demo matchups and archive rows inside a live file. The workflow of a live file still counts the demo matchups too; its entry `rule4:generator.workflow.checked#count` left `known_violations.py` in P0.15-D2.1c only because the count coincides by chance (the demo has no warning since F18), and `tests/test_contract_checks.py` shows the rule still fires if the demo has one |
 | F5 | 7 | P0.15-D2.5 | `status` is always `upcoming`, in the matchup and in its archive row (with the row's `result_label` and `lineup_status`) |
 | F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2 | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
 | F7 | 1, 2 | P0.15-D2.2 | `"???"` team abbreviation |
-| F8 | 1, 4 | P0.15-D2.1 | Two constant critic notes |
+| F8 | 1, 4 | P0.15-D2.1c (done) | Two constant critic notes |
 | F9 | 6 | P0.15-D2.4 | `generated_at` is the fetch time, or a demo constant |
 | F10 | 8 | P0.15-D2.3 | Raw exception text in the public file |
 | F11 | 5 | P0.15-D2.3 | One unsafe game (or hand `S`) rejects the whole snapshot |
@@ -267,9 +266,10 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F15 | 2 | P0.15-D2.3 | The analyst falls back to the right hand (`starter.get("throws", "R")`, `_throws_label`); with hand `S` it would write "SHP" |
 | F16 | 4, 7 | P0.15-D2.5 | "Today's Matchup Summary" and "before first pitch" are time claims with no condition |
 | F17 | 3 | P0.15-D2.1a (done) | `sample.rates.scope` is set while the counts are unavailable (found by the rule 3 check in P0.15-D3.2) |
-| F18 | 4 | P0.15-D2.1 | "Can X land the changeup early in counts?" for a put-away pitch under 15% of his pitches: the demo's `matchup_002` (Demo Pitcher C, 12%), where the critic warns about the same pitch (found by the rule 4 check in P0.15-D3.2) |
+| F18 | 4 | P0.15-D2.1c (done) | "Can X land the changeup early in counts?" for a put-away pitch under 15% of his pitches: the demo's `matchup_002` (Demo Pitcher C, 12%), where the critic warns about the same pitch (found by the rule 4 check in P0.15-D3.2) |
 | F19 | 1 | P0.15-D2.4 | The status of the first four steps of `agent_workflow` (`completed`) is written fixed: no step reads its own result (found by the manifest in P0.15-D3.3b-2, classified with the owner's criterion, section 6.2) |
 | F20 | 2 | P0.15-D2.2 | `charts.pitch_mix[].<slot>.overall` is `0` when the starter has no pitch (`total` 0): a share of nothing written as 0% (found by the manifest in P0.15-D3.3b-2 over the debut cells of the matrix) |
+| F21 | 1 | P0.15-D2.2 | A starter's figures that cannot be true together, or that show an incomplete Statcast sample, are published as valid: 40 pitches next to 400 batters faced, no run error, no failed check (found in P0.15-D2.1b while checking a golden fixture; diagnosis in `docs/status-archive.md`). Two parts: the strict invariants (`home_runs <= batters_faced`, `strikeouts + walks + home_runs <= batters_faced`, `batters_faced <= pitches`) are a check of the contract with code `rule1:impossible_figures`; the plate appearances that end in Statcast rows (regular season, the window of the API line) are compared with the API's batters faced, and fewer is an incomplete sample (a recorded source error, no pitch data for that starter, the API counts kept). The tolerance, the intentional walks, is documented |
 
 F13 is not a violation of a rule but a note on how little of the JSON the page shows; the contract still applies to what is not rendered.
 

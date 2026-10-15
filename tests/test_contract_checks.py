@@ -376,7 +376,7 @@ def test_rule_4_a_note_about_betting_language_needs_the_check_to_have_run(live):
             if check["status"] == "not_present":
                 check["status"] = "warning"
 
-    assert "rule4:critic.note.focus#check" in added(live, edit)
+    assert "rule4:critic.note.no_betting#check" in added(live, edit)
 
 
 def test_rule_4_a_critic_check_about_the_data_is_judged_on_the_data_not_on_the_critic(live):
@@ -393,8 +393,40 @@ def test_rule_4_a_critic_check_about_the_data_is_judged_on_the_data_not_on_the_c
     assert not any(c.endswith("#recomputed") for c in new)
 
 
-def test_rule_4_a_stuff_plus_note_has_no_check_behind_it(live):
-    assert "rule4:critic.note.stuff_plus#no_check" in codes(live)
+def test_rule_4_no_critic_note_claims_what_no_check_verified(live, demo):
+    """F8: "Avoided claiming official Stuff+." had no check; no payload writes it and no key can."""
+
+    for payload in (live, demo):
+        for matchup in payload["matchups"]:
+            assert not any("Stuff+" in note for note in matchup["critic_review"]["revision_notes"])
+    assert not any(code.startswith("rule4:critic.note.") for code in codes(live) | codes(demo))
+
+
+def test_rule_4_the_workflow_still_counts_the_warnings_of_a_demo_matchup_in_a_live_file(live):
+    """
+    F4 is not closed (D2.4): the generator counts the warnings of every matchup of a live file, the demo ones
+    too. Its entry left the table of known violations in D2.1c only because the demo has no warning any more
+    (F18). With one, the generator would write 1 and the contract, which counts the live matchups, expects 0.
+    """
+
+    assert "rule4:generator.workflow.checked#count" not in codes(live)
+
+    with_a_demo_warning = deepcopy(live)
+    demo = next(m for m in with_a_demo_warning["matchups"] if m["data_confidence"]["level"] != "fetched_snapshot")
+    demo["critic_review"]["checks"][0]["status"] = "warning"
+    # what the generator writes then: the count of every matchup, in the claim and in the sentence it renders to
+    claim = next(c for c in with_a_demo_warning["claims"] if c["key"] == "generator.workflow.checked")
+    claim["args"]["warnings"] = 1
+    step = with_a_demo_warning["agent_workflow"]["steps"][3]
+    step["output"] = step["output"].replace("0 warning(s)", "1 warning(s)")
+
+    assert "rule4:generator.workflow.checked#count" in codes(with_a_demo_warning)
+
+
+def test_rule_4_the_put_away_pitch_of_a_watch_question_is_a_real_second_pitch(demo):
+    """F18: "Can Demo Pitcher C land the changeup early in counts?" for a put-away pitch he threw 12% of the time."""
+
+    assert not {c for c in codes(demo) if c.startswith("rule4:analyst.watch.action.land#")}
 
 
 def test_rule_4_a_grade_that_is_not_the_box_score_is_found(demo):

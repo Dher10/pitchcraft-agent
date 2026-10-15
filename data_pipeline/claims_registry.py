@@ -773,7 +773,7 @@ def _critic_summary(c: Ctx) -> None:
         c.require(not warnings and not unsupported, "count", "the checks have warnings")
 
 
-def _note_focus(c: Ctx) -> None:
+def _note_no_betting(c: Ctx) -> None:
     ran = [
         index
         for index in range(len(_checks(c)))
@@ -784,10 +784,6 @@ def _note_focus(c: Ctx) -> None:
         "check",
         "the betting-language check did not run, or found language",
     )
-
-
-def _note_stuff_plus(c: Ctx) -> None:
-    c.fail("no_check", "no check supports the claim that official Stuff+ was avoided")
 
 
 def _role_pitch(c: Ctx) -> tuple[str, Any, int]:
@@ -1165,8 +1161,7 @@ RULES: dict[str, Rule] = {
     "critic.summary.supported": _critic_summary,
     "critic.summary.warnings": _critic_summary,
     "critic.summary.unsupported": _critic_summary,
-    "critic.note.focus": _note_focus,
-    "critic.note.stuff_plus": _note_stuff_plus,
+    "critic.note.no_betting": _note_no_betting,
     "critic.pitch.claim": _pitch_claim,
     "critic.pitch.supported_primary": _pitch_evidence,
     "critic.pitch.supported_putaway": _pitch_evidence,

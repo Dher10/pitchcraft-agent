@@ -25,7 +25,7 @@
       "status": "upcoming",
       "is_featured": true,
       "game": {
-        "title": "San Francisco Giants vs Los Angeles Dodgers",
+        "title": "Los Angeles Dodgers vs San Francisco Giants",
         "venue": "Oracle Park",
         "start_time_local": "7:15 PM",
         "timezone": "America/Los_Angeles",
@@ -972,27 +972,20 @@
           },
           {
             "id": "c56",
-            "key": "critic.note.focus",
+            "key": "critic.note.no_betting",
             "args": {},
             "subject": null,
             "location": "critic_review.revision_notes[0]"
           },
           {
             "id": "c57",
-            "key": "critic.note.stuff_plus",
-            "args": {},
-            "subject": null,
-            "location": "critic_review.revision_notes[1]"
-          },
-          {
-            "id": "c58",
             "key": "scout.demo.note_1",
             "args": {},
             "subject": null,
             "location": "data_confidence.notes[0]"
           },
           {
-            "id": "c59",
+            "id": "c58",
             "key": "scout.demo.note_2",
             "args": {},
             "subject": null,
@@ -1046,8 +1039,7 @@
           }
         ],
         "revision_notes": [
-          "Kept the report focused on matchup fit rather than outcome prediction.",
-          "Avoided claiming official Stuff+."
+          "No betting or outcome-prediction language found."
         ]
       },
       "data_confidence": {
@@ -1130,7 +1122,7 @@
           "pitching_profile": {
             "style_label": "High-velocity fastball-curveball starter",
             "primary_pitch": "Four-seam fastball",
-            "putaway_pitch": "Changeup",
+            "putaway_pitch": "Curveball",
             "command_label": "Below-average command",
             "swing_miss_label": "Above-average swing-and-miss",
             "contact_risk_label": "Elevated contact risk"
@@ -1451,7 +1443,7 @@
             "game_score": 35,
             "pitchcraft_grade": "C-",
             "grade_explanation": "A Game Score of 35 reflects a rough outing - the hits and walks piled up and shortened his night.",
-            "plan_vs_execution": "The plan was to use the four-seam fastball to reach changeup counts, but 4 walks kept him from controlling the sequence.",
+            "plan_vs_execution": "The plan was to use the four-seam fastball to reach curveball counts, but 4 walks kept him from controlling the sequence.",
             "what_to_watch_next": "The next checkpoint is tightening strike-zone control before traffic builds."
           },
           "home_starter": {
@@ -1494,7 +1486,7 @@
         "short_summary": [
           "Demo Pitcher C brings this strength: Above-average swing-and-miss ability.",
           "Demo Pitcher D brings this strength: Plus command supports strike-zone control.",
-          "The early what to watch is whether Demo Pitcher C can land the changeup early in counts."
+          "The early what to watch is whether Demo Pitcher C can land the curveball early in counts."
         ],
         "sections": [
           {
@@ -1503,7 +1495,7 @@
           },
           {
             "title": "Demo Pitcher C vs Boston Red Sox",
-            "body": "Demo Pitcher C's four-seam-changeup combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack."
+            "body": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack."
           },
           {
             "title": "Demo Pitcher D vs New York Yankees",
@@ -1511,12 +1503,12 @@
           },
           {
             "title": "Arsenal Scout",
-            "body": "The main contrast is Four-seam fastball to set up, Changeup to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point."
+            "body": "The main contrast is Four-seam fastball to set up, Curveball to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point."
           },
           {
             "title": "Three Things to Watch",
             "bullets": [
-              "Can Demo Pitcher C land the changeup early in counts?",
+              "Can Demo Pitcher C land the curveball early in counts?",
               "Can Demo Pitcher D keep the ball in the zone?",
               "Which lineup forces more deep counts by the third inning?"
             ]
@@ -1604,7 +1596,7 @@
             "id": "c8",
             "key": "analyst.watch.action.land",
             "args": {
-              "putaway": "changeup"
+              "putaway": "curveball"
             },
             "subject": "away_starter",
             "location": null
@@ -1684,7 +1676,7 @@
             "args": {
               "name": "Demo Pitcher C",
               "primary": "four-seam",
-              "putaway": "changeup",
+              "putaway": "curveball",
               "swing_miss": "above-average swing-and-miss",
               "offense": {
                 "claim": "c18"
@@ -1805,7 +1797,7 @@
             "key": "analyst.style.pair",
             "args": {
               "primary": "Four-seam fastball",
-              "putaway": "Changeup"
+              "putaway": "Curveball"
             },
             "subject": "away_starter",
             "location": null
@@ -1878,10 +1870,9 @@
           },
           {
             "id": "c35",
-            "key": "critic.summary.warnings",
+            "key": "critic.summary.supported",
             "args": {
-              "checked": 8,
-              "warnings": 1
+              "checked": 8
             },
             "subject": null,
             "location": "critic_review.summary"
@@ -1914,7 +1905,7 @@
               "role": {
                 "claim": "c39"
               },
-              "pitch": "Changeup"
+              "pitch": "Curveball"
             },
             "subject": "away_starter",
             "location": "critic_review.checks[1].claim"
@@ -2008,15 +1999,10 @@
           },
           {
             "id": "c49",
-            "key": "critic.pitch.low",
+            "key": "critic.pitch.supported_putaway",
             "args": {
-              "pitch": "Changeup",
-              "usage": "12",
-              "name": "Demo Pitcher C",
-              "minimum": 15,
-              "role": {
-                "claim": "c39"
-              }
+              "usage": "26",
+              "pitch": "Curveball"
             },
             "subject": "away_starter",
             "location": "critic_review.checks[1].evidence"
@@ -2073,49 +2059,27 @@
           },
           {
             "id": "c56",
-            "key": "critic.pitch.low",
-            "args": {
-              "pitch": "Changeup",
-              "usage": "12",
-              "name": "Demo Pitcher C",
-              "minimum": 15,
-              "role": {
-                "claim": "c39"
-              }
-            },
-            "subject": "away_starter",
+            "key": "critic.note.no_betting",
+            "args": {},
+            "subject": null,
             "location": "critic_review.revision_notes[0]"
           },
           {
             "id": "c57",
-            "key": "critic.note.focus",
-            "args": {},
-            "subject": null,
-            "location": "critic_review.revision_notes[1]"
-          },
-          {
-            "id": "c58",
-            "key": "critic.note.stuff_plus",
-            "args": {},
-            "subject": null,
-            "location": "critic_review.revision_notes[2]"
-          },
-          {
-            "id": "c59",
             "key": "scout.final.note_1",
             "args": {},
             "subject": null,
             "location": "data_confidence.notes[0]"
           },
           {
-            "id": "c60",
+            "id": "c58",
             "key": "scout.final.note_2",
             "args": {},
             "subject": null,
             "location": "data_confidence.notes[1]"
           },
           {
-            "id": "c61",
+            "id": "c59",
             "key": "grader.explanation.rough",
             "args": {
               "score": 35
@@ -2124,7 +2088,7 @@
             "location": "postgame.starter_lines.away_starter.grade_explanation"
           },
           {
-            "id": "c62",
+            "id": "c60",
             "key": "grader.explanation.solid",
             "args": {
               "score": 61
@@ -2133,20 +2097,20 @@
             "location": "postgame.starter_lines.home_starter.grade_explanation"
           },
           {
-            "id": "c63",
+            "id": "c61",
             "key": "grader.plan.walks",
             "args": {
               "primary": "four-seam fastball",
-              "putaway": "changeup",
+              "putaway": "curveball",
               "walks": {
-                "claim": "c64"
+                "claim": "c62"
               }
             },
             "subject": "away_starter",
             "location": "postgame.starter_lines.away_starter.plan_vs_execution"
           },
           {
-            "id": "c64",
+            "id": "c62",
             "key": "count.walk.other",
             "args": {
               "count": 4
@@ -2155,23 +2119,23 @@
             "location": null
           },
           {
-            "id": "c65",
+            "id": "c63",
             "key": "grader.plan.matched",
             "args": {
               "primary": "cutter",
               "putaway": "changeup",
               "walks": {
-                "claim": "c66"
+                "claim": "c64"
               },
               "earned_runs": {
-                "claim": "c67"
+                "claim": "c65"
               }
             },
             "subject": "home_starter",
             "location": "postgame.starter_lines.home_starter.plan_vs_execution"
           },
           {
-            "id": "c66",
+            "id": "c64",
             "key": "count.walk.one",
             "args": {
               "count": 1
@@ -2180,7 +2144,7 @@
             "location": null
           },
           {
-            "id": "c67",
+            "id": "c65",
             "key": "count.earned_run.other",
             "args": {
               "count": 2
@@ -2189,21 +2153,21 @@
             "location": null
           },
           {
-            "id": "c68",
+            "id": "c66",
             "key": "grader.next.walks",
             "args": {},
             "subject": "away_starter",
             "location": "postgame.starter_lines.away_starter.what_to_watch_next"
           },
           {
-            "id": "c69",
+            "id": "c67",
             "key": "grader.next.default",
             "args": {},
             "subject": "home_starter",
             "location": "postgame.starter_lines.home_starter.what_to_watch_next"
           },
           {
-            "id": "c70",
+            "id": "c68",
             "key": "grader.call.command.note",
             "args": {
               "name": "Demo Pitcher D"
@@ -2212,7 +2176,7 @@
             "location": "postgame.call_check[0].pregame_note"
           },
           {
-            "id": "c71",
+            "id": "c69",
             "key": "grader.call.walk_risk.note",
             "args": {
               "name": "Demo Pitcher C"
@@ -2221,7 +2185,7 @@
             "location": "postgame.call_check[1].pregame_note"
           },
           {
-            "id": "c72",
+            "id": "c70",
             "key": "grader.call.swing_miss.note",
             "args": {
               "name": "Demo Pitcher C"
@@ -2230,11 +2194,11 @@
             "location": "postgame.call_check[2].pregame_note"
           },
           {
-            "id": "c73",
+            "id": "c71",
             "key": "grader.call.command.evidence",
             "args": {
               "walks": {
-                "claim": "c74"
+                "claim": "c72"
               },
               "innings": "6.2"
             },
@@ -2242,7 +2206,7 @@
             "location": "postgame.call_check[0].postgame_evidence"
           },
           {
-            "id": "c74",
+            "id": "c72",
             "key": "count.walk.one",
             "args": {
               "count": 1
@@ -2251,11 +2215,11 @@
             "location": null
           },
           {
-            "id": "c75",
+            "id": "c73",
             "key": "grader.call.walk_risk.evidence",
             "args": {
               "batters": {
-                "claim": "c76"
+                "claim": "c74"
               },
               "innings": "4.2"
             },
@@ -2263,7 +2227,7 @@
             "location": "postgame.call_check[1].postgame_evidence"
           },
           {
-            "id": "c76",
+            "id": "c74",
             "key": "count.batter.other",
             "args": {
               "count": 4
@@ -2272,11 +2236,11 @@
             "location": null
           },
           {
-            "id": "c77",
+            "id": "c75",
             "key": "grader.call.swing_miss.evidence",
             "args": {
               "strikeouts": {
-                "claim": "c78"
+                "claim": "c76"
               },
               "score": 35
             },
@@ -2284,7 +2248,7 @@
             "location": "postgame.call_check[2].postgame_evidence"
           },
           {
-            "id": "c78",
+            "id": "c76",
             "key": "count.strikeout.other",
             "args": {
               "count": 5
@@ -2296,7 +2260,7 @@
       },
       "critic_review": {
         "status": "reviewed",
-        "summary": "The critic checked 8 claims: none unsupported, 1 with a warning.",
+        "summary": "The critic checked 8 claims and found them supported by the data.",
         "checks": [
           {
             "claim": "Demo Pitcher C's primary pitch is Four-seam.",
@@ -2304,9 +2268,9 @@
             "evidence": "Pitch mix shows 48% Four-seam usage."
           },
           {
-            "claim": "Demo Pitcher C's put-away pitch is Changeup.",
-            "status": "warning",
-            "evidence": "Changeup is only 12% of Demo Pitcher C's pitch mix, below the 15% the report treats as a put-away pitch."
+            "claim": "Demo Pitcher C's put-away pitch is Curveball.",
+            "status": "supported",
+            "evidence": "Put-away pitch usage at 26% supports this claim."
           },
           {
             "claim": "Demo Pitcher D's primary pitch is Cutter.",
@@ -2340,9 +2304,7 @@
           }
         ],
         "revision_notes": [
-          "Changeup is only 12% of Demo Pitcher C's pitch mix, below the 15% the report treats as a put-away pitch.",
-          "Kept the report focused on matchup fit rather than outcome prediction.",
-          "Avoided claiming official Stuff+."
+          "No betting or outcome-prediction language found."
         ]
       },
       "data_confidence": {
@@ -2360,7 +2322,7 @@
     {
       "id": "matchup_001",
       "date": "2026-06-28",
-      "title": "Giants vs Dodgers",
+      "title": "Dodgers vs Giants",
       "status": "upcoming",
       "featured": true,
       "starter_summary": "Demo Pitcher A vs Demo Pitcher B",
@@ -2439,7 +2401,7 @@
       {
         "agent": "Critic / Fact-check Agent",
         "status": "completed",
-        "output": "Checked every claim against the data: none unsupported, 1 warning(s) across all matchups."
+        "output": "Checked every claim against the data: none unsupported, 0 warning(s) across all matchups."
       },
       {
         "agent": "Postgame Grader Agent",
@@ -2496,7 +2458,7 @@
       "id": "c6",
       "key": "generator.workflow.checked",
       "args": {
-        "warnings": 1
+        "warnings": 0
       },
       "subject": null,
       "location": "agent_workflow.steps[3].output"

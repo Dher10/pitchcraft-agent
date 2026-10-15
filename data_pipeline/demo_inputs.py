@@ -27,7 +27,7 @@ MATCHUPS: Any = [
     "status": "upcoming",
     "is_featured": True,
     "game": {
-      "title": "San Francisco Giants vs Los Angeles Dodgers",
+      "title": "Los Angeles Dodgers vs San Francisco Giants",
       "venue": "Oracle Park",
       "start_time_local": "7:15 PM",
       "timezone": "America/Los_Angeles",
@@ -420,9 +420,7 @@ MATCHUPS: Any = [
         }
       ],
       "revision_notes": [
-        "Corrected the put-away pitch claim for Pitcher A from changeup to slider.",
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "Corrected the put-away pitch claim for Pitcher A from changeup to slider."
       ]
     },
     "postgame": None,
@@ -506,9 +504,8 @@ MATCHUPS: Any = [
         "pitching_profile": {
           "style_label": "High-velocity fastball-curveball starter",
           "primary_pitch": "Four-seam fastball",
-          # Intentional QA mismatch: the scouting profile claims a changeup put-away pitch,
-          # but the pitch mix does not fully support it, so the critic revises the claim.
-          "putaway_pitch": "Changeup",
+          # The second most thrown pitch (curveball, 26%); the changeup is 12%, under the 15% a put-away pitch needs (D30).
+          "putaway_pitch": "Curveball",
           "command_label": "Below-average command",
           "swing_miss_label": "Above-average swing-and-miss",
           "contact_risk_label": "Elevated contact risk"
@@ -871,7 +868,7 @@ ARCHIVE: Any = [
   {
     "id": "matchup_001",
     "date": "2026-06-28",
-    "title": "Giants vs Dodgers",
+    "title": "Dodgers vs Giants",
     "status": "upcoming",
     "featured": True,
     "starter_summary": "Demo Pitcher A vs Demo Pitcher B",

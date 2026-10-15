@@ -56,12 +56,15 @@ def run(
     checks.append(_unobserved_pitch_check(t, report, matchup_input))
     checks.append(_command_check(t, report, matchup_input))
     checks.append(_scope_check(t, report, matchup_input))
-    checks.append(_language_scan(t, report))
+    language = _language_scan(t, report)
+    checks.append(language)
 
     # The critic reviews; it does not rewrite. A claim it cannot support is reported as
     # "unsupported", and the generator refuses to publish a report that has one.
     notes = [check["evidence"] for check in checks if check["status"] == "warning"]
-    notes.extend([t("critic.note.focus"), t("critic.note.stuff_plus")])
+    # A note says what a check verified: this one is written only when the betting-language check found nothing.
+    if language["status"] == "not_present":
+        notes.append(t("critic.note.no_betting"))
 
     unsupported = sum(1 for check in checks if check["status"] == "unsupported")
     warnings = sum(1 for check in checks if check["status"] == "warning")

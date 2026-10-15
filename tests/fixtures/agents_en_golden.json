@@ -8,9 +8,9 @@
           "status": "supported"
         },
         {
-          "claim": "Demo Pitcher C's put-away pitch is Changeup.",
-          "evidence": "Changeup is only 12% of Demo Pitcher C's pitch mix, below the 15% the report treats as a put-away pitch.",
-          "status": "warning"
+          "claim": "Demo Pitcher C's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26% supports this claim.",
+          "status": "supported"
         },
         {
           "claim": "Demo Pitcher D's primary pitch is Cutter.",
@@ -44,12 +44,10 @@
         }
       ],
       "revision_notes": [
-        "Changeup is only 12% of Demo Pitcher C's pitch mix, below the 15% the report treats as a put-away pitch.",
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
-      "summary": "The critic checked 8 claims: none unsupported, 1 with a warning."
+      "summary": "The critic checked 8 claims and found them supported by the data."
     },
     "findings": {
       "away_data_notes": [],
@@ -60,10 +58,10 @@
       ],
       "away_starter_strengths": [
         "Above-average swing-and-miss ability",
-        "Four-seam fastball to set up, Changeup to finish"
+        "Four-seam fastball to set up, Curveball to finish"
       ],
-      "away_style": "Four-seam fastball to set up, Changeup to finish",
-      "away_vs_home_offense": "Demo Pitcher C's four-seam-changeup combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
+      "away_style": "Four-seam fastball to set up, Curveball to finish",
+      "away_vs_home_offense": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
       "home_data_notes": [],
       "home_starter_risks": [],
       "home_starter_strengths": [
@@ -89,7 +87,7 @@
       "matchup_summary": "This matchup features High-velocity fastball-curveball starter against Command-first cutter-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
       "scope_notes": [],
       "three_things_to_watch": [
-        "Can Demo Pitcher C land the changeup early in counts?",
+        "Can Demo Pitcher C land the curveball early in counts?",
         "Can Demo Pitcher D keep the ball in the zone?",
         "Which lineup forces more deep counts by the third inning?"
       ]
@@ -137,7 +135,7 @@
           "innings_pitched": "4.2",
           "name": "Demo Pitcher C",
           "pitchcraft_grade": "C-",
-          "plan_vs_execution": "The plan was to use the four-seam fastball to reach changeup counts, but 4 walks kept him from controlling the sequence.",
+          "plan_vs_execution": "The plan was to use the four-seam fastball to reach curveball counts, but 4 walks kept him from controlling the sequence.",
           "strikeouts": 5,
           "unearned_runs": 0,
           "walks": 4,
@@ -168,7 +166,7 @@
           "title": "Today's Matchup Summary"
         },
         {
-          "body": "Demo Pitcher C's four-seam-changeup combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
+          "body": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
           "title": "Demo Pitcher C vs Boston Red Sox"
         },
         {
@@ -176,12 +174,12 @@
           "title": "Demo Pitcher D vs New York Yankees"
         },
         {
-          "body": "The main contrast is Four-seam fastball to set up, Changeup to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point.",
+          "body": "The main contrast is Four-seam fastball to set up, Curveball to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point.",
           "title": "Arsenal Scout"
         },
         {
           "bullets": [
-            "Can Demo Pitcher C land the changeup early in counts?",
+            "Can Demo Pitcher C land the curveball early in counts?",
             "Can Demo Pitcher D keep the ball in the zone?",
             "Which lineup forces more deep counts by the third inning?"
           ],
@@ -195,7 +193,7 @@
       "short_summary": [
         "Demo Pitcher C brings this strength: Above-average swing-and-miss ability.",
         "Demo Pitcher D brings this strength: Plus command supports strike-zone control.",
-        "The early what to watch is whether Demo Pitcher C can land the changeup early in counts."
+        "The early what to watch is whether Demo Pitcher C can land the curveball early in counts."
       ]
     }
   },
@@ -244,8 +242,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -372,8 +369,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 6 claims and found them supported by the data."
@@ -498,8 +494,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 7 claims and found them supported by the data."
@@ -623,8 +618,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 6 claims and found them supported by the data."
@@ -758,8 +752,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -886,8 +879,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 7 claims and found them supported by the data."
@@ -1018,8 +1010,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -1154,8 +1145,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -1282,8 +1272,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 7 claims and found them supported by the data."
@@ -1415,8 +1404,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -1557,8 +1545,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -1690,8 +1677,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -1827,8 +1813,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."
@@ -1961,8 +1946,7 @@
         }
       ],
       "revision_notes": [
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "No betting or outcome-prediction language found."
       ],
       "status": "reviewed",
       "summary": "The critic checked 8 claims and found them supported by the data."

@@ -16,6 +16,7 @@ Rules (D24):
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 # D24: minimum sample per dimension.
@@ -90,6 +91,27 @@ def share_at_least(count: int, total: int, minimum_pct: float) -> bool:
     """
 
     return total > 0 and count * 100 >= total * minimum_pct
+
+
+def profile_pitches(pitch_counts: Mapping[str, int]) -> tuple[str, str]:
+    """
+    (primary pitch, put-away pitch) from pitch counts, on the counts (D30).
+
+    The primary pitch is the most thrown (ties by name, so the order is stable). The put-away pitch is the
+    second most thrown, and only from PUTAWAY_MIN_USAGE_PCT of the pitches: a pitch used less is not a
+    weapon, and a starter with one pitch has none. Both are PITCH_NOT_AVAILABLE when there is nothing to
+    name. The live pipeline and the test of the demo's derivations both call this function.
+    """
+
+    ranked = sorted(pitch_counts, key=lambda pitch: (-pitch_counts[pitch], pitch))
+    total = sum(pitch_counts.values())
+    top = ranked[0] if ranked else PITCH_NOT_AVAILABLE
+    second = (
+        ranked[1]
+        if len(ranked) > 1 and share_at_least(pitch_counts[ranked[1]], total, PUTAWAY_MIN_USAGE_PCT)
+        else PITCH_NOT_AVAILABLE
+    )
+    return top, second
 
 
 def _below(value: int | None, threshold: int) -> bool:

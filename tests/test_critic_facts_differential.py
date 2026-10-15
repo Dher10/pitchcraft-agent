@@ -386,6 +386,10 @@ def variants(matchup: dict[str, Any], salt: int | None = None):
     for label, text in confidence_sentences(matchup):
         for placement in (*PLACEMENTS, "bullet", "short summary"):
             yield f"confidence {label!r} in {placement}", place(report_of(matchup), placement, text, names)
+    # The critic's own note names betting ("bet" is one of the terms the scan looks for): were it said inside a
+    # report, both readers must flag it the same way (P0.15-D2.1c).
+    for placement in (*PLACEMENTS, "bullet", "short summary"):
+        yield f"critic note in {placement}", place(report_of(matchup), placement, T("critic.note.no_betting"), names)
 
 
 def awkward(matchup: dict[str, Any]):
@@ -518,3 +522,13 @@ def test_the_sentences_of_the_confidence_note_are_no_claim_for_either_reader():
                 read += 1
 
     assert read >= 10 * 6 * len(few_worlds())  # ten sentences, six places, every world
+
+
+def test_the_critics_own_note_is_flagged_by_both_readers_when_it_sits_in_a_report():
+    """It names betting, so inside a report the scan finds it: the two readers must say so together."""
+
+    for label, matchup in few_worlds():
+        for variant, report in variants(matchup):
+            if variant.startswith("critic note"):
+                assert disagreements(matchup, report) == [], f"{label} / {variant}"
+                assert facts.betting_terms(report, T), f"{label} / {variant}"
