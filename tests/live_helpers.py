@@ -15,6 +15,7 @@ import pandas as pd
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline import labels
 from data_pipeline.fetchers import live_pipeline as lp
+from data_pipeline.schema import SCHEMA_VERSION
 from data_pipeline.validators import ValidationError, validate_payload
 
 GAME_DAY = "2026-07-04"
@@ -138,6 +139,7 @@ def snapshot_from_starters(
     }
     return {
         "data_mode": "fetched_snapshot",
+        "schema_version": SCHEMA_VERSION,
         "run_at": RUN_AT,
         "fetched_date": game_day,
         "as_of": cutoff,
@@ -207,6 +209,7 @@ def hand_snapshot(complete: bool) -> dict[str, Any]:
     }
     return {
         "data_mode": "fetched_snapshot",
+        "schema_version": SCHEMA_VERSION,
         "run_at": RUN_AT,
         "fetched_date": GAME_DAY,
         "as_of": CUTOFF,

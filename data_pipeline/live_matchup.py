@@ -174,7 +174,12 @@ def build_offense(
     splits: dict[str, Any] | None,
     scope: dict[str, str],
 ) -> dict[str, Any]:
-    """A lineup's figures against `starter_hand`; every figure the split lacks is None."""
+    """
+    A lineup's figures against `starter_hand`; every figure the split lacks is None.
+
+    The scope, the summary label and the recent-form label say there is a split, so they exist only when
+    the lineup has a figure (DATA_CONTRACT rule 3): a split with no OPS, K% or BB% is no split.
+    """
 
     hand = starter_hand if starter_hand in ("L", "R") else starter_hand[:1]
     profile: dict[str, Any] = {
@@ -184,15 +189,19 @@ def build_offense(
         "k_rate_vs_hand": None,
         "bb_rate_vs_hand": None,
         "recent_form": None,
-        "scope": scope,
+        "scope": None,
     }
     split = (splits or {}).get("vl" if hand == "L" else "vr", {})
-    if split:
+    figures = {
+        "ops_vs_hand": _format_ops(split.get("ops")),
+        "k_rate_vs_hand": _format_pct(split.get("k_rate")),
+        "bb_rate_vs_hand": _format_pct(split.get("bb_rate")),
+    }
+    if any(value is not None for value in figures.values()):
+        profile.update(figures)
         profile["summary_label"] = f"Real season split vs {hand}HP"
-        profile["ops_vs_hand"] = _format_ops(split.get("ops"))
-        profile["k_rate_vs_hand"] = _format_pct(split.get("k_rate"))
-        profile["bb_rate_vs_hand"] = _format_pct(split.get("bb_rate"))
         profile["recent_form"] = "Season split"
+        profile["scope"] = scope
     return profile
 
 

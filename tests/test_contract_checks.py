@@ -98,12 +98,17 @@ def test_rule_3_a_scope_for_a_pitch_count_that_is_unknown_is_a_scope_without_fig
 
 
 def test_rule_3_a_group_that_is_unavailable_has_no_scope_in_any_field_that_carries_one(debuts):
-    """F17: the counts are unavailable, yet `sample.rates.scope` is set."""
+    """F17 (closed in D2.1a): the counts are unavailable, so `sample.rates.scope` is null."""
 
     sample = starter(debuts["matchups"][0])["sample"]
-    assert sample["rates"]["source"] == "unavailable" and sample["rates"]["scope"] is not None
+    assert sample["rates"]["source"] == "unavailable" and sample["rates"]["scope"] is None
 
-    assert "rule3:counts#scope_without_figures" in codes(debuts)
+    assert "rule3:counts#scope_without_figures" not in codes(debuts)
+
+    def scoped(m):
+        starter(m)["sample"]["rates"]["scope"] = {"kind": "regular_season", "through": "2026-07-03", "label": "regular season through 2026-07-03"}
+
+    assert "rule3:counts#scope_without_figures" in added(debuts, scoped)
 
 
 def test_rule_3_the_counts_scope_of_the_summary_is_checked_as_well(live):
@@ -115,9 +120,17 @@ def test_rule_3_the_counts_scope_of_the_summary_is_checked_as_well(live):
 
 
 def test_rule_3_an_offense_scope_with_no_offense_figure_is_found(debuts):
-    """F2: both lineups have a scope and not one figure."""
+    """F2 (closed in D2.1a): a lineup with no figure has no scope; the check still finds one that has."""
 
-    assert "rule3:offense#scope_without_figures" in codes(debuts)
+    assert debuts["matchups"][0]["teams"]["home"]["offense_profile"]["scope"] is None
+    assert "rule3:offense#scope_without_figures" not in codes(debuts)
+
+    def scoped(m):
+        m["teams"]["home"]["offense_profile"]["scope"] = {
+            "kind": "regular_season", "through": "2026-07-03", "label": "regular season through 2026-07-03"
+        }
+
+    assert "rule3:offense#scope_without_figures" in added(debuts, scoped)
 
 
 def test_rule_3_a_figure_with_no_scope_is_found(live):
@@ -527,6 +540,7 @@ def test_rule_8_the_closed_sets_are_the_ones_of_the_contract():
         "budget_spent",
         "unknown_value",
         "game_rejected",
+        "snapshot_schema_mismatch",
     )
 
 

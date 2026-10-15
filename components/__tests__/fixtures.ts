@@ -7,14 +7,14 @@ const SCOPE = { kind: "regular_season", through: "2026-07-14", label: "regular s
 export function makeSample(pitches: number | null, limitedArsenal = pitches === null || pitches < 100): Sample {
   const limited = pitches === 0;
   return {
-    arsenal: { pitches, scope: SCOPE },
+    arsenal: { pitches, scope: pitches === null ? null : SCOPE },
     rates: {
       batters_faced: limited ? null : 400,
       strikeouts: limited ? null : 90,
       walks: limited ? null : 30,
       home_runs: limited ? null : 10,
       source: limited ? "unavailable" : "mlb_api",
-      scope: SCOPE,
+      scope: limited ? null : SCOPE,
     },
     limited: { arsenal: limitedArsenal, strikeout: limited, control: limited },
     thresholds: { arsenal: 100, strikeout: 70, control: 170 },

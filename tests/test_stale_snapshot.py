@@ -10,6 +10,7 @@ import pytest
 
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline.fetchers import cache_manager
+from data_pipeline.schema import SCHEMA_VERSION
 
 RUN_AT = "2026-07-15T12:00:00+00:00"
 
@@ -70,6 +71,7 @@ def good_game(**overrides) -> dict:
 
 def good_snapshot(**overrides) -> dict:
     return {
+        "schema_version": SCHEMA_VERSION,
         "run_at": RUN_AT,
         "fetched_date": "2026-07-15",
         "as_of": "2026-07-14",

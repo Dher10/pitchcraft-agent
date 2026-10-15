@@ -48,14 +48,14 @@ def descendants(claim: dict, by_id: dict[str, dict]):
 # --- the schema ----------------------------------------------------------------------------------
 
 
-def test_the_schema_version_is_0_3_0():
-    assert SCHEMA_VERSION == "0.3.0"
+def test_the_schema_version_is_0_4_0():
+    assert SCHEMA_VERSION == "0.4.0"
 
 
 def test_every_payload_says_its_version_and_language(built):
     _, payload = built
 
-    assert payload["metadata"]["version"] == "0.3.0"
+    assert payload["metadata"]["version"] == SCHEMA_VERSION
     assert payload["metadata"]["language"] == "en"
 
 
@@ -323,7 +323,7 @@ def test_the_served_file_has_its_claims_and_they_verify():
 
     served = json.loads(SERVED.read_text(encoding="utf-8"))
 
-    assert served["metadata"]["version"] == "0.3.0"
+    assert served["metadata"]["version"] == SCHEMA_VERSION
     assert served["metadata"]["language"] == "en"
     assert served["claims"]
     assert verify_claims(served) == []

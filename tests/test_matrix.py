@@ -106,7 +106,10 @@ def check_starter(outcome: Outcome, side: str, pitcher: Pitcher, opening: bool) 
     assert sample["arsenal"]["scope"]["through"] == through, where
     assert sample["rates"]["source"] == want["source"], where
     assert {key: sample["rates"][key] for key in want["numbers"]} == want["numbers"], where
-    assert sample["rates"]["scope"]["kind"] == want["counts_kind"], where
+    if want["source"] == "unavailable":
+        assert sample["rates"]["scope"] is None, where  # a group with no figure has no scope (F17)
+    else:
+        assert sample["rates"]["scope"]["kind"] == want["counts_kind"], where
     assert sample["limited"] == want["limited"], where
     assert summary["era"] == want["era"], where
     assert (summary["scopes"]["season_rates"] is not None) == want["has_season_rates"], where

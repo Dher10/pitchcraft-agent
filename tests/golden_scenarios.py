@@ -87,7 +87,9 @@ def _no_figures(game: dict[str, Any]) -> None:
             era="N/A", whip="N/A", innings="N/A", strikeouts=None, walks=None, home_runs_allowed=None,
             scopes={"season_rates": None, "counts": None},
         )
-        game[slot]["sample"]["rates"]["source"] = "unavailable"  # as `_attach_sample` writes a starter with no counts
+        # as `_attach_sample` writes a starter with no counts: unavailable, and a group with no figure has no scope
+        game[slot]["sample"]["rates"]["source"] = "unavailable"
+        game[slot]["sample"]["rates"]["scope"] = None
 
 
 def scenarios(mp) -> dict[str, dict[str, Any]]:

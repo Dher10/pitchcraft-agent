@@ -171,7 +171,9 @@ function PitcherAttack({
                   ? "pitch count not available"
                   : `${starter.sample.arsenal.pitches} pitches`
               } (${starter.sample.thresholds.arsenal} needed)`
-            : `Pitch data: ${starter.sample.arsenal.scope.label}`}
+            : starter.sample.arsenal.scope
+              ? `Pitch data: ${starter.sample.arsenal.scope.label}`
+              : null}
         </p>
       ) : null}
       {arsenal.length > 0 ? (

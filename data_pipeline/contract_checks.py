@@ -48,6 +48,7 @@ RUN_ERROR_CODES = (
     "budget_spent",
     "unknown_value",
     "game_rejected",
+    "snapshot_schema_mismatch",
 )
 RUN_WARNING_CODES = ("unmapped_pitch_type",)
 

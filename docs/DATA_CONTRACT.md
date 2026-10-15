@@ -53,7 +53,9 @@ Examples:
 
 *Each group of figures carries the scope of its source. No scope is stated for a group without figures.*
 
-A group has a figure when a value is known, **a measured zero included** (rule 2): a debut's 0 pitches come from a valid Statcast answer, so `sample.arsenal.scope` stays and says which games the zero was measured over. An unknown value (`null`, `"N/A"`, a `sample.rates.source` of `"unavailable"`) is not a figure: the group has no scope in any field that carries one. A scope is a field; the sentence that states it (rule 4) follows the same rule.
+A group has a figure when a value is known, **a measured zero included** (rule 2): a debut's 0 pitches come from a valid Statcast answer, so `sample.arsenal.scope` stays and says which games the zero was measured over. An unknown value (`null`, `"N/A"`, a `sample.rates.source` of `"unavailable"`) is not a figure: the group has no scope in any field that carries one, and the field is `null`. A scope is a field; the sentence that states it (rule 4) follows the same rule.
+
+The constructors decide this, not the checks: `labels.build_sample` writes `sample.arsenal.scope = null` when the pitch count is unknown and `sample.rates.scope = null` when the counts are unavailable; `live_matchup.build_offense` writes `offense_profile.scope`, `summary_label` and `recent_form` only when the lineup has an OPS, K% or BB% (a split with none of them is no split). These fields are nullable since schema 0.4.0 (P0.15-D2.1a), and a live snapshot is read only if its `schema_version` is exactly the code's (`schema.snapshot_matches_schema`; a missing or different one is rejected). The file says only `data_status.reason = {source: "snapshot", code: "snapshot_schema_mismatch"}` (rule 8); the versions go to the local log. Recorded as D36.
 
 Groups at HEAD: pitch data (Statcast; `sample.arsenal.scope`, `charts.*`), season rates (ERA, WHIP, innings; MLB API; `scopes.season_rates`), counts (strikeouts, walks, home runs, batters faced; the API or Statcast; `scopes.counts`, `sample.rates.scope`), team offense (Savant; `offense_profile.scope`). Scope is `regular_season` or `regular_and_postseason`, through the cutoff (D29).
 
@@ -62,9 +64,9 @@ Groups at HEAD: pitch data (Statcast; `sample.arsenal.scope`, `charts.*`), seaso
 Examples:
 
 - ERA from the regular-season API labelled "regular season and postseason" because the counts came from Statcast (QA4-01, closed in P0.15-B).
-- `offense_profile.scope` is set while every offense figure is `null`, and the analyst writes "Team offense splits cover the regular season through D" one sentence after "Season offense splits were not available" (F2).
+- `offense_profile.scope` was set while every offense figure was `null`, and the analyst wrote "Team offense splits cover the regular season through D" one sentence after "Season offense splits were not available" (F2, closed in P0.15-D2.1a).
 - A starter with no figure in any group has no scope (closed in P0.15-B: "no season figures are available").
-- `sample.rates.scope` is set while the counts are unavailable (`sample.rates.source` is `"unavailable"`), though `season_summary.scopes.counts` is `null` (F17). `sample.arsenal.scope` with `pitches == 0` is **not** this: the zero was measured.
+- `sample.rates.scope` was set while the counts were unavailable (`sample.rates.source` is `"unavailable"`), though `season_summary.scopes.counts` was `null` (F17, closed in P0.15-D2.1a). `sample.arsenal.scope` with `pitches == 0` is **not** this: the zero was measured.
 
 **Check (`data_pipeline/contract_checks.py`, `GROUPS`):** one table of groups (pitch data, season rates, counts, offense), each with how to tell that it has a figure, every field that carries its scope, and the source rule. A figure without a scope, a scope without a figure, or a scope that disagrees with the source of its group fails (`rule3:<group>#figures_without_scope`, `#scope_without_figures`, `#scope_disagrees_with_source`). Only live matchups are asked. No sentence says "all figures" about a starter whose groups differ.
 
@@ -127,7 +129,7 @@ Examples: F3 (the Hero says "Cached Demo" over live data), F4 (`matchup_002`, "B
 
 *Errors are published as `{source, code}`, never raw messages.*
 
-- `data_status.live_run.errors` and `data_status.reason` carry a `source` from the fixed set (`mlb_schedule`, `mlb_person`, `mlb_season_stats`, `statcast_pitcher`, `savant_team_batting`, `snapshot`) and a `code` from a closed set defined in `data_pipeline/` (initial set: `request_failed`, `malformed_response`, `malformed_rows`, `missing_column`, `unusable_column`, `budget_spent`, `unknown_value`, `game_rejected`). Exception messages, paths, pitcher ids and file names stay in the local run record (`data_cache/processed/live_run.json`), which is not published.
+- `data_status.live_run.errors` and `data_status.reason` carry a `source` from the fixed set (`mlb_schedule`, `mlb_person`, `mlb_season_stats`, `statcast_pitcher`, `savant_team_batting`, `snapshot`) and a `code` from a closed set defined in `data_pipeline/` (initial set: `request_failed`, `malformed_response`, `malformed_rows`, `missing_column`, `unusable_column`, `budget_spent`, `unknown_value`, `game_rejected`, `snapshot_schema_mismatch`). Exception messages, paths, pitcher ids and file names stay in the local run record (`data_cache/processed/live_run.json`), which is not published.
 - A **warning** is recorded the same way, `{source, code}`, in a separate `warnings` list. It never changes the run status. The one warning at HEAD: `statcast_pitcher` / `unmapped_pitch_type`, when a pitch code is not in `PITCH_NAME_MAP`. The pitch keeps its raw code as the source value, `family` is `null`, and no agent phrase names it (F6e).
 - At HEAD the file publishes `message` (up to 300 characters of exception text) and the reason of a rejected snapshot as free text (F10).
 
@@ -173,7 +175,7 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `analyst.scope.differ` / `.groups` / `.group_part` | The groups cover different samples. | At least two groups with figures; their scope kinds differ; each `{label}` is that group's scope |
 | `analyst.scope.same` | All pitcher figures cover `{label}`. | At least one group has figures; every group that has figures has the same scope kind `{label}` |
 | `analyst.scope.none` | No season figures are available for `s`. | No group has figures (no pitches, no ERA/WHIP/innings, no counts) |
-| `analyst.scope.offense` | Team offense splits cover the `{label}`. | `team.offense_profile.scope == {label}` **and** at least one of `ops_vs_hand`, `k_rate_vs_hand`, `bb_rate_vs_hand` is not `null` (F2: today the second part is not checked) |
+| `analyst.scope.offense` | Team offense splits cover the `{label}`. | `team.offense_profile.scope == {label}` **and** at least one of `ops_vs_hand`, `k_rate_vs_hand`, `bb_rate_vs_hand` is not `null` (the builder writes no scope otherwise; F2, closed in P0.15-D2.1a) |
 | `writer.strength` | `s` brings this strength. | `{strength}` is the first item of the strengths derived from labels that cleared their threshold (rows `analyst.strength.*` and `analyst.style.*`) |
 | `writer.strength_none` | `s` has no claimed strength because the data is limited. | `s` has a `sample` and no strength was derived |
 | `writer.arsenal.contrast` | The main contrast is `{away_style}` versus `{home_style}`; the primary pitches are `{away_primary}` and `{home_primary}`. | Neither arsenal limited; `{*_style}` are `analyst.style.*` sentences (made of the primary and put-away pitch), `{*_primary}` the `primary_pitch`es |
@@ -247,7 +249,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | Id | Rule | Closed in | One line |
 |---|---|---|---|
 | F1 | 4 | P0.15-D2.1 | Confidence note claims "Statcast pitch data" without checking it |
-| F2 | 3, 4 | P0.15-D2.1 | Offense scope stated when no offense figure exists |
+| F2 | 3, 4 | P0.15-D2.1a (done) | Offense scope stated when no offense figure exists |
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
 | F4 | 6 | P0.15-D2.4 | Demo matchups and archive rows inside a live file |
 | F5 | 7 | P0.15-D2.5 | `status` is always `upcoming`, in the matchup and in its archive row (with the row's `result_label` and `lineup_status`) |
@@ -262,7 +264,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F14 | 2, 4 | P0.15-D2.2 | "no batters (pitches) faced on record" written for a `null` count (`agents/matchup_analyst.py`) |
 | F15 | 2 | P0.15-D2.3 | The analyst falls back to the right hand (`starter.get("throws", "R")`, `_throws_label`); with hand `S` it would write "SHP" |
 | F16 | 4, 7 | P0.15-D2.5 | "Today's Matchup Summary" and "before first pitch" are time claims with no condition |
-| F17 | 3 | P0.15-D2.1 | `sample.rates.scope` is set while the counts are unavailable (found by the rule 3 check in P0.15-D3.2) |
+| F17 | 3 | P0.15-D2.1a (done) | `sample.rates.scope` is set while the counts are unavailable (found by the rule 3 check in P0.15-D3.2) |
 | F18 | 4 | P0.15-D2.1 | "Can X land the changeup early in counts?" for a put-away pitch under 15% of his pitches: the demo's `matchup_002` (Demo Pitcher C, 12%), where the critic warns about the same pitch (found by the rule 4 check in P0.15-D3.2) |
 | F19 | 1 | P0.15-D2.4 | The status of the first four steps of `agent_workflow` (`completed`) is written fixed: no step reads its own result (found by the manifest in P0.15-D3.3b-2, classified with the owner's criterion, section 6.2) |
 | F20 | 2 | P0.15-D2.2 | `charts.pitch_mix[].<slot>.overall` is `0` when the starter has no pitch (`total` 0): a share of nothing written as 0% (found by the manifest in P0.15-D3.3b-2 over the debut cells of the matrix) |

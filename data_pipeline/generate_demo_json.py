@@ -25,7 +25,11 @@ from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.generator_texts import generator_catalog
 from data_pipeline.validators import ValidationError, validate_payload
 
-def _status(mode: str, reason: str, live_run: dict[str, Any] | None) -> dict[str, Any]:
+# Rule 8: the reason of a rejected snapshot that the file may carry.
+SNAPSHOT_SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
+
+
+def _status(mode: str, reason: str | dict[str, str], live_run: dict[str, Any] | None) -> dict[str, Any]:
     return {"mode": mode, "reason": reason, "live_run": live_run}
 
 
@@ -79,6 +83,14 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
             f"Live snapshot does not belong to the latest live run ({mismatch}); showing demo data",
             summary,
         )
+    # Rejected by the schema it was written under, not by looking inside it (0.4.0 made the scope of a group
+    # with no figure null). The file says only {source, code} (rule 8); the detail stays in this log.
+    if not schema.snapshot_matches_schema(snapshot.get("schema_version")):
+        print(
+            f"[CONFIG] Live snapshot rejected: schema {snapshot.get('schema_version')!r}, this code reads "
+            f"{schema.SCHEMA_VERSION!r} (a snapshot from before P0.15-D2.1, or from newer code)"
+        )
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_SCHEMA_MISMATCH), summary)
     unsafe = _snapshot_unsafe(run, snapshot)
     if unsafe:
         return None, _status(

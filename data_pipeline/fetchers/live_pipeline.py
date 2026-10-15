@@ -26,6 +26,7 @@ from pybaseball import statcast_pitcher
 
 from data_pipeline import labels  # noqa: E402
 from data_pipeline.fetchers import mlb_schemas  # noqa: E402
+from data_pipeline.schema import SCHEMA_VERSION  # noqa: E402
 
 pybaseball.cache.enable()
 
@@ -1387,6 +1388,8 @@ def build_live_snapshot(
 
     primary = live_games[0]
     snapshot = {
+        # The schema the snapshot's figures were written under: an older one is not read (D2.1a).
+        "schema_version": SCHEMA_VERSION,
         "data_mode": "fetched_snapshot",
         "fetched_date": target,
         "as_of": primary["as_of"],

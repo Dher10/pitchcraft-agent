@@ -107,17 +107,23 @@ def build_sample(
     rates_source: str,
     rates_scope: dict[str, str],
 ) -> dict[str, Any]:
-    """The sample behind a starter's labels, with the scope of each group of figures."""
+    """
+    The sample behind a starter's labels, with the scope of each group of figures that has a figure.
+
+    A group with no figure has no scope (DATA_CONTRACT rule 3): the pitch count is unknown (`None`), or the
+    counts are unavailable. A measured zero is a figure: a debut's 0 pitches come from a valid Statcast
+    answer and keep the scope of the games they were measured over.
+    """
 
     return {
-        "arsenal": {"pitches": pitches, "scope": arsenal_scope},
+        "arsenal": {"pitches": pitches, "scope": arsenal_scope if pitches is not None else None},
         "rates": {
             "batters_faced": batters_faced,
             "strikeouts": strikeouts,
             "walks": walks,
             "home_runs": home_runs,
             "source": rates_source,
-            "scope": rates_scope,
+            "scope": rates_scope if rates_source != "unavailable" else None,
         },
         "limited": {
             "arsenal": _below(pitches, THRESHOLDS["arsenal"]),

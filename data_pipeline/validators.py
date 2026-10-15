@@ -1,4 +1,4 @@
-"""Lightweight stdlib validation for the PitchCraft v0.3.0 demo payload."""
+"""Lightweight stdlib validation for the PitchCraft v0.4.0 demo payload."""
 
 from __future__ import annotations
 
@@ -301,10 +301,14 @@ def _scope_problem(starter: Mapping[str, Any]) -> str | None:
     elif rates_scope is not None:
         return "ERA, WHIP and innings are unavailable but carry a scope"
 
+    arsenal_part = sample.get("arsenal") if isinstance(sample.get("arsenal"), Mapping) else {}
+    if (arsenal_part.get("pitches") is None) != (arsenal_part.get("scope") is None):
+        return "the pitch data have a scope if and only if the pitch count is known"
     rates = sample.get("rates") if isinstance(sample.get("rates"), Mapping) else {}
     source = rates.get("source")
     if source == "unavailable":
-        return "the counts are unavailable but carry a scope" if counts_scope is not None else None
+        carried = counts_scope is not None or rates.get("scope") is not None
+        return "the counts are unavailable but carry a scope" if carried else None
     if not isinstance(counts_scope, Mapping) or counts_scope != rates.get("scope"):
         return "the counts' scope in the summary is not the one in the sample"
     if source == "mlb_api" and counts_scope.get("kind") != SCOPE_REGULAR:

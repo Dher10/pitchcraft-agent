@@ -587,7 +587,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "teams.*.offense_profile.k_rate_vs_hand", "Savant plate appearances against that hand", STR, True, matches(_PERCENT, "a percentage")),
         _source(M + "teams.*.offense_profile.bb_rate_vs_hand", "Savant plate appearances against that hand", STR, True, matches(_PERCENT, "a percentage")),
         _derived(M + "teams.*.offense_profile.recent_form", "present iff the lineup has a figure", STR, True, offense_text),
-        *_scope_entries(M + "teams.*.offense_profile.scope", "the cutoff of the run (D29)"),
+        *_scope_entries(M + "teams.*.offense_profile.scope", "the cutoff of the run (D29); null when the lineup has no figure", True),
         # -- the starters
         _source(M + "starters.*.id", "schedule probable pitcher id", STR, False, is_digits),
         _source(M + "starters.*.name", "schedule probable pitcher name", STR),
@@ -616,7 +616,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "starters.*.sample.rates.walks", "the MLB API line, or the Statcast plate appearances", (int,), True, rate_count),
         _source(M + "starters.*.sample.rates.home_runs", "the MLB API line, or the Statcast plate appearances", (int,), True, rate_count),
         _derived(M + "starters.*.sample.rates.source", "which source gave the counts", STR, False, in_set(RATES_SOURCES)),
-        *_scope_entries(M + "starters.*.sample.rates.scope", "the scope of the source of the counts"),
+        *_scope_entries(M + "starters.*.sample.rates.scope", "the scope of the source of the counts; null when they are unavailable", True),
         _derived(M + "starters.*.sample.limited.*", "below the minimum sample (D24)", (bool,), False, limited_flag),
         _label(M + "starters.*.sample.thresholds.*", "the minimum samples of D24", (int,), threshold),
         # -- the charts

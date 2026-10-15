@@ -289,8 +289,8 @@ def test_every_group_of_figures_in_the_packet_carries_its_scope(monkeypatch):
         assert starter["sample"]["arsenal"]["scope"]["through"] == "2026-07-04"
         assert starter["sample"]["rates"]["scope"]["kind"] in ("regular_season", "regular_and_postseason")
     for side in ("home", "away"):
-        offense_scope = matchup["teams"][side]["offense_profile"]["scope"]
-        assert offense_scope == labels.make_scope(labels.SCOPE_REGULAR, "2026-07-04")
+        offense = matchup["teams"][side]["offense_profile"]
+        assert offense["ops_vs_hand"] is None and offense["scope"] is None  # no figure, so no scope (F2)
 
 
 def test_different_scopes_are_called_different_samples_in_the_report(monkeypatch):

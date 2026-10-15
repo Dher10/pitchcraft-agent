@@ -9,6 +9,7 @@ cutoff must be before its official date (D29), and run, snapshot and game must a
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from datetime import date
 from unittest.mock import patch
 
@@ -18,6 +19,7 @@ from data_pipeline import demo_inputs, labels
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline.fetchers import cache_manager
 from data_pipeline.fetchers import live_pipeline as lp
+from data_pipeline.schema import SCHEMA_VERSION
 from data_pipeline.validators import ValidationError, validate_payload
 from tests.test_live_sample_pipeline import API_STATS, FakeResponse, frame
 from tests.test_live_starters_no_demo_fields import SLOTS, _fake_live_game
@@ -65,6 +67,7 @@ def pair(template, *, as_of="2026-07-14", game_as_of=None, official="2026-07-15"
     game = live_game(template, official=official, as_of=game_as_of or as_of, through=through)
     run = good_run(as_of=as_of)
     snapshot = {
+        "schema_version": SCHEMA_VERSION,
         "run_at": RUN_AT,
         "fetched_date": "2026-07-15",
         "as_of": as_of,
@@ -154,6 +157,66 @@ def test_an_unsafe_run_and_snapshot_is_not_live(template, kwargs, mutate, reason
     assert reason in status["reason"]
 
 
+SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
+
+
+@pytest.mark.parametrize(
+    "version",
+    [None, "0.3.0", "0.2.0", "0.4.1", "0.5.0", "1.0.0", "0.4", "v0.4.0", "garbage", "", 4, " 0.4.0"],
+    ids=repr,
+)
+def test_a_snapshot_whose_schema_is_not_exactly_the_codes_is_not_live(template, version):
+    """Equality, not "older than": a snapshot written by newer code is as unreadable as an older one."""
+
+    run, snapshot = pair(template)
+    if version is None:
+        del snapshot["schema_version"]
+    else:
+        snapshot["schema_version"] = version
+
+    live, status = resolve(run, snapshot)
+
+    assert live is None
+    assert status["mode"] == "demo_fallback"
+    assert status["reason"] == SCHEMA_MISMATCH
+
+
+def test_a_snapshot_without_schema_version_is_not_live(template):
+    run, snapshot = pair(template)
+    del snapshot["schema_version"]
+
+    live, status = resolve(run, snapshot)
+
+    assert live is None and status["reason"] == SCHEMA_MISMATCH
+
+
+def test_a_snapshot_with_the_schema_of_the_code_is_live(template):
+    live, status = resolve(*pair(template))
+
+    assert live is not None and status["mode"] == "fetched_snapshot"
+
+
+def test_the_published_reason_is_a_source_and_a_code_and_the_detail_stays_in_the_log(template, monkeypatch, capsys):
+    """Rule 8: nothing of the rejection reaches the served file but `{source, code}`; the detail is local."""
+
+    from data_pipeline import contract_checks
+
+    run, snapshot = pair(template)
+    snapshot["schema_version"] = "0.3.0"
+    live, status = resolve(run, snapshot)
+    logged = capsys.readouterr().out
+
+    monkeypatch.setattr(gdj, "_live", live)
+    monkeypatch.setattr(gdj, "_live_status", status)
+    payload = json.loads(json.dumps(gdj.build_payload()))
+    published = json.dumps(payload["metadata"]["data_status"])
+
+    assert payload["metadata"]["data_status"]["reason"] == SCHEMA_MISMATCH
+    assert "0.3.0" not in published and "P0.15" not in published and "before" not in published
+    assert [v for v in contract_checks._rule8(payload) if v.where.endswith("reason")] == []
+    assert "0.3.0" in logged and "P0.15-D2.1" in logged  # the detail, for whoever reads the log
+
+
 def test_a_snapshot_without_games_is_not_live(template):
     run, snapshot = pair(template)
     snapshot["live_games"] = []
@@ -205,6 +268,7 @@ def test_the_qa_probe_a_matching_pair_with_a_late_cutoff_never_reaches_a_payload
     game = late_pitcher_game(template, monkeypatch)
     run = good_run(as_of="2026-07-20")
     snapshot = {
+        "schema_version": SCHEMA_VERSION,
         "run_at": RUN_AT,
         "fetched_date": "2026-07-15",
         "as_of": "2026-07-20",

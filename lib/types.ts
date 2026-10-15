@@ -134,14 +134,16 @@ export interface Starter {
 
 /** The sample behind a live starter's labels (D24). Absent for demo starters. */
 export interface Sample {
-  arsenal: { pitches: number | null; scope: DataScope };
+  /** `scope` is null when the pitch count is unknown (a measured zero keeps its scope). */
+  arsenal: { pitches: number | null; scope: DataScope | null };
   rates: {
     batters_faced: number | null;
     strikeouts: number | null;
     walks: number | null;
     home_runs: number | null;
     source: "mlb_api" | "statcast" | "unavailable";
-    scope: DataScope;
+    /** Null when the counts are unavailable: a group with no figure has no scope. */
+    scope: DataScope | null;
   };
   limited: { arsenal: boolean; strikeout: boolean; control: boolean };
   thresholds: { arsenal: number; strikeout: number; control: number };

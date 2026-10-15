@@ -1,4 +1,4 @@
-"""Schema constants for the PitchCraft v0.3.0 demo payload."""
+"""Schema constants for the PitchCraft v0.4.0 demo payload."""
 
 from __future__ import annotations
 
@@ -6,7 +6,17 @@ from datetime import datetime
 import re
 from typing import Any
 
-SCHEMA_VERSION = "0.3.0"
+SCHEMA_VERSION = "0.4.0"
+# 0.4.0 (P0.15-D2.1a): the scope of a group of figures is null when the group has no figure
+# (`sample.rates.scope`, `sample.arsenal.scope`, `offense_profile.scope`), so a reader of 0.3.0 breaks.
+# A live snapshot carries the schema it was written under and is read only if that is exactly this one.
+
+
+def snapshot_matches_schema(version: Any) -> bool:
+    """True when a snapshot was written under exactly the schema of this code (a missing or different one is not read)."""
+
+    return isinstance(version, str) and version == SCHEMA_VERSION
+
 
 _UTC_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
 
