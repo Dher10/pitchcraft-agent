@@ -490,20 +490,6 @@ def step_status(c: Ctx) -> Problem | None:
     return None if c.value == want else _mismatch(f"the postgame step is {want!r} by what it reports, found {c.value!r}")
 
 
-def archive_title(c: Ctx) -> Problem | None:
-    matchup = next(m for m in c.root["matchups"] if m["id"] == c.around(1)["id"])
-    teams = matchup["teams"]
-    want = " vs ".join(labels.team_label(teams[side]["abbreviation"], teams[side]["name"]) for side in ("away", "home"))
-    return None if c.value == want else _mismatch(f"the title is made of the teams: expected {want!r}")
-
-
-def archive_starters(c: Ctx) -> Problem | None:
-    matchup = next(m for m in c.root["matchups"] if m["id"] == c.around(1)["id"])
-    names = [matchup["starters"][slot]["name"] for slot in SLOTS]
-    want = f"{names[0]} vs {names[1]}"
-    return None if c.value == want else _mismatch(f"the summary is made of the starters: expected {want!r}")
-
-
 def game_title(c: Ctx) -> Problem | None:
     teams = c.matchup["teams"]
     want = f"{teams['away']['name']} vs {teams['home']['name']}"
@@ -584,15 +570,8 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _label("agent_workflow.steps[].agent", "the name of an agent", STR, in_set((*FIXED_STATUS_STEPS, POSTGAME_STEP))),
         _derived("agent_workflow.steps[].status", "the postgame step reads its result; the other four are written fixed (F19)", STR, False, step_status),
         _claim("agent_workflow.steps[].output"),
-        # -- the archive (live rows)
-        _label("archive[].id", "the id of the matchup", STR),
-        _source("archive[].date", "the official date of the game", STR, False, is_date),
-        _derived("archive[].title", "the abbreviations of the two teams", STR, False, archive_title),
-        _fact("archive[].status", "F5", "the state of the game written as `upcoming` without reading the schedule"),
-        _label("archive[].featured", "whether the row is the featured one", (bool,)),
-        _derived("archive[].starter_summary", "the names of the two starters", STR, False, archive_starters),
-        _fact("archive[].result_label", "F5", "'Pregame report available' is written for any game, whatever its state"),
-        _source("archive[].grade_label", "the postgame; none exists for a pregame row", (), True, is_none),
+        # -- the archive: a live file has none (D2.4a); a row is rule 6's finding and has no entry
+        _label("archive", "an empty list: a live file has no archive row (rule 6, F4); a row has no entry, so it is unlisted", (list,)),
         # -- the matchup
         _label(M + "id", "the id of the matchup", STR),
         _source(M + "date", "the official date of the game (schedule `officialDate`)", STR, False, is_date),
@@ -738,9 +717,9 @@ def _is_live_matchup(matchup: Any) -> bool:
 def _in_scope(payload: Mapping[str, Any], path: tuple) -> bool:
     """Demo matchups and archive rows of a live file are rule 6's finding, not walked here."""
 
-    if path and path[0] == "matchups":
+    if len(path) > 1 and path[0] == "matchups":
         return _is_live_matchup(payload["matchups"][path[1]])
-    if path and path[0] == "archive":
+    if len(path) > 1 and path[0] == "archive":  # an empty archive is one leaf, `("archive",)`
         live = {m.get("id") for m in payload["matchups"] if _is_live_matchup(m)}
         return payload["archive"][path[1]].get("id") in live
     return True

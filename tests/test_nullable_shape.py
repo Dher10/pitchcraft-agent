@@ -143,8 +143,6 @@ def unnamed_team_payload(monkeypatch):
     matchup = payload["matchups"][0]
     matchup["teams"]["away"]["abbreviation"] = None
     matchup["starters"]["away_starter"]["team"] = None
-    row = next(row for row in payload["archive"] if row["id"] == matchup["id"])
-    row["title"] = f"{matchup['teams']['away']['name']} vs {matchup['teams']['home']['abbreviation']}"
     return payload
 
 
@@ -154,11 +152,9 @@ def test_a_team_with_no_abbreviation_is_not_a_placeholder_for_the_manifest(monke
     assert not {c for c in found if "abbreviation" in c or c.endswith("starters.*.team")}
 
 
-def test_the_title_of_an_archive_row_uses_the_name_of_a_team_with_no_abbreviation(monkeypatch):
-    payload = published(unnamed_team_payload(monkeypatch))
-    payload["archive"][0]["title"] = "None vs NYY"  # what an f-string over a null would write
-
-    assert any(c.startswith("rule1:derivation_mismatch#archive[].title") for c in codes(payload))
+def test_a_live_file_with_a_team_with_no_abbreviation_has_no_archive_row_to_title(monkeypatch):
+    # The title of an archive row was where "None vs NYY" could be written; since D2.4a (F4) a live file has no row.
+    assert published(unnamed_team_payload(monkeypatch))["archive"] == []
 
 
 def test_a_game_may_come_without_an_abbreviation_but_not_without_a_name():

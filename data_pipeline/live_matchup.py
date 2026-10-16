@@ -40,7 +40,6 @@ PITCH_LOCATIONS_NOTE = (
     "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; "
     "x grows to the catcher's right and y grows downward."
 )
-PREGAME_RESULT_LABEL = "Pregame report available"
 
 
 def build_matchup(
@@ -208,22 +207,6 @@ def build_offense(
         profile["recent_form"] = "Season split"
         profile["scope"] = scope
     return profile
-
-
-def archive_row(live_game: dict[str, Any], *, matchup_id: str, fetched_date: str) -> dict[str, Any]:
-    """The archive entry of a live pregame matchup, made from the game and nothing else."""
-
-    fg = live_game["featured_game"]
-    return {
-        "id": matchup_id,
-        "date": fetched_date,
-        "title": f"{labels.team_label(fg['away_team_abbr'], fg['away_team'])} vs {labels.team_label(fg['home_team_abbr'], fg['home_team'])}",
-        "status": "upcoming",
-        "featured": True,
-        "starter_summary": f"{live_game['away_starter']['name']} vs {live_game['home_starter']['name']}",
-        "result_label": PREGAME_RESULT_LABEL,
-        "grade_label": None,
-    }
 
 
 PITCH_DATA_FETCHED = "fetched_snapshot"

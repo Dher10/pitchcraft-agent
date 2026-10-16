@@ -90,7 +90,8 @@ def test_a_demo_file_is_not_asked_and_neither_are_the_demo_matchups_of_a_live_fi
 
     assert provenance.findings(demo) == []
     mixed = deepcopy(live)
-    mixed["matchups"][1]["a_demo_field_nobody_listed"] = 1  # matchup_002 is a demo matchup: rule 6's finding (F4)
+    # a demo matchup in a live file (the generator writes none since D2.4a) is rule 6's finding, not walked here
+    mixed["matchups"].append({"id": "matchup_002", "data_confidence": {"level": "cached"}, "a_demo_field_nobody_listed": 1})
 
     assert not any("a_demo_field_nobody_listed" in where for _, where, _ in provenance.findings(mixed))
 
@@ -112,6 +113,20 @@ def test_rule_1_a_null_where_the_entry_does_not_allow_one_is_not_declared(live):
     assert "rule1:null_not_declared#matchups[].game.title" in codes(payload)
 
 
+def test_rule_1_an_archive_row_in_a_live_file_is_found(live):
+    """F4 (D2.4a): the live archive is empty; a row has no entry in the manifest (unlisted) as well as being rule 6's finding."""
+
+    from data_pipeline import demo_inputs
+
+    assert live["archive"] == [] and not any(w.startswith("archive") for _, w, _ in provenance.findings(live))
+    payload = deepcopy(live)
+    row = deepcopy(demo_inputs.build_demo_payload()["archive"][1])
+    row["id"] = matchup(live)["id"]  # a row of a live matchup is walked; one of a demo matchup is rule 6's finding
+    payload["archive"] = [row]
+
+    assert "rule1:unlisted#archive[].id" in codes(payload)
+
+
 def test_rule_1_a_value_of_the_wrong_type_is_found(live):
     payload = deepcopy(live)
     matchup(payload, AWAY)["throws"] = 1
@@ -125,8 +140,6 @@ def test_rule_1_a_constant_that_asserts_a_fact_is_a_violation_whatever_its_value
     for pattern in (
         "matchups[].status",
         "matchups[].data_confidence.lineup_status",
-        "archive[].status",
-        "archive[].result_label",
         "metadata.data_sources[]",
         "agent_workflow.steps[].status",
     ):
@@ -141,7 +154,7 @@ def test_rule_1_the_postgame_step_reads_its_result_and_the_other_four_do_not(liv
 
 def test_rule_1_the_postgame_step_must_agree_with_what_it_reports(live):
     payload = deepcopy(live)
-    payload["agent_workflow"]["steps"][4]["status"] = "not_applicable"  # its output says graded starters
+    payload["agent_workflow"]["steps"][4]["status"] = "completed"  # its output says no starter was graded (a live file)
 
     assert "rule1:derivation_mismatch#agent_workflow.steps[].status" in codes(payload)
 

@@ -402,18 +402,19 @@ def test_rule_4_no_critic_note_claims_what_no_check_verified(live, demo):
     assert not any(code.startswith("rule4:critic.note.") for code in codes(live) | codes(demo))
 
 
-def test_rule_4_the_workflow_still_counts_the_warnings_of_a_demo_matchup_in_a_live_file(live):
+def test_rule_4_the_workflow_counts_only_the_warnings_of_the_live_matchups(live, demo):
     """
-    F4 is not closed (D2.4): the generator counts the warnings of every matchup of a live file, the demo ones
-    too. Its entry left the table of known violations in D2.1c only because the demo has no warning any more
-    (F18). With one, the generator would write 1 and the contract, which counts the live matchups, expects 0.
+    F4 (closed in D2.4a): a live file has no demo matchup, so the generator counts only live ones. The contract
+    still counts only the live matchups: a file whose workflow also counted the warnings of a demo matchup (the
+    generator wrote 1, the contract expects 0) is found.
     """
 
     assert "rule4:generator.workflow.checked#count" not in codes(live)
 
     with_a_demo_warning = deepcopy(live)
-    demo = next(m for m in with_a_demo_warning["matchups"] if m["data_confidence"]["level"] != "fetched_snapshot")
-    demo["critic_review"]["checks"][0]["status"] = "warning"
+    demo_matchup = deepcopy(demo["matchups"][0])
+    with_a_demo_warning["matchups"].append(demo_matchup)
+    demo_matchup["critic_review"]["checks"][0]["status"] = "warning"
     # what the generator writes then: the count of every matchup, in the claim and in the sentence it renders to
     claim = next(c for c in with_a_demo_warning["claims"] if c["key"] == "generator.workflow.checked")
     claim["args"]["warnings"] = 1
@@ -448,9 +449,9 @@ def test_rule_4_the_workflow_must_count_what_the_file_counts(demo):
 
 
 def test_rule_4_the_workflow_of_a_live_file_counts_only_live_matchups(live):
-    """F4: the live file counts its demo matchup."""
+    """F4 (closed in D2.4a): the live file has no demo matchup, so the count is right; F3 (D2.4b) is still open."""
 
-    assert "rule4:generator.workflow.loaded#count" in codes(live)
+    assert "rule4:generator.workflow.loaded#count" not in codes(live)
     assert "rule4:generator.workflow.loaded#cached" in codes(live)
 
 
@@ -492,12 +493,8 @@ def rule6(payload):
 
 
 def test_rule_6_a_live_file_with_demo_content_is_reported(live):
-    assert rule6(live) == {
-        "rule6:matchup_not_live",
-        "rule6:archive_not_live",
-        "rule6:cached_wording",
-        "rule6:data_fetched_at",
-    }
+    # F4 is closed (D2.4a): no demo matchup and no archive row; F3 and F9 are still open
+    assert rule6(live) == {"rule6:cached_wording", "rule6:data_fetched_at"}
 
 
 def test_rule_6_a_live_file_with_only_live_content_and_a_fetch_time_is_clean(live):
@@ -509,14 +506,14 @@ def test_rule_6_asks_nothing_of_a_demo_file(monkeypatch, kind):
     assert rule6(published(build(monkeypatch, kind))) == set()
 
 
-def test_rule_6_each_demo_leftover_is_reported_alone(live):
+def test_rule_6_each_demo_leftover_is_reported_alone(live, demo):
     base = clean_live(live)
-    demo_matchup = live["matchups"][1]
+    assert base["archive"] == []  # the generator writes none; the leftovers below are put there by the test
 
     with_matchup = deepcopy(base)
-    with_matchup["matchups"].append(demo_matchup)
+    with_matchup["matchups"].append(demo["matchups"][0])
     with_row = deepcopy(base)
-    with_row["archive"].append(live["archive"][1])
+    with_row["archive"].append(demo["archive"][1])
     with_wording = deepcopy(base)
     with_wording["disclaimers"].append("Cached demo data may be used to ensure stable public evaluation.")
     with_no_time = deepcopy(base)

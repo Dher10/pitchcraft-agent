@@ -156,7 +156,8 @@ def test_nothing_of_a_poisoned_demo_reaches_a_live_matchup(live, monkeypatch):
     found = []
     for matchup in live_matchups(payload):
         found += [f"{matchup['id']}.{where(path)}" for path, value in leaves(matchup) if is_poison(value)]
-    found += [f"archive[0].{where(path)}" for path, value in leaves(payload["archive"][0]) if is_poison(value)]
+    found += [f"archive[{i}].{where(path)}" for i, row in enumerate(payload["archive"]) for path, value in leaves(row) if is_poison(value)]
+    assert payload["archive"] == []  # D2.4a (F4): a live file has no archive row, so no poisoned row survives
     found += [f"metadata.{where(path)}" for path, value in leaves(payload["metadata"]) if is_poison(value)]
     assert found == [], f"[{live.name}] inherited from the demo:\n" + "\n".join(found)
 

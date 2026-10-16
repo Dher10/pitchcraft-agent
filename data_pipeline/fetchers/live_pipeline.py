@@ -538,7 +538,7 @@ def fetch_pitcher_season_stats(
         )
     url = (
         f"https://statsapi.mlb.com/api/v1/people/{pitcher_id}/stats"
-        f"?{stats_query}&group=pitching&season={season}"
+        f"?{stats_query}&group=pitching&season={season}&sportId=1"
     )
     try:
         req = urllib.request.Request(

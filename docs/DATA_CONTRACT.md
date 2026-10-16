@@ -124,7 +124,7 @@ Examples:
 *The page states whether it shows live or demo data. A live file contains only live content.*
 
 - `metadata.data_mode` is `fetched_snapshot` (live), `demo_fallback` (a live run failed or found no games) or `demo_cached` (no run). The page shows a visible line: "Live data · fetched {date}" or "Demo data: live data unavailable" (and a demo-labelled text for `demo_cached`).
-- In a live file every matchup is a live matchup (`data_confidence.level == "fetched_snapshot"`), every archive row comes from a live run, and the workflow counts only them. The archive table shows only real live rows and, if there are none, "No past reports yet".
+- In a live file every matchup is a live matchup (`data_confidence.level == "fetched_snapshot"`), the archive is empty (today's game is not a past report), and the workflow counts only the live matchups. The archive table says "No past reports yet" (F4, closed in P0.15-D2.4a; owner's decision, 2026-10-16: no row for the game of the day, so the table stays empty until there are real past reports, P1.3).
 - Texts that describe the data source ("Cached demo", "cached matchup data", "Cached demo data may be used…") appear only in a demo file. In a live file the equivalent text is neutral.
 - `metadata.data_fetched_at` is the time of the live fetch, `null` in a demo file. `metadata.generated_at` is the time the file was built, always real. They are never the same field (F9).
 
@@ -242,7 +242,7 @@ Keys have the form `generator.*`; their text stays in the generator, in English 
 | `generator.metadata.last_updated.fallback`, `.demo` | Live data is unavailable and the page shows demo data / the data is a demo. | `data_mode` is `demo_fallback` / `demo_cached` |
 | `generator.confidence.live_note` | Live snapshot fetched `{date}` for `{matchup_id}`. | The matchup is live, `{matchup_id}` is its `id`, `{date}` is the date of `metadata.data_fetched_at` (F9) |
 
-Texts of the generator that are not keys yet (they become keys in P0.15-D2.4, with F3): `metadata.data_sources` (each listed source is used: MLB Stats API and Baseball Savant only when the file has fields from them, "Cached demo snapshots" only in demo modes, F3) and the archive's `result_label` ("Pregame report available" only when the game state is `Preview`). Rule 6 already checks the wording of `metadata.data_sources` and `disclaimers` in a live file.
+Texts of the generator that are not keys yet (they become keys in P0.15-D2.4, with F3): `metadata.data_sources` (each listed source is used: MLB Stats API and Baseball Savant only when the file has fields from them, "Cached demo snapshots" only in demo modes, F3). The archive's `result_label` ("Pregame report available") is a demo constant only: a live file has no archive row (F4, P0.15-D2.4a). Rule 6 already checks the wording of `metadata.data_sources` and `disclaimers` in a live file.
 
 ### 3.3 Frontend text
 
@@ -275,8 +275,8 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F1 | 4 | P0.15-D2.1b (done) | Confidence note claims "Statcast pitch data" without checking it |
 | F2 | 3, 4 | P0.15-D2.1a (done) | Offense scope stated when no offense figure exists |
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
-| F4 | 6 | P0.15-D2.4 (open) | Demo matchups and archive rows inside a live file. The workflow of a live file still counts the demo matchups too; its entry `rule4:generator.workflow.checked#count` left `known_violations.py` in P0.15-D2.1c only because the count coincides by chance (the demo has no warning since F18), and `tests/test_contract_checks.py` shows the rule still fires if the demo has one |
-| F5 | 7 | P0.15-D2.5 | `status` is always `upcoming`, in the matchup and in its archive row (with the row's `result_label` and `lineup_status`) |
+| F4 | 6 | P0.15-D2.4a (done) | Demo matchups and archive rows inside a live file, and a workflow that counted them. `build_payload` now keeps only the live matchups and an empty archive (`_apply_live_snapshot`), so the workflow counts only live matchups and its postgame step is `not_applicable`; `rule6:matchup_not_live`, `rule6:archive_not_live` and the two `rule4:generator.workflow.*#count` entries left `known_violations.py`, and so did the two F5 entries of the archive row (`archive[].status`, `archive[].result_label`), which a live file no longer has. The manifest has no entry for an archive row, so one in a live file is unlisted (and rule 6's finding); a test shows `rule4:generator.workflow.checked#count` fires if a demo matchup with a warning is counted |
+| F5 | 7 | P0.15-D2.5 | `status` is always `upcoming` in the matchup, with its `lineup_status` (a live file has no archive row since P0.15-D2.4a) |
 | F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2 (done: a, b and c in D2.2a; e in D2.2e) | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
 | F7 | 1, 2 | P0.15-D2.2e (done) | `"???"` team abbreviation |
 | F8 | 1, 4 | P0.15-D2.1c (done) | Two constant critic notes |
@@ -314,7 +314,7 @@ F13 is not a violation of a rule but a note on how little of the JSON the page s
 | Kind | Meaning | The check |
 |---|---|---|
 | `source` | A value the source gave. | The type, the format (a date, a UTC instant, a team abbreviation) and the evidence a zero needs. |
-| `derivation` | Computed by a documented rule. | The value is recomputed from its inputs and compared: the pitching profile from the pitch mix and the sample (D24, D25, D30), `limited` from the sample, the family from the pitch map, the lineup's hand from the opposing starter, the title of an archive row from the teams. |
+| `derivation` | Computed by a documented rule. | The value is recomputed from its inputs and compared: the pitching profile from the pitch mix and the sample (D24, D25, D30), `limited` from the sample, the family from the pitch map, the lineup's hand from the opposing starter, the title of a game from the teams. |
 | `label` | A constant that asserts nothing about data. | The type, and a closed set where there is one (the schema version, the names of the agents, the thresholds of D24). |
 | `claim` | A sentence, or the record of the sentences. | Rule 4 owns the condition. |
 | `fact` | A constant that asserts a fact, written fixed without looking at the outcome. | It is a violation by definition, with the finding it belongs to. The fix of that finding turns the entry into a derivation with its evidence. |
@@ -331,8 +331,7 @@ The owner's criterion (2026-10-13): a status is a documented derivation if it is
 | `agent_workflow.steps[0..3].status` | The literal `completed` in `_build_agent_workflow`; nothing reads the result of the step. It is true today only because any failure stops the generator (rule 5, exception). | Constant that asserts a fact: **F19**, closed in P0.15-D2.4. |
 | `critic_review.status` | `reviewed`, written by the critic at the end of its own run (owner, 2026-10-14) | Derivation, with evidence: `checks[]` is not empty and every `checks[].status` is in the closed set. Without it, `rule1:constant_asserts_fact#matchups[].critic_review.status`. |
 | `critic_review.checks[].status` | The verdict of each check | Derivation (closed set). |
-| `matchups[].status`, `archive[].status` | The literal `upcoming` | Constant that asserts a fact: **F5**. The archive row joins the finding. |
-| `archive[].result_label` | The literal "Pregame report available" | Constant that asserts a fact: **F5**. |
+| `matchups[].status` | The literal `upcoming` | Constant that asserts a fact: **F5**. (The archive row joined the finding until P0.15-D2.4a; a live file has no archive row now.) |
 | `data_confidence.lineup_status` | The literal `probable_pitchers` | Constant that asserts a fact: **F5**. |
 | `data_confidence.pitch_data_status` | `fetched_snapshot` when at least one starter has pitch data (`sample.arsenal.pitches > 0`), `unavailable` (the word `sample.rates.source` uses) when none has | Derivation, recomputed from the starters (F1, closed in P0.15-D2.1b). |
 | `metadata.data_sources[]` | A list that includes "Cached demo snapshots" in a live file | Constant that asserts a fact: **F3**. |

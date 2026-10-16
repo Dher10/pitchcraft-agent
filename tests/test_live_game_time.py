@@ -14,6 +14,7 @@ from datetime import date
 
 import pytest
 
+from data_pipeline import demo_inputs
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline.fetchers import live_pipeline as lp
 from tests import test_as_of_end_to_end as e2e
@@ -133,7 +134,9 @@ def test_a_live_game_zone_must_be_text_or_unknown(live_payload):
 
 
 def test_the_demo_matchups_are_not_held_to_the_live_rule(live_payload):
-    demo = next(m for m in live_payload["matchups"] if m["data_confidence"]["level"] != "fetched_snapshot")
+    # F4 (D2.4a): the generator puts none in a live file; one put there by hand is rule 6's finding, not this rule's.
+    demo = deepcopy(demo_inputs.build_demo_payload()["matchups"][1])
+    live_payload["matchups"].append(demo)
 
     assert "start_time_utc" not in demo["game"] or demo["game"]["start_time_utc"] is None
     assert failed_time_checks(live_payload) == []

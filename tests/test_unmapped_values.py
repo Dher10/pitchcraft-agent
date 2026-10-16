@@ -154,7 +154,7 @@ def test_a_team_with_no_abbreviation_is_published_by_its_name(unknown_team):
     assert matchup["teams"]["away"]["name"] == "Brand New Club" and matchup["teams"]["away"]["abbreviation"] is None
     assert matchup["starters"]["away_starter"]["team"] is None
     assert matchup["teams"]["home"]["abbreviation"] == "NYY" and matchup["starters"]["home_starter"]["team"] == "NYY"  # control
-    assert unknown_team.payload["archive"][0]["title"] == "Brand New Club vs NYY"
+    assert unknown_team.payload["archive"] == []  # D2.4a (F4): there is no archive row to carry a title
 
 
 def test_an_unknown_team_has_no_offense_split_and_the_run_says_why(unknown_team):

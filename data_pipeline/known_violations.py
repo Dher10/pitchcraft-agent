@@ -12,20 +12,14 @@ from __future__ import annotations
 
 KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
     "rule1:constant_asserts_fact#agent_workflow.steps[].status": ("F19",),
-    "rule1:constant_asserts_fact#archive[].result_label": ("F5",),
-    "rule1:constant_asserts_fact#archive[].status": ("F5",),
     "rule1:constant_asserts_fact#matchups[].data_confidence.lineup_status": ("F5",),
     "rule1:constant_asserts_fact#matchups[].status": ("F5",),
     "rule1:constant_asserts_fact#metadata.data_sources[]": ("F3",),
     "rule4:generator.confidence.live_note#fetched_at": ("F9",),
     "rule4:generator.metadata.last_updated.live#fetched_at": ("F9",),
-    "rule4:generator.workflow.graded#count": ("F4",),
     "rule4:generator.workflow.loaded#cached": ("F3",),
-    "rule4:generator.workflow.loaded#count": ("F4",),
     "rule4:writer.confidence.lineups#game_state": ("F5", "F16"),
     "rule4:writer.section.summary#game_state": ("F5", "F16"),
-    "rule6:archive_not_live": ("F4",),
     "rule6:cached_wording": ("F3",),
     "rule6:data_fetched_at": ("F9",),
-    "rule6:matchup_not_live": ("F4",),
 }

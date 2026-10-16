@@ -11,6 +11,15 @@ const statusClasses: Record<MatchupStatus, string> = {
 };
 
 export default function ArchiveTable({ archive }: ArchiveTableProps) {
+  if (archive.length === 0) {
+    return (
+      <section className="rounded-xl border border-neutral-200 bg-white p-4">
+        <h2 className="text-lg font-bold text-neutral-900">Archive</h2>
+        <p className="mt-4 text-sm text-neutral-500">No past reports yet</p>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-xl border border-neutral-200 bg-white p-4">
       <h2 className="text-lg font-bold text-neutral-900">Archive</h2>

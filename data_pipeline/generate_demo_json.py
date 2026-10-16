@@ -438,27 +438,17 @@ def _apply_live_snapshot(payload: dict[str, Any]) -> None:
     if not live_games:
         return
 
-    # The featured slot is taken by the live game; nothing of the matchup that was there is kept.
-    slot = next(
-        (index for index, matchup in enumerate(payload["matchups"]) if matchup["id"] == "matchup_001"),
-        None,
-    )
-    if slot is None:
-        return
-
+    # Rule 6 (F4): a live file holds only live matchups. Nothing of the demo is kept: not its other matchups, not its
+    # archive rows. The archive stays empty (today's game is not a past report; the page says "No past reports yet").
     fetched_date = _live["fetched_date"]
-    payload["matchups"][slot] = _build_live_matchup(live_games[0], "matchup_001", True)
-    extra_matchups = [
-        _build_live_matchup(live_game, f"matchup_live_{index}", False)
-        for index, live_game in enumerate(live_games[1:3], start=2)
+    payload["matchups"] = [
+        _build_live_matchup(live_games[0], "matchup_001", True),
+        *(
+            _build_live_matchup(live_game, f"matchup_live_{index}", False)
+            for index, live_game in enumerate(live_games[1:3], start=2)
+        ),
     ]
-    if extra_matchups:
-        payload["matchups"][slot + 1 : slot + 1] = extra_matchups
-
-    # The archive row of the live game is made from the game, never patched from the demo row.
-    payload["archive"][:1] = [
-        live_matchup.archive_row(live_games[0], matchup_id="matchup_001", fetched_date=fetched_date)
-    ]
+    payload["archive"] = []
 
     payload["metadata"]["data_mode"] = "fetched_snapshot"
     payload["metadata"]["generated_at"] = _live["run_at"]
