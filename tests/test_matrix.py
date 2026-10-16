@@ -448,7 +448,6 @@ def test_hard_a_frame_without_a_needed_column_fails_as_a_missing_required_column
     assert any("missing required column" in message and column in message for message in messages), messages
 
 
-@pytest.mark.xfail(strict=True, reason="F15: the analyst falls back to the right hand when the starter has none")
 def test_the_analyst_writes_no_hand_when_the_starter_has_none(monkeypatch):
     matchup = live(monkeypatch)
     for team in matchup["teams"].values():

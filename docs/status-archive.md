@@ -4,6 +4,17 @@ The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so th
 
 ## Session log
 
+### 2026-10-15 — P0.15-D2.3a the analyst never assumes a hand (F15) (Claude Code, D35 lane)
+
+- **Owner's instructions:** the plan of D2.3 approved with four adjustments (schema 0.6.0 and D38; the new sentence without "yet", worded by him; F22 as commit d, after one real query of 605242 that must match the 61 batters faced or stop; the plan saved in commit a).
+- **Class:** a default for a value the data did not give. `starter.get("throws", "R")` made a starter with no hand a right-hander, and `_throws_label` wrote "SHP" for a switch pitcher. One mechanism: `_hand_label` returns "LHP" or "RHP" from the data or `None`, and `None` is the new sentence (`analyst.offense.unavailable_no_hand`), for `S` and for an unknown hand, with no note about strikeouts or walks.
+- **What changed:** `matchup_analyst.py`, `messages_en.py`, `claims_registry.py` (one rule: his hand is not L or R), `DATA_CONTRACT.md` (3.1 row), the differential (the sentence injected), `tests/corpus.py` (`payload_of`), `docs/plans/P0.15-D2.3.md`.
+- **Seen failing first:** 7 tests (the F15 probe, whose `xfail` is removed, and 6 in `tests/test_unknown_hand.py`: the approved wording, a starter with no hand, a switch pitcher, the lineup read, two registry tests); controls that passed before: a known hand keeps its sentence, an unavailable OPS with a known hand keeps its sentence. Three mutations of the code each turned tests red: a default "RHP" back (5), the no-hand branch removed (5), the registry condition removed (1).
+- **One extension of the plan's wording:** the hand comes from `offense.vs_pitcher_hand` and, when that is not LHP/RHP, from `starter.throws` if it is L or R (real data, and the registry agrees); both readings are pinned by tests. `xfail`s: 2 → 1 (F11 remains for b).
+- **Not in the golden file, and why:** the pipeline's own switch pitcher (`switch_pitcher`) is rejected by the generator today (F11), so no pipeline state with an `S` reaches a matchup; the tests use the lineup `build_offense("S")` writes today. The golden scenario comes with D2.3b, when the pipeline produces it. Golden: unchanged. Served JSON: unchanged.
+- **Sweep of every reader of the hand:** `live_matchup.build_offense` (reads the right-handed split for `S`, a wrong split under "SHP": D2.3b), `validators` and `generate_demo_json._game_unsafe` (L or R only: D2.3b), `ScoutingReport.tsx` (prints `vs_pitcher_hand`: D2.3b), `claims_registry._hand_is_his` (already strict).
+- **Verification:** see the commit.
+
 ### 2026-10-15 — P0.15-D2.2f figures that cannot be true together and an incomplete Statcast sample (F21) (Claude Code, D35 lane)
 
 - **Owner's instructions:** commit f of `docs/plans/P0.15-D2.2.md` under D35 (no yes per commit; the reviewer and the stops of D35); first, check the hook is active (`git push --dry-run origin main` is blocked with its reason before git: it was); calibration with the API (at most 30 cached requests, stop if it needs more than 1 per appearance); `live_unknown_figures` and `live_limited_arsenal` must come from the real path of F21; at the close of D2.2 the summary in STATUS and the plan of D2.3 in plan mode, then stop.

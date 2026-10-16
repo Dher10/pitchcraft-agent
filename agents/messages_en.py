@@ -68,6 +68,9 @@ EN_MESSAGES: dict[str, object] = {
     "analyst.offense.unavailable": (
         "Season offense data against {hand} pitching is not available for this lineup yet."
     ),
+    "analyst.offense.unavailable_no_hand": (
+        "Season offense data cannot be matched to this pitcher's hand, so the lineup read makes no offense claims."
+    ),
     "analyst.offense.strong": (
         "This lineup hits well against {hand} pitching ({ops} OPS), so {name} cannot live over the middle."
     ),

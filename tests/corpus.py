@@ -63,7 +63,12 @@ def build(monkeypatch, kind: str) -> dict[str, Any]:
 def golden_payload(monkeypatch, name: str) -> dict[str, Any]:
     """One golden scenario run through the five agents and wrapped as a payload with its claims."""
 
-    matchup = scenarios(monkeypatch)[name]
+    return payload_of(scenarios(monkeypatch)[name])
+
+
+def payload_of(matchup: dict[str, Any]) -> dict[str, Any]:
+    """A matchup run through the five agents and wrapped as a payload with its claims."""
+
     packet = data_scout.run(matchup)
     findings = matchup_analyst.run(packet)
     report = report_writer.run(findings, matchup)

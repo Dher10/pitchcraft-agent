@@ -119,7 +119,10 @@ def _subject_notes(t: Catalog, slot: str, starter: dict[str, Any], sample: dict[
 
 def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> str:
     offense = team["offense_profile"]
-    hand = offense.get("vs_pitcher_hand") or _throws_label(starter.get("throws", "R"))
+    hand = _hand_label(offense, starter)
+    if hand is None:
+        # A lineup has a split only against L or R: a switch pitcher, or a starter with no hand, has none to read (F15).
+        return t("analyst.offense.unavailable_no_hand")
     starter_name = starter["name"]
     ops_text = offense.get("ops_vs_hand")
     ops = _optional_rate(ops_text)
@@ -145,9 +148,17 @@ def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> 
     return read
 
 
-def _throws_label(raw_hand: str) -> str:
-    hand = raw_hand[:1] if raw_hand else "R"
-    return f"{hand}HP"
+def _hand_label(offense: dict[str, Any], starter: dict[str, Any]) -> str | None:
+    """
+    "LHP" or "RHP", from the data, or None. Never a default: a starter with no hand is not a right-hander, and a
+    switch pitcher ("S") is not a hand a lineup has a split against.
+    """
+
+    label = offense.get("vs_pitcher_hand")
+    if label in ("LHP", "RHP"):
+        return label
+    throws = starter.get("throws")
+    return f"{throws}HP" if throws in ("L", "R") else None
 
 
 def _safe_label(value: Any, fallback: str) -> str:

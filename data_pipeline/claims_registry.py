@@ -541,6 +541,11 @@ def _hand_is_his(c: Ctx) -> None:
     c.require(expected is not None and c.text("hand") == expected, "hand", f"the hand {c.text('hand')!r} is not the hand he throws with")
 
 
+def _offense_no_hand(c: Ctx) -> None:
+    throws = c.starter.get("throws")
+    c.require(throws not in ("L", "R"), "hand", f"he throws with {throws!r}, a hand the lineup read can name")
+
+
 def _offense_unavailable(c: Ctx) -> None:
     c.require(_percent(c.lineup.get("ops_vs_hand")) is None, "known", "the lineup's OPS against his hand is known")
     _hand_is_his(c)
@@ -1173,6 +1178,7 @@ RULES: dict[str, Rule] = {
     "analyst.risk.contact": _risk_contact,
     "analyst.risk.volatile": _risk_volatile,
     "analyst.offense.unavailable": _offense_unavailable,
+    "analyst.offense.unavailable_no_hand": _offense_no_hand,
     "analyst.offense.strong": _offense_read,
     "analyst.offense.average": _offense_read,
     "analyst.offense.weak": _offense_read,

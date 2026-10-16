@@ -376,6 +376,7 @@ def confidence_sentences(matchup: dict[str, Any]) -> list[tuple[str, str]]:
         ("lineups", T("writer.confidence.lineups")),
         ("unnamed lead pitch", T("analyst.data.arsenal_unnamed", name=away)),
         ("no contrast, unnamed", T("writer.arsenal.no_contrast_unnamed")),
+        ("offense, no hand", T("analyst.offense.unavailable_no_hand")),
         ("unavailable pitch count", T("analyst.have.pitches_unavailable")),
         ("unavailable batters faced", T("analyst.have.batters_unavailable")),
         ("critic: pitch count not available", T("critic.limited.supported_unavailable", needed=100)),
