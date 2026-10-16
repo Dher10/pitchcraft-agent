@@ -11,7 +11,6 @@ it. The commit of P0.15-D2.5 deletes this module and the code of `validate_paylo
 from __future__ import annotations
 
 KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
-    "rule1:constant_asserts_fact#agent_workflow.steps[].status": ("F19",),
     "rule1:constant_asserts_fact#matchups[].data_confidence.lineup_status": ("F5",),
     "rule1:constant_asserts_fact#matchups[].status": ("F5",),
     "rule4:writer.confidence.lineups#game_state": ("F5", "F16"),

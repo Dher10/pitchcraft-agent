@@ -140,7 +140,6 @@ def test_rule_1_a_constant_that_asserts_a_fact_is_a_violation_whatever_its_value
     for pattern in (
         "matchups[].status",
         "matchups[].data_confidence.lineup_status",
-        "agent_workflow.steps[].status",
     ):
         assert f"rule1:constant_asserts_fact#{pattern}" in found, pattern
     assert "rule1:constant_asserts_fact#metadata.data_sources[]" not in found  # F3 (D2.4b): a label of a closed set
@@ -161,10 +160,10 @@ def test_rule_1_the_sources_and_disclaimers_of_a_live_file_are_the_ones_it_may_s
         assert f"rule1:wrong_type#{pattern}" in codes(payload), pattern
 
 
-def test_rule_1_the_postgame_step_reads_its_result_and_the_other_four_do_not(live):
-    where = {w for code, w, _ in provenance.findings(live) if code.startswith("rule1:constant_asserts_fact#agent_workflow")}
+def test_rule_1_no_step_of_the_workflow_is_a_constant_that_asserts_a_fact(live):
+    """F19 (closed in D2.4d): each of the five statuses is read from the result of its step (tests/test_workflow_step_status.py)."""
 
-    assert where == {f"agent_workflow.steps[{i}].status" for i in range(4)}
+    assert not [w for code, w, _ in provenance.findings(live) if code.startswith("rule1:constant_asserts_fact#agent_workflow")]
 
 
 def test_rule_1_the_postgame_step_must_agree_with_what_it_reports(live):

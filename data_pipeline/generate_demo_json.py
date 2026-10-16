@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 import json
 from pathlib import Path
@@ -24,7 +25,7 @@ from data_pipeline import schema
 from data_pipeline.contract_checks import RUN_ERROR_CODES, RUN_SOURCES, RUN_WARNING_CODES
 from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.generator_texts import generator_catalog
-from data_pipeline.schema import new_york_day
+from data_pipeline.schema import WORKFLOW_AGENTS, new_york_day
 from data_pipeline.validators import ValidationError, validate_payload
 
 # Rule 8: what the file says about a failure is a source and a code of the closed sets (D38); the text goes to this log
@@ -359,14 +360,10 @@ def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None)
         else text("generator.metadata.last_updated.demo")
     )
     _apply_live_snapshot(payload)
-    total_warnings, graded_starters = _run_agents(payload["matchups"], language)
+    run = _run_agents(payload["matchups"], language)
     _apply_live_confidence(payload)
     _update_archive_postgame_labels(payload)
-    payload["agent_workflow"] = _build_agent_workflow(
-        len(payload["matchups"]),
-        total_warnings,
-        graded_starters,
-    )
+    payload["agent_workflow"] = _build_agent_workflow([matchup["id"] for matchup in payload["matchups"]], run)
     claims.attach_claims(payload, language)
     return payload
 
@@ -408,24 +405,39 @@ def main() -> int:
     return 0
 
 
-def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE) -> tuple[int, int]:
-    total_warnings = 0
-    graded_starters = 0
+@dataclass
+class AgentRun:
+    """What the agents did: the warnings the critic raised, the starters graded, and the matchups each agent finished (F19)."""
+
+    total_warnings: int
+    graded_starters: int
+    finished: dict[str, list[str]] = field(default_factory=dict)
+
+    def finish(self, agent: str, matchup_id: str) -> None:
+        self.finished.setdefault(agent, []).append(matchup_id)
+
+
+def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE) -> AgentRun:
+    scout, analyst, writer, critic_agent, _ = WORKFLOW_AGENTS
+    run = AgentRun(0, 0)
     for matchup_input in matchups:
         packet = data_scout.run(matchup_input, language=language)
+        run.finish(scout, matchup_input["id"])
         available_count = sum(1 for available in packet["availability"].values() if available)
         print(f"[AGENT] Data Scout: {available_count} sections available")
 
         findings = matchup_analyst.run(packet, language=language)
+        run.finish(analyst, matchup_input["id"])
         print(f"[AGENT] Matchup Analyst: headline = {findings['matchup_headline'][:50]}")
 
         report = report_writer.run(findings, matchup_input, language=language)
+        run.finish(writer, matchup_input["id"])
         print(f"[AGENT] Report Writer: {len(report['sections'])} sections generated")
 
         critic_review = critic.run(report, matchup_input, language=language)
         unsupported = [c for c in critic_review["checks"] if c["status"] == "unsupported"]
         warnings = sum(1 for c in critic_review["checks"] if c["status"] == "warning")
-        total_warnings += warnings
+        run.total_warnings += warnings
         print(
             f"[AGENT] Critic: {len(critic_review['checks'])} checks, "
             f"{warnings} warning(s), {len(unsupported)} unsupported"
@@ -433,6 +445,7 @@ def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE
         if unsupported:
             details = "; ".join(f"{c['claim']} {c['evidence']}" for c in unsupported)
             raise CriticBlocked(f"{matchup_input['id']}: {details}")
+        run.finish(critic_agent, matchup_input["id"])
 
         matchup_input["report"] = report
         matchup_input["critic_review"] = critic_review
@@ -441,7 +454,7 @@ def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE
         if matchup_input["status"] == "final":
             postgame = postgame_grader.run(matchup_input, language=language)
             matchup_input["postgame"] = postgame
-            graded_starters += len(postgame["starter_lines"])
+            run.graded_starters += len(postgame["starter_lines"])
             al = postgame["starter_lines"]["away_starter"]
             hl = postgame["starter_lines"]["home_starter"]
             print(
@@ -453,7 +466,7 @@ def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE
         else:
             matchup_input["postgame"] = None
 
-    return total_warnings, graded_starters
+    return run
 
 
 def _apply_live_snapshot(payload: dict[str, Any]) -> None:
@@ -551,21 +564,27 @@ def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
         row["grade_label"] = f"Starter Duel: {winner}, {winner_line['pitchcraft_grade']}"
 
 
-def _build_agent_workflow(
-    matchup_count: int,
-    total_warnings: int,
-    graded_starters: int,
-) -> dict[str, Any]:
+def _step_status(agent: str, matchup_ids: list[str], run: AgentRun) -> str:
+    """`completed` only if the agent finished every matchup the file counts; otherwise `pending` (F19)."""
+
+    finished = set(run.finished.get(agent, ()))
+    return "completed" if matchup_ids and set(matchup_ids) <= finished else "pending"
+
+
+def _build_agent_workflow(matchup_ids: list[str], run: AgentRun) -> dict[str, Any]:
+    """The steps of the workflow, each with the status of what the agent did in this run (D2.4d, F19)."""
+
     text = generator_catalog()
+    scout, analyst, writer, critic_agent, grader = WORKFLOW_AGENTS
     postgame_step = (
         {
-            "agent": "Postgame Grader Agent",
+            "agent": grader,
             "status": "completed",
-            "output": text("generator.workflow.graded", count=graded_starters),
+            "output": text("generator.workflow.graded", count=run.graded_starters),
         }
-        if graded_starters
+        if run.graded_starters
         else {
-            "agent": "Postgame Grader Agent",
+            "agent": grader,
             "status": "not_applicable",
             "output": text("generator.workflow.graded_none"),
         }
@@ -575,24 +594,24 @@ def _build_agent_workflow(
         "description": text("generator.workflow.description"),
         "steps": [
             {
-                "agent": "Data Scout Agent",
-                "status": "completed",
-                "output": text("generator.workflow.loaded", count=matchup_count),
+                "agent": scout,
+                "status": _step_status(scout, matchup_ids, run),
+                "output": text("generator.workflow.loaded", count=len(matchup_ids)),
             },
             {
-                "agent": "Matchup Analyst Agent",
-                "status": "completed",
+                "agent": analyst,
+                "status": _step_status(analyst, matchup_ids, run),
                 "output": text("generator.workflow.identified"),
             },
             {
-                "agent": "Report Writer Agent",
-                "status": "completed",
+                "agent": writer,
+                "status": _step_status(writer, matchup_ids, run),
                 "output": text("generator.workflow.generated"),
             },
             {
-                "agent": "Critic / Fact-check Agent",
-                "status": "completed",
-                "output": text("generator.workflow.checked", warnings=total_warnings),
+                "agent": critic_agent,
+                "status": _step_status(critic_agent, matchup_ids, run),
+                "output": text("generator.workflow.checked", warnings=run.total_warnings),
             },
             postgame_step,
         ],

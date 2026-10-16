@@ -40,7 +40,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from data_pipeline import config, labels
-from data_pipeline.schema import CRITIC_STATUSES, SCHEMA_VERSION, is_utc_instant, new_york_day
+from data_pipeline.schema import CRITIC_STATUSES, SCHEMA_VERSION, WORKFLOW_AGENTS, is_utc_instant, new_york_day
 
 LIVE_MODE = "fetched_snapshot"
 LIVE_LEVEL = "fetched_snapshot"
@@ -49,9 +49,8 @@ SLOTS = ("away_starter", "home_starter")
 SOURCE, DERIVATION, LABEL, CLAIM, FACT = "source", "derivation", "label", "claim", "fact"
 KINDS = (SOURCE, DERIVATION, LABEL, CLAIM, FACT)
 
-# The workflow steps whose status is written fixed (F19); the postgame step reads its own result.
-FIXED_STATUS_STEPS = ("Data Scout Agent", "Matchup Analyst Agent", "Report Writer Agent", "Critic / Fact-check Agent")
-POSTGAME_STEP = "Postgame Grader Agent"
+# The postgame step reads its own sentence; the other four read what their agents left in the matchups (`STEP_EVIDENCE`).
+POSTGAME_STEP = WORKFLOW_AGENTS[4]
 RATES_SOURCES = ("mlb_api", "statcast", "unavailable")
 IMPOSSIBLE = "rule1:impossible_figures"
 HANDS = ("L", "R", "S")
@@ -475,10 +474,57 @@ def critic_review_status(c: Ctx) -> Problem | None:
     return ("rule1:constant_asserts_fact", f"status {c.value!r} with no checks that ran and a known status each")
 
 
+def _claims_with(matchup: Mapping[str, Any], prefix: str) -> bool:
+    report = matchup.get("report")
+    claims = report.get("claims") if isinstance(report, Mapping) else None
+    return isinstance(claims, list) and any(isinstance(k, Mapping) and str(k.get("key", "")).startswith(prefix) for k in claims)
+
+
+def _has_sections(matchup: Mapping[str, Any]) -> bool:
+    report = matchup.get("report")
+    return isinstance(report, Mapping) and isinstance(report.get("sections"), list) and bool(report["sections"])
+
+
+def _has_review(matchup: Mapping[str, Any]) -> bool:
+    review = matchup.get("critic_review")
+    checks = review.get("checks") if isinstance(review, Mapping) else None
+    return (
+        isinstance(review, Mapping)
+        and review.get("status") == "reviewed"
+        and isinstance(checks, list)
+        and bool(checks)
+        and _claims_with(matchup, "critic.")
+    )
+
+
+# What each agent leaves in a matchup of the file: the evidence that it ran there (F19). The analyst, the writer and the
+# critic leave the sentences they wrote as claims of the report, so their evidence is their own work. The scout leaves
+# no trace of its own: the confidence packet is also required by the schema and written by other code (the live
+# matchup builder), so its evidence is only that the packet is there; what backs the scout's `completed` is the
+# generator's run record (`AgentRun.finished`), not the file. The limit is written in the contract (6.2).
+STEP_EVIDENCE: dict[str, Callable[[Mapping[str, Any]], bool]] = {
+    WORKFLOW_AGENTS[0]: lambda m: isinstance(m.get("data_confidence"), Mapping) and bool(m["data_confidence"].get("level")),
+    WORKFLOW_AGENTS[1]: lambda m: _claims_with(m, "analyst."),
+    WORKFLOW_AGENTS[2]: lambda m: _claims_with(m, "writer.") and _has_sections(m),
+    WORKFLOW_AGENTS[3]: _has_review,
+}
+
+
 def step_status(c: Ctx) -> Problem | None:
+    """
+    A status is read from the result of its step (the owner's criterion, 2026-10-13). The postgame step agrees with its own
+    sentence; each of the other four is `completed` exactly when every matchup of the file carries what that agent leaves
+    there (`STEP_EVIDENCE`), else `pending`: a status written without looking would be a constant that asserts a fact.
+    """
+
     step = c.around(1)
-    if step.get("agent") in FIXED_STATUS_STEPS:
-        return ("rule1:constant_asserts_fact", f"the status of {step.get('agent')!r} is written fixed ({c.value!r}), not read from the result of the step (F19)")
+    agent = step.get("agent")
+    if agent in STEP_EVIDENCE:
+        matchups = [m for m in c.root.get("matchups") or [] if isinstance(m, Mapping)]
+        want = "completed" if matchups and all(STEP_EVIDENCE[agent](m) for m in matchups) else "pending"
+        if c.value == want:
+            return None
+        return _mismatch(f"the status of {agent!r} is {want!r} by what the matchups carry of its work, found {c.value!r}")
     graded = any(
         claim.get("key") == "generator.workflow.graded" and claim.get("location") == f"agent_workflow.steps[{c.path[2]}].output"
         for claim in c.root.get("claims") or []
@@ -565,8 +611,8 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _label("disclaimers[]", "a live disclaimer (F3 closed: never the demo's); rule 6 also judges its wording", STR, in_set(config.LIVE_DISCLAIMERS)),
         _record("claims[].**"),
         _claim("agent_workflow.description"),
-        _label("agent_workflow.steps[].agent", "the name of an agent", STR, in_set((*FIXED_STATUS_STEPS, POSTGAME_STEP))),
-        _derived("agent_workflow.steps[].status", "the postgame step reads its result; the other four are written fixed (F19)", STR, False, step_status),
+        _label("agent_workflow.steps[].agent", "the name of an agent", STR, in_set(WORKFLOW_AGENTS)),
+        _derived("agent_workflow.steps[].status", "each step is read from the result of its agent: the postgame from what it graded, the other four from what the matchups carry of their work (F19 closed)", STR, False, step_status),
         _claim("agent_workflow.steps[].output"),
         # -- the archive: a live file has none (D2.4a); a row is rule 6's finding and has no entry
         _label("archive", "an empty list: a live file has no archive row (rule 6, F4); a row has no entry, so it is unlisted", (list,)),

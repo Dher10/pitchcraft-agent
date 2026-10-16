@@ -248,11 +248,11 @@ def test_a_debut_payload_still_validates(monkeypatch):
     payload["featured_matchup_id"] = matchup["id"]
     monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": {"source": "pipeline", "code": "no_live_run"}, "live_run": None})
 
-    total_warnings, graded_starters = gdj._run_agents(payload["matchups"])
+    run = gdj._run_agents(payload["matchups"])
     # What build_payload does after the agents: the mode, the generator's own sentences, then the claims of every sentence.
     payload["metadata"]["data_mode"] = gdj._live_status["mode"]
     payload["metadata"]["last_updated_label"] = generator_catalog()("generator.metadata.last_updated.demo")
-    payload["agent_workflow"] = gdj._build_agent_workflow(len(payload["matchups"]), total_warnings, graded_starters)
+    payload["agent_workflow"] = gdj._build_agent_workflow([m["id"] for m in payload["matchups"]], run)
     claims.attach_claims(payload)
 
     assert all(c.passed for c in validate_payload(payload))

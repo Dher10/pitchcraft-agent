@@ -60,6 +60,16 @@ def new_york_day(value: Any) -> str | None:
     return instant.astimezone(NEW_YORK).date().isoformat()
 
 
+# The five agents of the workflow, in order (the one place that names them), and what a step may say (D2.4d, F19).
+WORKFLOW_AGENTS = (
+    "Data Scout Agent",
+    "Matchup Analyst Agent",
+    "Report Writer Agent",
+    "Critic / Fact-check Agent",
+    "Postgame Grader Agent",
+)
+STEP_STATUSES = ("completed", "not_applicable", "pending")
+
 TOP_LEVEL_REQUIRED_KEYS = (
     "metadata",
     "featured_matchup_id",
