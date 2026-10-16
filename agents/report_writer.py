@@ -125,7 +125,10 @@ def _base_confidence_note(t: Catalog, matchup_input: dict[str, Any]) -> str:
         parts.append(_pitch_data_missing(t, starters))
     if not both_split:
         parts.append(_offense_missing(t, teams))
-    parts.append(t("writer.confidence.lineups"))
+    # A time claim: only a game that has not started can still change its lineups (F16). Any other state, an unknown
+    # one included, says nothing about them.
+    if matchup_input.get("status") == "upcoming":
+        parts.append(t("writer.confidence.lineups"))
     return t.join(" ", parts)
 
 

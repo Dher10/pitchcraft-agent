@@ -3,7 +3,7 @@
 Each rule has a negative test: a payload that breaks it must be reported with the code of that rule.
 The payloads are built by the generator (the corpus) and then broken on purpose, one thing at a time,
 so a code appears only because of what the test changed. A code that is also there before the change is
-a violation the code has today (`known_violations.py`); the tests look at what the change adds.
+a violation of the payload it is given; the tests look at what the change adds.
 """
 
 from __future__ import annotations
@@ -275,28 +275,26 @@ def test_rule_4_a_limited_note_without_a_limited_sample_is_found(debuts):
     assert {"rule4:writer.confidence.limited#no_limit", "rule4:analyst.data.arsenal#not_limited"} <= added(debuts, edit)
 
 
-def test_rule_4_a_time_claim_for_a_game_that_is_not_known_to_be_a_preview_is_found(demo):
-    """Demo `upcoming` is Preview and may say 'Today's Matchup Summary'; the same matchup `Live` may not."""
+def test_rule_4_the_summary_title_asserts_nothing_whatever_the_state_of_the_game(demo):
+    """F16 (closed in D2.5c): "Matchup Summary" says nothing about the day, so no state is asked of it."""
 
-    first = demo["matchups"][0]
-    assert not [v for v in where(demo, "rule4:writer.section.summary#game_state") if first["id"] in v.where]
+    for status in ("live", "final", None):
+        def edit(m, status=status):
+            m["status"] = status
 
-    def live_now(m):
-        m["status"] = "Live"
-
-    assert any(first["id"] in v.where for v in where(broken(demo, live_now), "rule4:writer.section.summary#game_state"))
+        assert not where(broken(demo, edit), "rule4:writer.section.summary#game_state"), status
 
 
-def test_rule_4_a_live_game_that_is_not_known_to_be_upcoming_has_its_time_claims_fail(live):
-    """F5 (closed in D2.5a): the state is the schedule's. A game in Preview may say "before first pitch"; any other may not (F16, D2.5c)."""
+def test_rule_4_a_live_game_that_is_not_upcoming_may_not_say_before_first_pitch(live):
+    """F5 (closed in D2.5a) and F16 (closed in D2.5c): the state is the schedule's; only a game in Preview may say "before first pitch"."""
 
-    for code in ("rule4:writer.section.summary#game_state", "rule4:writer.confidence.lineups#game_state"):
-        assert code not in codes(live)  # control: the generated game is upcoming
-        for status in ("live", "final", None):
-            payload = deepcopy(live)
-            payload["matchups"][0]["status"] = status
+    code = "rule4:writer.confidence.lineups#game_state"
+    assert code not in codes(live)  # control: the generated game is upcoming and says it
+    for status in ("live", "final", None):
+        payload = deepcopy(live)
+        payload["matchups"][0]["status"] = status
 
-            assert code in codes(payload), (code, status)
+        assert code in codes(payload), status
 
 
 def _pitches(m, slot, pitches):

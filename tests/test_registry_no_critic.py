@@ -22,7 +22,7 @@ import pytest
 
 from agents import critic
 from data_pipeline.contract_checks import check_contract
-from tests.test_known_violations import corpus
+from tests.corpus import corpus
 
 DATA_PIPELINE = Path(__file__).resolve().parents[1] / "data_pipeline"
 # The modules that decide whether a payload keeps the contract. `report_facts` is where the conditions read

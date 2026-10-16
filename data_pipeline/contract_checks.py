@@ -1,8 +1,8 @@
 """The generic checks of the data contract (decision D34, `docs/DATA_CONTRACT.md`).
 
 `check_contract(payload)` applies rules 1 to 4, 6 and 8 to a payload and returns every violation, each
-with a code, the place and a message. It does not decide what is tolerated: `validate_payload` does,
-with `known_violations.KNOWN_VIOLATIONS`.
+with a code, the place and a message. Nothing is tolerated: `validate_payload` fails on every one (since
+P0.15-D2.5c; before, a temporary table let the violations of the code through while their fixes landed).
 
 - Rules 1 and 2 (provenance, unknown is never zero): the manifest of a live file (`provenance`): every leaf is
   a source value, a documented derivation, a label, a recorded sentence or an unavailable state, and a

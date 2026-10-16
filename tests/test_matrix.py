@@ -4,7 +4,7 @@ Each case runs the real pipeline over faked sources (tests/matrix.py), then the 
 real publication checks. For every case:
 
 - the game is published as live, or the run record and the generator's reason say why it was not;
-- publication passes: the only violations of the contract are the ones in `known_violations.py`;
+- publication passes: the contract has no violation at all;
 - the published figures are the ones the case's sources give (an oracle written from the case, so a
   fixture that silently collapses into another cell fails here).
 
@@ -21,7 +21,6 @@ import pytest
 
 from agents import data_scout, matchup_analyst, report_writer
 from data_pipeline import provenance
-from data_pipeline.known_violations import KNOWN_VIOLATIONS
 from tests.golden_scenarios import live
 from tests.matrix import (
     EVENT_CYCLE,
@@ -135,12 +134,12 @@ def assert_published_or_explained(outcome: Outcome) -> None:
 
 
 def assert_contract_holds(outcome: Outcome) -> None:
-    """Publication passed, and every violation of the contract is a known one."""
+    """Publication passed, and the contract has no violation (nothing is tolerated since P0.15-D2.5c)."""
 
     assert outcome.blocked is None, outcome.blocked
     assert outcome.failed == [], outcome.failed
-    unknown = sorted({v.code for v in outcome.violations} - set(KNOWN_VIOLATIONS))
-    assert unknown == [], f"{outcome.scenario.name}: violations that are not in known_violations.py: {unknown}"
+    found = sorted({v.code for v in outcome.violations})
+    assert found == [], f"{outcome.scenario.name}: violations of the contract: {found}"
 
 
 # --- the matrix ------------------------------------------------------------------------------------

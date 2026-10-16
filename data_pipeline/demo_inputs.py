@@ -366,7 +366,7 @@ MATCHUPS: Any = [
       ],
       "sections": [
         {
-          "title": "Today's Matchup Summary",
+          "title": "Matchup Summary",
           "body": "This matchup features two different starter profiles: one built around power and swing-and-miss, the other around command, movement, and contact control."
         },
         {
@@ -778,7 +778,7 @@ MATCHUPS: Any = [
       ],
       "sections": [
         {
-          "title": "Today's Matchup Summary",
+          "title": "Matchup Summary",
           "body": "A high-velocity arm faces a command-first lefty. The story is whether power can outrun the walk risk against a patient lineup."
         },
         {

@@ -140,7 +140,7 @@ EN_MESSAGES: dict[str, object] = {
     "writer.default_strength": "Has a defined scouting note for this matchup fit",
     "writer.watch_line": "The early what to watch is {observation}.",
     "writer.watch_whether": "whether {name} can {action}",
-    "writer.section.summary": "Today's Matchup Summary",
+    "writer.section.summary": "Matchup Summary",
     "writer.section.vs_team": "{pitcher} vs {team}",
     "writer.section.arsenal": "Arsenal Scout",
     "writer.section.watch": "Three Things to Watch",

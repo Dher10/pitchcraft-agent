@@ -33,7 +33,7 @@ from agents.language import catalog_for
 from data_pipeline import labels
 from data_pipeline import report_facts as facts
 from tests.matrix import outcomes
-from tests.test_known_violations import corpus
+from tests.corpus import corpus
 
 T = catalog_for("en")
 SLOTS = ("away_starter", "home_starter")

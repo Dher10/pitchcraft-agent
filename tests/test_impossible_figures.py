@@ -6,7 +6,7 @@ and every batter faced took at least one typed pitch, so `batters_faced <= pitch
 break one is published with figures from two different samples.
 
 The check is `provenance.impossible_figures`, next to the manifest, under the rule 1 code
-`rule1:impossible_figures#<which>`. It is added with its fix, so it is not in `known_violations.py`.
+`rule1:impossible_figures#<which>`. It was added with its fix and was never tolerated.
 
 Tolerance, documented in the contract (6.5): an intentional walk is a batter with no typed pitch (Statcast writes
 a row for it with no `pitch_type`), so `batters_faced <= pitches` could fail only for a sample smaller than one
@@ -22,7 +22,6 @@ import pytest
 
 from data_pipeline import provenance
 from data_pipeline.contract_checks import check_contract
-from data_pipeline.known_violations import KNOWN_VIOLATIONS
 from tests.corpus import GOLDEN_NAMES, build, published
 from tests.golden_scenarios import scenarios
 
@@ -53,10 +52,6 @@ def with_figures(payload: dict[str, Any], slot: str = AWAY, **figures: Any) -> d
         else:
             sample["rates"][key] = value
     return copy
-
-
-def test_the_check_is_in_the_rules_of_the_contract_and_not_in_the_table_of_tolerated_violations():
-    assert not any("impossible_figures" in code for code in KNOWN_VIOLATIONS)
 
 
 def test_a_coherent_live_payload_has_no_impossible_figure(live):

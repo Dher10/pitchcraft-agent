@@ -61,6 +61,16 @@ def build(monkeypatch, kind: str) -> dict[str, Any]:
     return gdj.build_payload()
 
 
+def corpus(monkeypatch):
+    """(name, payload) of every payload the contract tests run over: the generator's, the golden ones and the served file."""
+
+    for kind in KINDS:
+        yield kind, published(build(monkeypatch, kind))
+    for name in GOLDEN_NAMES:
+        yield f"golden:{name}", published(golden_payload(monkeypatch, name))
+    yield "served", served()
+
+
 def golden_payload(monkeypatch, name: str) -> dict[str, Any]:
     """One golden scenario run through the five agents and wrapped as a payload with its claims."""
 

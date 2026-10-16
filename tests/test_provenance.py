@@ -16,7 +16,6 @@ import pytest
 
 from data_pipeline import labels, provenance
 from data_pipeline.contract_checks import check_contract
-from data_pipeline.known_violations import KNOWN_VIOLATIONS
 from tests.corpus import build, published
 from tests.matrix import hard_outcome, outcomes
 
@@ -253,8 +252,8 @@ def test_rule_1_a_lineup_that_faces_the_wrong_hand_is_a_mismatch(live):
     assert "rule1:derivation_mismatch#matchups[].teams.*.offense_profile.vs_pitcher_hand" in codes(payload)
 
 
-def test_rule_1_a_clean_payload_has_only_the_known_findings(live):
-    assert codes(live) <= set(KNOWN_VIOLATIONS)
+def test_rule_1_a_clean_payload_has_no_finding(live):
+    assert codes(live) == set()
 
 
 # --- rule 2: unknown is never zero ---------------------------------------------------------------

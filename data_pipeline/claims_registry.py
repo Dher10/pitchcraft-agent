@@ -7,8 +7,8 @@ a key is in neither, if an entry matches no key, or if this module and the contr
 
 A rule returns nothing; it records what is false with `Ctx.require`. Each failure has a reason, and
 the violation code is `<key>#<reason>` (see `data_pipeline/contract_checks.py`). The conditions are
-written as the contract states them, not as the code behaves today: a sentence the code writes
-without the condition holding is a violation, and the ones known at HEAD are in `known_violations.py`.
+written as the contract states them: a sentence written without its condition holding is a violation, and every
+violation stops publication (nothing is tolerated since P0.15-D2.5c).
 """
 
 from __future__ import annotations
@@ -756,10 +756,6 @@ def _confidence_demo(c: Ctx) -> None:
     c.require(not c.live, "live", "a live matchup says it is based on cached demo data")
 
 
-def _section_summary(c: Ctx) -> None:
-    _preview(c, "'Today's Matchup Summary'")
-
-
 def _first_watch(c: Ctx) -> Mapping[str, Any]:
     found = [
         claim
@@ -1211,7 +1207,6 @@ RULES: dict[str, Rule] = {
     "writer.confidence.offense.none": _confidence_offense,
     "writer.confidence.lineups": _confidence_lineups,
     "writer.confidence.demo": _confidence_demo,
-    "writer.section.summary": _section_summary,
     "writer.watch_line": _watch_line,
     "writer.watch_whether": _watch_whether,
     "writer.default_strength": _demo_matchup,

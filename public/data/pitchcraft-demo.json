@@ -3,7 +3,7 @@
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.8.0",
     "data_mode": "demo_cached",
-    "generated_at": "2026-10-16T17:37:16+00:00",
+    "generated_at": "2026-10-16T18:06:16+00:00",
     "data_fetched_at": null,
     "last_updated_label": "Demo data generated for capstone submission",
     "data_sources": [
@@ -407,7 +407,7 @@
         ],
         "sections": [
           {
-            "title": "Today's Matchup Summary",
+            "title": "Matchup Summary",
             "body": "This matchup features Power fastball-slider starter against Command-oriented sinker-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
           },
           {
@@ -1494,7 +1494,7 @@
         ],
         "sections": [
           {
-            "title": "Today's Matchup Summary",
+            "title": "Matchup Summary",
             "body": "This matchup features High-velocity fastball-curveball starter against Command-first cutter-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch."
           },
           {
