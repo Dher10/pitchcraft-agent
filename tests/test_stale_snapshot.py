@@ -130,14 +130,15 @@ def test_an_empty_or_non_string_run_at_is_never_an_identifier(bad):
     assert snapshot is None and status["mode"] == "demo_fallback"
 
 
-def test_a_snapshot_for_another_game_date_is_not_live():
+def test_a_snapshot_for_another_game_date_is_not_live(capsys):
     save(good_run(), good_snapshot(fetched_date="2026-07-04"))
 
     snapshot, status = gdj._resolve_live_input()
 
     assert snapshot is None
     assert status["mode"] == "demo_fallback"
-    assert "date" in status["reason"]
+    assert status["reason"] == {"source": "snapshot", "code": "snapshot_mismatch"}
+    assert "date" in capsys.readouterr().out
 
 
 def test_a_snapshot_with_another_cutoff_is_not_live():

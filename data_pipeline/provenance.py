@@ -576,7 +576,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _claim("metadata.last_updated_label"),
         _fact("metadata.data_sources[]", "F3", "names the sources the file uses; a live file lists 'Cached demo snapshots'"),
         _derived("metadata.data_status.mode", "the generator's reading of the live run", STR, False, equals(lambda c: LIVE_MODE, "a live file")),
-        _source("metadata.data_status.reason", "the run record; rule 8 judges its shape", (str, dict)),
+        _source("metadata.data_status.reason", "null for a live file; a source and a code for a fallback (rule 8 judges its shape)", (str, dict), True),
         _source("metadata.data_status.live_run.**", "the run record; rule 8 judges its shape", (), True),
         _label("disclaimers[]", "a disclaimer; rule 6 judges its wording in a live file"),
         _record("claims[].**"),

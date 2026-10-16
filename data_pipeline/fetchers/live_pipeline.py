@@ -243,6 +243,32 @@ class SavantOpenMonthBudgetExceeded(RuntimeError):
     """A run spent its SAVANT_MAX_OPEN_MONTH_REQUESTS_PER_RUN (D29)."""
 
 
+# One class per code of a source that answered but did not give what was asked (rule 8: the file says only the
+# code; the message stays in the local run record). `error_code` is the only place that maps an exception to it.
+class MalformedResponse(ValueError):
+    """The answer is not the document the source sends (an error page, a truncated or empty body)."""
+
+
+class TruncatedResponse(RuntimeError):
+    """A month of Savant rows reached the row cap, so it may be cut short."""
+
+
+class MissingColumn(ValueError):
+    """A column the pipeline needs is not in the frame."""
+
+
+class MalformedRows(ValueError):
+    """Rows of the frame cannot be read (an unparseable date, an unknown game type, a missing team)."""
+
+
+class UnusableColumn(ValueError):
+    """A column is present but no row of it can be used."""
+
+
+class UnknownValue(ValueError):
+    """A value outside the set the pipeline knows (a throwing hand that is not L, R or S)."""
+
+
 _savant_run = {"requests": 0, "open_requests": 0}
 _pitcher_hand_run = {"requests": 0}
 
@@ -253,10 +279,51 @@ _run_errors: list[dict[str, Any]] = []
 _run_warnings: list[dict[str, Any]] = []
 
 
-def _record_error(source: str, message: str, **context: Any) -> None:
-    """Keep a failure for the run record; every fetcher still returns empty, never raises."""
+def error_code(exc: BaseException) -> str:
+    """
+    The code (`contract_checks.RUN_ERROR_CODES`) of an exception a fetcher caught: the only place that maps one.
 
-    _run_errors.append({"source": source, "message": str(message)[:300], **context})
+    A class this module or `mlb_schemas` raises says what it is; a network or transport failure (`OSError` covers
+    `URLError`, `HTTPError`, timeouts and `requests`) is `request_failed`; anything else is `unexpected_error`.
+    """
+
+    import pandas as pd
+
+    if isinstance(exc, (SavantRequestCapExceeded, SavantOpenMonthBudgetExceeded)):
+        return "budget_spent"
+    if isinstance(exc, MissingColumn):
+        return "missing_column"
+    if isinstance(exc, MalformedRows):
+        return "malformed_rows"
+    if isinstance(exc, UnusableColumn):
+        return "unusable_column"
+    if isinstance(exc, UnknownValue):
+        return "unknown_value"
+    if isinstance(
+        exc,
+        (MalformedResponse, TruncatedResponse, mlb_schemas.SourceShapeError, json.JSONDecodeError, pd.errors.ParserError, pd.errors.EmptyDataError),
+    ):
+        return "malformed_response"
+    if isinstance(exc, OSError):
+        return "request_failed"
+    return "unexpected_error"
+
+
+def _record_error(source: str, code: str, message: str, **context: Any) -> None:
+    """
+    Keep a failure for the run record; every fetcher still returns empty, never raises.
+
+    `source` and `code` belong to the closed sets of `contract_checks` (RUN_SOURCES, RUN_ERROR_CODES): they are all
+    that a published error may say (rule 8). The message and the ids stay in the local record.
+    """
+
+    _run_errors.append({"source": source, "code": code, "message": str(message)[:300], **context})
+
+
+def _record_failure(source: str, exc: BaseException, **context: Any) -> None:
+    """`_record_error` for a caught exception: its code comes from `error_code`, its text stays local."""
+
+    _record_error(source, error_code(exc), f"{type(exc).__name__}: {exc}", **context)
 
 
 def _record_warning(source: str, code: str, message: str, **context: Any) -> None:
@@ -401,7 +468,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         return games
     except Exception as exc:
         print(f"[LIVE] Schedule fetch failed: {exc}")
-        _record_error("mlb_schedule", f"{type(exc).__name__}: {exc}", date=date_str)
+        _record_failure("mlb_schedule", exc, date=date_str)
         return []
 
 
@@ -469,7 +536,7 @@ def fetch_pitcher_season_stats(
         return result
     except Exception as exc:
         print(f"[LIVE] Season stats fetch failed for id={pitcher_id}: {exc}")
-        _record_error("mlb_season_stats", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
+        _record_failure("mlb_season_stats", exc, pitcher_id=pitcher_id)
         return {}
 
 
@@ -520,9 +587,7 @@ def fetch_team_splits(
             raise
         except Exception as exc:
             print(f"[LIVE] Team splits from Statcast failed for team {team_id}: {exc}")
-            _record_error(
-                "savant_team_batting", f"{type(exc).__name__}: {exc}", team_id=team_id
-            )
+            _record_failure("savant_team_batting", exc, team_id=team_id)
             return {}
     url = (
         f"https://statsapi.mlb.com/api/v1/teams/{team_id}/stats"
@@ -560,7 +625,7 @@ def fetch_team_splits(
         return out
     except Exception as exc:
         print(f"[LIVE] Team splits fetch failed for team {team_id}: {exc}")
-        _record_error("mlb_team_splits", f"{type(exc).__name__}: {exc}", team_id=team_id)
+        _record_failure("mlb_team_splits", exc, team_id=team_id)
         return {}
 
 
@@ -635,12 +700,12 @@ def fetch_team_batting_statcast(
             chunk = pd.read_csv(io.StringIO(text))
             if "game_date" not in chunk.columns:
                 # An error page or an error envelope, not Savant's CSV: a failure, never an empty month.
-                raise ValueError(
+                raise MalformedResponse(
                     f"Savant did not send the batting CSV for {statcast_team} "
                     f"{chunk_start}..{chunk_end}: {text.strip()[:80]!r}"
                 )
             if len(chunk) >= SAVANT_ROW_CAP:
-                raise RuntimeError(
+                raise TruncatedResponse(
                     f"Savant returned {len(chunk)} rows for {statcast_team} "
                     f"{chunk_start}..{chunk_end}: result may be truncated"
                 )
@@ -688,7 +753,7 @@ def _require_columns(df: Any, required: tuple[str, ...], source: str) -> None:
 
     missing = [column for column in required if column not in df.columns]
     if missing:
-        raise ValueError(f"{source} data is missing required column(s): {', '.join(missing)}")
+        raise MissingColumn(f"{source} data is missing required column(s): {', '.join(missing)}")
 
 
 def validate_statcast_rows(df: Any, source: str) -> None:
@@ -728,7 +793,7 @@ def validate_statcast_rows(df: Any, source: str) -> None:
         problems.append(f"{int(bad_date.sum())} without a valid game_date")
     if bad_type.any():
         problems.append(f"{int(bad_type.sum())} with a missing or unknown game_type")
-    raise ValueError(
+    raise MalformedRows(
         f"{source} data has {int(bad.sum())} malformed row(s) of {len(df)} ({'; '.join(problems)}); "
         f"first at row {first}: game_date={df.at[first, 'game_date']!r}, game_type={df.at[first, 'game_type']!r}"
     )
@@ -764,9 +829,9 @@ def require_usable_pitch_columns(df: Any, source: str) -> None:
         return
     typed = df["pitch_type"].map(lambda value: isinstance(value, str) and value.strip() != "")
     if not typed.any():
-        raise ValueError(f"{source} data has {len(df)} row(s) and no usable pitch_type")
+        raise UnusableColumn(f"{source} data has {len(df)} row(s) and no usable pitch_type")
     if not df["stand"].isin(("L", "R")).any():
-        raise ValueError(f"{source} data has {len(df)} row(s) and no usable stand (no L or R in any row)")
+        raise UnusableColumn(f"{source} data has {len(df)} row(s) and no usable stand (no L or R in any row)")
 
 
 def validate_team_batting_rows(df: Any, source: str) -> None:
@@ -789,7 +854,7 @@ def validate_team_batting_rows(df: Any, source: str) -> None:
     )
     if bad.any():
         first = df.index[bad][0]
-        raise ValueError(
+        raise MalformedRows(
             f"{source} data has {int(bad.sum())} malformed row(s) of {len(df)} (a missing or unknown "
             f"inning_topbot, home_team, away_team or p_throws); first at row {first}: "
             f"inning_topbot={df.at[first, 'inning_topbot']!r}, home_team={df.at[first, 'home_team']!r}, "
@@ -1001,7 +1066,7 @@ def fetch_series_status(
         }
     except Exception as exc:
         print(f"[LIVE] Series status fetch failed for game {game_pk}: {exc}")
-        _record_error("mlb_series_status", f"{type(exc).__name__}: {exc}", game_pk=game_pk)
+        _record_failure("mlb_series_status", exc, game_pk=game_pk)
         return {}
 
 
@@ -1040,7 +1105,7 @@ def fetch_pitcher_statcast(
             print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
             df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
         if df is None:
-            raise ValueError("Statcast returned no result (None)")
+            raise MalformedResponse("Statcast returned no result (None)")
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
             validate_pitcher_frame(df, "pitcher Statcast")
@@ -1059,6 +1124,7 @@ def fetch_pitcher_statcast(
                 # of Statcast cannot be counted to compare with them (F21).
                 _record_error(
                     "statcast_pitcher",
+                    "unusable_column",
                     "pitcher Statcast data has no usable 'events' (the column is missing or has no plate "
                     "appearance in any row): batters faced, strikeouts, walks and home runs are "
                     "unavailable from it",
@@ -1090,7 +1156,7 @@ def fetch_pitcher_statcast(
             # and his hand stays. A mix, a velocity or a primary pitch made from a piece of what he threw would
             # be a claim the data does not support.
             print(f"[LIVE] {pitcher_name}: {problem}")
-            _record_error("statcast_pitcher", problem, pitcher_id=pitcher_id)
+            _record_error("statcast_pitcher", "incomplete_sample", problem, pitcher_id=pitcher_id)
             processed = _empty_pitcher_data(pitcher_name, processed["throws"])
             counts = None
         elif processed["pitch_mix"]:
@@ -1099,7 +1165,7 @@ def fetch_pitcher_statcast(
         return processed
     except Exception as exc:
         print(f"[LIVE] Statcast fetch failed for {pitcher_name}: {exc}")
-        _record_error("statcast_pitcher", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
+        _record_failure("statcast_pitcher", exc, pitcher_id=pitcher_id)
         return None
 
 
@@ -1134,7 +1200,7 @@ def fetch_pitcher_hand(pitcher_id: int) -> str | None:
             "is spent"
         )
         print(f"[LIVE] Pitcher hand lookup skipped for id={pitcher_id}: {message}")
-        _record_error("mlb_person", message, pitcher_id=pitcher_id)
+        _record_error("mlb_person", "budget_spent", message, pitcher_id=pitcher_id)
         return None
     _pitcher_hand_run["requests"] += 1
     try:
@@ -1142,10 +1208,10 @@ def fetch_pitcher_hand(pitcher_id: int) -> str | None:
         mlb_schemas.validate(mlb_schemas.PERSON, data, "person response")
         throws = data["people"][0]["pitchHand"]["code"]
         if throws not in PITCHER_HANDS:
-            raise ValueError(f"unknown throwing hand {throws!r}")
+            raise UnknownValue(f"unknown throwing hand {throws!r}")
     except Exception as exc:
         print(f"[LIVE] Pitcher hand lookup failed for id={pitcher_id}: {exc}")
-        _record_error("mlb_person", f"{type(exc).__name__}: {exc}", pitcher_id=pitcher_id)
+        _record_failure("mlb_person", exc, pitcher_id=pitcher_id)
         return None
     try:
         PITCHER_HAND_CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -1692,7 +1758,7 @@ def run_live_pipeline(
     try:
         snapshot = build_live_snapshot(target, as_of, run_info=info)
     except Exception as exc:
-        _record_error("pipeline", f"{type(exc).__name__}: {exc}")
+        _record_failure("pipeline", exc)
         snapshot = None
     record = {
         "status": _run_status(info, _run_errors),

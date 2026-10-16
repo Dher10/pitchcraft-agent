@@ -21,7 +21,7 @@ from data_pipeline.validators import ValidationError, validate_payload
 GAME_DAY = "2026-07-04"
 CUTOFF = "2026-07-03"
 RUN_AT = "2026-07-04T12:00:00+00:00"
-LIVE_STATUS = {"mode": "fetched_snapshot", "reason": "Live run ok", "live_run": None}
+LIVE_STATUS = {"mode": "fetched_snapshot", "reason": None, "live_run": None}
 
 
 def leaves(value: Any, path: tuple = ()) -> Iterator[tuple[tuple, Any]]:

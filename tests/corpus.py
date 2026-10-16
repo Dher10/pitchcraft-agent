@@ -41,7 +41,7 @@ def build(monkeypatch, kind: str) -> dict[str, Any]:
         monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "Demo data", "live_run": None})
     elif kind == "fallback":
         monkeypatch.setattr(gdj, "_live", None)
-        status = {"mode": "demo_fallback", "reason": "Live run failed; showing demo data", "live_run": None}
+        status = {"mode": "demo_fallback", "reason": {"source": "mlb_schedule", "code": "request_failed"}, "live_run": None}
         monkeypatch.setattr(gdj, "_live_status", status)
     else:
         use_snapshot(monkeypatch, hand_snapshot(complete=kind != "live_debuts"))
@@ -54,7 +54,8 @@ def build(monkeypatch, kind: str) -> dict[str, Any]:
                 "as_of": CUTOFF,
                 "games_scheduled": 1,
                 "games_live": 1,
-                "errors": [{"source": "statcast_pitcher", "message": "KeyError: 'stand'", "pitcher_id": "1"}],
+                "errors": [{"source": "statcast_pitcher", "code": "malformed_rows"}],
+                "warnings": [{"source": "statcast_pitcher", "code": "unmapped_pitch_type"}],
             }
             monkeypatch.setattr(gdj, "_live_status", status)
     return gdj.build_payload()

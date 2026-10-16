@@ -71,7 +71,7 @@ def payload_for(monkeypatch, away: dict[str, int], home: dict[str, int] = HEALTH
         gdj, "_live", {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-14", "live_games": [live]}
     )
     monkeypatch.setattr(
-        gdj, "_live_status", {"mode": "fetched_snapshot", "reason": "Live run ok", "live_run": None}
+        gdj, "_live_status", {"mode": "fetched_snapshot", "reason": None, "live_run": None}
     )
     return gdj.build_payload()
 

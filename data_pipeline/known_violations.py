@@ -28,6 +28,4 @@ KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
     "rule6:cached_wording": ("F3",),
     "rule6:data_fetched_at": ("F9",),
     "rule6:matchup_not_live": ("F4",),
-    "rule8:error_shape": ("F10",),
-    "rule8:reason": ("F10",),
 }

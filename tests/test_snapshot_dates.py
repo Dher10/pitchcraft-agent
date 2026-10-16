@@ -145,7 +145,7 @@ def test_an_earlier_explicit_cutoff_is_still_live(template):
     ],
     ids=lambda value: value if isinstance(value, str) else None,
 )
-def test_an_unsafe_run_and_snapshot_is_not_live(template, kwargs, mutate, reason):
+def test_an_unsafe_run_and_snapshot_is_not_live(template, kwargs, mutate, reason, capsys):
     run, snapshot = pair(template, **kwargs)
     if mutate:
         mutate(run, snapshot)
@@ -154,7 +154,11 @@ def test_an_unsafe_run_and_snapshot_is_not_live(template, kwargs, mutate, reason
 
     assert live is None
     assert status["mode"] == "demo_fallback"
-    assert reason in status["reason"]
+    assert status["reason"] in (  # rule 8: a code; what was wrong stays in the log
+        {"source": "snapshot", "code": "snapshot_mismatch"},
+        {"source": "snapshot", "code": "game_rejected"},
+    )
+    assert reason in capsys.readouterr().out
 
 
 SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
@@ -290,7 +294,7 @@ def test_publication_validation_rejects_a_late_scope_even_if_the_resolver_were_b
 ):
     game = late_pitcher_game(template, monkeypatch)
     live = {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-20", "live_games": [game]}
-    status = {"mode": "fetched_snapshot", "reason": "Live run ok", "live_run": None}
+    status = {"mode": "fetched_snapshot", "reason": None, "live_run": None}
 
     with patch.object(gdj, "_live", live), patch.object(gdj, "_live_status", status):
         payload = gdj.build_payload()
@@ -304,7 +308,7 @@ def test_publication_validation_rejects_a_late_scope_even_if_the_resolver_were_b
 def test_a_payload_with_a_safe_scope_still_validates(template, monkeypatch):
     game = live_game(template)
     live = {"run_at": "2026-07-15T12:00:00+00:00", "fetched_date": "2026-07-15", "as_of": "2026-07-14", "live_games": [game]}
-    status = {"mode": "fetched_snapshot", "reason": "Live run ok", "live_run": None}
+    status = {"mode": "fetched_snapshot", "reason": None, "live_run": None}
 
     with patch.object(gdj, "_live", live), patch.object(gdj, "_live_status", status):
         payload = gdj.build_payload()

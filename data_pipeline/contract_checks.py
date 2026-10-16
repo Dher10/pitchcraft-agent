@@ -35,9 +35,12 @@ RUN_SOURCES = (
     "mlb_schedule",
     "mlb_person",
     "mlb_season_stats",
+    "mlb_team_splits",
+    "mlb_series_status",
     "statcast_pitcher",
     "savant_team_batting",
     "snapshot",
+    "pipeline",
 )
 RUN_ERROR_CODES = (
     "request_failed",
@@ -47,7 +50,12 @@ RUN_ERROR_CODES = (
     "unusable_column",
     "budget_spent",
     "unknown_value",
+    "incomplete_sample",
+    "unexpected_error",
+    "no_games",
+    "no_usable_games",
     "game_rejected",
+    "snapshot_mismatch",
     "snapshot_schema_mismatch",
 )
 RUN_WARNING_CODES = ("unmapped_pitch_type", "unknown_team")

@@ -21,16 +21,50 @@ from data_pipeline import demo_inputs
 from data_pipeline import labels
 from data_pipeline import live_matchup
 from data_pipeline import schema
+from data_pipeline.contract_checks import RUN_ERROR_CODES, RUN_SOURCES, RUN_WARNING_CODES
 from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.generator_texts import generator_catalog
 from data_pipeline.validators import ValidationError, validate_payload
 
-# Rule 8: the reason of a rejected snapshot that the file may carry.
+# Rule 8: what the file says about a failure is a source and a code of the closed sets (D38); the text goes to this log
+# and the local run record. The reasons of a fallback that no fetcher recorded:
 SNAPSHOT_SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
+SNAPSHOT_MISMATCH = {"source": "snapshot", "code": "snapshot_mismatch"}
+SNAPSHOT_UNREADABLE = {"source": "snapshot", "code": "malformed_response"}
+GAME_REJECTED = {"source": "snapshot", "code": "game_rejected"}
+NO_GAMES = {"source": "mlb_schedule", "code": "no_games"}
+NO_USABLE_GAMES = {"source": "pipeline", "code": "no_usable_games"}
+UNEXPECTED = {"source": "pipeline", "code": "unexpected_error"}
+PUBLISHED_LIST_LIMIT = 20
 
 
-def _status(mode: str, reason: str | dict[str, str], live_run: dict[str, Any] | None) -> dict[str, Any]:
+def _status(mode: str, reason: str | dict[str, str] | None, live_run: dict[str, Any] | None) -> dict[str, Any]:
     return {"mode": mode, "reason": reason, "live_run": live_run}
+
+
+def _published(items: Any, codes: tuple[str, ...], unknown: dict[str, str] | None) -> list[dict[str, str]]:
+    """
+    The errors (or warnings) of a run record as the file may say them: exactly a source and a code of the closed
+    sets, the first of each kind only, at most 20. An item the sets do not know is `unknown` (an error) or left out
+    (a warning): fail closed, never the text of the record.
+    """
+
+    shown: list[dict[str, str]] = []
+    for item in items if isinstance(items, list) else []:
+        source = item.get("source") if isinstance(item, dict) else None
+        code = item.get("code") if isinstance(item, dict) else None
+        if source in RUN_SOURCES and code in codes:
+            entry = {"source": source, "code": code}
+        elif unknown is not None:
+            entry = {
+                "source": source if source in RUN_SOURCES else unknown["source"],
+                "code": unknown["code"],
+            }
+        else:
+            continue
+        if entry not in shown:
+            shown.append(entry)
+    return shown[:PUBLISHED_LIST_LIMIT]
 
 
 def _run_summary(run: dict[str, Any]) -> dict[str, Any]:
@@ -41,8 +75,22 @@ def _run_summary(run: dict[str, Any]) -> dict[str, Any]:
         "as_of": run.get("as_of"),
         "games_scheduled": run.get("games_scheduled"),
         "games_live": run.get("games_live"),
-        "errors": list(run.get("errors", []))[:20],
+        "errors": _published(run.get("errors"), RUN_ERROR_CODES, UNEXPECTED),
+        "warnings": _published(run.get("warnings"), RUN_WARNING_CODES, None),
     }
+
+
+def _run_failure_reason(summary: dict[str, Any]) -> dict[str, str]:
+    """Why a run that is not `ok` produced no live page, as a source and a code."""
+
+    status = summary["status"]
+    if status == "no_games":
+        return dict(NO_GAMES)
+    if status == "no_usable_games":
+        return dict(NO_USABLE_GAMES)
+    if status == "failed" and summary["errors"]:
+        return dict(summary["errors"][0])
+    return dict(UNEXPECTED)
 
 
 def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
@@ -57,32 +105,24 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
     try:
         run = load_processed("live_run")
     except Exception as exc:
-        return None, _status(
-            config.DATA_MODE_FALLBACK, f"Live run record unreadable: {exc}", None
-        )
+        print(f"[CONFIG] Live run record unreadable: {exc}")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_UNREADABLE), None)
     if run is None:
         return None, _status(config.DATA_MODE_DEMO, "No live run; showing demo data", None)
 
     summary = _run_summary(run)
     if run.get("status") != "ok":
-        return None, _status(
-            config.DATA_MODE_FALLBACK,
-            f"Live run {run.get('status')}; showing demo data",
-            summary,
-        )
+        print(f"[CONFIG] Live run {run.get('status')}; showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, _run_failure_reason(summary), summary)
     try:
         snapshot = load_processed("live_matchup")
     except Exception as exc:
-        return None, _status(
-            config.DATA_MODE_FALLBACK, f"Live snapshot unreadable: {exc}", summary
-        )
+        print(f"[CONFIG] Live snapshot unreadable: {exc}")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_UNREADABLE), summary)
     mismatch = _snapshot_mismatch(run, snapshot)
     if mismatch:
-        return None, _status(
-            config.DATA_MODE_FALLBACK,
-            f"Live snapshot does not belong to the latest live run ({mismatch}); showing demo data",
-            summary,
-        )
+        print(f"[CONFIG] Live snapshot does not belong to the latest live run ({mismatch}); showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_MISMATCH), summary)
     # Rejected by the schema it was written under, not by looking inside it (0.4.0 made the scope of a group
     # with no figure null). The file says only {source, code} (rule 8); the detail stays in this log.
     if not schema.snapshot_matches_schema(snapshot.get("schema_version")):
@@ -93,30 +133,23 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
         return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_SCHEMA_MISMATCH), summary)
     unsafe = _snapshot_unsafe(run, snapshot)
     if unsafe:
-        return None, _status(
-            config.DATA_MODE_FALLBACK,
-            f"Live snapshot rejected ({unsafe}); showing demo data",
-            summary,
-        )
+        print(f"[CONFIG] Live snapshot rejected ({unsafe}); showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_MISMATCH), summary)
     # Rule 5: an unsafe game is dropped with a recorded reason and the others are published; the page falls back to the
     # demo only when no game is left. The checks above are about the run and the snapshot as a whole.
     safe, dropped = _split_games(run, snapshot)
     if not safe:
         index, problem = dropped[0]
-        return None, _status(
-            config.DATA_MODE_FALLBACK,
-            f"Live snapshot rejected (game {index}: {problem}); showing demo data",
-            summary,
-        )
+        print(f"[CONFIG] Live snapshot rejected (game {index}: {problem}); showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(GAME_REJECTED), summary)
     if dropped:
         for index, problem in dropped:
             print(f"[CONFIG] Live game dropped: game {index}: {problem}")
         snapshot = {**snapshot, **_primary_game(safe[0]), "live_games": safe}
-        summary["errors"] = [
-            *summary["errors"],
-            *({"source": "snapshot", "code": "game_rejected", "message": f"game {i}: {p}"} for i, p in dropped),
-        ]
-    return snapshot, _status(config.DATA_MODE_SNAPSHOT, "Live run ok", summary)
+        summary["games_live"] = len(safe)  # the games the file shows, not the ones the run built
+        if GAME_REJECTED not in summary["errors"] and len(summary["errors"]) < PUBLISHED_LIST_LIMIT:
+            summary["errors"] = [*summary["errors"], dict(GAME_REJECTED)]
+    return snapshot, _status(config.DATA_MODE_SNAPSHOT, None, summary)
 
 
 def _snapshot_mismatch(run: dict[str, Any], snapshot: Any) -> str | None:

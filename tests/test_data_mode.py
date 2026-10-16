@@ -215,7 +215,7 @@ def test_without_a_live_run_the_mode_is_plain_demo():
 
 
 def test_a_failed_run_means_demo_fallback_with_the_errors():
-    write_run("failed", errors=[{"source": "statcast_pitcher", "message": "down"}])
+    write_run("failed", errors=[{"source": "statcast_pitcher", "code": "request_failed", "message": "down"}])
     cache_manager.save_processed("live_matchup", {"run_at": "2026-07-15T12:00:00+00:00"})
 
     snapshot, status = gdj._resolve_live_input()
@@ -223,7 +223,8 @@ def test_a_failed_run_means_demo_fallback_with_the_errors():
     assert snapshot is None
     assert status["mode"] == "demo_fallback"
     assert status["live_run"]["status"] == "failed"
-    assert status["live_run"]["errors"][0]["source"] == "statcast_pitcher"
+    assert status["live_run"]["errors"] == [{"source": "statcast_pitcher", "code": "request_failed"}]
+    assert status["reason"] == {"source": "statcast_pitcher", "code": "request_failed"}
 
 
 def test_a_good_run_with_its_own_snapshot_is_live():
@@ -245,7 +246,7 @@ def test_a_good_run_with_its_own_snapshot_is_live():
     assert status["mode"] == "fetched_snapshot"
 
 
-def test_a_snapshot_from_another_run_is_not_live():
+def test_a_snapshot_from_another_run_is_not_live(capsys):
     write_run("ok", run_at="2026-07-15T12:00:00+00:00")
     cache_manager.save_processed("live_matchup", {"run_at": "2026-07-04T12:00:00+00:00"})
 
@@ -253,10 +254,11 @@ def test_a_snapshot_from_another_run_is_not_live():
 
     assert snapshot is None
     assert status["mode"] == "demo_fallback"
-    assert "does not belong" in status["reason"]
+    assert status["reason"] == {"source": "snapshot", "code": "snapshot_mismatch"}
+    assert "does not belong" in capsys.readouterr().out
 
 
-def test_an_unreadable_run_record_is_a_fallback_not_a_silent_demo(isolated):
+def test_an_unreadable_run_record_is_a_fallback_not_a_silent_demo(isolated, capsys):
     path = isolated / "processed"
     path.mkdir(parents=True)
     (path / "live_run.json").write_text("{not json")
@@ -265,7 +267,8 @@ def test_an_unreadable_run_record_is_a_fallback_not_a_silent_demo(isolated):
 
     assert snapshot is None
     assert status["mode"] == "demo_fallback"
-    assert "unreadable" in status["reason"]
+    assert status["reason"] == {"source": "snapshot", "code": "malformed_response"}
+    assert "unreadable" in capsys.readouterr().out
 
 
 # --- generator: published payload ---------------------------------------------------
@@ -279,7 +282,7 @@ def test_fallback_payload_is_labelled_demo_and_carries_the_failure(monkeypatch):
             "status": "failed",
             "run_at": "2026-07-15T12:00:00+00:00",
             "target_date": "2026-07-15",
-            "errors": [{"source": "statcast_pitcher", "message": "down"}],
+            "errors": [{"source": "statcast_pitcher", "code": "request_failed"}],
         },
     }
     monkeypatch.setattr(gdj, "_live", None)

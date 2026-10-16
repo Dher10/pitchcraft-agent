@@ -549,15 +549,19 @@ def errored(monkeypatch):
 
 
 def test_rule_8_a_raw_error_message_in_a_live_file_is_reported(errored):
-    assert errored["metadata"]["data_status"]["live_run"]["errors"][0]["message"]
+    assert rule8(errored) == set()  # control: what the run summary publishes now is clean
+    payload = deepcopy(errored)
+    payload["metadata"]["data_status"]["live_run"]["errors"][0]["message"] = "KeyError: 'stand'"
 
-    assert "rule8:error_shape" in rule8(errored)
+    assert "rule8:error_shape" in rule8(payload)
 
 
 def test_rule_8_the_reason_of_a_live_file_is_a_source_and_a_code_not_free_text(live):
-    assert isinstance(live["metadata"]["data_status"]["reason"], str)
+    assert live["metadata"]["data_status"]["reason"] is None and rule8(live) == set()  # control
+    payload = deepcopy(live)
+    payload["metadata"]["data_status"]["reason"] = "Live run ok"
 
-    assert "rule8:reason" in rule8(live)
+    assert "rule8:reason" in rule8(payload)
 
 
 def test_rule_8_errors_and_a_reason_made_of_a_source_and_a_code_are_clean(errored):
@@ -612,25 +616,9 @@ def test_rule_8_asks_nothing_of_a_demo_file(monkeypatch):
 
 
 def test_rule_8_the_closed_sets_are_the_ones_of_the_contract():
-    assert RUN_SOURCES == (
-        "mlb_schedule",
-        "mlb_person",
-        "mlb_season_stats",
-        "statcast_pitcher",
-        "savant_team_batting",
-        "snapshot",
-    )
-    assert RUN_ERROR_CODES == (
-        "request_failed",
-        "malformed_response",
-        "malformed_rows",
-        "missing_column",
-        "unusable_column",
-        "budget_spent",
-        "unknown_value",
-        "game_rejected",
-        "snapshot_schema_mismatch",
-    )
+    # The full sets, as D38 closes them, are pinned in tests/test_run_status_shape.py.
+    assert {"mlb_team_splits", "mlb_series_status", "pipeline"} <= set(RUN_SOURCES)
+    assert {"incomplete_sample", "unexpected_error", "no_games", "no_usable_games", "snapshot_mismatch"} <= set(RUN_ERROR_CODES)
 
 
 # --- more conditions that a wrong payload must break ---------------------------------------------

@@ -102,14 +102,15 @@ def test_an_unsafe_game_is_dropped_and_the_safe_one_is_published(template, bad_f
 
 
 @pytest.mark.parametrize("bad_first", [False, True])
-def test_the_dropped_game_is_a_recorded_error_with_its_place(template, bad_first):  # noqa: F811
+def test_the_dropped_game_is_a_recorded_error_with_its_place(template, bad_first, capsys):  # noqa: F811
     run, snapshot, _ = two_games(template, bad_first)
 
     _, status = resolve(run, snapshot)
 
     rejected = [e for e in status["live_run"]["errors"] if e.get("code") == "game_rejected"]
-    assert len(rejected) == 1 and rejected[0]["source"] == "snapshot"
-    assert f"game {1 if bad_first else 2}" in rejected[0]["message"] and "throws" in rejected[0]["message"]
+    assert rejected == [{"source": "snapshot", "code": "game_rejected"}]  # rule 8: the place goes to the log
+    logged = capsys.readouterr().out
+    assert f"game {1 if bad_first else 2}" in logged and "throws" in logged
 
 
 def test_the_page_is_built_from_the_game_that_is_left(template, monkeypatch):  # noqa: F811
@@ -133,14 +134,16 @@ def test_control_a_snapshot_with_every_game_safe_records_nothing(template):  # n
     assert not [e for e in status["live_run"]["errors"] if e.get("code") == "game_rejected"]
 
 
-def test_control_the_only_game_unsafe_is_the_fallback_with_its_reason(template):  # noqa: F811
+def test_control_the_only_game_unsafe_is_the_fallback_with_its_reason(template, capsys):  # noqa: F811
     run, snapshot = pair(template)
     snapshot["live_games"][0]["home_starter"]["throws"] = "X"
 
     live, status = resolve(run, snapshot)
 
     assert live is None and status["mode"] == "demo_fallback"
-    assert "game 1" in status["reason"] and "throws" in status["reason"]
+    assert status["reason"] == {"source": "snapshot", "code": "game_rejected"}
+    logged = capsys.readouterr().out
+    assert "game 1" in logged and "throws" in logged
 
 
 def test_control_every_game_unsafe_is_the_fallback(template):  # noqa: F811
@@ -152,7 +155,7 @@ def test_control_every_game_unsafe_is_the_fallback(template):  # noqa: F811
     assert live is None and status["mode"] == "demo_fallback"
 
 
-def test_control_a_run_level_failure_rejects_the_whole_snapshot_even_with_safe_games(template):  # noqa: F811
+def test_control_a_run_level_failure_rejects_the_whole_snapshot_even_with_safe_games(template, capsys):  # noqa: F811
     run, snapshot, _ = two_games(template, bad_first=False)
     snapshot["live_games"][0]["as_of"] = "2026-07-13"  # not the run's cutoff: the game is dropped, the other is safe
     snapshot["as_of"] = "2026-07-20"  # the snapshot's own cutoff is after the game day: whole
@@ -161,7 +164,8 @@ def test_control_a_run_level_failure_rejects_the_whole_snapshot_even_with_safe_g
     live, status = resolve(run, snapshot)
 
     assert live is None and status["mode"] == "demo_fallback"
-    assert "2026-07-20" in status["reason"]
+    assert status["reason"] == {"source": "snapshot", "code": "snapshot_mismatch"}
+    assert "2026-07-20" in capsys.readouterr().out
 
 
 # --- the manifest: a lineup facing a switch pitcher (rule 1) ----------------------------------------------------

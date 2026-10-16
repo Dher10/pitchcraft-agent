@@ -42,12 +42,20 @@ export interface LiveRunSummary {
   as_of: string | null;
   games_scheduled: number;
   games_live: number;
-  errors: { source: string; message: string }[];
+  errors: RunIssue[];
+  warnings: RunIssue[];
+}
+
+/** What the file says about a failure or a warning of the run (rule 8, schema 0.6.0): a source and a code, no text. */
+export interface RunIssue {
+  source: string;
+  code: string;
 }
 
 export interface DataStatus {
   mode: string;
-  reason: string;
+  /** `null` for a live file; a source and a code for a fallback; a sentence only when there was no live run (demo). */
+  reason: RunIssue | string | null;
   live_run: LiveRunSummary | null;
 }
 
