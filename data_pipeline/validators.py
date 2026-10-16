@@ -74,6 +74,14 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
         f"found {metadata.get('version')!r}" if isinstance(metadata, Mapping) else "metadata missing",
     )
 
+    # Rule 6 (F9, D39): a demo file was never fetched; a time of fetch would present it as live data.
+    fetched_at = metadata.get("data_fetched_at") if isinstance(metadata, Mapping) else None
+    record(
+        "a demo file has no time of fetch",
+        fetched_at is None or (isinstance(metadata, Mapping) and metadata.get("data_mode") == "fetched_snapshot"),
+        f"data_fetched_at is {fetched_at!r} in a {metadata.get('data_mode')!r} file" if isinstance(metadata, Mapping) else "metadata missing",
+    )
+
     matchups = payload.get("matchups")
     matchup_ids = (
         {matchup.get("id") for matchup in matchups if isinstance(matchup, Mapping)}

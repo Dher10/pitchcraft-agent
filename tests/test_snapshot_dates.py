@@ -138,6 +138,8 @@ def test_an_earlier_explicit_cutoff_is_still_live(template):
         ({"through": "2026-07-20"}, None, "2026-07-20"),
         ({}, drop(("featured_game", "official_date")), "official date"),
         ({}, drop(("as_of",)), "cutoff"),
+        ({}, lambda run, snapshot: (run.update(run_at="yesterday"), snapshot.update(run_at="yesterday")), "not an instant"),  # F9: no time of fetch
+        ({}, lambda run, snapshot: (run.update(run_at="2026-07-15"), snapshot.update(run_at="2026-07-15")), "not an instant"),
         ({}, setvalue(("featured_game", "official_date"), "soon"), "soon"),
         ({}, drop(("away_starter", "throws")), "throws"),
         ({}, setvalue(("home_starter", "throws"), "X"), "throws"),
@@ -166,7 +168,7 @@ SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
 
 @pytest.mark.parametrize(
     "version",
-    [None, "0.3.0", "0.2.0", "0.4.0", "0.5.0", "0.6.1", "1.0.0", "0.6", "v0.6.0", "garbage", "", 4, " 0.6.0"],
+    [None, "0.3.0", "0.2.0", "0.4.0", "0.5.0", "0.6.0", "0.7.1", "1.0.0", "0.7", "v0.7.0", "garbage", "", 4, " 0.7.0"],
     ids=repr,
 )
 def test_a_snapshot_whose_schema_is_not_exactly_the_codes_is_not_live(template, version):

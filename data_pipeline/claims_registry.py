@@ -24,6 +24,7 @@ from agents.language import SUBJECT_SLOTS, Catalog
 from data_pipeline import labels
 from data_pipeline import report_facts as facts
 from data_pipeline.claims import render_text
+from data_pipeline.schema import new_york_day
 
 LIVE_LEVEL = "fetched_snapshot"
 FACING = {"away_starter": "home", "home_starter": "away"}  # the lineup a starter faces
@@ -1120,8 +1121,9 @@ def _wf_graded_none(c: Ctx) -> None:
 
 
 def _fetched_date(c: Ctx) -> str | None:
-    fetched = c.metadata.get("data_fetched_at")
-    return fetched[:10] if isinstance(fetched, str) and len(fetched) >= 10 else None
+    """The day of `metadata.data_fetched_at` in America/New_York (D39), or None when it is not an instant."""
+
+    return new_york_day(c.metadata.get("data_fetched_at"))
 
 
 def _label_live(c: Ctx) -> None:

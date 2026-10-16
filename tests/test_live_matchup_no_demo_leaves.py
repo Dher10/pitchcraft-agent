@@ -151,6 +151,7 @@ def test_nothing_of_a_poisoned_demo_reaches_a_live_matchup(live, monkeypatch):
     monkeypatch.setattr(demo_inputs, "METADATA", metadata)
 
     payload = demo_inputs.build_demo_payload()
+    gdj._stamp_times(payload, None)  # `build_payload` writes the build time over the demo's, in every mode (D39)
     gdj._apply_live_snapshot(payload)
 
     found = []

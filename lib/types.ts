@@ -29,7 +29,10 @@ export interface Metadata {
   version: string;
   language?: string;
   data_mode: string;
+  /** The instant the file was built (schema 0.7.0): always real, in every mode. */
   generated_at: string;
+  /** The instant of the live fetch; `null` in a demo file (schema 0.7.0, D39). */
+  data_fetched_at: string | null;
   last_updated_label: string;
   data_sources: string[];
   data_status?: DataStatus;

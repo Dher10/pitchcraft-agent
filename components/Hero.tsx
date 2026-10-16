@@ -2,13 +2,13 @@ import ModeLine from "@/components/ModeLine";
 import type { Metadata } from "@/lib/types";
 
 interface HeroProps {
-  metadata: Pick<Metadata, "data_mode" | "generated_at">;
+  metadata: Pick<Metadata, "data_mode" | "data_fetched_at">;
 }
 
 export default function Hero({ metadata }: HeroProps) {
   return (
     <section>
-      <ModeLine dataMode={metadata.data_mode} fetchedAt={metadata.generated_at} />
+      <ModeLine dataMode={metadata.data_mode} fetchedAt={metadata.data_fetched_at} />
       <p className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
         Starter matchups, checked against the data
       </p>

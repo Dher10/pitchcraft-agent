@@ -467,14 +467,15 @@ def test_rule_4_a_live_workflow_that_says_it_loaded_cached_data_is_found(monkeyp
 
 
 def test_rule_4_the_label_of_a_live_file_needs_the_time_of_the_fetch(live):
-    """F9: `metadata.data_fetched_at` does not exist yet."""
+    """F9 (closed in D2.4c): the label follows `metadata.data_fetched_at`; without it nothing supports the date."""
 
-    assert "rule4:generator.metadata.last_updated.live#fetched_at" in codes(live)
+    assert "rule4:generator.metadata.last_updated.live#fetched_at" not in codes(live)
 
     payload = deepcopy(live)
-    payload["metadata"]["data_fetched_at"] = "2026-07-04T12:00:00Z"
+    del payload["metadata"]["data_fetched_at"]
 
-    assert "rule4:generator.metadata.last_updated.live#fetched_at" not in codes(payload)
+    assert "rule4:generator.metadata.last_updated.live#fetched_at" in codes(payload)
+    assert "rule4:generator.confidence.live_note#fetched_at" in codes(payload)
 
 
 def test_rule_4_an_internal_finding_must_not_be_published(live, monkeypatch):
@@ -504,8 +505,8 @@ def rule6(payload):
 
 
 def test_rule_6_a_live_file_with_demo_content_is_reported(live):
-    # F4 (D2.4a) and F3 (D2.4b) are closed: no demo matchup, no archive row, no "cached" wording; F9 is still open
-    assert rule6(live) == {"rule6:data_fetched_at"}
+    # F4 (D2.4a), F3 (D2.4b) and F9 (D2.4c) are closed: a generated live file has no rule 6 finding
+    assert rule6(live) == set()
 
 
 def test_rule_6_a_live_file_with_only_live_content_and_a_fetch_time_is_clean(live):

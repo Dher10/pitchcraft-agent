@@ -20,13 +20,13 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from datetime import datetime
 import re
 from typing import Any
 
 from data_pipeline import labels, provenance
 from data_pipeline.claims import catalogs_of, verify_claims
 from data_pipeline.claims_registry import LIVE_LEVEL, ClaimIndex, Ctx, classify, run_rule
+from data_pipeline.schema import new_york_day
 
 LIVE_MODE = "fetched_snapshot"
 
@@ -259,14 +259,9 @@ _CACHED = re.compile(r"\bcached\b", re.IGNORECASE)
 
 
 def _is_instant(value: Any) -> bool:
-    """A timestamp with a zone, as `datetime.isoformat` writes it (`...Z` or `...+00:00`)."""
+    """An instant with a zone and seconds (`...Z` or `...+00:00`): the shape `schema.new_york_day` can read."""
 
-    if not isinstance(value, str) or "T" not in value:
-        return False
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).tzinfo is not None
-    except ValueError:
-        return False
+    return new_york_day(value) is not None
 
 
 def _rule6(payload: Mapping[str, Any]) -> list[Violation]:

@@ -34,13 +34,13 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
-from datetime import date, datetime
+from datetime import date
 import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from data_pipeline import config, labels
-from data_pipeline.schema import CRITIC_STATUSES, SCHEMA_VERSION, is_utc_instant
+from data_pipeline.schema import CRITIC_STATUSES, SCHEMA_VERSION, is_utc_instant, new_york_day
 
 LIVE_MODE = "fetched_snapshot"
 LIVE_LEVEL = "fetched_snapshot"
@@ -143,12 +143,9 @@ def _is_date(value: Any) -> bool:
 
 
 def _is_instant(value: Any) -> bool:
-    if not isinstance(value, str) or "T" not in value:
-        return False
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).tzinfo is not None
-    except ValueError:
-        return False
+    """An instant with a zone, written with seconds: the shape `schema.new_york_day` can read (the labels need it)."""
+
+    return new_york_day(value) is not None
 
 
 def is_date(c: Ctx) -> Problem | None:
@@ -558,7 +555,8 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _label("metadata.version", "the schema version", STR, equals(lambda c: SCHEMA_VERSION, "the schema version")),
         _label("metadata.language", "the catalog the keys of the claims belong to"),
         _derived("metadata.data_mode", "the generator's reading of the live run", STR, False, equals(lambda c: LIVE_MODE, "a live file")),
-        _source("metadata.generated_at", "the time of the live run (F9: the fetch and the build are not told apart yet)", STR, False, is_instant),
+        _source("metadata.generated_at", "the instant the file was built (the generator's clock); never the fetch time (F9)", STR, False, is_instant),
+        _source("metadata.data_fetched_at", "the instant of the live fetch (`run_at` of the run); null only in a demo file, which is not walked", STR, False, is_instant),
         _claim("metadata.last_updated_label"),
         _label("metadata.data_sources[]", "a source the live file uses (F3 closed: never a demo source)", STR, in_set(config.LIVE_SOURCE_LABELS)),
         _derived("metadata.data_status.mode", "the generator's reading of the live run", STR, False, equals(lambda c: LIVE_MODE, "a live file")),

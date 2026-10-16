@@ -83,7 +83,10 @@ def payload_of(matchup: dict[str, Any]) -> dict[str, Any]:
             wrapped["data_confidence"],
             notes=[generator_catalog()("generator.confidence.live_note", date=GAME_DAY, matchup_id=wrapped["id"])],
         )
-    payload = {"metadata": {"data_mode": "demo_cached"}, "matchups": [wrapped]}
+    metadata = {"data_mode": "demo_cached"}
+    if wrapped["data_confidence"]["level"] == "fetched_snapshot":
+        metadata["data_fetched_at"] = RUN_AT  # the live note says the day of the fetch (D39); the wrapper is not a published file
+    payload = {"metadata": metadata, "matchups": [wrapped]}
     attach_claims(payload)
     return payload
 

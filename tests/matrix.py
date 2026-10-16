@@ -451,6 +451,7 @@ def fingerprint(outcome: Outcome) -> str:
 
     payload = json.loads(json.dumps(outcome.payload))
     payload["metadata"]["generated_at"] = None
+    payload["metadata"]["data_fetched_at"] = None
     run = payload["metadata"]["data_status"].get("live_run")
     if run:
         run["run_at"] = None

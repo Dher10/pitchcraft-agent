@@ -7,9 +7,10 @@ from typing import Any
 
 METADATA: Any = {
   "project_name": "PitchCraft Matchup Agent",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "data_mode": "cached_demo",
-  "generated_at": "2026-06-28T09:00:00-05:00",
+  "generated_at": None,
+  "data_fetched_at": None,
   "last_updated_label": "Demo data generated for capstone submission",
   "data_sources": [
     "MLB public schedule/probable pitchers",

@@ -241,6 +241,9 @@ def test_a_debut_payload_still_validates(monkeypatch):
     payload = demo_inputs.build_demo_payload()
     # The fixture's figures run through 2026-07-04; the game is the next day (D29).
     matchup["date"] = "2026-07-05"
+    # The live note says the day of the fetch (D39), which this demo-mode wrapper has no field for; the note's own
+    # condition is tested in test_fetch_and_build_time.py. This test is about the figures of a debut.
+    matchup["data_confidence"] = {**matchup["data_confidence"], "notes": []}
     payload["matchups"][0] = matchup
     payload["featured_matchup_id"] = matchup["id"]
     monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": {"source": "pipeline", "code": "no_live_run"}, "live_run": None})

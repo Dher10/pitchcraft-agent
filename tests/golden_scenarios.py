@@ -123,7 +123,8 @@ def from_the_pipeline(mp, hard_case: str) -> dict[str, Any]:
 
     from tests.matrix import hard_outcome  # not at the top: the matrix imports the corpus, which imports this module
 
-    snapshot = hard_outcome(hard_case).snapshot
+    # the pipeline stamps the real time of its run; the golden file must not depend on the clock (the note says the fetch day)
+    snapshot = {**hard_outcome(hard_case).snapshot, "run_at": "2026-07-04T12:00:00+00:00"}
     mp.setattr(gdj, "_live", snapshot)
     return gdj._build_live_matchup(snapshot["live_games"][0], "matchup_001", True)
 

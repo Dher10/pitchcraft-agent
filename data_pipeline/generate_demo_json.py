@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -24,6 +24,7 @@ from data_pipeline import schema
 from data_pipeline.contract_checks import RUN_ERROR_CODES, RUN_SOURCES, RUN_WARNING_CODES
 from data_pipeline.fetchers.cache_manager import load_processed
 from data_pipeline.generator_texts import generator_catalog
+from data_pipeline.schema import new_york_day
 from data_pipeline.validators import ValidationError, validate_payload
 
 # Rule 8: what the file says about a failure is a source and a code of the closed sets (D38); the text goes to this log
@@ -211,6 +212,8 @@ def _snapshot_unsafe(run: dict[str, Any], snapshot: dict[str, Any]) -> str | Non
     if cutoff >= target:
         return f"run cutoff {cutoff} is not before the game date {target}"
 
+    if new_york_day(run.get("run_at")) is None:
+        return f"run time {run.get('run_at')!r} is not an instant with a time zone"
     games = snapshot.get("live_games")
     if not isinstance(games, list) or not games:
         return "the snapshot has no games"
@@ -336,10 +339,16 @@ class CriticBlocked(RuntimeError):
     """The critic found a claim the data does not back up: nothing is published (QA-04)."""
 
 
-def build_payload(language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
-    """The full payload; every agent writes its text in `language` (English by default)."""
+def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None) -> dict[str, Any]:
+    """
+    The full payload; every agent writes its text in `language` (English by default).
+
+    `now` is the clock of the build (injected by tests): `metadata.generated_at` is that instant, in every mode.
+    `metadata.data_fetched_at` is the live fetch (null in a demo file), set by `_apply_live_snapshot` (D39).
+    """
 
     payload = demo_inputs.build_demo_payload()
+    _stamp_times(payload, now)
     payload["metadata"]["data_mode"] = _live_status["mode"]
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
     payload["metadata"]["data_status"] = deepcopy(_live_status)
@@ -360,6 +369,19 @@ def build_payload(language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
     )
     claims.attach_claims(payload, language)
     return payload
+
+
+def _stamp_times(payload: dict[str, Any], now: datetime | None) -> None:
+    """
+    The two times of a file (D39): `generated_at` is the build, from the clock, in every mode (never a constant of the
+    demo); `data_fetched_at` is `null` until `_apply_live_snapshot` sets the live fetch.
+    """
+
+    built = now if now is not None else datetime.now(timezone.utc)
+    if built.tzinfo is None:
+        raise ValueError("the clock of the build must carry a time zone")
+    payload["metadata"]["generated_at"] = built.astimezone(timezone.utc).isoformat(timespec="seconds")
+    payload["metadata"]["data_fetched_at"] = None
 
 
 def main() -> int:
@@ -441,7 +463,6 @@ def _apply_live_snapshot(payload: dict[str, Any]) -> None:
 
     # Rule 6 (F4): a live file holds only live matchups. Nothing of the demo is kept: not its other matchups, not its
     # archive rows. The archive stays empty (today's game is not a past report; the page says "No past reports yet").
-    fetched_date = _live["fetched_date"]
     payload["matchups"] = [
         _build_live_matchup(live_games[0], "matchup_001", True),
         *(
@@ -455,9 +476,9 @@ def _apply_live_snapshot(payload: dict[str, Any]) -> None:
     payload["disclaimers"] = list(config.LIVE_DISCLAIMERS)
 
     payload["metadata"]["data_mode"] = "fetched_snapshot"
-    payload["metadata"]["generated_at"] = _live["run_at"]
+    payload["metadata"]["data_fetched_at"] = _live["run_at"]
     payload["metadata"]["last_updated_label"] = generator_catalog()(
-        "generator.metadata.last_updated.live", date=fetched_date
+        "generator.metadata.last_updated.live", date=_fetch_day()
     )
 
 
@@ -467,9 +488,19 @@ def _build_live_matchup(live_game: dict[str, Any], matchup_id: str, is_featured:
         live_game,
         matchup_id=matchup_id,
         is_featured=is_featured,
-        fetched_date=_live["fetched_date"],
+        game_day=_live["fetched_date"],
+        fetch_day=_fetch_day(),
         through=_live_through(),
     )
+
+
+def _fetch_day() -> str:
+    """The day of the live fetch in New York: the date every label that says "fetched" shows (D39)."""
+
+    day = new_york_day((_live or {}).get("run_at"))
+    if day is None:  # `_snapshot_unsafe` accepts a run only if its time is an instant
+        raise ValueError("the live run has no time to say when the data was fetched")
+    return day
 
 
 def _live_game_entries() -> list[dict[str, Any]]:
@@ -502,7 +533,7 @@ def _apply_live_confidence(payload: dict[str, Any]) -> None:
     live_ids.update(f"matchup_live_{index}" for index in range(2, len(_live_game_entries()) + 1))
     for matchup in payload["matchups"]:
         if matchup["id"] in live_ids:
-            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _live["fetched_date"], matchup["starters"])
+            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _fetch_day(), matchup["starters"])
 
 def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
     matchups_by_id = {matchup["id"]: matchup for matchup in payload["matchups"]}

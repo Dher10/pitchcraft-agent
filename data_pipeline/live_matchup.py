@@ -47,10 +47,14 @@ def build_matchup(
     *,
     matchup_id: str,
     is_featured: bool,
-    fetched_date: str,
+    game_day: str,
+    fetch_day: str,
     through: str,
 ) -> dict[str, Any]:
-    """One live matchup. `fetched_date` is the game day, `through` the last day its figures cover."""
+    """
+    One live matchup. `game_day` is the day of the game, `fetch_day` the day of the fetch in New York (what the
+    confidence note says), `through` the last day its figures cover.
+    """
 
     fg = live_game["featured_game"]
     away = live_game["away_starter"]
@@ -62,7 +66,7 @@ def build_matchup(
     }
     return {
         "id": matchup_id,
-        "date": fetched_date,
+        "date": game_day,
         "status": "upcoming",
         "is_featured": is_featured,
         "game": {
@@ -117,7 +121,7 @@ def build_matchup(
             },
         },
         "postgame": None,
-        "data_confidence": confidence_note(matchup_id, fetched_date, starters),
+        "data_confidence": confidence_note(matchup_id, fetch_day, starters),
     }
 
 
@@ -213,7 +217,7 @@ PITCH_DATA_FETCHED = "fetched_snapshot"
 PITCH_DATA_UNAVAILABLE = "unavailable"  # the word `sample.rates.source` uses for a figure that was not given
 
 
-def confidence_note(matchup_id: str, fetched_date: str, starters: dict[str, Any]) -> dict[str, Any]:
+def confidence_note(matchup_id: str, fetch_day: str, starters: dict[str, Any]) -> dict[str, Any]:
     """
     The confidence block of a live matchup. `pitch_data_status` is computed: `fetched_snapshot` when at
     least one starter has a pitch on record, `unavailable` when none has (DATA_CONTRACT, F1).
@@ -224,7 +228,7 @@ def confidence_note(matchup_id: str, fetched_date: str, starters: dict[str, Any]
         "level": "fetched_snapshot",
         "lineup_status": "probable_pitchers",
         "pitch_data_status": PITCH_DATA_FETCHED if pitched else PITCH_DATA_UNAVAILABLE,
-        "notes": [generator_catalog()("generator.confidence.live_note", date=fetched_date, matchup_id=matchup_id)],
+        "notes": [generator_catalog()("generator.confidence.live_note", date=fetch_day, matchup_id=matchup_id)],
     }
 
 

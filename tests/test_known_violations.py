@@ -92,11 +92,11 @@ def test_a_violation_is_tolerated_only_when_it_is_in_the_table(monkeypatch):
     payload = build(monkeypatch, "live_complete")
     assert failed_checks(payload) == []
 
-    monkeypatch.delitem(KNOWN_VIOLATIONS, "rule4:generator.confidence.live_note#fetched_at")
+    monkeypatch.delitem(KNOWN_VIOLATIONS, "rule4:writer.confidence.lineups#game_state")
     # `validate_payload` reads the table when it runs, so the same payload now fails on that code
     failed = failed_checks(payload)
 
-    assert any("rule4:generator.confidence.live_note#fetched_at" in description for description in failed), failed
+    assert any("rule4:writer.confidence.lineups#game_state" in description for description in failed), failed
 
 
 def test_the_known_violations_that_were_tolerated_are_recorded_as_a_passing_check(monkeypatch):

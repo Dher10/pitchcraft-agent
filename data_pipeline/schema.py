@@ -1,12 +1,15 @@
-"""Schema constants for the PitchCraft v0.6.0 demo payload."""
+"""Schema constants for the PitchCraft v0.7.0 demo payload."""
 
 from __future__ import annotations
 
 from datetime import datetime
 import re
 from typing import Any
+from zoneinfo import ZoneInfo
 
-SCHEMA_VERSION = "0.6.0"
+SCHEMA_VERSION = "0.7.0"
+# 0.7.0 (P0.15-D2.4c, D39): `metadata.data_fetched_at` is the instant of the live fetch (null in a demo file) and
+# `metadata.generated_at` the instant the file was built, so a reader of 0.6.0 (one field for both) breaks.
 # 0.6.0 (P0.15-D2.3, D38): `offense_profile.vs_pitcher_hand` is null for a starter whose hand is not L or R, a starter's
 # `throws` may be `S`, and `data_status.live_run.errors`, `warnings` and `reason` are `{source, code}` from closed
 # sets, so a reader of 0.5.0 breaks.
@@ -37,6 +40,24 @@ def is_utc_instant(value: Any) -> bool:
     except ValueError:
         return False
     return True
+
+
+NEW_YORK = ZoneInfo("America/New_York")  # the zone of the official date (D29) and of every day the page says
+_INSTANT = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})")
+
+
+def new_york_day(value: Any) -> str | None:
+    """The day (YYYY-MM-DD) an instant falls on in America/New_York, or None when `value` is not an instant with a zone."""
+
+    if not isinstance(value, str) or not _INSTANT.fullmatch(value):
+        return None
+    try:
+        instant = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if instant.tzinfo is None:
+        return None
+    return instant.astimezone(NEW_YORK).date().isoformat()
 
 
 TOP_LEVEL_REQUIRED_KEYS = (

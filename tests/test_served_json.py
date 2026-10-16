@@ -130,3 +130,17 @@ def test_a_live_served_file_describes_its_data_without_demo_wording(payload):
     text = json.dumps([payload["disclaimers"], payload["metadata"]["data_sources"], payload["agent_workflow"]])
 
     assert not re.search(r"cached|capstone|demo|judging", text, re.IGNORECASE)
+
+
+def test_the_served_file_says_when_it_was_built_and_a_demo_file_never_says_it_was_fetched(payload):
+    """Schema 0.7.0 (D39): `generated_at` is always a real instant; `data_fetched_at` is an instant in a live file, null otherwise."""
+
+    from datetime import datetime
+
+    metadata = payload["metadata"]
+    assert datetime.fromisoformat(metadata["generated_at"]).tzinfo is not None
+    assert metadata["generated_at"] != "2026-06-28T09:00:00-05:00"  # the demo's old constant
+    if metadata["data_mode"] == "fetched_snapshot":
+        assert datetime.fromisoformat(metadata["data_fetched_at"]).tzinfo is not None
+    else:
+        assert metadata["data_fetched_at"] is None

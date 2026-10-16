@@ -14,9 +14,6 @@ KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
     "rule1:constant_asserts_fact#agent_workflow.steps[].status": ("F19",),
     "rule1:constant_asserts_fact#matchups[].data_confidence.lineup_status": ("F5",),
     "rule1:constant_asserts_fact#matchups[].status": ("F5",),
-    "rule4:generator.confidence.live_note#fetched_at": ("F9",),
-    "rule4:generator.metadata.last_updated.live#fetched_at": ("F9",),
     "rule4:writer.confidence.lineups#game_state": ("F5", "F16"),
     "rule4:writer.section.summary#game_state": ("F5", "F16"),
-    "rule6:data_fetched_at": ("F9",),
 }
