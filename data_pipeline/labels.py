@@ -93,25 +93,35 @@ def share_at_least(count: int, total: int, minimum_pct: float) -> bool:
     return total > 0 and count * 100 >= total * minimum_pct
 
 
-def profile_pitches(pitch_counts: Mapping[str, int]) -> tuple[str, str]:
+def is_mapped_pitch(name: str) -> bool:
+    """True when the family map names the pitch; a raw code outside it (`PO`, `FA`) is a source value no sentence may name."""
+
+    return name in PITCH_FAMILY
+
+
+def profile_pitches(pitch_counts: Mapping[str, int], total: int | None = None) -> tuple[str, str]:
     """
     (primary pitch, put-away pitch) from pitch counts, on the counts (D30).
 
     The primary pitch is the most thrown (ties by name, so the order is stable). The put-away pitch is the
     second most thrown, and only from PUTAWAY_MIN_USAGE_PCT of the pitches: a pitch used less is not a
     weapon, and a starter with one pitch has none. Both are PITCH_NOT_AVAILABLE when there is nothing to
-    name. The live pipeline and the test of the demo's derivations both call this function.
+    name. `total` is the starter's pitches when `pitch_counts` holds only the top of his mix.
+
+    A role whose holder is a pitch the map does not name is PITCH_NOT_AVAILABLE (F6e, owner's decision B):
+    it never passes to the next pitch, because calling the second pitch the primary one would be false. The
+    live pipeline and the test of the demo's derivations both call this function.
     """
 
     ranked = sorted(pitch_counts, key=lambda pitch: (-pitch_counts[pitch], pitch))
-    total = sum(pitch_counts.values())
+    total = sum(pitch_counts.values()) if total is None else total
     top = ranked[0] if ranked else PITCH_NOT_AVAILABLE
     second = (
         ranked[1]
         if len(ranked) > 1 and share_at_least(pitch_counts[ranked[1]], total, PUTAWAY_MIN_USAGE_PCT)
         else PITCH_NOT_AVAILABLE
     )
-    return top, second
+    return (top if is_mapped_pitch(top) else PITCH_NOT_AVAILABLE, second if is_mapped_pitch(second) else PITCH_NOT_AVAILABLE)
 
 
 def _below(value: int | None, threshold: int) -> bool:
@@ -189,8 +199,28 @@ def apply_profile_labels(profile: dict[str, Any], sample: dict[str, Any]) -> Non
     profile["swing_miss_label"] = strikeout_label(sample)
     profile["command_label"] = control_label(sample)
     profile["contact_risk_label"] = None
-    if sample["limited"]["arsenal"]:
+    # A profile that names its primary pitch and names none is not described either (F6e); one that says nothing of it is left alone.
+    unnamed = "primary_pitch" in profile and not pitch_named(profile["primary_pitch"])
+    if sample["limited"]["arsenal"] or unnamed:
         profile["style_label"] = ARSENAL_LIMITED_STYLE
+
+
+def arsenal_unnamed(starter: dict[str, Any]) -> bool:
+    """True when a live starter has enough pitches but his lead pitch has no name (an unmapped code), so no sentence can describe it."""
+
+    sample = starter.get("sample")
+    return bool(sample) and not sample["limited"]["arsenal"] and not pitch_named(starter["pitching_profile"]["primary_pitch"])
+
+
+def arsenal_unspoken(starter: dict[str, Any]) -> bool:
+    """
+    True when no sentence may describe a live starter's arsenal: the sample is too small to (D24) or his lead
+    pitch has no name (F6e). The reports then make no arsenal claim for him, name no pitch, draw no contrast.
+    A starter without a sample (the demo's) is always described.
+    """
+
+    sample = starter.get("sample")
+    return bool(sample) and (bool(sample["limited"]["arsenal"]) or arsenal_unnamed(starter))
 
 
 # The family of each mapped pitch (the colour and copy of the movement chart). A documented derivation from

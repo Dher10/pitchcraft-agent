@@ -1,7 +1,7 @@
 """The published payload records every sentence it contains (P0.15-D3.1, contract rule 4).
 
 The same checks run over four real payloads (demo, demo after a failed live run, a live game with
-everything the pipeline can give, a live game of two debuts), over the seventeen golden scenarios of
+everything the pipeline can give, a live game of two debuts), over the eighteen golden scenarios of
 the agents, and over the file the app serves. The text of the agents does not change; what changes
 is that every sentence is registered with the key and arguments it was made from.
 """

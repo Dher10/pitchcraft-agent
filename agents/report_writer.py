@@ -59,8 +59,9 @@ def run(
 
 
 def _arsenal_limited(starter: dict[str, Any]) -> bool:
-    sample = starter.get("sample")
-    return bool(sample and sample["limited"]["arsenal"])
+    """True when the report says nothing of his arsenal: too small a sample, or a lead pitch with no name (F6e)."""
+
+    return labels.arsenal_unspoken(starter)
 
 
 def _strength_line(t: Catalog, starter: dict[str, Any], strengths: list[str], strength: str) -> str:
@@ -88,7 +89,12 @@ def _arsenal_scout(t: Catalog, findings: dict[str, Any], away: dict[str, Any], h
         else:
             with t.subject(slot):
                 parts.append(t("writer.arsenal.works_off", name=starter["name"], style=style))
-    parts.append(t("writer.arsenal.no_contrast"))
+    # Why there is no contrast: a limited sample ("too little data") or, when none is limited, a lead pitch with no name.
+    limited = any((s.get("sample") or {}).get("limited", {}).get("arsenal") for s in (away, home))
+    if limited:
+        parts.append(t("writer.arsenal.no_contrast"))
+    else:
+        parts.append(t("writer.arsenal.no_contrast_unnamed"))
     return t.join(" ", parts)
 
 

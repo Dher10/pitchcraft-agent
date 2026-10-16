@@ -1,7 +1,7 @@
 """The payloads the contract tests run over (PLAN.md P0.15-D3). Not a test module.
 
 Four real payloads built by the generator (demo, demo after a failed live run, a live game with
-everything the pipeline can give, a live game of two debuts), the seventeen golden scenarios of the
+everything the pipeline can give, a live game of two debuts), the eighteen golden scenarios of the
 agents, and the file the app serves. Each is a payload after a trip through JSON: what the file holds.
 """
 

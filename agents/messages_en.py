@@ -101,6 +101,9 @@ EN_MESSAGES: dict[str, object] = {
         "{name}'s arsenal data is limited ({have}; {needed} needed), "
         "so this report makes no arsenal claim for him."
     ),
+    "analyst.data.arsenal_unnamed": (
+        "{name} throws pitches the data does not name, so this report makes no arsenal claim for him."
+    ),
     "analyst.data.strikeout": (
         "Strikeout data for {name} is limited ({have}; {needed} needed), "
         "so no swing-and-miss claim is made."
@@ -147,6 +150,9 @@ EN_MESSAGES: dict[str, object] = {
         "a scouting note for matchup fit and each pressure point."
     ),
     "writer.arsenal.works_off": "{name} works off {style}.",
+    "writer.arsenal.no_contrast_unnamed": (
+        "No arsenal contrast is drawn because one starter's pitches are not named in the data."
+    ),
     "writer.arsenal.no_contrast": (
         "No arsenal contrast is drawn because at least one arsenal has too little data."
     ),

@@ -29,7 +29,7 @@ Examples from Annex A:
 
 - `status: "upcoming"` for every live game was a constant asserting a fact (F5).
 - `data_confidence.lineup_status: "probable_pitchers"` and `pitch_data_status: "fetched_snapshot"` are constants that assert what the data contains (F5). `pitch_data_status` was one too (F1) until P0.15-D2.1b: it is now computed, `fetched_snapshot` when at least one starter has pitch data and `unavailable` (the word `sample.rates.source` uses) when none has.
-- `charts.pitch_movement.*.*.family: "Fastball"` for an unmapped pitch is an invented derivation (F6e).
+- `charts.pitch_movement.*.*.family: "Fastball"` for an unmapped pitch is an invented derivation (F6e). Closed in P0.15-D2.2e: the family is `null`, the raw code stays as the source value, a warning is recorded, and a role (primary, put-away) held by an unmapped pitch is `Not available` (`labels.profile_pitches`): it never passes to the next pitch.
 - `family` for a mapped pitch, `teams.*.record: null`, `bio: null` are correct: the first is a derivation from a name map, the others are explicit unavailable states.
 - `critic_review.revision_notes` ended with "Avoided claiming official Stuff+." and "Kept the report focused on matchup fit rather than outcome prediction.", constants that asserted a check happened; no check stood behind the first (F8, closed in P0.15-D2.1c). The one note left, "No betting or outcome-prediction language found.", is written only when the betting-language check ran and found nothing.
 
@@ -142,7 +142,7 @@ Examples: F3 (the Hero says "Cached Demo" over live data), F4 (`matchup_002`, "B
 *Errors are published as `{source, code}`, never raw messages.*
 
 - `data_status.live_run.errors` and `data_status.reason` carry a `source` from the fixed set (`mlb_schedule`, `mlb_person`, `mlb_season_stats`, `statcast_pitcher`, `savant_team_batting`, `snapshot`) and a `code` from a closed set defined in `data_pipeline/` (initial set: `request_failed`, `malformed_response`, `malformed_rows`, `missing_column`, `unusable_column`, `budget_spent`, `unknown_value`, `game_rejected`, `snapshot_schema_mismatch`). Exception messages, paths, pitcher ids and file names stay in the local run record (`data_cache/processed/live_run.json`), which is not published.
-- A **warning** is recorded the same way, `{source, code}`, in a separate `warnings` list. It never changes the run status. The one warning at HEAD: `statcast_pitcher` / `unmapped_pitch_type`, when a pitch code is not in `PITCH_NAME_MAP`. The pitch keeps its raw code as the source value, `family` is `null`, and no agent phrase names it (F6e).
+- A **warning** is recorded the same way, `{source, code}`, in a separate `warnings` list. It never changes the run status. The warnings at HEAD: `statcast_pitcher` / `unmapped_pitch_type`, when a pitch code is not in `PITCH_NAME_MAP` (the pitch keeps its raw code as the source value, `family` is `null`, and no agent phrase names it, F6e), and `savant_team_batting` / `unknown_team`, when a team id has no Statcast team code (its offense split is unavailable and its abbreviation is `null`, F7). The run record (`live_run.json`) carries them since P0.15-D2.2e; publishing them is P0.15-D2.3.
 - At HEAD the file publishes `message` (up to 300 characters of exception text) and the reason of a rejected snapshot as free text (F10).
 
 ## 3. Registry of claims
@@ -150,6 +150,8 @@ Examples: F3 (the Hero says "Cached Demo" over live data), F4 (`matchup_002`, "B
 Every key that asserts a fact, with its condition on the payload. `m` = the matchup; `s` = the starter the phrase is about; `o` = his opponent's starter; `team` = the lineup the phrase is about (the opponent of `s`, so `team.offense_profile` is the offense `s` faces). Paths are relative to `m`. "Live" conditions are evaluated on live files; demo-only keys are emitted only in a demo file (rule 6). The machine form is `data_pipeline/claims_registry.py` (P0.15-D3.2); a test fails if the two differ, or if a catalog key is neither here nor in section 3.5.
 
 ### 3.1 Agent phrases (`agents/messages_en.py`)
+
+Since P0.15-D2.2e, wherever a row below says *the arsenal is limited* in order to say that **no sentence describes his arsenal** (the headline from names, no style, no combination, no contrast, a neutral watch question), the condition is `labels.arsenal_unspoken(starter)`: the arsenal is limited (D24) **or** his lead pitch has no name. The rows about the D24 limitation itself (`analyst.data.arsenal`, `critic.limited.*`) keep the real flag.
 
 | Key | Asserts | Condition |
 |---|---|---|
@@ -167,6 +169,7 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `analyst.have.no_batters` | `s` has no batters faced on record. | `sample.rates.batters_faced == 0`, measured, with `sample.rates.source != "unavailable"` (F14, closed in P0.15-D2.2b) |
 | `analyst.have.batters_unavailable` | `s`'s batters faced are not available. | `sample.rates.batters_faced` is `null` (F14, closed in P0.15-D2.2b) |
 | `analyst.data.arsenal` | `s`'s arsenal data is limited, with the count and threshold, and no arsenal claim follows. | `sample.limited.arsenal`, `{needed} == sample.thresholds.arsenal`; no other phrase about `s` names a pitch or an arsenal fact |
+| `analyst.data.arsenal_unnamed` | `s` throws pitches the data does not name, so the report makes no arsenal claim for him. | `s` has a `sample`, his arsenal is not limited, and his `primary_pitch` is not named (`labels.arsenal_unnamed`; an unmapped pitch code holds the lead role, F6e, closed in P0.15-D2.2e) |
 | `analyst.data.strikeout` / `.control` | Strikeout (control) data is limited, with count and threshold. | `sample.limited.strikeout` (`.control`), `{needed} == sample.thresholds.strikeout` (`.control`) |
 | `analyst.data.contact` | `s` allowed `{home_runs}` over `{batters}` batters faced. | `sample.rates.home_runs` and `batters_faced` are not `null`, `batters_faced > 0`, and equal the arguments |
 | `analyst.data.no_home_runs` | Home runs allowed are not available for `s`. | `sample.rates.home_runs is null` or `batters_faced` is `null` or `0` |
@@ -195,6 +198,7 @@ Every key that asserts a fact, with its condition on the payload. `m` = the matc
 | `writer.arsenal.contrast` | The main contrast is `{away_style}` versus `{home_style}`; the primary pitches are `{away_primary}` and `{home_primary}`. | Neither arsenal limited; `{*_style}` are `analyst.style.*` sentences (made of the primary and put-away pitch), `{*_primary}` the `primary_pitch`es |
 | `writer.arsenal.works_off` | `s` works off `{style}`. | `{style}` is `s`'s `style_label`; `s` arsenal limited is false |
 | `writer.arsenal.no_contrast` | No arsenal contrast is drawn because at least one arsenal has too little data. | At least one `sample.limited.arsenal` |
+| `writer.arsenal.no_contrast_unnamed` | No arsenal contrast is drawn because one starter's pitches are not named in the data. | No arsenal is limited, and some starter has an arsenal that is not limited and a lead pitch with no name (`labels.arsenal_unnamed`; F6e). The sentence about too little data is for a limited arsenal and is not replaced |
 | `writer.confidence.limited` | Samples below the minimum are flagged as limited. | Some `sample.limited.*` is true |
 | `writer.confidence.snapshot` + `writer.confidence.item.pitchers` / `.pitch_data` / `.offense` | This report uses a fetched live snapshot with `{items}`: probable pitchers, Statcast pitch data, season offense splits ("A, B, and C" / "A and B" / "A"). | The matchup is live. The list names only what is complete: `item.pitch_data` only if **both** starters have pitch data (`sample.arsenal.pitches > 0`; zero or unknown is none); `item.offense` only if **both** lineups have a split (an OPS, a K% or a BB% is not `null`, as `offense_profile.scope` is set; F2). With everything complete the text is the one of before D2.1b (F1) |
 | `writer.confidence.pitch_data.one` / `.none` | Statcast pitch data was available for `{with_data}` but not for `{without_data}`, so the pitch read makes no arsenal claims about `{without_data}` / was not available for either starter, so the pitch read makes no arsenal claims. | `one`: exactly one starter has pitch data, `{with_data}` is his name and `{without_data}` the other's; `none`: neither has it. The consequence is checked on the report: no sentence names a pitch for a starter without pitch data (`report_facts.pitches_named_for`; his arsenal is then limited, and the analyst writes no style, primary or put-away pitch for him) (F1, closed in P0.15-D2.1b) |
@@ -268,8 +272,8 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F3 | 6 | P0.15-D2.4 | "Cached Demo" texts and no mode line in a live page |
 | F4 | 6 | P0.15-D2.4 (open) | Demo matchups and archive rows inside a live file. The workflow of a live file still counts the demo matchups too; its entry `rule4:generator.workflow.checked#count` left `known_violations.py` in P0.15-D2.1c only because the count coincides by chance (the demo has no warning since F18), and `tests/test_contract_checks.py` shows the rule still fires if the demo has one |
 | F5 | 7 | P0.15-D2.5 | `status` is always `upcoming`, in the matchup and in its archive row (with the row's `result_label` and `lineup_status`) |
-| F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2: a, b and c done in D2.2a; e in D2.2e | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
-| F7 | 1, 2 | P0.15-D2.2 | `"???"` team abbreviation |
+| F6 a, b, c, e | 1, 2, 8 | P0.15-D2.2 (done: a, b and c in D2.2a; e in D2.2e) | Silent debut, measured zeros from an unusable `events`, columns outside the required check, invented family |
+| F7 | 1, 2 | P0.15-D2.2e (done) | `"???"` team abbreviation |
 | F8 | 1, 4 | P0.15-D2.1c (done) | Two constant critic notes |
 | F9 | 6 | P0.15-D2.4 | `generated_at` is the fetch time, or a demo constant |
 | F10 | 8 | P0.15-D2.3 | Raw exception text in the public file |

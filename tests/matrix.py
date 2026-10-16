@@ -333,6 +333,7 @@ def install_sources(monkeypatch: pytest.MonkeyPatch, scenario: Scenario, tmp: Pa
     monkeypatch.setattr(lp, "TEAM_BATTING_CACHE_DIR", tmp / "team_batting")
     monkeypatch.setattr(lp, "PITCHER_HAND_CACHE_DIR", tmp / "pitcher_hand")
     monkeypatch.setattr(lp, "_run_errors", [])
+    monkeypatch.setattr(lp, "_run_warnings", [])
     monkeypatch.setattr(lp, "_savant_run", {"requests": 0, "open_requests": 0})
     monkeypatch.setattr(lp, "_pitcher_hand_run", {"requests": 0})
     monkeypatch.setattr(lp.time, "sleep", lambda seconds: None)

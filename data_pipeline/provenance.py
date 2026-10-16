@@ -262,13 +262,9 @@ def profile_field(c: Ctx) -> Problem | None:
         labels.apply_profile_labels(profile, sample)
         want = profile[field]
     else:
-        primary = cells[0]["pitch"] if cells else labels.PITCH_NOT_AVAILABLE
+        # The same function the pipeline calls (D30, F6e): a role held by a pitch the map does not name is not available.
         total = cells[0]["total"] if cells else 0
-        second = (
-            cells[1]["pitch"]
-            if len(cells) > 1 and labels.share_at_least(cells[1]["count"], total, labels.PUTAWAY_MIN_USAGE_PCT)
-            else labels.PITCH_NOT_AVAILABLE
-        )
+        primary, second = labels.profile_pitches({cell["pitch"]: cell["count"] for cell in cells}, total=total)
         if field == "primary_pitch":
             want = primary
         elif field == "putaway_pitch":

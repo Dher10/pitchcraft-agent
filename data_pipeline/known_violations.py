@@ -17,8 +17,6 @@ KNOWN_VIOLATIONS: dict[str, tuple[str, ...]] = {
     "rule1:constant_asserts_fact#matchups[].data_confidence.lineup_status": ("F5",),
     "rule1:constant_asserts_fact#matchups[].status": ("F5",),
     "rule1:constant_asserts_fact#metadata.data_sources[]": ("F3",),
-    "rule1:invented_derivation#matchups[].charts.pitch_movement.*.*.family": ("F6",),
-    "rule1:placeholder#matchups[].teams.*.abbreviation": ("F7",),
     "rule4:generator.confidence.live_note#fetched_at": ("F9",),
     "rule4:generator.metadata.last_updated.live#fetched_at": ("F9",),
     "rule4:generator.workflow.graded#count": ("F4",),

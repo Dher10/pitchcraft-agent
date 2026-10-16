@@ -314,7 +314,6 @@ def test_hard_stand_unusable_in_a_populated_frame_is_a_recorded_source_error():
     assert not outcome.live
 
 
-@pytest.mark.xfail(strict=True, reason="F6e: a pitch code outside the name map gets the family Fastball")
 def test_hard_an_unmapped_pitch_has_no_family():
     movement = hard_outcome("unmapped_pitch_code").matchup["charts"]["pitch_movement"]["away_starter"]
 
@@ -322,7 +321,6 @@ def test_hard_an_unmapped_pitch_has_no_family():
     assert movement["XX"]["family"] is None
 
 
-@pytest.mark.xfail(strict=True, reason="F7: a team the abbreviation maps do not know is published as '???'")
 def test_hard_an_unknown_team_has_no_abbreviation_instead_of_question_marks():
     teams = hard_outcome("unknown_team").matchup["teams"]
 

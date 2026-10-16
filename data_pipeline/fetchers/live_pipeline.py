@@ -159,14 +159,24 @@ PITCH_NAME_MAP = {
 }
 
 
-def _team_abbreviation(team: dict[str, Any]) -> str:
+def _team_abbreviation(team: dict[str, Any]) -> str | None:
+    """The abbreviation the schedule gives, else the id and name maps; None for a team they do not know (F7), never a placeholder."""
+
     raw_abbr = team.get("abbreviation")
     if raw_abbr:
         return raw_abbr
     team_id = team.get("id")
     if team_id in MLB_TEAM_ABBR_BY_ID:
         return MLB_TEAM_ABBR_BY_ID[team_id]
-    return MLB_TEAM_ABBR_BY_NAME.get(team.get("name"), "???")
+    return MLB_TEAM_ABBR_BY_NAME.get(team.get("name"))
+
+
+def game_label(game: dict[str, Any]) -> str:
+    """"AWAY @ HOME" for a log or a skipped game, each team by its abbreviation or, if it has none, its name."""
+
+    away = labels.team_label(game["away_team_abbr"], game["away_team"])
+    home = labels.team_label(game["home_team_abbr"], game["home_team"])
+    return f"{away} @ {home}"
 
 POSTSEASON_GAME_TYPES = ("F", "D", "L", "W")
 
@@ -238,12 +248,26 @@ _pitcher_hand_run = {"requests": 0}
 
 # Failures of the current run, written to data_cache/processed/live_run.json by main().
 _run_errors: list[dict[str, Any]] = []
+# What the run saw and could carry on from: an unmapped pitch, a team the maps do not know. They are in the run
+# record and never change its status; publishing them is a matter of rule 8 (D2.3).
+_run_warnings: list[dict[str, Any]] = []
 
 
 def _record_error(source: str, message: str, **context: Any) -> None:
     """Keep a failure for the run record; every fetcher still returns empty, never raises."""
 
     _run_errors.append({"source": source, "message": str(message)[:300], **context})
+
+
+def _record_warning(source: str, code: str, message: str, **context: Any) -> None:
+    """
+    Keep a warning for the run record: the run goes on, with the figure unavailable (rules 1 and 2).
+
+    `source` and `code` belong to the closed sets of `contract_checks` (RUN_SOURCES, RUN_WARNING_CODES): they are
+    what a published warning may say (rule 8); the message stays in the local record.
+    """
+
+    _run_warnings.append({"source": source, "code": code, "message": str(message)[:300], **context})
 
 
 def _savant_get(url: str, open_month: bool = False) -> str:
@@ -478,6 +502,12 @@ def fetch_team_splits(
         code = STATCAST_TEAM_CODE_BY_MLB_ABBR.get(mlb_abbr, mlb_abbr)
         if not code:
             print(f"[LIVE] Team splits: unknown team id {team_id}")
+            _record_warning(
+                "savant_team_batting",
+                "unknown_team",
+                f"team id {team_id} is not in the abbreviation map: no Statcast team code, no offense split",
+                team_id=team_id,
+            )
             return {}
         try:
             first_day, last_day = season_dates(season)
@@ -975,6 +1005,16 @@ def fetch_pitcher_statcast(
                     pitcher_id=pitcher_id,
                 )
             processed = process_pitcher_statcast(df, pitcher_name)
+            unmapped = sorted({code for code in df["pitch_type"].dropna().unique() if code and code not in PITCH_NAME_MAP})
+            if unmapped:
+                rows = int(df["pitch_type"].isin(unmapped).sum())
+                _record_warning(
+                    "statcast_pitcher",
+                    "unmapped_pitch_type",
+                    f"pitch code(s) {', '.join(unmapped)} are not in the name map ({rows} pitch(es)): "
+                    "published as source values with no family, and no role is given to them",
+                    pitcher_id=pitcher_id,
+                )
             if not processed["pitch_mix"]:
                 processed = None
             elif processed["throws"] is None:
@@ -1326,7 +1366,7 @@ def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
         result[name] = {
             "h_break": h_break,
             "v_break": v_break,
-            "family": labels.PITCH_FAMILY.get(name, "Fastball"),
+            "family": labels.PITCH_FAMILY.get(name),  # a pitch the map does not know has none (F6e)
         }
     return result
 
@@ -1366,7 +1406,7 @@ def build_live_snapshot(
     if not candidates:
         print("[LIVE] No game with both probable pitchers found")
         info["skipped_games"] = [
-            f"{g['away_team_abbr']} @ {g['home_team_abbr']} (probable pitcher not announced)"
+            f"{game_label(g)} (probable pitcher not announced)"
             for g in games
         ]
         return None
@@ -1397,7 +1437,7 @@ def build_live_snapshot(
 
         if not away_data or not home_data:
             skipped = (
-                f"{featured['away_team_abbr']} @ {featured['home_team_abbr']} "
+                f"{game_label(featured)} "
                 f"({featured['away_pitcher_name']} vs {featured['home_pitcher_name']})"
             )
             skipped_games.append(skipped)
@@ -1563,6 +1603,7 @@ def run_live_pipeline(
     """
 
     _run_errors.clear()
+    _run_warnings.clear()
     _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
     _pitcher_hand_run.update(requests=0)  # so is the pitcher-hand budget
     info: dict[str, Any] = {}
@@ -1582,6 +1623,7 @@ def run_live_pipeline(
         "games_live": info.get("games_live", 0),
         "skipped_games": info.get("skipped_games", []),
         "errors": list(_run_errors),
+        "warnings": list(_run_warnings),
     }
     if snapshot is not None:
         snapshot["run_at"] = run_at

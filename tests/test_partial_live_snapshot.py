@@ -74,7 +74,9 @@ def test_a_partial_pitching_profile_does_not_keep_demo_pitches(template):
     result = apply(template, live_starter(template, pitching_profile={"style_label": "Fastball starter"}))
 
     profile = result["pitching_profile"]
-    assert profile["style_label"] == "Fastball starter"
+    # A style that names a pitch next to a primary pitch that is not available is not kept (F6e): the manifest derives
+    # the neutral style whenever the primary pitch has no name, and the page must not say what the profile does not.
+    assert profile["style_label"] == "Arsenal data limited"
     assert profile["primary_pitch"] != demo_profile["primary_pitch"]
     assert profile["putaway_pitch"] != demo_profile["putaway_pitch"]
     assert profile["primary_pitch"] == "Not available" and profile["putaway_pitch"] == "Not available"

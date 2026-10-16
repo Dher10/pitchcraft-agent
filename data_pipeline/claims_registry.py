@@ -241,6 +241,12 @@ def _sample(starter: Mapping[str, Any]) -> Mapping[str, Any] | None:
     return sample if isinstance(sample, Mapping) else None
 
 
+def _unspoken(starter: Mapping[str, Any]) -> bool:
+    """True when no sentence may describe his arsenal: a small sample (D24) or a lead pitch with no name (F6e)."""
+
+    return labels.arsenal_unspoken(dict(starter))
+
+
 def _limited(starter: Mapping[str, Any], dimension: str) -> bool:
     sample = _sample(starter)
     return bool(sample and sample["limited"][dimension])
@@ -303,7 +309,7 @@ def _expected_strengths(starter: Mapping[str, Any]) -> list[str]:
             found.append("analyst.strength.swing_miss")
         if "solid" in command:
             found.append("analyst.strength.command")
-        if not _limited(starter, "arsenal"):
+        if not _unspoken(starter):
             found.append("analyst.style.")
         return found
     contact = _label(starter, "contact_risk_label")
@@ -329,7 +335,7 @@ def _summary(c: Ctx) -> None:
 
 def _label_against(c: Ctx) -> None:
     away, home = (c.matchup["starters"][slot] for slot in SUBJECT_SLOTS)  # type: ignore[index]
-    if _limited(away, "arsenal") or _limited(home, "arsenal"):
+    if _unspoken(away) or _unspoken(home):
         expected = (away["name"], home["name"])
     else:
         expected = (_profile(away)["style_label"], _profile(home)["style_label"])
@@ -339,7 +345,7 @@ def _label_against(c: Ctx) -> None:
 def _style(c: Ctx) -> None:
     starter, profile = c.starter, _profile(c.starter)
     named = labels.pitch_named
-    c.require(not _limited(starter, "arsenal"), "limited_arsenal", "the arsenal is limited")
+    c.require(not _unspoken(starter), "limited_arsenal", "the arsenal is limited or has an unnamed lead pitch")
     c.require(named(profile["primary_pitch"]), "pitch", "the primary pitch is not named")
     c.require(c.text("primary") == profile["primary_pitch"], "pitch", "the primary pitch is not his")
     if c.key.endswith(".pair"):
@@ -372,7 +378,7 @@ def _thrown_share(matchup: Mapping[str, Any], slot: str, pitch: Any, minimum: fl
 
 def _combination(c: Ctx) -> None:
     starter, profile = c.starter, _profile(c.starter)
-    c.require(not _limited(starter, "arsenal"), "limited_arsenal", "the arsenal is limited")
+    c.require(not _unspoken(starter), "limited_arsenal", "the arsenal is limited or has an unnamed lead pitch")
     primary_ok = labels.pitch_named(profile["primary_pitch"]) and c.text("primary") == _short(profile["primary_pitch"])
     c.require(primary_ok, "pitch", "the primary pitch is not his")
     put_ok = labels.pitch_named(profile["putaway_pitch"]) and c.text("putaway") == _short(profile["putaway_pitch"])
@@ -387,7 +393,7 @@ def _combination(c: Ctx) -> None:
 
 def _mainly(c: Ctx) -> None:
     starter, profile = c.starter, _profile(c.starter)
-    c.require(not _limited(starter, "arsenal"), "limited_arsenal", "the arsenal is limited")
+    c.require(not _unspoken(starter), "limited_arsenal", "the arsenal is limited or has an unnamed lead pitch")
     c.require(labels.pitch_named(profile["primary_pitch"]), "pitch", "the primary pitch is not named")
     c.require(not labels.pitch_named(profile["putaway_pitch"]), "pitch", "he has a put-away pitch")
     c.require(c.text("primary") == _short(profile["primary_pitch"]), "pitch", "the primary pitch is not his")
@@ -464,6 +470,13 @@ def _data_contact(c: Ctx) -> None:
     c.require(rates.get("home_runs") is not None and (rates.get("batters_faced") or 0) > 0, "unknown", "his home runs or batters faced are unknown")
     c.require(c.count("home_runs") == rates.get("home_runs"), "count", "the home runs are not his")
     c.require(c.args["batters"] == rates.get("batters_faced"), "count", "the batters are not his")
+
+
+def _data_arsenal_unnamed(c: Ctx) -> None:
+    """The sentence says why a starter with enough pitches is not described: his lead pitch has no name (F6e)."""
+
+    c.require(labels.arsenal_unnamed(dict(c.starter)), "named", "his lead pitch is named, or his arsenal is limited")
+    c.require(c.text("name") == c.starter["name"], "name", "the sentence is about another starter")
 
 
 def _data_no_home_runs(c: Ctx) -> None:
@@ -640,14 +653,14 @@ def _writer_strength_none(c: Ctx) -> None:
 
 def _arsenal_contrast(c: Ctx) -> None:
     starters = [c.matchup["starters"][slot] for slot in SUBJECT_SLOTS]  # type: ignore[index]
-    c.require(not any(_limited(s, "arsenal") for s in starters), "limited_arsenal", "an arsenal is limited")
+    c.require(not any(_unspoken(s) for s in starters), "limited_arsenal", "an arsenal is limited or has an unnamed lead pitch")
     for prefix, starter in zip(("away", "home"), starters):
         c.require(c.text(f"{prefix}_primary") == _profile(starter)["primary_pitch"], "pitch", f"the {prefix} primary pitch is not his")
         c.require(c.ref(f"{prefix}_style")["key"].startswith("analyst.style."), "style", f"the {prefix} style is not a style sentence")
 
 
 def _arsenal_works_off(c: Ctx) -> None:
-    c.require(not _limited(c.starter, "arsenal"), "limited_arsenal", "his arsenal is limited")
+    c.require(not _unspoken(c.starter), "limited_arsenal", "his arsenal is limited or has an unnamed lead pitch")
     c.require(c.ref("style")["key"].startswith("analyst.style."), "style", "the style is not a style sentence")
     c.require(c.text("name") == c.starter["name"], "name", "the sentence is about another starter")
 
@@ -655,6 +668,14 @@ def _arsenal_works_off(c: Ctx) -> None:
 def _arsenal_no_contrast(c: Ctx) -> None:
     starters = c.matchup["starters"].values()  # type: ignore[union-attr]
     c.require(any(_limited(s, "arsenal") for s in starters), "no_limit", "no arsenal is limited")
+
+
+def _arsenal_no_contrast_unnamed(c: Ctx) -> None:
+    """The contrast is missing because a starter's lead pitch has no name, and no arsenal is limited (that is the other sentence)."""
+
+    starters = c.matchup["starters"].values()  # type: ignore[union-attr]
+    c.require(not any(_limited(s, "arsenal") for s in starters), "limited", "an arsenal is limited: the sentence about too little data is the one")
+    c.require(any(labels.arsenal_unnamed(dict(s)) for s in starters), "unnamed", "no starter has a lead pitch without a name")
 
 
 def _confidence_limited(c: Ctx) -> None:
@@ -762,7 +783,7 @@ def _watch_line(c: Ctx) -> None:
 
 def _watch_land(c: Ctx) -> None:
     starter, profile = c.starter, _profile(c.starter)
-    c.require(not _limited(starter, "arsenal"), "limited_arsenal", "his arsenal is limited")
+    c.require(not _unspoken(starter), "limited_arsenal", "his arsenal is limited or has an unnamed lead pitch")
     named = labels.pitch_named(profile["putaway_pitch"])
     c.require(named and c.text("putaway") == _short(profile["putaway_pitch"]), "pitch", "the put-away pitch is not his")
     if named:
@@ -1139,6 +1160,7 @@ RULES: dict[str, Rule] = {
     "analyst.have.batters_unavailable": _have_batters_unavailable,
     "analyst.have.no_batters": _have_no_batters,
     "analyst.data.arsenal": _data_limited,
+    "analyst.data.arsenal_unnamed": _data_arsenal_unnamed,
     "analyst.data.strikeout": _data_limited,
     "analyst.data.control": _data_limited,
     "analyst.data.contact": _data_contact,
@@ -1173,6 +1195,7 @@ RULES: dict[str, Rule] = {
     "writer.arsenal.contrast": _arsenal_contrast,
     "writer.arsenal.works_off": _arsenal_works_off,
     "writer.arsenal.no_contrast": _arsenal_no_contrast,
+    "writer.arsenal.no_contrast_unnamed": _arsenal_no_contrast_unnamed,
     "writer.confidence.limited": _confidence_limited,
     "writer.confidence.snapshot": _confidence_snapshot,
     "writer.confidence.item.pitchers": _confidence_snapshot,

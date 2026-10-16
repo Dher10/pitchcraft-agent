@@ -139,6 +139,19 @@ def _unknown_figures(game: dict[str, Any]) -> None:
     labels.apply_profile_labels(starter["pitching_profile"], starter["sample"])
 
 
+def from_the_pipeline(mp, hard_case: str) -> dict[str, Any]:
+    """
+    A live matchup built from what the real pipeline wrote for a hard case of the matrix: the golden file shows only
+    states the pipeline produces, so a state it does produce is taken from its output, not typed by hand.
+    """
+
+    from tests.matrix import hard_outcome  # not at the top: the matrix imports the corpus, which imports this module
+
+    snapshot = hard_outcome(hard_case).snapshot
+    mp.setattr(gdj, "_live", snapshot)
+    return gdj._build_live_matchup(snapshot["live_games"][0], "matchup_001", True)
+
+
 def scenarios(mp) -> dict[str, dict[str, Any]]:
     demo = demo_inputs.build_demo_payload()["matchups"]
     return {
@@ -159,6 +172,7 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "live_debut_no_figures": live(mp, away=debut_sample(), home=debut_sample(), edit=_no_figures),
         "live_measured_zero_counts": live(mp, away=measured_zero_sample(), edit=_measured_zero_counts),
         "live_unknown_figures": live(mp, away=debut_sample(), edit=_unknown_figures),
+        "live_unnamed_lead_pitch": from_the_pipeline(mp, "unmapped_pitch_code"),
     }
 
 

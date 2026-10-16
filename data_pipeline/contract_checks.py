@@ -50,7 +50,7 @@ RUN_ERROR_CODES = (
     "game_rejected",
     "snapshot_schema_mismatch",
 )
-RUN_WARNING_CODES = ("unmapped_pitch_type",)
+RUN_WARNING_CODES = ("unmapped_pitch_type", "unknown_team")
 
 
 @dataclass(frozen=True)

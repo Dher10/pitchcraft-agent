@@ -38,7 +38,7 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
     with t.subject("away_starter"):
         away_action = (
             t("analyst.watch.action.ahead")
-            if _arsenal_limited(away_sample) or not labels.pitch_named(away_profile["putaway_pitch"])
+            if labels.arsenal_unspoken(away_starter) or not labels.pitch_named(away_profile["putaway_pitch"])
             else t(
                 "analyst.watch.action.land",
                 putaway=_pitch_short_name(away_profile["putaway_pitch"]).lower(),
@@ -48,7 +48,7 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
     with t.subject("home_starter"):
         home_action = (
             t("analyst.watch.action.efficient")
-            if _arsenal_limited(home_sample)
+            if labels.arsenal_unspoken(home_starter)
             else t("analyst.watch.action.keep", goal=_location_goal(t, home_profile["primary_pitch"]))
         )
         home_watch = t("analyst.watch.question", name=home_starter["name"], action=home_action)
@@ -100,21 +100,21 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
         "away_vs_home_offense": away_vs_home,
         "home_vs_away_offense": home_vs_away,
         "matchup_summary": t("analyst.summary", label=_matchup_label(t, away_starter, home_starter)),
-        "away_data_notes": _subject_notes(t, "away_starter", away_starter["name"], away_sample),
-        "home_data_notes": _subject_notes(t, "home_starter", home_starter["name"], home_sample),
+        "away_data_notes": _subject_notes(t, "away_starter", away_starter, away_sample),
+        "home_data_notes": _subject_notes(t, "home_starter", home_starter, home_sample),
         "scope_notes": _scope_notes(t, matchup_packet),
         "away_style": away_style,
         "home_style": home_style,
     }
 
 
-def _subject_notes(t: Catalog, slot: str, name: str, sample: dict[str, Any] | None) -> list[str]:
+def _subject_notes(t: Catalog, slot: str, starter: dict[str, Any], sample: dict[str, Any] | None) -> list[str]:
     """The data notes of one starter, written as sentences about him."""
 
     if not sample:
         return []
     with t.subject(slot):
-        return _data_notes(t, name, sample)
+        return _data_notes(t, starter["name"], sample, unnamed=labels.arsenal_unnamed(starter))
 
 
 def _offense_read(t: Catalog, team: dict[str, Any], starter: dict[str, Any]) -> str:
@@ -201,7 +201,7 @@ def _arsenal_limited(sample: dict[str, Any] | None) -> bool:
 def _matchup_label(t: Catalog, away: dict[str, Any], home: dict[str, Any]) -> str:
     """Headline subject: the two styles, or the names when an arsenal is too thin to describe."""
 
-    if _arsenal_limited(away.get("sample")) or _arsenal_limited(home.get("sample")):
+    if labels.arsenal_unspoken(away) or labels.arsenal_unspoken(home):
         return t("analyst.label.against", away=away["name"], home=home["name"])
     return t(
         "analyst.label.against",
@@ -230,7 +230,7 @@ def _live_starter_findings(
         strengths.append(t("analyst.strength.command", label=command))
     if command and "below-average" in command.lower():
         risks.append(t("analyst.risk.command"))
-    if not sample["limited"]["arsenal"]:
+    if not labels.arsenal_unspoken(starter):
         strengths.append(_style_description(t, profile))
     return strengths, risks
 
@@ -242,7 +242,7 @@ def _live_pitcher_read(t: Catalog, starter: dict[str, Any], sample: dict[str, An
     profile = starter["pitching_profile"]
     qualifier = _rate_qualifier(t, starter)
     parts: list[str] = []
-    if not sample["limited"]["arsenal"]:
+    if not labels.arsenal_unspoken(starter):
         primary = _pitch_short_name(profile["primary_pitch"]).lower()
         if labels.pitch_named(profile["putaway_pitch"]):
             parts.append(
@@ -261,7 +261,7 @@ def _live_pitcher_read(t: Catalog, starter: dict[str, Any], sample: dict[str, An
         if label:
             parts.append(t("analyst.read.shows", subject=subject, label=_lower_first(label), qualifier=qualifier))
             subject = t("analyst.read.he")
-    parts.extend(_data_notes(t, name, sample))
+    parts.extend(_data_notes(t, name, sample, unnamed=labels.arsenal_unnamed(starter)))
     return t.join(" ", parts)
 
 
@@ -279,7 +279,7 @@ def _rate_qualifier(t: Catalog, starter: dict[str, Any]) -> str:
     return t("analyst.read.qualifier_both")
 
 
-def _data_notes(t: Catalog, name: str, sample: dict[str, Any]) -> list[str]:
+def _data_notes(t: Catalog, name: str, sample: dict[str, Any], unnamed: bool = False) -> list[str]:
     """One sentence per limited dimension, and the contact-risk count (never a rate label)."""
 
     needed = sample["thresholds"]
@@ -292,6 +292,8 @@ def _data_notes(t: Catalog, name: str, sample: dict[str, Any]) -> list[str]:
     else:
         have_batters = t("analyst.have.batters", count=batters) if batters else t("analyst.have.no_batters")
     notes: list[str] = []
+    if unnamed:  # enough pitches, but the lead one has no name: that is why the arsenal is not described (F6e)
+        notes.append(t("analyst.data.arsenal_unnamed", name=name))
     if limited["arsenal"]:
         pitches = sample["arsenal"]["pitches"]
         if pitches is None:
