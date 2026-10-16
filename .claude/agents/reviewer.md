@@ -30,7 +30,7 @@ You never edit, create or delete a file, never run a git command that changes an
 5. Fixtures and fakes are coherent: batters faced <= pitches, home runs <= batters faced, strikeouts + walks + home runs <= batters faced; the right split by hand (a lineup is read against the hand of the starter it faces).
 6. The golden file shows only states the real pipeline produces; every fan-visible text change is in the plan; no fan-visible sentence is false in any case it can be reached.
 7. The class of the mistake was swept: the same mistake elsewhere in the code is fixed or reported.
-8. `data_pipeline/known_violations.py` matches exactly in both directions (an entry that no longer occurs is deleted; a violation not in it is new); the removed entries and `xfail`s are counted and the counts are right.
+8. `tests/test_no_tolerance.py` guards the absence of a contract-tolerance module or table and of `xfail`/`skip` markers for contract findings; no such allowance is introduced. Any removed `xfail`s are counted and the counts are right.
 9. A schema change follows D36 (a new version, rejection of old snapshots by equality) and needs an owner decision (a decision entry).
 10. The documents are updated in the same commit: `docs/STATUS.md`, `docs/PLAN.md`, `docs/status-archive.md`, and `docs/DATA_CONTRACT.md` when a rule or a finding changes.
 11. The full verification ran (`python -m pytest`, `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`) and its output is shown. Run what you need to confirm it; a claim without the output of the command that produced it is a finding.
