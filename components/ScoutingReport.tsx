@@ -66,8 +66,9 @@ function ReportCard({
         <StatTile label="BB%" title="Walk rate." value={offense.offense_profile.bb_rate_vs_hand ?? UNAVAILABLE} />
       </dl>
       <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
-        vs {offense.offense_profile.vs_pitcher_hand}
-        {offense.offense_profile.recent_form ? <> &middot; {offense.offense_profile.recent_form}</> : null}
+        {offense.offense_profile.vs_pitcher_hand ? `vs ${offense.offense_profile.vs_pitcher_hand}` : null}
+        {offense.offense_profile.vs_pitcher_hand && offense.offense_profile.recent_form ? <> &middot; </> : null}
+        {offense.offense_profile.recent_form ?? null}
       </p>
     </article>
   );

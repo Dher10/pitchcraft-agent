@@ -62,5 +62,7 @@ def test_the_read_of_a_lineup_without_a_split_says_only_that_it_is_not_available
         if labels.has_offense_figure(lineup):
             continue
         body = next(text for title, text in sections.items() if title.startswith(starter["name"]))
-        assert "is not available for this lineup yet" in body
+        # a lineup facing a switch pitcher (or no hand) has no split to wait for: its own sentence (D2.3a)
+        said = "is not available for this lineup yet" if starter.get("throws") in ("L", "R") else "cannot be matched to this pitcher's hand"
+        assert said in body
         assert "OPS" not in body and "strike out often" not in body and "draw walks" not in body

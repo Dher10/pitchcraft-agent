@@ -1,4 +1,4 @@
-"""Schema constants for the PitchCraft v0.5.0 demo payload."""
+"""Schema constants for the PitchCraft v0.6.0 demo payload."""
 
 from __future__ import annotations
 
@@ -6,7 +6,10 @@ from datetime import datetime
 import re
 from typing import Any
 
-SCHEMA_VERSION = "0.5.0"
+SCHEMA_VERSION = "0.6.0"
+# 0.6.0 (P0.15-D2.3, D38): `offense_profile.vs_pitcher_hand` is null for a starter whose hand is not L or R, a starter's
+# `throws` may be `S`, and `data_status.live_run.errors`, `warnings` and `reason` are `{source, code}` from closed
+# sets, so a reader of 0.5.0 breaks.
 # 0.5.0 (P0.15-D2.2c, D37): a pitch family, a team abbreviation (`teams.*.abbreviation`, `starters.*.team`) and
 # a pitch share (`charts.pitch_mix[].<slot>.overall`) are null when unknown (an unmapped pitch, an unknown team,
 # a starter with no pitches), so a reader of 0.4.0 breaks.

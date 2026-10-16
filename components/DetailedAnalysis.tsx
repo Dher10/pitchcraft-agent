@@ -5,6 +5,7 @@ import PitchTrajectoryCard from "@/components/PitchTrajectoryCard";
 import StrengthProfile from "@/components/StrengthProfile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram, { getPitchColor } from "@/components/ZoneDiagram";
+import { throwingHand } from "@/lib/format";
 import { describePitchMovement } from "@/lib/pitchDescriptions";
 import type { Matchup, PitchLocationsByHand, PitchUsage } from "@/lib/types";
 
@@ -56,7 +57,7 @@ function PitcherAttack({
   // Unavailable movement stays null; it is never drawn or described as a measured 0.0.
   const hBreak = selectedMovement?.h_break ?? null;
   const vBreak = selectedMovement?.v_break ?? null;
-  const throwsHand = normalizeThrows(starter.throws);
+  const throwsHand = throwingHand(starter.throws);
 
   return (
     <article className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
@@ -191,12 +192,6 @@ function PitcherAttack({
       ) : null}
     </article>
   );
-}
-
-/** Only a hand the data gives is shown: anything else (a switch pitcher, a missing value) prints no hand. */
-function normalizeThrows(raw: string | null | undefined): "L" | "R" | null {
-  const hand = raw?.toUpperCase().charAt(0);
-  return hand === "L" || hand === "R" ? hand : null;
 }
 
 /**

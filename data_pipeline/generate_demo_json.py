@@ -98,6 +98,24 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
             f"Live snapshot rejected ({unsafe}); showing demo data",
             summary,
         )
+    # Rule 5: an unsafe game is dropped with a recorded reason and the others are published; the page falls back to the
+    # demo only when no game is left. The checks above are about the run and the snapshot as a whole.
+    safe, dropped = _split_games(run, snapshot)
+    if not safe:
+        index, problem = dropped[0]
+        return None, _status(
+            config.DATA_MODE_FALLBACK,
+            f"Live snapshot rejected (game {index}: {problem}); showing demo data",
+            summary,
+        )
+    if dropped:
+        for index, problem in dropped:
+            print(f"[CONFIG] Live game dropped: game {index}: {problem}")
+        snapshot = {**snapshot, **_primary_game(safe[0]), "live_games": safe}
+        summary["errors"] = [
+            *summary["errors"],
+            *({"source": "snapshot", "code": "game_rejected", "message": f"game {i}: {p}"} for i, p in dropped),
+        ]
     return snapshot, _status(config.DATA_MODE_SNAPSHOT, "Live run ok", summary)
 
 
@@ -138,18 +156,20 @@ def _parse_date(value: Any) -> date | None:
         return None
 
 
+def _run_dates(run: dict[str, Any]) -> tuple[date | None, date | None]:
+    return _parse_date(run.get("target_date")), _parse_date(run.get("as_of"))
+
+
 def _snapshot_unsafe(run: dict[str, Any], snapshot: dict[str, Any]) -> str | None:
     """
-    Why a snapshot that belongs to its run still cannot be published as live, or None.
+    Why a snapshot that belongs to its run still cannot be published as live at all, or None.
 
-    Equal strings prove ownership, not safety (QA2-01). Every date is parsed and the
-    relationships D29 relies on are checked: the cutoff of the run and of every game is before
-    the game's official date, the game is the run's game day, and no figure of any starter
-    reaches past the cutoff. A game without its dates or its starters' hands is malformed.
+    Equal strings prove ownership, not safety (QA2-01). The dates of the run are parsed and the relationship D29
+    relies on is checked: the cutoff of the run is before the game day. This is about the run and the snapshot as a
+    whole; a game that is unsafe on its own is dropped by `_split_games` (rule 5).
     """
 
-    target = _parse_date(run.get("target_date"))
-    cutoff = _parse_date(run.get("as_of"))
+    target, cutoff = _run_dates(run)
     if target is None:
         return f"run game date {run.get('target_date')!r} is not a date"
     if cutoff is None:
@@ -160,11 +180,32 @@ def _snapshot_unsafe(run: dict[str, Any], snapshot: dict[str, Any]) -> str | Non
     games = snapshot.get("live_games")
     if not isinstance(games, list) or not games:
         return "the snapshot has no games"
-    for index, game in enumerate(games, start=1):
+    return None
+
+
+def _split_games(run: dict[str, Any], snapshot: dict[str, Any]) -> tuple[list[Any], list[tuple[int, str]]]:
+    """The games that are safe to publish and, for each of the others, its place (from 1) and why it is not."""
+
+    target, cutoff = _run_dates(run)
+    assert target is not None and cutoff is not None  # `_snapshot_unsafe` has accepted them
+    safe: list[Any] = []
+    dropped: list[tuple[int, str]] = []
+    for index, game in enumerate(snapshot["live_games"], start=1):
         problem = _game_unsafe(game, target, cutoff)
         if problem:
-            return f"game {index}: {problem}"
-    return None
+            dropped.append((index, problem))
+        else:
+            safe.append(game)
+    return safe, dropped
+
+
+_PRIMARY_KEYS = ("featured_game", "away_starter", "home_starter", "combined_charts", "away_team_splits", "home_team_splits")
+
+
+def _primary_game(game: dict[str, Any]) -> dict[str, Any]:
+    """The fields of the snapshot that repeat its first game, taken from the first game that is left."""
+
+    return {key: game[key] for key in _PRIMARY_KEYS if key in game}
 
 
 def _game_unsafe(game: Any, target: date, cutoff: date) -> str | None:
@@ -192,8 +233,9 @@ def _game_unsafe(game: Any, target: date, cutoff: date) -> str | None:
         starter = game.get(slot)
         if not isinstance(starter, dict) or not starter.get("name"):
             return f"{slot} has no name"
-        if starter.get("throws") not in ("L", "R"):
-            return f"{slot} throws {starter.get('throws')!r}, not L or R"
+        # A switch pitcher ("S") is a hand: the lineup he faces has no split and the page says so (F11, D38).
+        if starter.get("throws") not in ("L", "R", "S"):
+            return f"{slot} throws {starter.get('throws')!r}, not L, R or S"
         scopes = (starter.get("season_summary") or {}).get("scopes")
         if not isinstance(scopes, dict) or set(scopes) != {"season_rates", "counts"}:
             return f"{slot} has no scope for each group of figures (a snapshot from before P0.15-B)"

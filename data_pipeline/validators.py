@@ -1,4 +1,4 @@
-"""Lightweight stdlib validation for the PitchCraft v0.5.0 demo payload."""
+"""Lightweight stdlib validation for the PitchCraft v0.6.0 demo payload."""
 
 from __future__ import annotations
 
@@ -161,8 +161,8 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
                 "bio missing",
             )
             record(
-                f"{label}: {slot}.throws is L or R",
-                isinstance(starter, Mapping) and starter.get("throws") in ("L", "R"),
+                f"{label}: {slot}.throws is L, R or S",
+                isinstance(starter, Mapping) and starter.get("throws") in ("L", "R", "S"),
                 f"found {starter.get('throws')!r}" if isinstance(starter, Mapping) else "starter missing",
             )
 

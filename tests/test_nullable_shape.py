@@ -51,8 +51,8 @@ def no_pitch_cells(payload) -> int:
 
 
 def test_the_schema_is_0_5_0_and_a_snapshot_of_0_4_0_is_not_read():
-    assert SCHEMA_VERSION == "0.5.0"
-    assert snapshot_matches_schema("0.5.0") and not snapshot_matches_schema("0.4.0")
+    assert SCHEMA_VERSION == "0.6.0"
+    assert snapshot_matches_schema("0.6.0") and not snapshot_matches_schema("0.5.0") and not snapshot_matches_schema("0.4.0")
 
 
 def test_the_demo_file_says_the_schema_it_is_written_under():

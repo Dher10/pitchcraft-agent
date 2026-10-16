@@ -182,16 +182,20 @@ def build_offense(
     the lineup has a figure (DATA_CONTRACT rule 3): a split with no OPS, K% or BB% is no split.
     """
 
-    hand = starter_hand if starter_hand in ("L", "R") else starter_hand[:1]
+    # A lineup has a split only against L or R. Against a switch pitcher ("S") or an unknown hand it has none: no label, no
+    # figure, no scope. It used to read the right-handed split for him under the label "SHP" (F11, D38).
+    hand = starter_hand if starter_hand in ("L", "R") else None
     profile: dict[str, Any] = {
         "summary_label": None,
-        "vs_pitcher_hand": f"{hand}HP",
+        "vs_pitcher_hand": f"{hand}HP" if hand else None,
         "ops_vs_hand": None,
         "k_rate_vs_hand": None,
         "bb_rate_vs_hand": None,
         "recent_form": None,
         "scope": None,
     }
+    if hand is None:
+        return profile
     split = (splits or {}).get("vl" if hand == "L" else "vr", {})
     figures = {
         "ops_vs_hand": _format_ops(split.get("ops")),

@@ -221,6 +221,7 @@ def test_matrix_cells_that_no_source_can_tell_apart_publish_the_same_file():
 # --- the hard cases --------------------------------------------------------------------------------
 
 PUBLISHED_HARD_CASES = [
+    "switch_pitcher",
     "statcast_gap",
     "statcast_short",
     "statcast_short_season",
@@ -428,15 +429,18 @@ def test_hard_an_unknown_team_has_no_abbreviation_instead_of_question_marks():
     assert teams["away"]["abbreviation"] != "???"
 
 
-@pytest.mark.xfail(strict=True, reason="F11: one switch pitcher sends the whole snapshot to the demo fallback")
 def test_hard_a_switch_pitcher_is_published_and_no_sentence_names_his_hand():
     outcome = hard_outcome("switch_pitcher")
 
     assert outcome.live, outcome.status["reason"]
     matchup = outcome.matchup
     assert matchup["starters"]["away_starter"]["throws"] == "S"
-    assert matchup["teams"]["home"]["offense_profile"]["ops_vs_hand"] is None  # no split for a hand that is not L or R
+    offense = matchup["teams"]["home"]["offense_profile"]  # the lineup he faces
+    assert offense["vs_pitcher_hand"] is None and offense["ops_vs_hand"] is None  # no split for a hand that is not L or R
+    assert offense["summary_label"] is None and offense["scope"] is None
     assert "SHP" not in str(matchup["report"])
+    assert "Season offense data cannot be matched to this pitcher's hand" in str(matchup["report"])
+    assert outcome.failed == [] and outcome.record["status"] == "ok"
 
 
 @pytest.mark.parametrize("column", ["stand", "release_speed", "plate_x", "plate_z", "pitch_type"])

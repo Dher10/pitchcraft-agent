@@ -96,7 +96,7 @@ export interface Team {
 
 export interface OffenseProfile {
   summary_label: string | null;
-  vs_pitcher_hand: string;
+  vs_pitcher_hand: string | null;
   ops_vs_hand: string | null;
   k_rate_vs_hand: string | null;
   bb_rate_vs_hand: string | null;

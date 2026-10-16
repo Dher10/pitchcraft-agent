@@ -2,7 +2,7 @@ import type { PitchLocation, SeasonSummary, Starter, StarterLine } from "@/lib/t
 import StatTile from "@/components/StatTile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram from "@/components/ZoneDiagram";
-import { formatFigure } from "@/lib/format";
+import { formatFigure, throwingHand } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 
 interface StarterCardProps {
@@ -43,7 +43,7 @@ export default function StarterCard({
       ].filter(Boolean)
     : ["Bio not available"];
 
-  const throwsHand = normalizeThrows(starter.throws);
+  const throwsHand = throwingHand(starter.throws);
   const teamColor = getTeamColor(starter.team);
 
   return (
@@ -62,7 +62,8 @@ export default function StarterCard({
       </div>
       <p className="mt-2 text-[11px] leading-5 text-neutral-500">{bio.join(" · ")}</p>
       <p className="mt-1 text-[12px] font-semibold text-neutral-700">
-        {throwsHand}HP &middot; {starter.pitching_profile.style_label}
+        {throwsHand ? <>{throwsHand}HP &middot; </> : null}
+        {starter.pitching_profile.style_label}
       </p>
       <dl className="mt-4 grid grid-cols-3 gap-2">
         <StatTile label="ERA" title="Earned Run Average. Lower is better." value={formatFigure(starter.season_summary.era)} />
@@ -144,10 +145,6 @@ function scopeCaptions(summary: SeasonSummary): string[] {
   if (rates) captions.push(`ERA and WHIP: ${rates.label}`);
   if (counts) captions.push(`K: ${counts.label}`);
   return captions;
-}
-
-function normalizeThrows(raw: string): "L" | "R" {
-  return raw?.toUpperCase().startsWith("L") ? "L" : "R";
 }
 
 function gradeClass(grade: string) {

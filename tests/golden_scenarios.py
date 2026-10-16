@@ -153,6 +153,7 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "live_measured_zero_counts": live(mp, away=measured_zero_sample(), edit=_measured_zero_counts),
         "live_unknown_figures": from_the_pipeline(mp, "unknown_figures"),
         "live_unnamed_lead_pitch": from_the_pipeline(mp, "unmapped_pitch_code"),
+        "live_switch_pitcher": from_the_pipeline(mp, "switch_pitcher"),
     }
 
 

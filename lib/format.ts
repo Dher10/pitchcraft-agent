@@ -13,6 +13,12 @@ export function formatFigure(value: string | number | null | undefined): string 
   return text === "" || text === "N/A" ? UNAVAILABLE : text;
 }
 
+/** Only a hand the data gives is shown: anything else (a switch pitcher, a missing value) names no hand. */
+export function throwingHand(raw: string | null | undefined): "L" | "R" | null {
+  const hand = raw?.toUpperCase().charAt(0);
+  return hand === "L" || hand === "R" ? hand : null;
+}
+
 export const START_TIME_UNAVAILABLE = "Start time not available";
 
 const UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;

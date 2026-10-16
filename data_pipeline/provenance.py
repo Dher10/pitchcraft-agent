@@ -420,6 +420,23 @@ def _has_figures(offense: Mapping[str, Any]) -> bool:
     return any(offense.get(key) is not None for key in ("ops_vs_hand", "k_rate_vs_hand", "bb_rate_vs_hand"))
 
 
+def vs_hand_label(c: Ctx) -> Problem | None:
+    """
+    "LHP" or "RHP" of the starter this lineup faces; `null` for a hand a lineup has no split against (a switch pitcher,
+    or none), and then the lineup has no figure either (F11, D38: it used to read the right-handed split for him).
+    """
+
+    hand = _opposing_hand(c)
+    if hand in ("L", "R"):
+        want = f"{hand}HP"
+        return None if c.value == want else _mismatch(f"the hand of the opposing starter: expected {want!r}, found {c.value!r}")
+    if c.value is not None:
+        return _mismatch(f"the opposing starter throws {hand!r}, a hand with no split: the label is unavailable, found {c.value!r}")
+    if _has_figures(_offense(c)):
+        return _mismatch(f"the lineup has figures against a starter who throws {hand!r}, a hand it has no split against")
+    return None
+
+
 def offense_text(c: Ctx) -> Problem | None:
     offense = _offense(c)
     if c.field == "summary_label":
@@ -594,7 +611,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "teams.*.abbreviation", "schedule team abbreviation, or the id and name maps; none for a team they do not know", STR, True, team_abbreviation),
         _source(M + "teams.*.record", "no live source", (), True, is_none),
         _derived(M + "teams.*.offense_profile.summary_label", "present iff the lineup has a figure", STR, True, offense_text),
-        _derived(M + "teams.*.offense_profile.vs_pitcher_hand", "the hand of the starter this lineup faces", STR, False, equals(lambda c: f"{_opposing_hand(c)}HP", "the hand of the opposing starter")),
+        replace(_derived(M + "teams.*.offense_profile.vs_pitcher_hand", "the hand of the starter this lineup faces; none for a hand with no split (S)", STR, True, vs_hand_label), check_null=True),
         _source(M + "teams.*.offense_profile.ops_vs_hand", "Savant plate appearances against that hand", STR, True, matches(_OPS, "an OPS")),
         _source(M + "teams.*.offense_profile.k_rate_vs_hand", "Savant plate appearances against that hand", STR, True, matches(_PERCENT, "a percentage")),
         _source(M + "teams.*.offense_profile.bb_rate_vs_hand", "Savant plate appearances against that hand", STR, True, matches(_PERCENT, "a percentage")),

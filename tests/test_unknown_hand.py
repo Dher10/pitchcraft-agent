@@ -5,9 +5,9 @@ right-hander, and a switch pitcher was "SHP". A lineup is read against the hand 
 and `R` are a hand a lineup has a split against. With any other value (`S`, or none) the lineup read says it cannot be
 matched and makes no offense claim (`analyst.offense.unavailable_no_hand`).
 
-The lineup that faces the switch pitcher is the one `live_matchup.build_offense` writes for `S` today (a label
-"SHP" and the figures of the right-handed split); the pipeline's own switch pitcher reaches no page until F11 (D2.3b),
-which adds it to the golden file.
+The lineup that faces the switch pitcher is written by `live_matchup.build_offense("S", ...)`; since D2.3b the pipeline
+publishes that game and the golden scenario `live_switch_pitcher` is its real path. Before D2.3b the same lineup carried
+the label "SHP" and the right-handed split, and these tests show the analyst did not trust it.
 
 Controls (they pass before the fix): a known hand keeps its sentences, word for word.
 """
@@ -59,7 +59,6 @@ def switch_matchup(monkeypatch) -> dict:
     matchup["starters"][AWAY]["throws"] = "S"
     scope = labels.make_scope(labels.SCOPE_REGULAR, "2026-07-03")
     matchup["teams"]["home"]["offense_profile"] = live_matchup.build_offense("S", SPLITS_VR, scope)
-    assert matchup["teams"]["home"]["offense_profile"]["vs_pitcher_hand"] == "SHP"
     return matchup
 
 

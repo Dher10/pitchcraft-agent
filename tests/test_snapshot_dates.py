@@ -162,7 +162,7 @@ SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
 
 @pytest.mark.parametrize(
     "version",
-    [None, "0.3.0", "0.2.0", "0.4.0", "0.5.1", "1.0.0", "0.5", "v0.5.0", "garbage", "", 4, " 0.5.0"],
+    [None, "0.3.0", "0.2.0", "0.4.0", "0.5.0", "0.6.1", "1.0.0", "0.6", "v0.6.0", "garbage", "", 4, " 0.6.0"],
     ids=repr,
 )
 def test_a_snapshot_whose_schema_is_not_exactly_the_codes_is_not_live(template, version):
