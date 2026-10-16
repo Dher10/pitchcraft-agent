@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatFigure, formatStartTime } from "@/lib/format";
+import { formatFigure, formatStartTime, todayInNewYork } from "@/lib/format";
 import type { Game } from "@/lib/types";
 
 const LIVE: Game = {
@@ -80,5 +80,27 @@ describe("formatStartTime (D33)", () => {
 
   it("says the time is unavailable when there is nothing to show", () => {
     expect(formatStartTime({ ...LIVE, start_time_utc: null })).toBe("Start time not available");
+  });
+});
+
+// P0.15-D2.5b (F12, contract rule 7): "today" is the date in the game's official zone (America/New_York, D29), never the
+// UTC date of the machine that renders the page.
+describe("todayInNewYork", () => {
+  it("is still the 4th at 01:30 UTC on the 5th (the evening of the 4th in New York, summer)", () => {
+    expect(todayInNewYork(new Date("2026-07-05T01:30:00Z"))).toBe("2026-07-04");
+  });
+
+  it("is the 5th from 04:00 UTC (midnight in New York, summer)", () => {
+    expect(todayInNewYork(new Date("2026-07-05T04:00:00Z"))).toBe("2026-07-05");
+    expect(todayInNewYork(new Date("2026-07-05T03:59:59Z"))).toBe("2026-07-04");
+  });
+
+  it("uses winter time in winter: 04:30 UTC on January 5th is 23:30 on the 4th", () => {
+    expect(todayInNewYork(new Date("2026-01-05T04:30:00Z"))).toBe("2026-01-04");
+    expect(todayInNewYork(new Date("2026-01-05T05:00:00Z"))).toBe("2026-01-05");
+  });
+
+  it("control: a time in the middle of the day is the same day in both zones", () => {
+    expect(todayInNewYork(new Date("2026-07-05T16:00:00Z"))).toBe("2026-07-05");
   });
 });

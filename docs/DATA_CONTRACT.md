@@ -136,7 +136,7 @@ Examples: F3 (the Hero says "Cached Demo" over live data), F4 (`matchup_002`, "B
 
 - The published `status` is derived from the schedule's game state through one table, `schema.GAME_STATUS` (F5, closed in P0.15-D2.5a; schema 0.8.0, D40): `upcoming` (`Preview` / `Scheduled` or `Pre-Game`), `live` (`Live` / `In Progress`), `final` (`Final` / `Final`, `Game Over` or `Completed Early`), and `null` for every other pair, a missing part included. `abstractGameState` alone is not enough: measured on 2026-10-16 over 208 games, a postponed or cancelled game arrives as `Final` with `detailedState` `Postponed` or `Cancelled`, so `final` means a game that ended. The table lists only the pairs the owner named or a real answer showed; it grows with real answers, not by guess. `data_confidence.lineup_status` follows the status (`probable_pitchers` for upcoming, `game_started` for live and final, `null` for `null`). A live game that is `final` keeps its pregame report and its postgame stays `null` until the daily postgame exists (P1.2): it is never sent to the grader.
 - A live or final game keeps the pregame report (the cutoff is the day before, D29) and shows its real status. The postgame stays `null` until the daily postgame exists (P1.2); no text promises one.
-- The official date of a game is `officialDate` (America/New_York, D29). "Today" on the page is the current date in that zone, not the UTC date of the machine that renders it (F12).
+- The official date of a game is `officialDate` (America/New_York, D29). "Today" on the page is the current date in that zone, not the UTC date of the machine that renders it (F12, closed in P0.15-D2.5b: `lib/format.ts` `todayInNewYork`, the same `newYorkDay` that the mode line uses).
 - A start time is a UTC instant shown in the venue's zone when the schedule gives one, otherwise as UTC (D33).
 
 ### Rule 8. No internals in the public file
@@ -252,7 +252,7 @@ Texts of the generator that are not keys: `metadata.data_sources` and `disclaime
 | Mode line "Demo data: live data unavailable" | The page shows demo data. | `data_mode` is `demo_fallback` or `demo_cached` (one text for both, owner's decision, 2026-10-16); any other mode is shown as demo, never as live |
 | Mode line "Live data · fetch time not available" | A live file has no usable fetch time. | `data_mode == fetched_snapshot` and the instant is missing or not a UTC-offset instant; unreachable in a validated live file (the manifest requires the instant), shown instead of an invented date (P0.15-D2.4b, not in the owner's list of texts: reported in the commit) |
 | Hero, layout description, footer disclaimer | Describe the product, not the data. | Neutral text in every mode; the live sources and disclaimers in a live file, the demo's in a demo file (F3, closed in P0.15-D2.4b) |
-| Carousel badge "Today" | The game's date is today. | `matchup.date` equals the current date in America/New_York (F12) |
+| Carousel badge "Today" | The game's date is today. | `matchup.date` equals the current date in America/New_York (F12, closed in P0.15-D2.5b; `components/__tests__/DateBadge.test.tsx` fixes the clock at 01:30 UTC, when the UTC date is already the next day) |
 | Status badge | The game's state. | Equals the published `status` |
 | Start time "7:05 PM EDT" / "23:05 UTC" | The game starts then. | `start_time_utc` valid; zone is `game.timezone` or UTC (D33) |
 | Starter card captions "ERA, WHIP and K: {scope}" | The scope of the group. | The group has figures and `scopes.*` equals `{scope}` (rule 3) |
@@ -283,7 +283,7 @@ Section titles other than "Today's Matchup Summary", team names, pitch names, co
 | F9 | 6 | P0.15-D2.4c (done) | `generated_at` is the fetch time, or a demo constant. Now `metadata.data_fetched_at` (live fetch, `null` in a demo file) and `generated_at` (the build, always real) are two fields; the labels that say "fetched" show the New York day of the fetch, not the game day. Schema 0.7.0 (D39); `rule6:data_fetched_at`, `rule4:generator.metadata.last_updated.live#fetched_at` and `rule4:generator.confidence.live_note#fetched_at` left `known_violations.py` |
 | F10 | 8 | P0.15-D2.3c (done) | Raw exception text in the public file |
 | F11 | 5 | P0.15-D2.3b (done) | One unsafe game (or hand `S`) rejects the whole snapshot |
-| F12 | 7 | P0.15-D2.5 | "Today" compared with the UTC date |
+| F12 | 7 | P0.15-D2.5b (done) | "Today" compared with the UTC date. `GameCarousel` now compares the game's date with `todayInNewYork()` (injectable `today` prop for tests); a page rendered in the evening in New York, when the UTC date is already the next day, no longer calls the next UTC day's games "Today" |
 | F13 | — | not touched | What the page renders of the report is a small part of it |
 | F14 | 2, 4 | P0.15-D2.2b (done) | "no batters (pitches) faced on record" written for a `null` count (`agents/matchup_analyst.py`) |
 | F15 | 2 | P0.15-D2.3a (done) | The analyst falls back to the right hand (`starter.get("throws", "R")`, `_throws_label`); with hand `S` it would write "SHP" |

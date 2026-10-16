@@ -1,7 +1,7 @@
 "use client";
 
 import TeamBadge from "@/components/TeamBadge";
-import { UNAVAILABLE, formatStartTime } from "@/lib/format";
+import { UNAVAILABLE, formatStartTime, todayInNewYork } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 import { teamLabel } from "@/lib/teamLabel";
 import type { ArchiveItem, Matchup } from "@/lib/types";
@@ -12,6 +12,8 @@ interface GameCarouselProps {
   featuredId: string;
   selectedId: string;
   onSelect: (matchupId: string) => void;
+  /** Today in New York as YYYY-MM-DD; the clock when absent (tests give it). */
+  today?: string;
 }
 
 export default function GameCarousel({
@@ -20,7 +22,9 @@ export default function GameCarousel({
   featuredId,
   selectedId,
   onSelect,
+  today,
 }: GameCarouselProps) {
+  const todayDate = today ?? todayInNewYork();
   return (
     <section className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -52,7 +56,7 @@ export default function GameCarousel({
               />
               <div className="px-3.5 pb-4 pt-3">
                 <div className="flex items-center justify-between gap-2">
-                  <DateBadge date={matchup.date} />
+                  <DateBadge date={matchup.date} today={todayDate} />
                   <span className={`rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide ${statusClass(matchup.status, isFeatured)}`}>
                     {isFeatured ? "recommended" : statusLabel(matchup.status)}
                   </span>
@@ -83,8 +87,7 @@ export default function GameCarousel({
   );
 }
 
-function DateBadge({ date }: { date: string }) {
-  const today = new Date().toISOString().slice(0, 10);
+function DateBadge({ date, today }: { date: string; today: string }) {
   const label = date === today ? "Today" : date;
   return <span className="font-mono text-[11px] font-medium text-neutral-400">{label}</span>;
 }

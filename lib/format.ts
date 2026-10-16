@@ -74,6 +74,14 @@ function newYorkDay(instant: string | null | undefined): string | null {
 }
 
 /**
+ * Today's date in America/New_York, the zone of the official date of a game (D29, contract rule 7), written YYYY-MM-DD.
+ * Never the UTC date of the machine that renders the page: at 01:30 UTC the evening games of the day before are still today.
+ */
+export function todayInNewYork(now: Date = new Date()): string {
+  return newYorkDay(now.toISOString()) as string; // a valid Date always gives a valid instant
+}
+
+/**
  * The line that says what the page shows (contract rule 6). Live only for `fetched_snapshot`, with the day the data was
  * fetched in New York; every other mode, known or not, is demo data. The date is never the browser's or the server's.
  */

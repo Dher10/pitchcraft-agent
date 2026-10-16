@@ -4,6 +4,16 @@ The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so th
 
 ## Session log
 
+### 2026-10-16 — P0.15-D2.5b "Today" is the date in New York (F12; no payload change) (Claude Code, D35 lane)
+
+- **Class:** a time computed in the wrong zone. One mechanism: `lib/format.ts` `todayInNewYork(now)` is built on the `newYorkDay` the mode line already uses (D2.4b), so the page has one function that turns an instant into the day it says. `GameCarousel` computes today once (`today` prop, injectable) and passes it to `DateBadge`; the old `new Date().toISOString().slice(0, 10)` is gone.
+- **What changed:** `lib/format.ts`, `components/GameCarousel.tsx`, contract (rule 7 text, 3.3 row, F12 row), PLAN, STATUS. No Python, no payload, served JSON unchanged.
+- **Seen failing first:** 6 of the 7 new tests of the first run (4 of `todayInNewYork`, which did not exist, and 2 of the badge: it ignored the `today` prop and compared with the UTC date, so at 01:30 UTC on the 5th it called the 5th "Today" and the 4th a date). The one that passed before is the control: the mid-day clock where both zones agree. A component test with a January clock was added after the review (8 in all). Mutations: the badge back to the UTC date (1 red), the New York zone replaced by Los Angeles (2 red). Winter time is covered in the function and in the badge (`2026-01-05T04:30Z` is the 4th).
+- **Hydration note:** `GameCarousel` is a client component that the server also renders; the two clocks differ only in the seconds around midnight in New York, when the label may flip between the server's render and the browser's. Left as it is (a page is a snapshot of a file; the label is one word); not worth a `suppressHydrationWarning` that would hide real mismatches.
+- **Real-page check (Playwright tools not used: the page is server-rendered, so `curl` of `next start` shows what the server says):** a live payload dated today in New York (2026-10-16, when the UTC date was the same) shows "Today"; the effect at midnight UTC is what the fake-clock tests fix at 01:30 UTC. The served file was restored.
+- **Sweep:** every `toISOString()`/`new Date()` in `app/`, `components/` and `lib/`: the other `new Date(...)` (`formatStartTime`, `newYorkDay`) only parse an instant the file gives; `todayInNewYork` is now the only reader of the machine's clock, and `DateBadge` was the only one that used it.
+- **Verification (default terminal):** `python -m pytest` 2925 passed, 2 skipped (no Python change); `npm test` 119 passed; `npx tsc --noEmit`, `npm run lint`, `npm run build` exit 0 (build run before the last test was added, no source changed since). Reviewer: round 1 PASS (record corrected: test counts and controls, the wording of the evening hour). CI of `dec88d7` green before this commit.
+
 ### 2026-10-16 — P0.15-D2.5a the game state comes from the schedule (F5; schema 0.8.0, D40) (Claude Code, D35 lane)
 
 - **Owner's instructions (plan of D2.5 approved with decisions, 2026-10-16):** D35 applies; before the commit, read `detailedState` (and `codedGameState`) from the real schedule: `final` only for a game that ended; postponed, suspended, cancelled or unlisted is `null`; a hard case for the postponed game; D40 with the proposed text; D39 "amended by D40"; the plan saved in `docs/plans/P0.15-D2.5.md`.
