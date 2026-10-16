@@ -113,3 +113,20 @@ def test_unavailable_figures_are_shown_as_unavailable_not_as_numbers(payload):
                 value = summary[field]
                 assert value == "N/A" or re.fullmatch(r"\d+(\.\d+)?", str(value)), (matchup["id"], field)
         assert not re.search(r"\bN/A\b", json.dumps(matchup["report"])), matchup["id"]
+
+
+def test_the_reason_of_the_served_file_is_never_a_sentence(payload):
+    """D39 (P0.15-D2.4b): a demo file with no live run says `{pipeline, no_live_run}`, not a sentence."""
+
+    reason = payload["metadata"]["data_status"]["reason"]
+
+    assert reason is None or (isinstance(reason, dict) and set(reason) == {"source", "code"}), reason
+
+
+def test_a_live_served_file_describes_its_data_without_demo_wording(payload):
+    # skipped while the served file is a demo one; the live case is covered by tests/test_live_file_neutral_text.py
+    if payload["metadata"]["data_mode"] != "fetched_snapshot":
+        pytest.skip("demo file: it keeps its demo wording")
+    text = json.dumps([payload["disclaimers"], payload["metadata"]["data_sources"], payload["agent_workflow"]])
+
+    assert not re.search(r"cached|capstone|demo|judging", text, re.IGNORECASE)

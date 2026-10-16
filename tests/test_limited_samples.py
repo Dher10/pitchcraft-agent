@@ -243,7 +243,7 @@ def test_a_debut_payload_still_validates(monkeypatch):
     matchup["date"] = "2026-07-05"
     payload["matchups"][0] = matchup
     payload["featured_matchup_id"] = matchup["id"]
-    monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "", "live_run": None})
+    monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": {"source": "pipeline", "code": "no_live_run"}, "live_run": None})
 
     total_warnings, graded_starters = gdj._run_agents(payload["matchups"])
     # What build_payload does after the agents: the mode, the generator's own sentences, then the claims of every sentence.

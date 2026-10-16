@@ -34,11 +34,12 @@ SNAPSHOT_UNREADABLE = {"source": "snapshot", "code": "malformed_response"}
 GAME_REJECTED = {"source": "snapshot", "code": "game_rejected"}
 NO_GAMES = {"source": "mlb_schedule", "code": "no_games"}
 NO_USABLE_GAMES = {"source": "pipeline", "code": "no_usable_games"}
+NO_LIVE_RUN = {"source": "pipeline", "code": "no_live_run"}  # a demo file for a day with no live run at all (D39)
 UNEXPECTED = {"source": "pipeline", "code": "unexpected_error"}
 PUBLISHED_LIST_LIMIT = 20
 
 
-def _status(mode: str, reason: str | dict[str, str] | None, live_run: dict[str, Any] | None) -> dict[str, Any]:
+def _status(mode: str, reason: dict[str, str] | None, live_run: dict[str, Any] | None) -> dict[str, Any]:
     return {"mode": mode, "reason": reason, "live_run": live_run}
 
 
@@ -108,7 +109,7 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
         print(f"[CONFIG] Live run record unreadable: {exc}")
         return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_UNREADABLE), None)
     if run is None:
-        return None, _status(config.DATA_MODE_DEMO, "No live run; showing demo data", None)
+        return None, _status(config.DATA_MODE_DEMO, dict(NO_LIVE_RUN), None)
 
     summary = _run_summary(run)
     if run.get("status") != "ok":
@@ -449,6 +450,9 @@ def _apply_live_snapshot(payload: dict[str, Any]) -> None:
         ),
     ]
     payload["archive"] = []
+    # Rule 6 (F3): what a live file says about its data is its own, not the demo's.
+    payload["metadata"]["data_sources"] = list(config.LIVE_SOURCE_LABELS)
+    payload["disclaimers"] = list(config.LIVE_DISCLAIMERS)
 
     payload["metadata"]["data_mode"] = "fetched_snapshot"
     payload["metadata"]["generated_at"] = _live["run_at"]

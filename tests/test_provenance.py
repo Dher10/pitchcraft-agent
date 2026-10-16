@@ -140,10 +140,25 @@ def test_rule_1_a_constant_that_asserts_a_fact_is_a_violation_whatever_its_value
     for pattern in (
         "matchups[].status",
         "matchups[].data_confidence.lineup_status",
-        "metadata.data_sources[]",
         "agent_workflow.steps[].status",
     ):
         assert f"rule1:constant_asserts_fact#{pattern}" in found, pattern
+    assert "rule1:constant_asserts_fact#metadata.data_sources[]" not in found  # F3 (D2.4b): a label of a closed set
+
+
+def test_rule_1_the_sources_and_disclaimers_of_a_live_file_are_the_ones_it_may_say(live):
+    """F3 (D2.4b): a live file lists the live sources and the live disclaimers; the demo's are not labels of a live file."""
+
+    assert "rule1:wrong_type#metadata.data_sources[]" not in codes(live)
+    assert "rule1:wrong_type#disclaimers[]" not in codes(live)
+    for edit, pattern in (
+        (lambda p: p["metadata"]["data_sources"].append("Cached demo snapshots (always available)"), "metadata.data_sources[]"),
+        (lambda p: p["disclaimers"].append("PitchCraft is a capstone demo and not a betting or gambling tool."), "disclaimers[]"),
+    ):
+        payload = deepcopy(live)
+        edit(payload)
+
+        assert f"rule1:wrong_type#{pattern}" in codes(payload), pattern
 
 
 def test_rule_1_the_postgame_step_reads_its_result_and_the_other_four_do_not(live):

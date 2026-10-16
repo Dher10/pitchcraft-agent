@@ -38,7 +38,7 @@ def build(monkeypatch, kind: str) -> dict[str, Any]:
 
     if kind == "demo":
         monkeypatch.setattr(gdj, "_live", None)
-        monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "Demo data", "live_run": None})
+        monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": {"source": "pipeline", "code": "no_live_run"}, "live_run": None})
     elif kind == "fallback":
         monkeypatch.setattr(gdj, "_live", None)
         status = {"mode": "demo_fallback", "reason": {"source": "mlb_schedule", "code": "request_failed"}, "live_run": None}

@@ -39,7 +39,7 @@ import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from data_pipeline import labels
+from data_pipeline import config, labels
 from data_pipeline.schema import CRITIC_STATUSES, SCHEMA_VERSION, is_utc_instant
 
 LIVE_MODE = "fetched_snapshot"
@@ -560,11 +560,11 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _derived("metadata.data_mode", "the generator's reading of the live run", STR, False, equals(lambda c: LIVE_MODE, "a live file")),
         _source("metadata.generated_at", "the time of the live run (F9: the fetch and the build are not told apart yet)", STR, False, is_instant),
         _claim("metadata.last_updated_label"),
-        _fact("metadata.data_sources[]", "F3", "names the sources the file uses; a live file lists 'Cached demo snapshots'"),
+        _label("metadata.data_sources[]", "a source the live file uses (F3 closed: never a demo source)", STR, in_set(config.LIVE_SOURCE_LABELS)),
         _derived("metadata.data_status.mode", "the generator's reading of the live run", STR, False, equals(lambda c: LIVE_MODE, "a live file")),
         _source("metadata.data_status.reason", "null for a live file; a source and a code for a fallback (rule 8 judges its shape)", (str, dict), True),
         _source("metadata.data_status.live_run.**", "the run record; rule 8 judges its shape", (), True),
-        _label("disclaimers[]", "a disclaimer; rule 6 judges its wording in a live file"),
+        _label("disclaimers[]", "a live disclaimer (F3 closed: never the demo's); rule 6 also judges its wording", STR, in_set(config.LIVE_DISCLAIMERS)),
         _record("claims[].**"),
         _claim("agent_workflow.description"),
         _label("agent_workflow.steps[].agent", "the name of an agent", STR, in_set((*FIXED_STATUS_STEPS, POSTGAME_STEP))),

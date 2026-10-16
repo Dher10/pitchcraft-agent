@@ -277,7 +277,7 @@ def test_an_unreadable_run_record_is_a_fallback_not_a_silent_demo(isolated, caps
 def test_fallback_payload_is_labelled_demo_and_carries_the_failure(monkeypatch):
     status = {
         "mode": "demo_fallback",
-        "reason": "Live run failed",
+        "reason": {"source": "statcast_pitcher", "code": "request_failed"},
         "live_run": {
             "status": "failed",
             "run_at": "2026-07-15T12:00:00+00:00",
@@ -300,7 +300,7 @@ def test_fallback_payload_is_labelled_demo_and_carries_the_failure(monkeypatch):
 
 def test_plain_demo_payload_says_demo_cached(monkeypatch):
     monkeypatch.setattr(gdj, "_live", None)
-    monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": "Demo data", "live_run": None})
+    monkeypatch.setattr(gdj, "_live_status", {"mode": "demo_cached", "reason": {"source": "pipeline", "code": "no_live_run"}, "live_run": None})
 
     payload = gdj.build_payload()
 

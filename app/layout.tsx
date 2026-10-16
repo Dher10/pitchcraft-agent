@@ -18,7 +18,7 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: NextMetadata = {
   title: "PitchCraft Matchup Agent",
-  description: "Cached matchup data becomes a readable report with critic review.",
+  description: "Starting-pitcher matchup reports for MLB fans, checked against public data. No predictions, no betting.",
 };
 
 export default function RootLayout({

@@ -139,7 +139,7 @@ def test_the_text_of_the_generator_is_the_one_it_always_wrote(built):
     steps = [step["output"] for step in payload["agent_workflow"]["steps"]]
     count = len(payload["matchups"])
 
-    assert steps[0] == f"Loaded cached data for {count} matchups."
+    assert steps[0] == f"Loaded data for {count} matchups."
     assert steps[1] == "Identified pitcher strengths, risks, and lineup pressure points."
     assert steps[2] == "Generated fan-friendly scouting report."
     assert steps[3].startswith("Checked every claim against the data: none unsupported, ")

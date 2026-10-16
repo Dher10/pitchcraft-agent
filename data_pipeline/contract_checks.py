@@ -30,7 +30,7 @@ from data_pipeline.claims_registry import LIVE_LEVEL, ClaimIndex, Ctx, classify,
 
 LIVE_MODE = "fetched_snapshot"
 
-# Rule 8: what a published error may say (DATA_CONTRACT.md, rule 8).
+# Rule 8: what a published error may say (DATA_CONTRACT.md, rule 8). The codes are D38's, plus `no_live_run` (D39).
 RUN_SOURCES = (
     "mlb_schedule",
     "mlb_person",
@@ -57,6 +57,7 @@ RUN_ERROR_CODES = (
     "game_rejected",
     "snapshot_mismatch",
     "snapshot_schema_mismatch",
+    "no_live_run",
 )
 RUN_WARNING_CODES = ("unmapped_pitch_type", "unknown_team")
 

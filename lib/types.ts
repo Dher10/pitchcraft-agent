@@ -54,8 +54,8 @@ export interface RunIssue {
 
 export interface DataStatus {
   mode: string;
-  /** `null` for a live file; a source and a code for a fallback; a sentence only when there was no live run (demo). */
-  reason: RunIssue | string | null;
+  /** `null` for a live file; a source and a code for a fallback and for a demo file with no live run (`pipeline` / `no_live_run`). */
+  reason: RunIssue | null;
   live_run: LiveRunSummary | null;
 }
 

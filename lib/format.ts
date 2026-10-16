@@ -59,3 +59,26 @@ function inZone(date: Date, timeZone: string): string | null {
 function pad(value: number): string {
   return String(value).padStart(2, "0");
 }
+
+export const MODE_LINE_DEMO = "Demo data: live data unavailable";
+export const MODE_LINE_FETCH_UNKNOWN = "Live data · fetch time not available";
+
+const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
+/** The day of an instant in America/New_York (D29's zone), written YYYY-MM-DD; null when it is not an instant. */
+function newYorkDay(instant: string | null | undefined): string | null {
+  if (typeof instant !== "string" || !ISO_INSTANT.test(instant)) return null;
+  const date = new Date(instant);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+}
+
+/**
+ * The line that says what the page shows (contract rule 6). Live only for `fetched_snapshot`, with the day the data was
+ * fetched in New York; every other mode, known or not, is demo data. The date is never the browser's or the server's.
+ */
+export function formatModeLine(dataMode: string, fetchedAt: string | null | undefined): string {
+  if (dataMode !== "fetched_snapshot") return MODE_LINE_DEMO;
+  const day = newYorkDay(fetchedAt);
+  return day ? `Live data · fetched ${day}` : MODE_LINE_FETCH_UNKNOWN;
+}

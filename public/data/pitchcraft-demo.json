@@ -12,7 +12,10 @@
     ],
     "data_status": {
       "mode": "demo_cached",
-      "reason": "No live run; showing demo data",
+      "reason": {
+        "source": "pipeline",
+        "code": "no_live_run"
+      },
       "live_run": null
     },
     "language": "en"
@@ -2386,7 +2389,7 @@
       {
         "agent": "Data Scout Agent",
         "status": "completed",
-        "output": "Loaded cached data for 2 matchups."
+        "output": "Loaded data for 2 matchups."
       },
       {
         "agent": "Matchup Analyst Agent",

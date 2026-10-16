@@ -47,7 +47,7 @@ def run_with(errors=(), warnings=(), **fields):
 # --- the closed sets (D38) ------------------------------------------------------------------------------------
 
 
-def test_the_closed_sets_are_the_ones_of_d38():
+def test_the_closed_sets_are_the_ones_of_d38_and_d39():
     assert cc.RUN_SOURCES == (
         "mlb_schedule",
         "mlb_person",
@@ -74,6 +74,7 @@ def test_the_closed_sets_are_the_ones_of_d38():
         "game_rejected",
         "snapshot_mismatch",
         "snapshot_schema_mismatch",
+        "no_live_run",
     )
 
 
@@ -375,6 +376,8 @@ def test_control_without_any_run_the_demo_says_it_is_the_demo(isolated):  # noqa
     snapshot, status = gdj._resolve_live_input()
 
     assert snapshot is None and status["mode"] == "demo_cached" and status["live_run"] is None
+    assert status["reason"] == {"source": "pipeline", "code": "no_live_run"}  # D39: no free sentence in `reason`
+    assert cc._is_source_and_code(status["reason"], cc.RUN_ERROR_CODES)
 
 
 # --- the dropped game is published as a code, not as its text -------------------------------------------------

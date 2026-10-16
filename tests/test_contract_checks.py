@@ -448,11 +448,22 @@ def test_rule_4_the_workflow_must_count_what_the_file_counts(demo):
     assert "rule4:generator.workflow.loaded#count" in codes(payload)
 
 
-def test_rule_4_the_workflow_of_a_live_file_counts_only_live_matchups(live):
-    """F4 (closed in D2.4a): the live file has no demo matchup, so the count is right; F3 (D2.4b) is still open."""
+def test_rule_4_the_workflow_of_a_live_file_counts_only_live_matchups_and_says_nothing_of_a_cache(live):
+    """F4 (closed in D2.4a) and F3 (closed in D2.4b): the count is right and the sentence is neutral."""
 
     assert "rule4:generator.workflow.loaded#count" not in codes(live)
-    assert "rule4:generator.workflow.loaded#cached" in codes(live)
+    assert "rule4:generator.workflow.loaded#cached" not in codes(live)
+
+
+def test_rule_4_a_live_workflow_that_says_it_loaded_cached_data_is_found(monkeypatch):
+    """The guard stays: a live file whose first step says "cached" is a violation, whatever wrote the sentence."""
+
+    from data_pipeline import generator_texts
+
+    monkeypatch.setitem(generator_texts.GENERATOR_MESSAGES, "generator.workflow.loaded", "Loaded cached data for {count} matchups.")
+    payload = published(build(monkeypatch, "live_complete"))
+
+    assert "rule4:generator.workflow.loaded#cached" in codes(payload)
 
 
 def test_rule_4_the_label_of_a_live_file_needs_the_time_of_the_fetch(live):
@@ -493,8 +504,8 @@ def rule6(payload):
 
 
 def test_rule_6_a_live_file_with_demo_content_is_reported(live):
-    # F4 is closed (D2.4a): no demo matchup and no archive row; F3 and F9 are still open
-    assert rule6(live) == {"rule6:cached_wording", "rule6:data_fetched_at"}
+    # F4 (D2.4a) and F3 (D2.4b) are closed: no demo matchup, no archive row, no "cached" wording; F9 is still open
+    assert rule6(live) == {"rule6:data_fetched_at"}
 
 
 def test_rule_6_a_live_file_with_only_live_content_and_a_fetch_time_is_clean(live):
