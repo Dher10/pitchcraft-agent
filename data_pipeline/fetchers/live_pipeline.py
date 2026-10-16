@@ -472,6 +472,39 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         return []
 
 
+# The API's roll-up of a pitcher's splits: `sport` is `{"id": 0, "code": "All"}`.
+ALL_SPORTS_ID = 0
+
+
+def _season_line_split(splits: list[dict[str, Any]]) -> dict[str, Any]:
+    """
+    The split that is the pitcher's season line (F22).
+
+    The API answers one split per club and then an aggregate that rolls them up (sport `All`); a pitcher with one club
+    has his club's split twice, the second one with that sport. One split is the line. With several, the line is the
+    aggregate: never the first (one club only: 15 batters faced instead of 61) and never a sum made here. No
+    aggregate, two of them, or one with fewer batters faced than a club it contains is a malformed answer.
+    """
+
+    if len(splits) == 1:
+        return splits[0]
+    rollups = [s for s in splits if (s.get("sport") or {}).get("id") == ALL_SPORTS_ID]
+    if len(rollups) != 1:
+        raise mlb_schemas.SourceShapeError(
+            f"season stats response: {len(splits)} splits and {len(rollups)} aggregate (sport All) splits, "
+            "the aggregate is the line and there must be exactly one"
+        )
+    rollup = rollups[0]
+    faced = rollup["stat"].get("battersFaced")
+    for split in splits:
+        club = split["stat"].get("battersFaced")
+        if split is not rollup and club is not None and (faced is None or club > faced):
+            raise mlb_schemas.SourceShapeError(
+                f"season stats response: the aggregate split has {faced} batters faced, fewer than a club's {club}"
+            )
+    return rollup
+
+
 def fetch_pitcher_season_stats(
     pitcher_id: int,
     season: int | None = None,
@@ -517,7 +550,7 @@ def fetch_pitcher_season_stats(
         splits = _stat_splits(data, mlb_schemas.PITCHER_STATS, "season stats response")
         if not splits:
             return {}
-        stat = splits[0]["stat"]
+        stat = _season_line_split(splits)["stat"]
         result = {
             "era": stat.get("era", "N/A"),
             "whip": stat.get("whip", "N/A"),

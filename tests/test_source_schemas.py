@@ -70,6 +70,7 @@ def pitcher_stats() -> dict:
             {
                 "splits": [
                     {
+                        "sport": {"id": 1},
                         "stat": {
                             "era": "3.10",
                             "whip": "1.05",

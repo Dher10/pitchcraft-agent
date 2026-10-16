@@ -261,6 +261,9 @@ PITCHER_STATS = Obj(
                     "splits": Arr(
                         Obj(
                             {
+                                # What tells the aggregate of a traded pitcher from his clubs (F22): `sport.id` 0
+                                # ("All") is the roll-up. Optional: a line without it is read only if it is alone.
+                                "sport": Obj({"id": Scalar("int", required=False)}, required=False),
                                 "stat": Obj(
                                     {
                                         "era": Scalar("str", required=False),
