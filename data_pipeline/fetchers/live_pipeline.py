@@ -1482,8 +1482,10 @@ def _combine_pitch_mix(
         def against(side: str) -> int | None:
             return 0 if any(usage[side] is not None for usage in rows) else None
 
+        # A starter who threw nothing (total 0) has no share of anything: `null`, not 0% (F20). A pitch he never
+        # threw out of a positive total is a real 0%.
         return {
-            "overall": 0,
+            "overall": None if total == 0 else 0,
             "vs_lhh": against("vs_lhh"),
             "vs_rhh": against("vs_rhh"),
             "count": 0,

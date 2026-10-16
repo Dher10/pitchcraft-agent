@@ -74,8 +74,9 @@ def test_a_starter_with_no_pitches_has_no_shares_at_all():
 
     row = lp._combine_pitch_mix(debut, other)[0]
 
+    # A share of no pitches is unknown, not 0% (F20); his count of 0 out of a total of 0 is the measured zero.
     assert row["away_starter"] == {
-        "overall": 0, "vs_lhh": None, "vs_rhh": None, "count": 0, "total": 0
+        "overall": None, "vs_lhh": None, "vs_rhh": None, "count": 0, "total": 0
     }
 
 

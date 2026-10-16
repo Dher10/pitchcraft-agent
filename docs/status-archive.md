@@ -4,6 +4,15 @@ The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so th
 
 ## Session log
 
+### 2026-10-15 — P0.15-D2.2d a pitch share of no pitches is null (F20) (Claude Code, gated)
+
+- **Owner's instructions:** commit d of `docs/plans/P0.15-D2.2.md`; the readers were made null-safe in commit c.
+- **Class:** a share of nothing written as 0% (rule 2). The cell of a starter who threw no pitch has a `count` of 0 out of a `total` of 0, which is measured; the share `count / total` is what cannot be computed.
+- **What changed:** `_combine_pitch_mix.not_thrown` (`overall` is `None` out of a total of 0, `0` out of a positive total), `validators._validate_pitch_counts` (out of no pitches only `null`; the zero that commit c still accepted is refused), `known_violations.py` (`rule2:zero_without_evidence#...pitch_mix[].*.overall` out, 21 left), `DATA_CONTRACT.md` (rule 2 example, F20 done), and the tests that pinned the zero (`test_usage_unavailable`, the helper of `test_live_starters_no_demo_fields`, the manifest test of `test_provenance`, which now hand-writes the zero the pipeline no longer produces).
+- **Seen failing first:** 6 tests (4 new in `tests/test_pitch_share_of_no_pitches.py`: the cell of a debut, every live cell of the matrix, the manifest asking no evidence, the publication check refusing a zero; 2 updated that had pinned the zero). Controls that passed before: a pitch he never threw out of real pitches is a real 0%, a hand-written zero out of no pitches is still refused by the manifest, the report of a game with a debut is written and published.
+- **Golden:** unchanged (the agents' outputs do not carry the charts). **Served JSON:** unchanged (the demo has no starter without pitches).
+- **Verification:** see the commit.
+
 ### 2026-10-15 — P0.15-D2.2c schema 0.5.0 and the readers ready for a null (Claude Code, gated)
 
 - **Owner's instructions:** commit c of `docs/plans/P0.15-D2.2.md`; D37 authorized (append it, mark D36 "amended by D37", nothing else in `DECISIONS.md`); note for commit f: a golden scenario built by hand (`live_unknown_figures`) must come from the real F21 path once it is reachable, or I show why not; the golden shows only states the pipeline produces (recorded in the plan).

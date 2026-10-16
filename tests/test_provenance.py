@@ -303,9 +303,18 @@ def test_rule_2_the_sentinel_and_a_number_written_as_text_are_clean(live):
 
 
 def test_rule_2_a_share_of_no_pitches_is_unknown_not_zero():
-    """F20: a starter who threw nothing has a 0% share of each pitch his opponent threw."""
+    """
+    F20: a starter who threw nothing had a 0% share of each pitch his opponent threw. The pipeline writes
+    `null` now (`tests/test_pitch_share_of_no_pitches.py`); the manifest still refuses the zero from any writer.
+    """
 
-    payload = hard_outcome("home_debut_away_healthy").payload
+    payload = deepcopy(hard_outcome("home_debut_away_healthy").payload)
+    cells = [row["home_starter"] for row in payload["matchups"][0]["charts"]["pitch_mix"] if row["home_starter"]["total"] == 0]
+    assert cells and all(cell["overall"] is None for cell in cells)
+    assert "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.overall" not in codes(payload)
+
+    for cell in cells:
+        cell["overall"] = 0
 
     assert "rule2:zero_without_evidence#matchups[].charts.pitch_mix[].*.overall" in codes(payload)
 

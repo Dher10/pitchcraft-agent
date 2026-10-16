@@ -32,7 +32,7 @@ def counted(pitch_mix: list[dict], away_pitches: int, home_pitches: int) -> list
             if total:
                 usage.update(count=round(total * usage["overall"] / 100), total=total)
             else:
-                usage.update(overall=0, vs_lhh=0, vs_rhh=0, count=0, total=0)
+                usage.update(overall=None, vs_lhh=None, vs_rhh=None, count=0, total=0)  # as the pipeline writes it (F20)
     return rows
 
 

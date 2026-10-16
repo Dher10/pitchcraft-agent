@@ -376,11 +376,11 @@ def _validate_pitch_counts(starter_mix: Any, sample: Any, row_label: str, slot: 
             f"total {total}, sample pitches {pitches}",
         )
     shown = starter_mix.get("overall")
-    if total == 0 and shown is None:
-        # A share of nothing is unknown (F20): `null` is the right state, and the only one once the pipeline writes it.
-        record(f"{row_label}.{slot} share matches its counts", True, "no pitches: the share is unknown")
+    if total == 0:
+        # A share of nothing is unknown (F20): `null` is the only right state; a 0 would read as a measured 0%.
+        record(f"{row_label}.{slot} share matches its counts", shown is None, f"shows {shown!r}, out of no pitches the share is unknown (null)")
         return
-    expected = round(count / total * 100, 1) if total else 0
+    expected = round(count / total * 100, 1)
     record(
         f"{row_label}.{slot} share matches its counts",
         isinstance(shown, (int, float)) and abs(shown - expected) < 0.05,
