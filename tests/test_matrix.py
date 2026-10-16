@@ -20,18 +20,20 @@ from datetime import date, timedelta
 import pytest
 
 from agents import data_scout, matchup_analyst, report_writer
+from data_pipeline import provenance
 from data_pipeline.known_violations import KNOWN_VIOLATIONS
 from tests.golden_scenarios import live
 from tests.matrix import (
     EVENT_CYCLE,
     MATRIX,
-    STAT_LINES,
     Outcome,
     Pitcher,
     fingerprint,
     hard_outcome,
     matrix_outcome,
     mix_of,
+    outcomes,
+    stat_line,
 )
 
 SLOT_OF = {"away": "away_starter", "home": "home_starter"}
@@ -52,7 +54,7 @@ def expected_starter(pitcher: Pitcher, opening: bool) -> dict:
     """
 
     pitches = 0 if opening or pitcher.kind == "debut" else sum(mix_of(pitcher).values())
-    line = STAT_LINES.get(pitcher.api, {})
+    line = stat_line(pitcher, opening) or {}  # the line is a function of his frame; none for a debut or opening day
     api = {
         "batters_faced": line.get("battersFaced"),
         "strikeouts": line.get("strikeOuts"),
@@ -206,10 +208,11 @@ def test_matrix_cells_that_no_source_can_tell_apart_publish_the_same_file():
     for case in MATRIX:
         classes[case.canonical].append(case)
 
-    # opening day collapses 36 cells into 3 (one per API state); a debut has no frame, so the hand is
-    # always asked of the people endpoint: its 12 normal-day cells become 6
-    assert len(classes) == 3 + 6 + 24
-    assert max(len(cells) for cells in classes.values()) == 12
+    # opening day collapses 36 cells into 2: a starter with no pitch has no line, so "complete" and "partial" are the
+    # same empty answer, and "absent" is the request failing. A debut has no frame, so the hand is always asked of
+    # the people endpoint: its normal-day cells (2 API states by 2 game days) become 4
+    assert len(classes) == 2 + 4 + 24
+    assert max(len(cells) for cells in classes.values()) == 24
     for canonical, cells in classes.items():
         prints = {fingerprint(matrix_outcome(case)) for case in cells}
         assert len(prints) == 1, f"{[case.id for case in cells]} differ although {canonical} is the same world"
@@ -218,6 +221,11 @@ def test_matrix_cells_that_no_source_can_tell_apart_publish_the_same_file():
 # --- the hard cases --------------------------------------------------------------------------------
 
 PUBLISHED_HARD_CASES = [
+    "statcast_gap",
+    "statcast_short",
+    "statcast_short_season",
+    "two_gaps",
+    "unknown_figures",
     "two_debuts",
     "two_limited",
     "home_limited_away_healthy",
@@ -267,6 +275,98 @@ def test_hard_a_measured_zero_from_the_api_stays_zero():
     assert starter["sample"]["rates"]["source"] == "mlb_api"
     assert (starter["sample"]["rates"]["walks"], starter["sample"]["rates"]["home_runs"]) == (0, 0)
     assert (starter["season_summary"]["walks"], starter["season_summary"]["home_runs_allowed"]) == (0, 0)
+
+
+# --- F21: figures that cannot be true together, or that show an incomplete Statcast sample --------------------
+
+
+def test_every_published_starter_of_the_matrix_and_the_hard_cases_has_figures_that_can_be_true_together():
+    checked = 0
+    for name, outcome in outcomes().items():
+        if outcome.live:
+            assert provenance.impossible_figures(outcome.payload) == [], name
+            checked += 1
+    assert checked >= 78  # the 72 cells and the hard cases that are published
+
+
+def test_hard_an_empty_frame_next_to_an_api_line_is_a_gap_the_game_is_kept_and_the_pitches_are_unknown():
+    outcome = hard_outcome("statcast_gap")
+    away = outcome.matchup["starters"]["away_starter"]
+
+    assert outcome.live and "statcast_pitcher" in outcome.error_sources()
+    assert any("incomplete" in e["message"] for e in outcome.record["errors"])
+    assert away["sample"]["arsenal"] == {"pitches": None, "scope": None}  # not 0: he threw some
+    assert away["sample"]["rates"]["source"] == "mlb_api"
+    assert away["sample"]["rates"]["batters_faced"] == 25
+    assert away["throws"] == "L" and 11 in outcome.asked.people  # from the people endpoint: the frame has none
+    assert outcome.matchup["charts"]["pitch_mix"] and all(  # the opponent's pitches are still drawn
+        row["away_starter"]["overall"] is None for row in outcome.matchup["charts"]["pitch_mix"]
+    )
+
+
+def test_hard_a_short_frame_loses_its_pitch_data_but_keeps_its_hand_and_the_api_counts():
+    outcome = hard_outcome("statcast_short")
+    away = outcome.matchup["starters"]["away_starter"]
+
+    assert outcome.live and "statcast_pitcher" in outcome.error_sources()
+    assert away["sample"]["arsenal"] == {"pitches": None, "scope": None}
+    assert away["sample"]["rates"]["batters_faced"] == 40  # the API's, not Statcast's 15
+    assert away["throws"] == "L" and 11 not in outcome.asked.people  # the frame has p_throws
+    assert "XX" not in str(outcome.matchup["charts"]) and away["pitching_profile"]["primary_pitch"] == "Not available"
+
+
+def test_hard_a_season_of_api_counts_beside_a_short_frame_gives_a_limited_arsenal_and_healthy_figures():
+    """The state `live_limited_arsenal` stands for: a limited arsenal with strikeout and control not limited."""
+
+    outcome = hard_outcome("statcast_short_season")
+    sample = outcome.matchup["starters"]["away_starter"]["sample"]
+
+    assert "statcast_pitcher" in outcome.error_sources() and outcome.live
+    assert sample["arsenal"] == {"pitches": None, "scope": None}
+    assert sample["rates"]["source"] == "mlb_api" and sample["rates"]["batters_faced"] == 487
+    assert sample["limited"] == {"arsenal": True, "strikeout": False, "control": False}
+
+
+def test_hard_two_gaps_leave_the_game_without_any_pitch_data_and_say_so():
+    """Neither starter has pitch data (both counts of pitches are unknown): the neutral path, with both API lines kept."""
+
+    outcome = hard_outcome("two_gaps")
+    away, home = (outcome.matchup["starters"][slot] for slot in SLOT_OF.values())
+
+    assert outcome.live and len([e for e in outcome.record["errors"] if "incomplete" in e["message"]]) == 2
+    for starter in (away, home):
+        assert starter["sample"]["arsenal"] == {"pitches": None, "scope": None}
+        assert starter["sample"]["rates"]["batters_faced"] == 25
+    assert outcome.matchup["charts"]["pitch_mix"] == []
+    assert outcome.payload["matchups"][0]["data_confidence"]["pitch_data_status"] == "unavailable"
+    assert "Statcast pitch data was not available for either starter" in str(outcome.matchup["report"])
+
+
+def test_hard_the_home_starter_beside_a_gap_is_untouched():
+    outcome = hard_outcome("statcast_gap")
+    home = outcome.matchup["starters"]["home_starter"]
+
+    assert home["sample"]["arsenal"]["pitches"] == sum(mix_of(Pitcher(22, "Home Ace", "home", "R")).values())
+    assert not any(e["pitcher_id"] == 22 for e in outcome.record["errors"] if "incomplete" in e["message"])
+
+
+def test_hard_the_report_of_a_gap_says_the_pitch_data_was_not_available_for_that_starter():
+    outcome = hard_outcome("statcast_gap")
+    text = str(outcome.matchup["report"])
+
+    assert "Statcast pitch data was available for" in text and "but not for Away Ace" in text
+    assert "Away Ace's arsenal data is limited (pitch count not available; 100 needed)" in text
+
+
+def test_hard_both_unknowns_have_their_own_sentence_from_the_real_pipeline():
+    """The golden scenario `live_unknown_figures` is this world: a pitch count that is unknown for one starter and
+    batters faced that are unknown for the other, neither written as a zero on record."""
+
+    text = str(hard_outcome("unknown_figures").matchup["report"])
+
+    assert "pitch count not available; 100 needed" in text
+    assert "batters faced not available; 70 needed" in text
+    assert "no pitches on record" not in text and "no batters faced on record" not in text
 
 
 def test_hard_a_blank_month_of_savant_data_leaves_the_offense_unavailable():

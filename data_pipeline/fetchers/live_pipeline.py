@@ -677,6 +677,10 @@ PITCH_DATA_REQUIRED_COLUMNS = ("pitch_type", "stand", "release_speed", "plate_x"
 # Every game type Statcast writes: regular season, spring training, exhibition, all-star, then the
 # postseason rounds (wild card, division, league championship, world series).
 KNOWN_STATCAST_GAME_TYPES = ("R", "S", "E", "A") + POSTSEASON_GAME_TYPES
+# The most plate appearances the API can credit to a starter that his Statcast frame does not hold (F21).
+# Measured, not assumed (tests/fixtures/statcast_vs_api_pairs.json): 28 real pitchers, 818 appearances, 9,414
+# batters faced, a gap of 0 in every one, intentional walks included (Statcast writes a row for each).
+STATCAST_PA_TOLERANCE = 0
 
 
 def _require_columns(df: Any, required: tuple[str, ...], source: str) -> None:
@@ -791,6 +795,62 @@ def validate_team_batting_rows(df: Any, source: str) -> None:
             f"inning_topbot={df.at[first, 'inning_topbot']!r}, home_team={df.at[first, 'home_team']!r}, "
             f"away_team={df.at[first, 'away_team']!r}, p_throws={df.at[first, 'p_throws']!r}"
         )
+
+
+def _plate_appearance_events(df: Any) -> Any | None:
+    """
+    The `events` of the rows that end a plate appearance, or None when `events` cannot say (F6b): the column is
+    missing or no row of the frame ends one. A truncated plate appearance does not count.
+    """
+
+    if "events" not in df.columns:
+        return None
+    events = df["events"].dropna()
+    plate_appearances = events[~events.isin(NON_PA_EVENTS)]
+    return plate_appearances if len(plate_appearances) else None
+
+
+def regular_season_plate_appearances(df: Any) -> int | None:
+    """
+    Plate appearances that end in a regular-season row of the frame: the window of the API line (regular season
+    only, opening day to the cutoff), so a postseason plate appearance never fills a gap in it. A frame with no
+    rows has none (0); None when `events` cannot say how many there are.
+    """
+
+    if len(df) == 0:
+        return 0
+    if _plate_appearance_events(df) is None:
+        return None
+    regular = _plate_appearance_events(df[df["game_type"] == "R"])
+    return 0 if regular is None else len(regular)
+
+
+def statcast_is_short(statcast_plate_appearances: int, api_batters_faced: int) -> bool:
+    """Fewer plate appearances in Statcast than the API credits to the starter, beyond the measured tolerance."""
+
+    return statcast_plate_appearances + STATCAST_PA_TOLERANCE < api_batters_faced
+
+
+def incomplete_sample(df: Any, api_batters_faced: int | None) -> str | None:
+    """
+    Why the Statcast frame is an incomplete sample next to the API line (F21), or None.
+
+    The API line covers January 1 to the cutoff, so a `season_start` later than that makes the frame shorter than
+    the line and flags good data; the production callers do not pass one. Nothing is compared when the API gave no batters faced (nothing to compare with) or when `events` cannot
+    say how many plate appearances the frame has (its own error is recorded). Statcast with more plate
+    appearances than the API is not flagged: the API is the official line. A frame with no rows next to a line
+    above zero is the extreme case: not a debut, a gap.
+    """
+
+    if api_batters_faced is None:
+        return None
+    statcast = regular_season_plate_appearances(df)
+    if statcast is None or not statcast_is_short(statcast, api_batters_faced):
+        return None
+    return (
+        f"pitcher Statcast data is incomplete: {statcast} regular-season plate appearance(s) in Statcast, "
+        f"{api_batters_faced} batters faced in the API line; the pitch data is not used"
+    )
 
 
 def _rate3(value: float | None) -> str | None:
@@ -1005,16 +1065,6 @@ def fetch_pitcher_statcast(
                     pitcher_id=pitcher_id,
                 )
             processed = process_pitcher_statcast(df, pitcher_name)
-            unmapped = sorted({code for code in df["pitch_type"].dropna().unique() if code and code not in PITCH_NAME_MAP})
-            if unmapped:
-                rows = int(df["pitch_type"].isin(unmapped).sum())
-                _record_warning(
-                    "statcast_pitcher",
-                    "unmapped_pitch_type",
-                    f"pitch code(s) {', '.join(unmapped)} are not in the name map ({rows} pitch(es)): "
-                    "published as source values with no family, and no role is given to them",
-                    pitcher_id=pitcher_id,
-                )
             if not processed["pitch_mix"]:
                 processed = None
             elif processed["throws"] is None:
@@ -1033,7 +1083,19 @@ def fetch_pitcher_statcast(
             processed = _empty_pitcher_data(pitcher_name, throws)
             counts = None
         mlb_stats = fetch_pitcher_season_stats(pitcher_id, as_of=as_of)
-        _attach_sample(processed, counts, mlb_stats, cutoff)
+        problem = incomplete_sample(df, mlb_stats.get("batters_faced"))
+        if problem:
+            # A well-formed but incomplete answer is degraded (contract rule 2): the part that cannot be trusted,
+            # his pitch data, is unavailable (unknown, not 0) and an error is recorded; the API counts are kept
+            # and his hand stays. A mix, a velocity or a primary pitch made from a piece of what he threw would
+            # be a claim the data does not support.
+            print(f"[LIVE] {pitcher_name}: {problem}")
+            _record_error("statcast_pitcher", problem, pitcher_id=pitcher_id)
+            processed = _empty_pitcher_data(pitcher_name, processed["throws"])
+            counts = None
+        elif processed["pitch_mix"]:
+            _warn_unmapped_pitch_types(df, pitcher_id)
+        _attach_sample(processed, counts, mlb_stats, cutoff, pitches_known=problem is None)
         return processed
     except Exception as exc:
         print(f"[LIVE] Statcast fetch failed for {pitcher_name}: {exc}")
@@ -1113,11 +1175,8 @@ def _statcast_counts(df: Any) -> dict[str, Any]:
         "home_runs": None,
         "has_postseason": has_postseason,
     }
-    if "events" not in df.columns:
-        return unavailable
-    events = df["events"].dropna()
-    plate_appearances = events[~events.isin(NON_PA_EVENTS)]
-    if len(plate_appearances) == 0:
+    plate_appearances = _plate_appearance_events(df)
+    if plate_appearances is None:
         return unavailable
     return {
         "batters_faced": int(len(plate_appearances)),
@@ -1126,6 +1185,21 @@ def _statcast_counts(df: Any) -> dict[str, Any]:
         "home_runs": int((plate_appearances == "home_run").sum()),
         "has_postseason": has_postseason,
     }
+
+
+def _warn_unmapped_pitch_types(df: Any, pitcher_id: int) -> None:
+    """A pitch code the name map does not know is published as the source value, with no family (F6e)."""
+
+    unmapped = sorted({code for code in df["pitch_type"].dropna().unique() if code and code not in PITCH_NAME_MAP})
+    if unmapped:
+        rows = int(df["pitch_type"].isin(unmapped).sum())
+        _record_warning(
+            "statcast_pitcher",
+            "unmapped_pitch_type",
+            f"pitch code(s) {', '.join(unmapped)} are not in the name map ({rows} pitch(es)): "
+            "published as source values with no family, and no role is given to them",
+            pitcher_id=pitcher_id,
+        )
 
 
 def _empty_pitcher_data(pitcher_name: str, throws: str) -> dict[str, Any]:
@@ -1152,9 +1226,13 @@ def _attach_sample(
     counts: dict[str, Any] | None,
     mlb_stats: dict[str, Any],
     cutoff: date,
+    pitches_known: bool = True,
 ) -> None:
     """
     Build the sample, the season summary and the rate labels, each with its scope.
+
+    `pitches_known` is False for a starter whose Statcast answer was found incomplete (F21): his pitch count is
+    unknown (`None`), not the 0 of a debut, and the pitch group has no scope.
 
     Arsenal pitches come from the Statcast frame behind the pitch mix (regular
     season, plus postseason when such games are in it). Rate counts come from the
@@ -1169,6 +1247,8 @@ def _attach_sample(
         else labels.SCOPE_REGULAR
     )
     pitches = processed.pop("pitches_used", 0) if processed["pitch_mix"] else 0
+    if not pitches_known:
+        pitches = None
     api_numbers = {
         "batters_faced": mlb_stats.get("batters_faced"),
         "strikeouts": mlb_stats.get("strikeouts"),

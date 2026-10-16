@@ -53,6 +53,7 @@ KINDS = (SOURCE, DERIVATION, LABEL, CLAIM, FACT)
 FIXED_STATUS_STEPS = ("Data Scout Agent", "Matchup Analyst Agent", "Report Writer Agent", "Critic / Fact-check Agent")
 POSTGAME_STEP = "Postgame Grader Agent"
 RATES_SOURCES = ("mlb_api", "statcast", "unavailable")
+IMPOSSIBLE = "rule1:impossible_figures"
 HANDS = ("L", "R", "S")
 NUMERIC = (int, float)
 
@@ -297,11 +298,14 @@ def threshold(c: Ctx) -> Problem | None:
 
 
 def arsenal_pitches(c: Ctx) -> Problem | None:
+    thrown = [cell for cell in _mix_rows(c, c.slot)]
     if c.value is None:
+        # Unknown (F21: his Statcast answer was incomplete, so none of it is used): there is no pitch of his in the mix
+        if thrown:
+            return _mismatch("the pitch count is unknown but the pitch mix has pitches thrown by this starter")
         return None
     if c.value < 0:
         return ("rule1:wrong_type", f"{c.value!r} is not a count")
-    thrown = [cell for cell in _mix_rows(c, c.slot)]
     if c.value == 0 and thrown:
         return ("rule2:zero_without_evidence", "pitches is 0 but the pitch mix has pitches thrown by this starter")
     if c.value > 0 and not thrown:
@@ -617,8 +621,8 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _derived(M + "starters.*.pitching_profile.swing_miss_label", "strikeout rate band (D24, D25)", STR, True, profile_field),
         _derived(M + "starters.*.pitching_profile.command_label", "walk rate band (D24, D25)", STR, True, profile_field),
         _derived(M + "starters.*.pitching_profile.contact_risk_label", "no live rate label (D24)", STR, True, profile_field),
-        _source(M + "starters.*.sample.arsenal.pitches", "the Statcast pitch rows up to the cutoff", (int,), True, arsenal_pitches),
-        *_scope_entries(M + "starters.*.sample.arsenal.scope", "the games the Statcast rows cover"),
+        replace(_source(M + "starters.*.sample.arsenal.pitches", "the Statcast pitch rows up to the cutoff; null when the answer was incomplete (F21)", (int,), True, arsenal_pitches), check_null=True),
+        *_scope_entries(M + "starters.*.sample.arsenal.scope", "the games the Statcast rows cover; null when the pitch count is unknown", True),
         _source(M + "starters.*.sample.rates.batters_faced", "the MLB API line, or the Statcast plate appearances", (int,), True, rate_count),
         _source(M + "starters.*.sample.rates.strikeouts", "the MLB API line, or the Statcast plate appearances", (int,), True, rate_count),
         _source(M + "starters.*.sample.rates.walks", "the MLB API line, or the Statcast plate appearances", (int,), True, rate_count),
@@ -738,6 +742,60 @@ def _type_problem(entry: Entry, value: Any) -> Problem | None:
     return ("rule1:wrong_type", f"{value!r} is a {type(value).__name__}, expected {', '.join(t.__name__ for t in entry.types)}")
 
 
+def _count(value: Any) -> int | None:
+    """A figure as a whole number, or None when it is unknown (or not a number: the manifest reports that)."""
+
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def impossible_figures(payload: Mapping[str, Any]) -> list[tuple[str, str, str]]:
+    """
+    (code, place, message) for every starter whose figures cannot be true together (F21, rule 1).
+
+    A home run is a batter faced; a strikeout, a walk and a home run are different plate appearances; and every
+    batter faced took a typed pitch. A starter that breaks one is published with figures from two different
+    samples. Only a starter with a `sample` (what a live run measures) has figures to compare, and a figure that
+    is unknown (`None`) is not compared. The one tolerance, documented in the contract (6.5): an intentional walk
+    is a batter with no typed pitch, so `batters_faced <= pitches` could fail only for a sample smaller than one
+    pitch per batter.
+    """
+
+    found: list[tuple[str, str, str]] = []
+    for position, matchup in enumerate(payload.get("matchups") or []):
+        starters = matchup.get("starters") if isinstance(matchup, Mapping) else None
+        if not isinstance(starters, Mapping):
+            continue
+        label = matchup.get("id") or f"matchups[{position}]"
+        for slot in SLOTS:
+            starter = starters.get(slot)
+            sample = starter.get("sample") if isinstance(starter, Mapping) else None
+            if not isinstance(sample, Mapping):
+                continue
+            rates, arsenal = sample.get("rates") or {}, sample.get("arsenal") or {}
+            batters = _count(rates.get("batters_faced"))
+            home_runs, strikeouts, walks = (_count(rates.get(key)) for key in ("home_runs", "strikeouts", "walks"))
+            pitches = _count(arsenal.get("pitches"))
+            where = f"{label} {slot}.sample"
+            if batters is not None and home_runs is not None and home_runs > batters:
+                found.append((
+                    f"{IMPOSSIBLE}#home_runs_over_batters_faced", where,
+                    f"{home_runs} home runs against {batters} batters faced",
+                ))
+            outcomes = [value for value in (strikeouts, walks, home_runs) if value is not None]
+            if batters is not None and len(outcomes) == 3 and sum(outcomes) > batters:
+                found.append((
+                    f"{IMPOSSIBLE}#outcomes_over_batters_faced", where,
+                    f"{strikeouts} strikeouts, {walks} walks and {home_runs} home runs are {sum(outcomes)} "
+                    f"plate appearances, against {batters} batters faced",
+                ))
+            if batters is not None and pitches is not None and batters > pitches:
+                found.append((
+                    f"{IMPOSSIBLE}#batters_faced_over_pitches", where,
+                    f"{batters} batters faced against {pitches} pitches",
+                ))
+    return found
+
+
 def findings(payload: Mapping[str, Any]) -> list[tuple[str, str, str]]:
     """(code, place, message) for every violation of rules 1 and 2 in a live payload."""
 
@@ -783,4 +841,5 @@ def findings(payload: Mapping[str, Any]) -> list[tuple[str, str, str]]:
                 problem = _mismatch(f"cannot be checked against its neighbours ({type(exc).__name__}: {exc})")
         if problem is not None:
             add(problem[0], entry.pattern, where, problem[1])
+    found += impossible_figures(payload)
     return found

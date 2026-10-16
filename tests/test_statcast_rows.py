@@ -34,8 +34,8 @@ def assigned(df: pd.DataFrame, column: str, value, rows=None) -> pd.DataFrame:
     return out
 
 
-def pitcher(monkeypatch, df: pd.DataFrame):
-    route(monkeypatch, [("/stats?", API_STATS)])
+def pitcher(monkeypatch, df: pd.DataFrame, api=API_STATS):
+    route(monkeypatch, [("/stats?", api)])
     monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: df)
     return lp.fetch_pitcher_statcast(11, "Row Ace", as_of=CUTOFF)
 
@@ -122,7 +122,8 @@ def test_rows_after_the_cutoff_are_excluded_without_an_error(monkeypatch):
 
 @pytest.mark.parametrize("game_type", ["F", "D", "L", "W"])
 def test_postseason_rows_up_to_the_cutoff_are_kept(monkeypatch, game_type):
-    result = pitcher(monkeypatch, events_frame(n_plain=120, game_type=game_type, game_date="2026-07-10"))
+    # postseason rows only: he has no regular-season line (the API's is regular season), so there is nothing missing
+    result = pitcher(monkeypatch, events_frame(n_plain=120, game_type=game_type, game_date="2026-07-10"), api={"stats": [{"splits": []}]})
 
     assert result["sample"]["arsenal"]["pitches"] == 120 + len(e2e_events())
     assert result["sample"]["arsenal"]["scope"]["kind"] == "regular_and_postseason" and lp._run_errors == []

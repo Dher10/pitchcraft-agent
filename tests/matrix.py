@@ -7,6 +7,10 @@ disk, `_resolve_live_input`, `build_payload`, `validate_payload` and `check_cont
 The matrix is the product of five conditions (docs/DATA_CONTRACT.md, section 5.3), 72 cases:
 
     API         complete (a whole line), partial (ERA, WHIP, innings and strikeouts only), absent (the request fails)
+                The line is a function of the starter's frame (`stat_line`): both sources describe the same starter,
+                as the real ones do (a gap of 0 in 28 real pitchers, tests/test_statcast_vs_api.py). A starter with no
+                pitch on record (a debut, or any starter on opening day) has no line: the valid empty answer, so
+                "complete" and "partial" collapse into it for him.
     season      regular only, or with postseason rows before the cutoff
     starter     debut (no pitch on record), limited (60 pitches), healthy (1,150 pitches)
     day         normal, or opening day (the cutoff falls before the season, so Statcast is never asked)
@@ -52,20 +56,14 @@ STARTERS = ("debut", "limited", "healthy")
 DAYS = ("normal", "opening")
 HANDS = ("present", "missing")
 
-# What the stats endpoint answers for a pitcher (the keys the MLB API uses).
-STAT_LINES = {
-    "complete": {
-        "era": "3.10", "whip": "1.05", "inningsPitched": "101.0",
-        "strikeOuts": 100, "baseOnBalls": 30, "homeRuns": 10, "battersFaced": 400,
-    },
-    # A line without most counts: the API is the source of the counts only when it has all four, or when it
-    # has some and Statcast has none (labels/live_pipeline `_attach_sample`).
-    "partial": {"era": "3.10", "whip": "1.05", "inningsPitched": "101.0", "strikeOuts": 100},
-    # A line whose counts are real zeros (a control that must stay zero).
-    "zeros": {
-        "era": "0.00", "whip": "0.50", "inningsPitched": "20.0",
-        "strikeOuts": 25, "baseOnBalls": 0, "homeRuns": 0, "battersFaced": 70,
-    },
+# What the stats endpoint answers about the plate appearances, in the keys the MLB API uses, is built by
+# `stat_line` from the frame. These are the figures that do not come from it.
+ERA, WHIP = "3.10", "1.05"
+# A gap: the API says the starter faced this many more batters than his frame holds (F21). `gap`: 25 more (against an
+# empty frame, the extreme case); `gap_season`: 200 more, a season's worth. Each line stays coherent with itself.
+GAPS = {
+    "gap": {"batters_faced": 25, "strikeouts": 6, "walks": 2, "home_runs": 1, "outs": 16},
+    "gap_season": {"batters_faced": 200, "strikeouts": 70, "walks": 15, "home_runs": 8, "outs": 150},
 }
 
 # Pitches by code. Away: 1,150 (sinker, slider, changeup); home: 900 (four-seam, curveball, slider).
@@ -91,7 +89,10 @@ class Pitcher:
     side: str  # "away" or "home"
     throws: str  # what the Statcast frame says, or what the people endpoint answers when the frame does not
     kind: str = "healthy"  # debut | limited | healthy
-    api: str = "complete"  # complete | partial | zeros | absent (the request fails) | empty (a valid empty answer)
+    # complete | partial | zeros (BB and HR 0 though his rows show some: the zeros are the API's) | absent (the
+    # request fails) | empty (a valid empty answer) | gap, gap_season (the API says he faced 25 / 200 batters more than
+    # his frame holds)
+    api: str = "complete"
     postseason: bool = False  # the frame has postseason rows before the cutoff
     hand_in_frame: bool = True
     lookup: str | None = None  # what the people endpoint answers; None: his hand; "FAIL": the request fails
@@ -150,8 +151,10 @@ class Case:
         """Cells that must give the same payload: what no source can tell apart."""
 
         debut = self.effective_starter == "debut"
+        # a starter with no pitch on record has no line, so the two answers that carry one say the same thing
+        api = "empty" if debut and self.api != "absent" else self.api
         return (
-            self.api,
+            api,
             self.game_day if self.day == "normal" else OPENING_DAY,
             self.effective_starter,
             self.effective_postseason,
@@ -200,6 +203,50 @@ def mix_of(pitcher: Pitcher) -> dict[str, int]:
     return (HEALTHY_MIX if pitcher.kind == "healthy" else LIMITED_MIX)[pitcher.side]
 
 
+def event_at(index: int) -> str | None:
+    """The event that ends the plate appearance of the pitch at `index`, if any (every fourth pitch does)."""
+
+    return EVENT_CYCLE[(index // 4) % len(EVENT_CYCLE)] if index % 4 == 3 else None
+
+
+def regular_season_events(pitcher: Pitcher) -> list[str]:
+    """The plate appearances of the regular season in the frame, as the API counts them (not the postseason's)."""
+
+    late = lambda index: pitcher.postseason and index % 5 == 0  # noqa: E731
+    pitches = sum(mix_of(pitcher).values())
+    return [event for index in range(pitches) if (event := event_at(index)) and not late(index)]
+
+
+def stat_line(pitcher: Pitcher, opening: bool = False) -> dict[str, Any] | None:
+    """
+    What the stats endpoint answers for `pitcher`: a function of his frame, so that both sources describe the same
+    starter (tests/test_statcast_vs_api.py measured a gap of 0 in 28 real pitchers). None is the valid empty answer:
+    he has no regular-season plate appearance on record (a debut, or opening day, when nothing was played yet).
+    """
+
+    if pitcher.api in ("absent", "empty"):  # the request fails / a valid empty answer
+        return None
+    events = [] if opening else regular_season_events(pitcher)
+    gap = GAPS.get(pitcher.api, dict.fromkeys(("batters_faced", "strikeouts", "walks", "home_runs", "outs"), 0))
+    if not events and not gap["batters_faced"]:
+        return None
+    outs = events.count("strikeout") + events.count("field_out") + gap["outs"]
+    line = {
+        "era": ERA,
+        "whip": WHIP,
+        "inningsPitched": f"{outs // 3}.{outs % 3}",
+        "strikeOuts": events.count("strikeout") + gap["strikeouts"],
+        "baseOnBalls": events.count("walk") + gap["walks"],
+        "homeRuns": events.count("home_run") + gap["home_runs"],
+        "battersFaced": len(events) + gap["batters_faced"],
+    }
+    if pitcher.api == "partial":
+        return {key: line[key] for key in ("era", "whip", "inningsPitched", "strikeOuts")}
+    if pitcher.api == "zeros":
+        line.update(baseOnBalls=0, homeRuns=0)
+    return line
+
+
 def pitcher_frame(pitcher: Pitcher) -> pd.DataFrame:
     """The Statcast frame of a pitcher. A debut has none: an empty frame, with no columns."""
 
@@ -221,7 +268,7 @@ def pitcher_frame(pitcher: Pitcher) -> pd.DataFrame:
                 "pfx_z": 1.0 + 0.01 * (index % 5),
                 "plate_x": -0.4 + 0.05 * (index % 9),
                 "plate_z": 1.9 + 0.05 * (index % 11),
-                "events": None if pitcher.events == "null" or index % 4 != 3 else EVENT_CYCLE[(index // 4) % len(EVENT_CYCLE)],
+                "events": None if pitcher.events == "null" else event_at(index),
             }
         )
     frame = pd.DataFrame(rows, columns=list(FRAME_COLUMNS))
@@ -303,9 +350,10 @@ def install_sources(monkeypatch: pytest.MonkeyPatch, scenario: Scenario, tmp: Pa
             asked.stats.append(pitcher.pid)
             if pitcher.api == "absent":
                 raise OSError("MLB stats API unreachable")
-            if pitcher.api == "empty":
+            line = None if pitcher.api == "empty" else stat_line(pitcher, opening=scenario.game_day == OPENING_DAY)
+            if line is None:
                 return FakeResponse({"stats": [{"splits": []}]})
-            return FakeResponse({"stats": [{"splits": [{"stat": STAT_LINES[pitcher.api]}]}]})
+            return FakeResponse({"stats": [{"splits": [{"stat": line}]}]})
         person = re.search(r"/people/(\d+)$", url)
         if person:
             pitcher = pitchers[int(person.group(1))]
@@ -434,6 +482,12 @@ def _hard_cases() -> dict[str, Scenario]:
         _world("home_debut_away_healthy", away, replace(home, **debut)),
         # awkward members (ENGINEERING.md section 5)
         _world("api_zeros_are_zeros", replace(away, api="zeros")),
+        # F21: the API says he faced more batters than Statcast holds
+        _world("statcast_gap", replace(away, kind="debut", api="gap")),  # an empty frame: not a debut, a gap
+        _world("statcast_short", replace(away, kind="limited", api="gap")),  # 15 plate appearances against 40
+        _world("statcast_short_season", replace(away, api="gap_season")),  # 287 plate appearances against 487
+        _world("two_gaps", replace(away, kind="debut", api="gap"), replace(home, kind="debut", api="gap")),  # both sides
+        _world("unknown_figures", replace(away, kind="debut", api="gap"), replace(home, events="null", api="absent")),
         _world("no_offense_data", savant="blank"),
         _world("events_null_in_every_row", replace(away, events="null", api="absent")),
         _world("pitch_type_null_in_every_row", replace(away, null_pitch_type=True)),

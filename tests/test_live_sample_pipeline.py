@@ -29,25 +29,34 @@ class FakeResponse:
         return False
 
 
-API_STATS = {
-    "stats": [
-        {
-            "splits": [
-                {
-                    "stat": {
-                        "era": "3.10",
-                        "whip": "1.05",
-                        "inningsPitched": "101.0",
-                        "strikeOuts": 0,  # a real zero must not fall back to Statcast
-                        "baseOnBalls": 20,
-                        "homeRuns": 5,
-                        "battersFaced": 400,
+def api_stats(batters_faced: int, strikeouts: int, walks: int, home_runs: int, innings: str) -> dict:
+    return {
+        "stats": [
+            {
+                "splits": [
+                    {
+                        "stat": {
+                            "era": "3.10",
+                            "whip": "1.05",
+                            "inningsPitched": innings,
+                            "strikeOuts": strikeouts,
+                            "baseOnBalls": walks,
+                            "homeRuns": home_runs,
+                            "battersFaced": batters_faced,
+                        }
                     }
-                }
-            ]
-        }
-    ]
-}
+                ]
+            }
+        ]
+    }
+
+
+# The line that goes with `events_frame()` (19 plate appearances): the two sources describe the same starter, as the
+# real ones do (tests/test_statcast_vs_api.py), so the F21 check finds nothing missing. The strikeouts are a real
+# zero on purpose: the API says 0 where Statcast's rows say 4, to show which one is used.
+API_STATS = api_stats(batters_faced=19, strikeouts=0, walks=2, home_runs=1, innings="6.1")
+# The line that goes with `season_frame()` (400 plate appearances). Its counts differ from Statcast's on purpose.
+API_SEASON = api_stats(batters_faced=400, strikeouts=0, walks=20, home_runs=5, innings="101.0")
 NO_SPLITS = {"stats": [{"splits": []}]}
 
 
@@ -112,6 +121,15 @@ def events_frame(**kw):
     return frame(extra_rows=[{"events": e} for e in EVENTS], **kw)
 
 
+# 400 completed plate appearances (88 K, 22 BB, 6 HR, 284 outs) in 1,500 pitches: a season's worth for the minimum
+# samples (D24), and the Statcast side of `API_SEASON`.
+SEASON_EVENTS = ["strikeout"] * 88 + ["walk"] * 22 + ["home_run"] * 6 + ["field_out"] * 284
+
+
+def season_frame(**kw):
+    return frame(extra_rows=[{"events": e} for e in SEASON_EVENTS], n_plain=1100, **kw)
+
+
 # --- sample from Statcast when the API has nothing ------------------------------------------------
 
 
@@ -139,8 +157,8 @@ def test_sample_falls_back_to_statcast_events_and_says_so(monkeypatch):
 
 
 def test_api_numbers_win_and_a_real_zero_is_kept(monkeypatch):
-    route(monkeypatch, [("/stats?", API_STATS)])
-    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
+    route(monkeypatch, [("/stats?", API_SEASON)])
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: season_frame())
 
     result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
 
@@ -182,7 +200,7 @@ def test_an_api_line_without_counts_does_not_beat_valid_statcast_counts(monkeypa
 
 @pytest.mark.parametrize("missing", ["battersFaced", "strikeOuts", "baseOnBalls", "homeRuns"])
 def test_an_api_line_missing_one_count_does_not_beat_valid_statcast_counts(monkeypatch, missing):
-    stat = {"era": "3.10", "battersFaced": 400, "strikeOuts": 90, "baseOnBalls": 20, "homeRuns": 5}
+    stat = {"era": "3.10", "battersFaced": 19, "strikeOuts": 4, "baseOnBalls": 3, "homeRuns": 2}
     del stat[missing]
     route(monkeypatch, [("/stats?", _api_line(**stat))])
     monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
@@ -195,7 +213,7 @@ def test_an_api_line_missing_one_count_does_not_beat_valid_statcast_counts(monke
 
 def test_a_complete_api_line_still_wins_over_statcast(monkeypatch):
     route(monkeypatch, [("/stats?", _api_line(battersFaced=400, strikeOuts=90, baseOnBalls=20, homeRuns=5))])
-    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: events_frame())
+    monkeypatch.setattr(lp, "statcast_pitcher", lambda *a, **k: season_frame())  # Statcast: 400, 88, 22, 6
 
     result = lp.fetch_pitcher_statcast(11, "Test Pitcher", as_of="2026-07-14")
 

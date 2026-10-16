@@ -78,14 +78,15 @@ def test_a_debut_whose_api_line_has_no_batters_faced_says_it_is_not_available():
 # --- the critic -------------------------------------------------------------------------------------------
 
 
-def critic_limited_check(monkeypatch, name: str) -> dict:
+def critic_limited_check(monkeypatch, name: str, who: str = NAME) -> dict:
     matchup = scenarios(monkeypatch)[name]
     review = critic.run(agent_outputs(matchup)["report"], matchup)
-    return next(check for check in review["checks"] if check["claim"] == T("critic.limited.claim", name=NAME))
+    return next(check for check in review["checks"] if check["claim"] == T("critic.limited.claim", name=who))
 
 
 def test_the_critic_does_not_say_none_on_record_for_an_unknown_pitch_count(monkeypatch):
-    check = critic_limited_check(monkeypatch, "live_unknown_figures")
+    # `live_unknown_figures` comes from the real pipeline (the hard case `unknown_figures`): its away starter is "Away Ace"
+    check = critic_limited_check(monkeypatch, "live_unknown_figures", who="Away Ace")
 
     assert check["status"] == "supported"
     assert check["evidence"] == T("critic.limited.supported_unavailable", needed=100)
@@ -111,7 +112,7 @@ def zero(monkeypatch):
     return published(golden_payload(monkeypatch, "live_measured_zero_counts"))
 
 
-AWAY = "away_starter"
+AWAY, HOME = "away_starter", "home_starter"
 
 
 def test_the_payloads_of_the_two_scenarios_have_no_violation_of_the_new_phrases(unknown, zero):
@@ -120,8 +121,10 @@ def test_the_payloads_of_the_two_scenarios_have_no_violation_of_the_new_phrases(
 
 
 def test_rule_4_batters_faced_not_available_needs_the_count_to_be_unknown(unknown):
+    """In the real world of the scenario the home starter is the one whose `events` could not be read."""
+
     def edit(m):
-        m["starters"][AWAY]["sample"]["rates"]["batters_faced"] = 5
+        m["starters"][HOME]["sample"]["rates"]["batters_faced"] = 5
 
     assert "rule4:analyst.have.batters_unavailable#known" in added(unknown, edit)
 

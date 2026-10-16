@@ -115,30 +115,6 @@ def _measured_zero_counts(game: dict[str, Any]) -> None:
     summary.update(era="N/A", whip="N/A", innings="0.0", strikeouts=0, walks=0, home_runs_allowed=0)
 
 
-def _unknown_figures(game: dict[str, Any]) -> None:
-    """
-    The away starter's pitch count and counts are unknown (not 0): as the pipeline writes a starter whose
-    Statcast answer cannot be trusted and whose API line is missing (`unknown_sample`).
-    """
-
-    starter = game["away_starter"]
-    starter["sample"] = labels.build_sample(
-        pitches=None,
-        arsenal_scope=None,
-        batters_faced=None,
-        strikeouts=None,
-        walks=None,
-        home_runs=None,
-        rates_source="unavailable",
-        rates_scope=None,
-    )
-    starter["season_summary"].update(
-        era="N/A", whip="N/A", innings="N/A", strikeouts=None, walks=None, home_runs_allowed=None,
-        scopes={"season_rates": None, "counts": None},
-    )
-    labels.apply_profile_labels(starter["pitching_profile"], starter["sample"])
-
-
 def from_the_pipeline(mp, hard_case: str) -> dict[str, Any]:
     """
     A live matchup built from what the real pipeline wrote for a hard case of the matrix: the golden file shows only
@@ -160,18 +136,22 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "live_healthy": live(mp),
         "live_with_offense_splits": live(mp, splits="both"),
         "live_one_offense_split": live(mp, splits="home"),
-        "live_limited_arsenal": live(mp, away=sample(pitches=40)),
+        "live_limited_arsenal": from_the_pipeline(mp, "statcast_short_season"),
         "live_debut": live(mp, away=debut_sample()),
-        "live_both_limited": live(mp, away=sample(pitches=10), home=sample(pitches=40)),
+        "live_both_limited": live(
+            mp, away=sample(pitches=10, bf=3, k=1, bb=0, hr=0), home=sample(pitches=40, bf=10, k=3, bb=1, hr=1)
+        ),
         "live_scopes_differ": live(mp, away=sample(arsenal_scope=REG_POST), home=sample(arsenal_scope=REG_POST)),
         "live_strong_strikeouts_weak_command": live(mp, away=sample(k=110, bb=50), home=sample(k=60, bb=15)),
-        "live_limited_rates_only": live(mp, away=sample(bf=50, k=20, bb=2), home=sample(bf=100, k=10, bb=3)),
+        "live_limited_rates_only": live(
+            mp, away=sample(pitches=200, bf=51, k=20, bb=2), home=sample(pitches=400, bf=100, k=10, bb=3)
+        ),
         "live_no_putaway_pitch": live(mp, edit=_no_putaway),
         "live_unavailable_era_whip_ip": live(mp, away=sample(arsenal_scope=REG_POST), edit=_unavailable_summary),
         "live_no_home_runs": live(mp, away=sample(hr=None)),
         "live_debut_no_figures": live(mp, away=debut_sample(), home=debut_sample(), edit=_no_figures),
         "live_measured_zero_counts": live(mp, away=measured_zero_sample(), edit=_measured_zero_counts),
-        "live_unknown_figures": live(mp, away=debut_sample(), edit=_unknown_figures),
+        "live_unknown_figures": from_the_pipeline(mp, "unknown_figures"),
         "live_unnamed_lead_pitch": from_the_pipeline(mp, "unmapped_pitch_code"),
     }
 

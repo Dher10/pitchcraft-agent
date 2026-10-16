@@ -22,6 +22,7 @@ import json
 from pathlib import Path
 import re
 
+import pandas as pd
 import pytest
 
 from agents import critic
@@ -50,15 +51,19 @@ API = {
 
 def frame_for(season: str):
     if season == "postseason":
-        return events_frame(game_type="D", game_date="2026-10-05")
+        # his regular season (the API line is about it: 19 batters faced) and postseason pitches before the cutoff
+        return pd.concat([events_frame(), frame(n_plain=30, game_type="D", game_date="2026-10-05")], ignore_index=True)
     return events_frame()
 
 
 def rich_postseason_frame():
-    """220 plate appearances (27% strikeouts, 4.5% walks): enough for the strikeout and control labels."""
+    """His regular season plus 220 postseason plate appearances (27% strikeouts): enough for the strikeout and control labels."""
 
     events = ["strikeout"] * 60 + ["walk"] * 10 + ["field_out"] * 150
-    return frame(extra_rows=[{"events": e} for e in events], game_type="D", game_date="2026-10-05")
+    return pd.concat(
+        [events_frame(), frame(extra_rows=[{"events": e} for e in events], game_type="D", game_date="2026-10-05")],
+        ignore_index=True,
+    )
 
 
 def build_payload(monkeypatch, api: str, season: str, statcast=None) -> dict:
@@ -102,7 +107,7 @@ def test_the_qa_probe_partial_api_counts_with_postseason_pitches(monkeypatch):
 
     for starter in live_starters(payload):
         summary = starter["season_summary"]
-        assert (summary["era"], summary["whip"], summary["innings"]) == ("3.10", "1.05", "101.0")
+        assert (summary["era"], summary["whip"], summary["innings"]) == ("3.10", "1.05", "6.1")
         assert summary["scopes"]["season_rates"] == labels.make_scope(labels.SCOPE_REGULAR, "2026-10-08")
         assert summary["scopes"]["counts"] == labels.make_scope(labels.SCOPE_REGULAR_POSTSEASON, "2026-10-08")
         assert starter["sample"]["rates"]["source"] == "statcast"

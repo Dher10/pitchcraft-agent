@@ -28,10 +28,14 @@ from data_pipeline.fetchers import live_pipeline as lp
 CUTOFF = "2026-07-14"
 GAME_DAY = "2026-07-15"
 
-EARLY_STATS = {"era": "3.10", "whip": "1.05", "inningsPitched": "101.0", "strikeOuts": 100,
-               "baseOnBalls": 30, "homeRuns": 10, "battersFaced": 400}
-FUTURE_STATS = {"era": "9.99", "whip": "2.50", "inningsPitched": "170.0", "strikeOuts": 300,
-                "baseOnBalls": 90, "homeRuns": 40, "battersFaced": 900}
+# The API line that goes with the Statcast rows below: 37 plate appearances up to the cutoff (every fourth of 150
+# pitches ends one), and 46 over every regular-season row the source holds, so neither line says more than the
+# frame it is compared with (F21). The counts differ from Statcast's, which has no strikeout, so the test can tell
+# which source gave them.
+EARLY_STATS = {"era": "3.10", "whip": "1.05", "inningsPitched": "9.1", "strikeOuts": 9,
+               "baseOnBalls": 3, "homeRuns": 2, "battersFaced": 37}
+FUTURE_STATS = {"era": "9.99", "whip": "2.50", "inningsPitched": "12.1", "strikeOuts": 12,
+                "baseOnBalls": 4, "homeRuns": 3, "battersFaced": 46}
 
 SCHEDULE = {
     "dates": [
@@ -183,8 +187,8 @@ def test_no_row_stat_or_split_after_the_cutoff_reaches_the_snapshot(leaky_source
     for slot in ("away_starter", "home_starter"):
         summary = snapshot[slot]["season_summary"]
         rates = snapshot[slot]["sample"]["rates"]
-        assert (summary["era"], summary["strikeouts"], summary["walks"]) == ("3.10", 100, 30)
-        assert (rates["batters_faced"], rates["home_runs"]) == (400, 10)
+        assert (summary["era"], summary["strikeouts"], summary["walks"]) == ("3.10", 9, 3)
+        assert (rates["batters_faced"], rates["home_runs"]) == (37, 2)
         assert rates["scope"]["through"] == CUTOFF
 
     # Team splits: 20 plate appearances up to the cutoff; the 50 home runs after it are out.
