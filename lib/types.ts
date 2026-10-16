@@ -1,4 +1,4 @@
-export type MatchupStatus = "upcoming" | "final" | "demo";
+export type MatchupStatus = "upcoming" | "live" | "final" | "demo";
 export type CriticCheckStatus = "supported" | "unsupported" | "not_present" | "warning";
 export type ConfidenceLevel = "live_confirmed" | "fetched_snapshot" | "partial" | "demo_cached" | "limited";
 export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
@@ -65,7 +65,8 @@ export interface DataStatus {
 export interface Matchup {
   id: string;
   date: string;
-  status: MatchupStatus;
+  /** The schedule's game state (schema 0.8.0, D40); `null` when the schedule does not say or the game was not played to its end. */
+  status: MatchupStatus | null;
   is_featured: boolean;
   game: Game;
   teams: { home: Team; away: Team };
@@ -314,7 +315,8 @@ export interface Postgame {
 
 export interface DataConfidence {
   level: ConfidenceLevel;
-  lineup_status: string;
+  /** Follows `status`; `null` when the status is (schema 0.8.0). */
+  lineup_status: string | null;
   pitch_data_status: string;
   notes: string[];
 }

@@ -137,11 +137,8 @@ def test_rule_1_a_value_of_the_wrong_type_is_found(live):
 def test_rule_1_a_constant_that_asserts_a_fact_is_a_violation_whatever_its_value(live):
     found = codes(live)
 
-    for pattern in (
-        "matchups[].status",
-        "matchups[].data_confidence.lineup_status",
-    ):
-        assert f"rule1:constant_asserts_fact#{pattern}" in found, pattern
+    # F5 (closed in D2.5a): the status and the lineup status are the schedule's, no longer constants; no fact is left
+    assert not {code for code in found if code.startswith("rule1:constant_asserts_fact")}
     assert "rule1:constant_asserts_fact#metadata.data_sources[]" not in found  # F3 (D2.4b): a label of a closed set
 
 
@@ -388,8 +385,10 @@ def test_rule_2_pitches_of_zero_while_the_mix_has_pitches_has_no_evidence(live):
 
 
 def test_the_contract_runs_the_manifest_on_a_live_file_and_only_there(live):
-    assert any(v.code.startswith("rule1:") for v in check_contract(live))
-    demo = deepcopy(live)
+    broken = deepcopy(live)
+    broken["matchups"][0]["game"]["weather"] = "sunny"  # a field nobody listed
+    assert any(v.code.startswith("rule1:") for v in check_contract(broken))
+    demo = deepcopy(broken)
     demo["metadata"]["data_mode"] = "demo_cached"
 
     assert not any(v.code.startswith(("rule1:", "rule2:")) for v in check_contract(demo))

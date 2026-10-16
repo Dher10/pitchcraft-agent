@@ -7,7 +7,7 @@ from typing import Any
 
 METADATA: Any = {
   "project_name": "PitchCraft Matchup Agent",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "data_mode": "cached_demo",
   "generated_at": None,
   "data_fetched_at": None,

@@ -462,6 +462,8 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
                     "start_time_utc": game["gameDate"],
                     "venue_timezone": (venue.get("timeZone") or {}).get("id"),
                     "status": (game.get("status") or {}).get("abstractGameState"),
+                    # A postponed or cancelled game is "Final" in the first; this says which (D40, F5).
+                    "detailed_state": (game.get("status") or {}).get("detailedState"),
                 }
             )
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")

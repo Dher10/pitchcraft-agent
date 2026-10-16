@@ -114,6 +114,8 @@ class Scenario:
     savant: str = "ok"  # ok | blank (a valid empty month for every team)
     away_team: tuple[int, str] = (111, "Boston Red Sox")
     home_team: tuple[int, str] = (147, "New York Yankees")
+    # what the schedule says of the game: (abstractGameState, detailedState); (None, None) sends no status at all
+    state: tuple[str | None, str | None] = ("Preview", "Scheduled")
 
 
 @dataclass(frozen=True)
@@ -310,6 +312,14 @@ class Asked:
     stats: list[int] = field(default_factory=list)
 
 
+def _status_of(state: tuple[str | None, str | None]) -> dict[str, Any]:
+    """The `status` object of a schedule game, as the schedule sends it: nothing at all, or only the parts it has."""
+
+    abstract, detailed = state
+    status = {key: value for key, value in (("abstractGameState", abstract), ("detailedState", detailed)) if value is not None}
+    return {"status": status} if status else {}
+
+
 def install_sources(monkeypatch: pytest.MonkeyPatch, scenario: Scenario, tmp: Path) -> Asked:
     pitchers = {scenario.away.pid: scenario.away, scenario.home.pid: scenario.home}
     asked = Asked()
@@ -323,7 +333,7 @@ def install_sources(monkeypatch: pytest.MonkeyPatch, scenario: Scenario, tmp: Pa
                         "gamePk": 777001,
                         "officialDate": scenario.game_day,
                         "gameDate": f"{scenario.game_day}T23:05:00Z",
-                        "status": {"abstractGameState": "Preview"},
+                        **_status_of(scenario.state),
                         "venue": {"name": "Test Park", "timeZone": {"id": "America/New_York"}},
                         "teams": {
                             "away": {
@@ -497,6 +507,14 @@ def _hard_cases() -> dict[str, Scenario]:
         _world("unknown_team", away_team=(999, "Brand New Club")),
         _world("hand_lookup_fails", replace(away, **debut, lookup="FAIL")),
         _world("switch_pitcher", replace(away, **debut, lookup="S")),
+        # F5: the state of the game, as the real schedule sends it (a postponed game is Final, 2026-10-16)
+        _world("live_state_live", state=("Live", "In Progress")),
+        _world("live_state_final", state=("Final", "Final")),
+        _world("live_state_postponed", state=("Final", "Postponed")),
+        _world("live_state_cancelled", state=("Final", "Cancelled")),
+        _world("live_state_suspended", state=("Final", "Suspended")),
+        _world("live_state_missing", state=(None, None)),
+        _world("live_state_unknown", state=("Preview", "Something New")),
     ]
     cases += [
         _world(f"frame_without_{column}", replace(away, drop=(column,)))

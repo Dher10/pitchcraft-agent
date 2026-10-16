@@ -451,7 +451,9 @@ def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE
         matchup_input["critic_review"] = critic_review
         matchup_input["data_confidence"] = packet["data_confidence"]
 
-        if matchup_input["status"] == "final":
+        # A live game keeps its pregame report whatever its state; its postgame stays null until the daily postgame
+        # exists (rule 7, P1.2). Only a demo game that is final is graded: it has its box score.
+        if matchup_input["status"] == "final" and matchup_input.get("data_confidence", {}).get("level") != "fetched_snapshot":
             postgame = postgame_grader.run(matchup_input, language=language)
             matchup_input["postgame"] = postgame
             run.graded_starters += len(postgame["starter_lines"])
@@ -546,7 +548,7 @@ def _apply_live_confidence(payload: dict[str, Any]) -> None:
     live_ids.update(f"matchup_live_{index}" for index in range(2, len(_live_game_entries()) + 1))
     for matchup in payload["matchups"]:
         if matchup["id"] in live_ids:
-            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _fetch_day(), matchup["starters"])
+            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _fetch_day(), matchup["starters"], matchup["status"])
 
 def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
     matchups_by_id = {matchup["id"]: matchup for matchup in payload["matchups"]}

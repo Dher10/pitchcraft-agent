@@ -467,6 +467,10 @@ def _validate_pitch_locations(pitch_locations: Any, label: str, record: Any) -> 
 def _validate_final_postgame(matchup: Mapping[str, Any], label: str, record: Any) -> None:
     if matchup.get("status") != "final":
         return
+    # A live game that is final keeps its pregame report; its postgame stays null until the daily postgame exists
+    # (rule 7, P1.2), so there is no box score to ask for. Only a demo game that is final carries one.
+    if (matchup.get("data_confidence") or {}).get("level") == "fetched_snapshot":
+        return
 
     postgame = matchup.get("postgame")
     starter_lines = postgame.get("starter_lines") if isinstance(postgame, Mapping) else None

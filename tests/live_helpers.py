@@ -117,6 +117,8 @@ def featured_game(game_day: str = GAME_DAY) -> dict[str, Any]:
         "home_pitcher_name": "Bravo Liveleft",
         "home_pitcher_id": 222,
         "start_time_utc": f"{game_day}T18:07:00Z",
+        "status": "Preview",
+        "detailed_state": "Scheduled",
     }
 
 
@@ -173,7 +175,7 @@ def hand_snapshot(complete: bool) -> dict[str, Any]:
         "start_time_utc": f"{GAME_DAY}T18:07:00Z",
     }
     if complete:
-        featured.update(venue="Test Park", venue_timezone="America/Chicago", status="Preview")
+        featured.update(venue="Test Park", venue_timezone="America/Chicago", status="Preview", detailed_state="Scheduled")
         api_away = {
             "era": "2.71", "whip": "0.93", "innings": "150.1", "batters_faced": 600,
             "strikeouts": 187, "walks": 41, "home_runs_allowed": 12,

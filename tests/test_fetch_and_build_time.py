@@ -48,9 +48,8 @@ def codes(payload):
 # --- the schema ------------------------------------------------------------------------------------------------------
 
 
-def test_the_schema_is_0_7_0_and_a_snapshot_of_0_6_0_is_not_read():
-    assert SCHEMA_VERSION == "0.7.0"
-    assert snapshot_matches_schema("0.7.0") and not snapshot_matches_schema("0.6.0")
+def test_a_snapshot_of_0_6_0_is_not_read_and_the_two_times_came_with_0_7_0():
+    assert not snapshot_matches_schema("0.6.0")  # the two fields came with 0.7.0 (D39); a snapshot without them is rejected
 
 
 # --- two fields, two times -------------------------------------------------------------------------------------------

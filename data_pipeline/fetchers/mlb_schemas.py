@@ -184,7 +184,14 @@ SCHEDULE_DAY = Obj(
                                 "officialDate": Scalar("date"),
                                 # The start as an explicit UTC instant (D33); anything else is not a start time.
                                 "gameDate": Scalar("utc_instant"),
-                                "status": Obj({"abstractGameState": Scalar("str", required=False)}, required=False),
+                                "status": Obj(
+                                    {
+                                        "abstractGameState": Scalar("str", required=False),
+                                        # Checked on 2026-10-16 over 208 games: a postponed or cancelled game is Final here.
+                                        "detailedState": Scalar("str", required=False),
+                                    },
+                                    required=False,
+                                ),
                                 "venue": Obj(
                                     {
                                         "name": Scalar("str", required=False),

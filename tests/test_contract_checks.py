@@ -60,6 +60,8 @@ def added(payload: dict[str, Any], edit: Callable[[dict[str, Any]], None]) -> se
 
 
 def test_a_violation_has_a_code_a_place_and_a_message(live):
+    live = deepcopy(live)
+    live["matchups"][0]["status"] = "live"  # a game in progress still says "before first pitch" (F16): a violation to look at
     violations = check_contract(live)
 
     assert violations and all(isinstance(v, Violation) for v in violations)
@@ -285,9 +287,16 @@ def test_rule_4_a_time_claim_for_a_game_that_is_not_known_to_be_a_preview_is_fou
     assert any(first["id"] in v.where for v in where(broken(demo, live_now), "rule4:writer.section.summary#game_state"))
 
 
-def test_rule_4_a_live_game_has_no_known_state_so_its_time_claims_fail(live):
-    assert "rule4:writer.section.summary#game_state" in codes(live)
-    assert "rule4:writer.confidence.lineups#game_state" in codes(live)
+def test_rule_4_a_live_game_that_is_not_known_to_be_upcoming_has_its_time_claims_fail(live):
+    """F5 (closed in D2.5a): the state is the schedule's. A game in Preview may say "before first pitch"; any other may not (F16, D2.5c)."""
+
+    for code in ("rule4:writer.section.summary#game_state", "rule4:writer.confidence.lineups#game_state"):
+        assert code not in codes(live)  # control: the generated game is upcoming
+        for status in ("live", "final", None):
+            payload = deepcopy(live)
+            payload["matchups"][0]["status"] = status
+
+            assert code in codes(payload), (code, status)
 
 
 def _pitches(m, slot, pitches):

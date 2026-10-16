@@ -90,6 +90,7 @@ def _fake_live_game(
             "venue": "Test Park",
             "start_time_utc": "2026-07-04T15:05:00Z",
             "status": "Preview",
+            "detailed_state": "Scheduled",
         },
         "away_starter": live_starter("Alpha Livearm", "R"),
         "home_starter": live_starter("Bravo Liveleft", "L"),

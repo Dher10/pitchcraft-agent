@@ -1,0 +1,237 @@
+{
+  "_what": "Real game objects from GET /api/v1/schedule?sportId=1&startDate=2026-09-15&endDate=2026-10-15 (2026-10-16, no hydrate): a game that ended, one postponed and one cancelled. A postponed or cancelled game arrives with abstractGameState Final. The postponed game is listed again, as Final, on the day it was made up (same gamePk).",
+  "games": {
+    "final": {
+      "gamePk": 824466,
+      "gameGuid": "b1ae7249-2504-4bac-a82f-13fecf97f9ed",
+      "link": "/api/v1.1/game/824466/feed/live",
+      "gameType": "R",
+      "season": "2026",
+      "gameDate": "2026-09-15T22:40:00Z",
+      "officialDate": "2026-09-15",
+      "status": {
+        "abstractGameState": "Final",
+        "codedGameState": "F",
+        "detailedState": "Final",
+        "statusCode": "F",
+        "startTimeTBD": false,
+        "abstractGameCode": "F"
+      },
+      "teams": {
+        "away": {
+          "team": {
+            "id": 119,
+            "name": "Los Angeles Dodgers",
+            "link": "/api/v1/teams/119"
+          },
+          "leagueRecord": {
+            "wins": 92,
+            "losses": 59,
+            "ties": 0,
+            "pct": ".609"
+          },
+          "score": 4,
+          "isWinner": true,
+          "splitSquad": false,
+          "seriesNumber": 49
+        },
+        "home": {
+          "team": {
+            "id": 113,
+            "name": "Cincinnati Reds",
+            "link": "/api/v1/teams/113"
+          },
+          "leagueRecord": {
+            "wins": 70,
+            "losses": 81,
+            "ties": 0,
+            "pct": ".464"
+          },
+          "score": 0,
+          "isWinner": false,
+          "splitSquad": false,
+          "seriesNumber": 49
+        }
+      },
+      "venue": {
+        "id": 2602,
+        "name": "Great American Ball Park",
+        "link": "/api/v1/venues/2602"
+      },
+      "content": {
+        "link": "/api/v1/game/824466/content"
+      },
+      "isTie": false,
+      "gameNumber": 1,
+      "publicFacing": true,
+      "doubleHeader": "N",
+      "gamedayType": "P",
+      "tiebreaker": "N",
+      "calendarEventID": "14-824466-2026-09-15",
+      "seasonDisplay": "2026",
+      "dayNight": "night",
+      "description": "Roberto Clemente Day",
+      "scheduledInnings": 9,
+      "reverseHomeAwayStatus": false,
+      "inningBreakLength": 120,
+      "gamesInSeries": 4,
+      "seriesGameNumber": 2,
+      "seriesDescription": "Regular Season",
+      "recordSource": "S",
+      "ifNecessary": "N",
+      "ifNecessaryDescription": "Normal Game"
+    },
+    "postponed": {
+      "gamePk": 824785,
+      "gameGuid": "1f4cecd1-1bf9-47ae-bf1b-5fd9f3c923d2",
+      "link": "/api/v1.1/game/824785/feed/live",
+      "gameType": "R",
+      "season": "2026",
+      "gameDate": "2026-09-22T22:35:00Z",
+      "officialDate": "2026-09-23",
+      "rescheduleDate": "2026-09-23T17:35:00Z",
+      "rescheduleGameDate": "2026-09-23",
+      "status": {
+        "abstractGameState": "Final",
+        "codedGameState": "D",
+        "detailedState": "Postponed",
+        "statusCode": "DR",
+        "startTimeTBD": false,
+        "reason": "Rain",
+        "abstractGameCode": "F"
+      },
+      "teams": {
+        "away": {
+          "team": {
+            "id": 141,
+            "name": "Toronto Blue Jays",
+            "link": "/api/v1/teams/141"
+          },
+          "leagueRecord": {
+            "wins": 77,
+            "losses": 81,
+            "ties": 0,
+            "pct": ".487"
+          },
+          "splitSquad": false,
+          "seriesNumber": 52
+        },
+        "home": {
+          "team": {
+            "id": 110,
+            "name": "Baltimore Orioles",
+            "link": "/api/v1/teams/110"
+          },
+          "leagueRecord": {
+            "wins": 77,
+            "losses": 81,
+            "ties": 0,
+            "pct": ".487"
+          },
+          "splitSquad": false,
+          "seriesNumber": 51
+        }
+      },
+      "venue": {
+        "id": 2,
+        "name": "Oriole Park at Camden Yards",
+        "link": "/api/v1/venues/2"
+      },
+      "content": {
+        "link": "/api/v1/game/824785/content"
+      },
+      "gameNumber": 1,
+      "publicFacing": true,
+      "doubleHeader": "N",
+      "gamedayType": "P",
+      "tiebreaker": "N",
+      "calendarEventID": "14-824785-2026-09-22",
+      "seasonDisplay": "2026",
+      "dayNight": "night",
+      "scheduledInnings": 9,
+      "reverseHomeAwayStatus": false,
+      "inningBreakLength": 120,
+      "gamesInSeries": 3,
+      "seriesGameNumber": 2,
+      "seriesDescription": "Regular Season",
+      "recordSource": "S",
+      "ifNecessary": "N",
+      "ifNecessaryDescription": "Normal Game"
+    },
+    "cancelled": {
+      "gamePk": 823490,
+      "gameGuid": "60af2974-4c0b-4e44-a0d6-89de17c8ec3c",
+      "link": "/api/v1.1/game/823490/feed/live",
+      "gameType": "R",
+      "season": "2026",
+      "gameDate": "2026-09-27T17:05:00Z",
+      "officialDate": "2026-09-27",
+      "status": {
+        "abstractGameState": "Final",
+        "codedGameState": "C",
+        "detailedState": "Cancelled",
+        "statusCode": "CR",
+        "startTimeTBD": false,
+        "reason": "Rain",
+        "abstractGameCode": "F"
+      },
+      "teams": {
+        "away": {
+          "team": {
+            "id": 110,
+            "name": "Baltimore Orioles",
+            "link": "/api/v1/teams/110"
+          },
+          "leagueRecord": {
+            "wins": 79,
+            "losses": 82,
+            "ties": 0,
+            "pct": ".491"
+          },
+          "splitSquad": false,
+          "seriesNumber": 52
+        },
+        "home": {
+          "team": {
+            "id": 147,
+            "name": "New York Yankees",
+            "link": "/api/v1/teams/147"
+          },
+          "leagueRecord": {
+            "wins": 93,
+            "losses": 68,
+            "ties": 0,
+            "pct": ".578"
+          },
+          "splitSquad": false,
+          "seriesNumber": 52
+        }
+      },
+      "venue": {
+        "id": 3313,
+        "name": "Yankee Stadium",
+        "link": "/api/v1/venues/3313"
+      },
+      "content": {
+        "link": "/api/v1/game/823490/content"
+      },
+      "gameNumber": 1,
+      "publicFacing": true,
+      "doubleHeader": "N",
+      "gamedayType": "P",
+      "tiebreaker": "N",
+      "calendarEventID": "14-823490-2026-09-27",
+      "seasonDisplay": "2026",
+      "dayNight": "day",
+      "scheduledInnings": 9,
+      "reverseHomeAwayStatus": false,
+      "inningBreakLength": 120,
+      "gamesInSeries": 3,
+      "seriesGameNumber": 3,
+      "seriesDescription": "Regular Season",
+      "recordSource": "S",
+      "ifNecessary": "N",
+      "ifNecessaryDescription": "Normal Game"
+    }
+  }
+}

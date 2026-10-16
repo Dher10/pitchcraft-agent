@@ -24,7 +24,7 @@ from agents.language import SUBJECT_SLOTS, Catalog
 from data_pipeline import labels
 from data_pipeline import report_facts as facts
 from data_pipeline.claims import render_text
-from data_pipeline.schema import new_york_day
+from data_pipeline.schema import STATE_OF_STATUS, new_york_day
 
 LIVE_LEVEL = "fetched_snapshot"
 FACING = {"away_starter": "home", "home_starter": "away"}  # the lineup a starter faces
@@ -36,8 +36,6 @@ SCOPE_GROUPS_OF_FIGURE = {
     "analyst.figure.pitch_data": "pitch_data",
 }
 SEASON_GROUPS = ("season_rates", "counts")
-DEMO_STATES = {"upcoming": "Preview", "final": "Final"}
-SOURCE_STATES = ("Preview", "Live", "Final")
 
 
 @dataclass(frozen=True)
@@ -199,16 +197,14 @@ class Ctx:
 
     @property
     def state(self) -> str | None:
-        """The state of the game from its source (Preview, Live, Final), or None when it is not known.
+        """The state of the game (Preview, Live, Final), or None when it is not known.
 
-        A live matchup's published `status` is a constant, not the schedule's state (F5), so it is
-        unknown. A demo matchup declares its own: "upcoming" is Preview, "final" is Final.
+        The published `status` is the schedule's state through one table (`schema.GAME_STATUS`): `upcoming` is Preview,
+        `live` is Live, `final` is Final, `null` is unknown (F5, closed in P0.15-D2.5a). A demo matchup declares the same.
         """
 
         status = (self.matchup or {}).get("status")
-        if status in SOURCE_STATES:
-            return status
-        return None if self.live else DEMO_STATES.get(status)
+        return STATE_OF_STATUS.get(status) if isinstance(status, str) else None
 
     def who(self) -> list[Mapping[str, Any]]:
         """The starters a scope note is about: the ones named in the `who` of this claim or of its nearest ancestor."""

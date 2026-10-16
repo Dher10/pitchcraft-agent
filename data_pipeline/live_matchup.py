@@ -15,6 +15,7 @@ from typing import Any
 
 from data_pipeline import labels
 from data_pipeline.generator_texts import generator_catalog
+from data_pipeline.schema import game_status, lineup_status_of
 
 # What a live starter shows for a field its snapshot does not supply (never a demo value).
 UNAVAILABLE_SUMMARY = {
@@ -57,6 +58,7 @@ def build_matchup(
     """
 
     fg = live_game["featured_game"]
+    status = game_status(fg.get("status"), fg.get("detailed_state"))  # None when the schedule does not say (F5)
     away = live_game["away_starter"]
     home = live_game["home_starter"]
     offense_scope = labels.make_scope(labels.SCOPE_REGULAR, through)
@@ -67,7 +69,7 @@ def build_matchup(
     return {
         "id": matchup_id,
         "date": game_day,
-        "status": "upcoming",
+        "status": status,
         "is_featured": is_featured,
         "game": {
             "title": f"{fg['away_team']} vs {fg['home_team']}",
@@ -121,7 +123,7 @@ def build_matchup(
             },
         },
         "postgame": None,
-        "data_confidence": confidence_note(matchup_id, fetch_day, starters),
+        "data_confidence": confidence_note(matchup_id, fetch_day, starters, status),
     }
 
 
@@ -217,7 +219,7 @@ PITCH_DATA_FETCHED = "fetched_snapshot"
 PITCH_DATA_UNAVAILABLE = "unavailable"  # the word `sample.rates.source` uses for a figure that was not given
 
 
-def confidence_note(matchup_id: str, fetch_day: str, starters: dict[str, Any]) -> dict[str, Any]:
+def confidence_note(matchup_id: str, fetch_day: str, starters: dict[str, Any], status: str | None) -> dict[str, Any]:
     """
     The confidence block of a live matchup. `pitch_data_status` is computed: `fetched_snapshot` when at
     least one starter has a pitch on record, `unavailable` when none has (DATA_CONTRACT, F1).
@@ -226,7 +228,7 @@ def confidence_note(matchup_id: str, fetch_day: str, starters: dict[str, Any]) -
     pitched = any(labels.has_pitch_data(starter) for starter in starters.values())
     return {
         "level": "fetched_snapshot",
-        "lineup_status": "probable_pitchers",
+        "lineup_status": lineup_status_of(status),
         "pitch_data_status": PITCH_DATA_FETCHED if pitched else PITCH_DATA_UNAVAILABLE,
         "notes": [generator_catalog()("generator.confidence.live_note", date=fetch_day, matchup_id=matchup_id)],
     }

@@ -6,6 +6,7 @@ interface ArchiveTableProps {
 
 const statusClasses: Record<MatchupStatus, string> = {
   upcoming: "bg-neutral-100 text-neutral-500",
+  live: "bg-amber-100 text-amber-800",
   final: "bg-green-100 text-green-800",
   demo: "bg-neutral-100 text-neutral-500",
 };

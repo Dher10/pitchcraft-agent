@@ -51,7 +51,7 @@ def schedule_day() -> dict:
                         "gamePk": 1,
                         "officialDate": "2026-07-15",
                         "gameDate": "2026-07-15T23:05:00Z",
-                        "status": {"abstractGameState": "Preview"},
+                        "status": {"abstractGameState": "Preview", "detailedState": "Scheduled"},
                         "venue": {"name": "Yankee Stadium", "timeZone": {"id": "America/New_York"}},
                         "teams": {
                             "away": side(111, "Boston Red Sox", 11, "Away Ace"),

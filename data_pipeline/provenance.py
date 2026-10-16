@@ -40,7 +40,15 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from data_pipeline import config, labels
-from data_pipeline.schema import CRITIC_STATUSES, SCHEMA_VERSION, WORKFLOW_AGENTS, is_utc_instant, new_york_day
+from data_pipeline.schema import (
+    CRITIC_STATUSES,
+    SCHEMA_VERSION,
+    STATE_OF_STATUS,
+    WORKFLOW_AGENTS,
+    is_utc_instant,
+    lineup_status_of,
+    new_york_day,
+)
 
 LIVE_MODE = "fetched_snapshot"
 LIVE_LEVEL = "fetched_snapshot"
@@ -533,6 +541,15 @@ def step_status(c: Ctx) -> Problem | None:
     return None if c.value == want else _mismatch(f"the postgame step is {want!r} by what it reports, found {c.value!r}")
 
 
+def game_status_value(c: Ctx) -> Problem | None:
+    return None if c.value in STATE_OF_STATUS else ("rule1:wrong_type", f"{c.value!r} is not one of {sorted(STATE_OF_STATUS)}")
+
+
+def lineup_follows_status(c: Ctx) -> Problem | None:
+    want = lineup_status_of(c.matchup.get("status"))
+    return None if c.value == want else _mismatch(f"the lineup status follows the status {c.matchup.get('status')!r}: expected {want!r}")
+
+
 def game_title(c: Ctx) -> Problem | None:
     teams = c.matchup["teams"]
     want = f"{teams['away']['name']} vs {teams['home']['name']}"
@@ -619,7 +636,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         # -- the matchup
         _label(M + "id", "the id of the matchup", STR),
         _source(M + "date", "the official date of the game (schedule `officialDate`)", STR, False, is_date),
-        _fact(M + "status", "F5", "written as `upcoming` without reading the schedule's `abstractGameState`"),
+        _source(M + "status", "the schedule's game state through `schema.GAME_STATUS` (`upcoming`, `live`, `final`); null when the table does not know it", STR, True, game_status_value),
         _label(M + "is_featured", "whether the matchup is the featured one", (bool,)),
         _derived(M + "game.title", "the names of the two teams", STR, False, game_title),
         _source(M + "game.venue", "schedule venue name", STR, True),
@@ -695,7 +712,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         # -- the sentences and the state of the report
         _source(M + "postgame", "no live postgame until P1.2", (), True, is_none),
         _derived(M + "data_confidence.level", "set only for a matchup built from a snapshot game", STR, False, equals(lambda c: LIVE_LEVEL, "a live matchup")),
-        _fact(M + "data_confidence.lineup_status", "F5", "written as `probable_pitchers` without reading the schedule"),
+        replace(_derived(M + "data_confidence.lineup_status", "follows the status of the matchup (`schema.LINEUP_STATUS`); null when the status is", STR, True, lineup_follows_status), check_null=True),
         _derived(M + "data_confidence.pitch_data_status", "`fetched_snapshot` when at least one starter has pitch data, else `unavailable`", STR, False, equals(pitch_data_status, "the status of the starters' pitch data")),
         _claim(M + "data_confidence.notes[]"),
         _record(M + "report.claims[].**"),

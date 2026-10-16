@@ -91,6 +91,10 @@ def test_a_new_violation_fails_publication(monkeypatch):
 def test_a_violation_is_tolerated_only_when_it_is_in_the_table(monkeypatch):
     payload = build(monkeypatch, "live_complete")
     assert failed_checks(payload) == []
+    # a game in progress still gets the sentence about the lineups (F16, closed in D2.5c): a known violation
+    payload["matchups"][0]["status"] = "live"
+    payload["matchups"][0]["data_confidence"]["lineup_status"] = "game_started"
+    assert failed_checks(payload) == []
 
     monkeypatch.delitem(KNOWN_VIOLATIONS, "rule4:writer.confidence.lineups#game_state")
     # `validate_payload` reads the table when it runs, so the same payload now fails on that code

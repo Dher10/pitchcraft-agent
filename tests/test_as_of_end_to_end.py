@@ -45,7 +45,7 @@ SCHEDULE = {
                     "gamePk": 1,
                     "officialDate": GAME_DAY,
                     "gameDate": f"{GAME_DAY}T23:05:00Z",
-                    "status": {"abstractGameState": "Preview"},
+                    "status": {"abstractGameState": "Preview", "detailedState": "Scheduled"},
                     "venue": {"name": "Yankee Stadium"},
                     "teams": {
                         "away": {

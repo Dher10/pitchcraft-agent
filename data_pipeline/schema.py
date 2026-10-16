@@ -1,4 +1,4 @@
-"""Schema constants for the PitchCraft v0.7.0 demo payload."""
+"""Schema constants for the PitchCraft v0.8.0 demo payload."""
 
 from __future__ import annotations
 
@@ -7,7 +7,9 @@ import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
-SCHEMA_VERSION = "0.7.0"
+SCHEMA_VERSION = "0.8.0"
+# 0.8.0 (P0.15-D2.5, D40): `matchups[].status` is the schedule's game state (`upcoming`, `live`, `final`) or null, and
+# `data_confidence.lineup_status` follows it and may be null, so a reader of 0.7.0 (always `upcoming`) breaks.
 # 0.7.0 (P0.15-D2.4c, D39): `metadata.data_fetched_at` is the instant of the live fetch (null in a demo file) and
 # `metadata.generated_at` the instant the file was built, so a reader of 0.6.0 (one field for both) breaks.
 # 0.6.0 (P0.15-D2.3, D38): `offense_profile.vs_pitcher_hand` is null for a starter whose hand is not L or R, a starter's
@@ -69,6 +71,45 @@ WORKFLOW_AGENTS = (
     "Postgame Grader Agent",
 )
 STEP_STATUSES = ("completed", "not_applicable", "pending")
+
+# The state of a game (rule 7, F5). A game that was not played arrives with `abstractGameState` "Final" and the truth in
+# `detailedState` (measured 2026-10-16 over 208 games: "Postponed" and "Cancelled"), so the pair decides, never the first
+# alone. Only the pairs the owner named or a real answer showed are listed; every other pair, and a missing part, is
+# unknown (`null`): never `upcoming` and never `final`. The table grows with real answers, not by guess.
+GAME_STATUS: dict[tuple[str, str], str] = {
+    ("Preview", "Scheduled"): "upcoming",
+    ("Preview", "Pre-Game"): "upcoming",
+    ("Live", "In Progress"): "live",
+    ("Final", "Final"): "final",
+    ("Final", "Game Over"): "final",
+    ("Final", "Completed Early"): "final",
+}
+# The state a published status stands for: what the registry's conditions ask ("Preview" for the lineups sentence).
+STATE_OF_STATUS: dict[str, str] = {
+    "upcoming": "Preview",
+    "live": "Live",
+    "final": "Final",
+}
+LINEUP_STATUS: dict[str, str] = {
+    "upcoming": "probable_pitchers",
+    "live": "game_started",
+    "final": "game_started",
+}
+
+
+def game_status(abstract_state: Any, detailed_state: Any) -> str | None:
+    """The published status of a game from the schedule's two states, or None when the table does not know the pair."""
+
+    if not isinstance(abstract_state, str) or not isinstance(detailed_state, str):
+        return None
+    return GAME_STATUS.get((abstract_state, detailed_state))
+
+
+def lineup_status_of(status: str | None) -> str | None:
+    """The lineup status that goes with a published status (None for an unknown game state)."""
+
+    return LINEUP_STATUS.get(status) if isinstance(status, str) else None
+
 
 TOP_LEVEL_REQUIRED_KEYS = (
     "metadata",

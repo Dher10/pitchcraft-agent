@@ -1,9 +1,9 @@
 {
   "metadata": {
     "project_name": "PitchCraft Matchup Agent",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "data_mode": "demo_cached",
-    "generated_at": "2026-10-16T14:43:13+00:00",
+    "generated_at": "2026-10-16T17:37:16+00:00",
     "data_fetched_at": null,
     "last_updated_label": "Demo data generated for capstone submission",
     "data_sources": [

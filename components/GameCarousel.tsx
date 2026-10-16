@@ -1,7 +1,7 @@
 "use client";
 
 import TeamBadge from "@/components/TeamBadge";
-import { formatStartTime } from "@/lib/format";
+import { UNAVAILABLE, formatStartTime } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 import { teamLabel } from "@/lib/teamLabel";
 import type { ArchiveItem, Matchup } from "@/lib/types";
@@ -54,7 +54,7 @@ export default function GameCarousel({
                 <div className="flex items-center justify-between gap-2">
                   <DateBadge date={matchup.date} />
                   <span className={`rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide ${statusClass(matchup.status, isFeatured)}`}>
-                    {isFeatured ? "recommended" : matchup.status}
+                    {isFeatured ? "recommended" : statusLabel(matchup.status)}
                   </span>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
@@ -89,9 +89,17 @@ function DateBadge({ date }: { date: string }) {
   return <span className="font-mono text-[11px] font-medium text-neutral-400">{label}</span>;
 }
 
+/**
+ * What the badge says of the game: its state, or the dash of every unavailable figure when the schedule did not give one
+ * (never a guessed "upcoming"). The dash is the page's existing way to say "not available": no new wording.
+ */
+export function statusLabel(status: Matchup["status"]): string {
+  return status ?? UNAVAILABLE;
+}
+
 function statusClass(status: Matchup["status"], featured: boolean) {
   if (featured) return "bg-blue-600 text-white";
   if (status === "final") return "bg-green-100 text-green-800";
-  if (status === "upcoming") return "border border-neutral-200 bg-neutral-100 text-neutral-500";
+  if (status === "live") return "bg-amber-100 text-amber-800";
   return "border border-neutral-200 bg-neutral-100 text-neutral-500";
 }
