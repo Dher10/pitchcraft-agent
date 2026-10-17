@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
+import math
+from numbers import Integral, Real
 import re
 from typing import Any
 
@@ -49,6 +51,20 @@ class ValidationError(Exception):
         self.checks = checks
 
 
+def _nonfinite_paths(value: Any, path: str = "$") -> list[str]:
+    """Walk all payload numbers, independently of the schema/manifest."""
+
+    if isinstance(value, Mapping):
+        return [found for key, child in value.items() for found in _nonfinite_paths(child, f"{path}.{key}")]
+    if isinstance(value, (list, tuple)):
+        return [found for index, child in enumerate(value) for found in _nonfinite_paths(child, f"{path}[{index}]")]
+    # Integers (including bools) are finite without float conversion, even when
+    # an arbitrarily large integer would overflow math.isfinite's conversion.
+    if isinstance(value, Real) and not isinstance(value, Integral) and not math.isfinite(value):
+        return [path]
+    return []
+
+
 def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
     """Validate the assembled payload and return pass/fail check records."""
 
@@ -59,6 +75,12 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
 
     def has_keys(value: Any, keys: Sequence[str]) -> bool:
         return isinstance(value, Mapping) and all(key in value for key in keys)
+
+    nonfinite = _nonfinite_paths(payload)
+    record("every payload number is finite", not nonfinite, ", ".join(nonfinite))
+    if nonfinite:
+        # Reject before any downstream arithmetic can hide or choke on it.
+        raise ValidationError(checks)
 
     record(
         "top-level required keys",

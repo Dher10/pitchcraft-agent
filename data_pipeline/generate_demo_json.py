@@ -400,7 +400,12 @@ def main() -> int:
         return 1
 
     _print_checks(checks)
-    OUTPUT_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    try:
+        serialized = json.dumps(payload, indent=2, allow_nan=False)
+    except ValueError as exc:
+        print(f"JSON serialization failed: {exc}", file=sys.stderr)
+        return 1
+    OUTPUT_PATH.write_text(serialized + "\n", encoding="utf-8")
     print(f"Wrote v{payload['metadata']['version']} demo JSON to {OUTPUT_PATH}")
     return 0
 

@@ -102,11 +102,11 @@ def _calls(name):
 
 
 def test_every_place_that_records_an_error_is_a_call_the_checks_below_can_see():
-    # 11 call sites at HEAD (the plan said 13; the count is of the code). A site that goes around the two functions
+    # 12 call sites: QA5-03 adds the isolated numeric-measurement error. A site that goes around the two functions
     # would not be checked, so the textual count must equal the calls found (+1 for each `def`).
     text = PIPELINE.read_text(encoding="utf-8")
     found = len(_calls("_record_error")) + len(_calls("_record_failure"))
-    assert found == 11 and text.count("_record_error(") + text.count("_record_failure(") == found + 3  # + the two `def` and the forwarding call
+    assert found == 12 and text.count("_record_error(") + text.count("_record_failure(") == found + 3  # + the two `def` and the forwarding call
 
 
 def test_every_call_site_names_a_source_and_a_code_of_the_closed_sets():

@@ -774,6 +774,13 @@ PITCHER_STATCAST_REQUIRED_COLUMNS = ("game_date", "game_type")
 # are unavailable and the game stays (F6b). `p_throws` is not here: the hand has its own lookup. `pfx_x`
 # and `pfx_z` are not here: without them the movement is `null`, on purpose (`compute_movement`).
 PITCH_DATA_REQUIRED_COLUMNS = ("pitch_type", "stand", "release_speed", "plate_x", "plate_z")
+# These are all numeric Statcast columns read by the pipeline. Team batting derives
+# its figures from categorical events and row counts, not numeric measurements.
+PITCH_MEASUREMENT_GROUPS = (
+    ("velocity", ("release_speed",)),
+    ("movement", ("pfx_x", "pfx_z")),
+    ("locations", ("plate_x", "plate_z")),
+)
 # Every game type Statcast writes: regular season, spring training, exhibition, all-star, then the
 # postseason rounds (wild card, division, league championship, world series).
 KNOWN_STATCAST_GAME_TYPES = ("R", "S", "E", "A") + POSTSEASON_GAME_TYPES
@@ -867,6 +874,43 @@ def require_usable_pitch_columns(df: Any, source: str) -> None:
         raise UnusableColumn(f"{source} data has {len(df)} row(s) and no usable pitch_type")
     if not df["stand"].isin(("L", "R")).any():
         raise UnusableColumn(f"{source} data has {len(df)} row(s) and no usable stand (no L or R in any row)")
+
+
+def _finite_pitch_measurements(df: Any, *, pitcher_id: int | None = None) -> Any:
+    """Contain malformed numeric cells before filtering or aggregation (QA5-03).
+
+    Null measurements are absent, as before. A populated non-finite cell makes
+    its whole measurement group unavailable; dropping only that row would turn
+    a malformed answer into an apparently complete mean/median. Counts, mix,
+    hand and other groups stay usable. Never mutate the source/cache frame.
+    """
+
+    import pandas as pd
+
+    clean = df
+    for group, columns in PITCH_MEASUREMENT_GROUPS:
+        bad_columns = []
+        for column in columns:
+            if column not in df.columns:
+                continue
+            values = pd.to_numeric(df[column], errors="coerce")
+            bad = df[column].notna() & ~np.isfinite(values)
+            if bad.any():
+                bad_columns.append(f"{column} ({int(bad.sum())} row(s), first at {df.index[bad][0]})")
+        if not bad_columns:
+            continue
+        _record_error(
+            "statcast_pitcher", "malformed_rows",
+            f"pitcher Statcast has non-finite or non-numeric measurements in {', '.join(bad_columns)}; "
+            f"{group} unavailable",
+            pitcher_id=pitcher_id,
+        )
+        if clean is df:
+            clean = df.copy()
+        for column in columns:
+            if column in clean.columns:
+                clean[column] = np.nan
+    return clean
 
 
 def validate_team_batting_rows(df: Any, source: str) -> None:
@@ -1144,6 +1188,7 @@ def fetch_pitcher_statcast(
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
             validate_pitcher_frame(df, "pitcher Statcast")
+            df = _finite_pitch_measurements(df, pitcher_id=pitcher_id)
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
             # pybaseball asks for regular season, postseason and spring training.
             # Spring never counts; postseason counts only up to the cutoff above.
@@ -1422,6 +1467,8 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
 
     import pandas as pd
 
+    # Also protect direct callers; an already validated frame is unchanged.
+    df = _finite_pitch_measurements(df)
     df = df.dropna(subset=["pitch_type"])
     df = df[df["pitch_type"] != ""].copy()
     df["pitch_name"] = df["pitch_type"].map(PITCH_NAME_MAP).fillna(df["pitch_type"])
