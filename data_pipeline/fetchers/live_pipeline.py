@@ -26,6 +26,7 @@ from pybaseball import statcast_pitcher
 
 from data_pipeline import labels  # noqa: E402
 from data_pipeline.fetchers import mlb_schemas  # noqa: E402
+from data_pipeline.fetchers.statcast_events import COMPLETED_EVENTS, STATCAST_EVENTS  # noqa: E402
 from data_pipeline.schema import SCHEMA_VERSION  # noqa: E402
 
 pybaseball.cache.enable()
@@ -132,14 +133,6 @@ TEAM_BATTING_COLUMNS = (
     "at_bat_number",
     "events",
 )
-
-HIT_BASES = {"single": 1, "double": 2, "triple": 3, "home_run": 4}
-WALK_EVENTS = {"walk", "intent_walk"}
-STRIKEOUT_EVENTS = {"strikeout", "strikeout_double_play"}
-SAC_FLY_EVENTS = {"sac_fly", "sac_fly_double_play"}
-SAC_BUNT_EVENTS = {"sac_bunt", "sac_bunt_double_play"}
-# Not plate appearances in MLB's official stats.
-NON_PA_EVENTS = {"truncated_pa"}
 
 PITCH_NAME_MAP = {
     "FF": "Four-seam",
@@ -721,10 +714,17 @@ def fetch_team_batting_statcast(
             TEAM_BATTING_CACHE_DIR / f"{statcast_team}_{chunk_start}_{chunk_end}.csv"
         )
         if cache_file.exists():
-            cached = pd.read_csv(cache_file)
-            if len(cached):
-                frames.append(cached)
-            continue
+            try:
+                cached = pd.read_csv(cache_file)
+                _validate_team_batting_month(cached, f"cached team batting {statcast_team} {chunk_start}..{chunk_end}")
+            except (OSError, ValueError, TruncatedResponse) as exc:
+                # A poisoned month is a miss. Keep its bytes until a validated
+                # replacement is available; recovery uses the same budgets.
+                print(f"[LIVE] Ignoring invalid team batting cache {cache_file.name}: {exc}")
+            else:
+                if len(cached):
+                    frames.append(cached)
+                continue
         text = _savant_get(
             SAVANT_BATTING_URL.format(
                 team=statcast_team, start=chunk_start.isoformat(), end=chunk_end.isoformat()
@@ -739,12 +739,7 @@ def fetch_team_batting_statcast(
                     f"Savant did not send the batting CSV for {statcast_team} "
                     f"{chunk_start}..{chunk_end}: {text.strip()[:80]!r}"
                 )
-            if len(chunk) >= SAVANT_ROW_CAP:
-                raise TruncatedResponse(
-                    f"Savant returned {len(chunk)} rows for {statcast_team} "
-                    f"{chunk_start}..{chunk_end}: result may be truncated"
-                )
-            validate_team_batting_rows(chunk, f"team batting {statcast_team} {chunk_start}..{chunk_end}")
+            _validate_team_batting_month(chunk, f"team batting {statcast_team} {chunk_start}..{chunk_end}")
             chunk = chunk[[c for c in TEAM_BATTING_COLUMNS if c in chunk.columns]]
         else:
             # A blank answer is a valid empty month (off-season, no games): it is cached
@@ -924,6 +919,10 @@ def validate_team_batting_rows(df: Any, source: str) -> None:
     validate_statcast_rows(df, source)
     if len(df) == 0:
         return
+    _require_columns(df, TEAM_SPLIT_REQUIRED_COLUMNS, source)
+    problem = _event_column_problem(df, source)
+    if problem is not None:
+        raise problem
     text = lambda column: df[column].map(lambda value: isinstance(value, str) and value.strip() != "")  # noqa: E731
     bad = (
         ~df["inning_topbot"].isin(("Top", "Bot"))
@@ -941,16 +940,46 @@ def validate_team_batting_rows(df: Any, source: str) -> None:
         )
 
 
+def _validate_team_batting_month(df: Any, source: str) -> None:
+    """One CSV/cache boundary, including the columns of a header-only month."""
+
+    _require_columns(df, TEAM_SPLIT_REQUIRED_COLUMNS, source)
+    if len(df) >= SAVANT_ROW_CAP:
+        raise TruncatedResponse(f"{source} has {len(df)} rows: result may be truncated")
+    validate_team_batting_rows(df, source)
+
+
+def _unknown_event_problem(events: Any, source: str) -> UnknownValue | None:
+    known = events.map(lambda value: isinstance(value, str) and value in STATCAST_EVENTS)
+    if (~known).any():
+        first = events[~known].iloc[0]
+        return UnknownValue(f"{source} has {int((~known).sum())} unknown events value(s); first: {first!r}")
+    return None
+
+
+def _event_column_problem(df: Any, source: str) -> ValueError | None:
+    """Unknown populated outcomes and all-null columns are not measured outs."""
+
+    if len(df) == 0:
+        return None
+    if "events" not in df.columns:
+        return UnusableColumn(f"{source} has no usable events column (missing)")
+    events = df["events"].dropna()
+    if len(events) == 0:
+        return UnusableColumn(f"{source} has no usable events (all rows null)")
+    return _unknown_event_problem(events, source)
+
+
 def _plate_appearance_events(df: Any) -> Any | None:
     """
     The `events` of the rows that end a plate appearance, or None when `events` cannot say (F6b): the column is
     missing or no row of the frame ends one. A truncated plate appearance does not count.
     """
 
-    if "events" not in df.columns:
+    if "events" not in df.columns or _event_column_problem(df, "Statcast") is not None:
         return None
     events = df["events"].dropna()
-    plate_appearances = events[~events.isin(NON_PA_EVENTS)]
+    plate_appearances = events[events.isin(COMPLETED_EVENTS)]
     return plate_appearances if len(plate_appearances) else None
 
 
@@ -1004,15 +1033,20 @@ def _rate3(value: float | None) -> str | None:
 
 
 def _split_line(events: Any) -> dict[str, Any]:
-    plate_appearances = len(events)
-    hits = int(events.isin(HIT_BASES).sum())
-    total_bases = sum(HIT_BASES.get(event, 0) for event in events)
-    walks = int(events.isin(WALK_EVENTS).sum())
-    strikeouts = int(events.isin(STRIKEOUT_EVENTS).sum())
-    hit_by_pitch = int((events == "hit_by_pitch").sum())
-    sac_flies = int(events.isin(SAC_FLY_EVENTS).sum())
-    sac_bunts = int(events.isin(SAC_BUNT_EVENTS).sum())
-    interference = int((events == "catcher_interf").sum())
+    events = events.dropna()
+    problem = _unknown_event_problem(events, "Statcast")
+    if problem is not None:
+        raise problem
+    outcomes = [STATCAST_EVENTS[event] for event in events if event in COMPLETED_EVENTS]
+    plate_appearances = len(outcomes)
+    hits = sum(outcome.kind == "hit" for outcome in outcomes)
+    total_bases = sum(outcome.bases for outcome in outcomes)
+    walks = sum(outcome.kind == "walk" for outcome in outcomes)
+    strikeouts = sum(outcome.kind == "strikeout" for outcome in outcomes)
+    hit_by_pitch = sum(outcome.kind == "hit_by_pitch" for outcome in outcomes)
+    sac_flies = sum(outcome.kind == "sac_fly" for outcome in outcomes)
+    sac_bunts = sum(outcome.kind == "sac_bunt" for outcome in outcomes)
+    interference = sum(outcome.kind == "interference" for outcome in outcomes)
     at_bats = (
         plate_appearances - walks - hit_by_pitch - sac_flies - sac_bunts - interference
     )
@@ -1025,8 +1059,8 @@ def _split_line(events: Any) -> dict[str, Any]:
         "strikeouts": strikeouts,
         "walks": walks,
         "plate_appearances": plate_appearances,
-        "k_rate": round(strikeouts / plate_appearances * 100, 1),
-        "bb_rate": round(walks / plate_appearances * 100, 1),
+        "k_rate": round(strikeouts / plate_appearances * 100, 1) if plate_appearances else None,
+        "bb_rate": round(walks / plate_appearances * 100, 1) if plate_appearances else None,
     }
 
 
@@ -1050,8 +1084,7 @@ def derive_team_splits(df: Any, statcast_team: str, as_of: str | date | None) ->
     )
     keep = (
         batting
-        & df["events"].notna()
-        & ~df["events"].isin(NON_PA_EVENTS)
+        & df["events"].isin(COMPLETED_EVENTS)
         & (pd.to_datetime(df["game_date"]).dt.date <= cutoff)
     )
     keep &= df["game_type"] == "R"
@@ -1185,10 +1218,12 @@ def fetch_pitcher_statcast(
             df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
         if df is None:
             raise MalformedResponse("Statcast returned no result (None)")
+        event_problem = None
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
             validate_pitcher_frame(df, "pitcher Statcast")
             df = _finite_pitch_measurements(df, pitcher_id=pitcher_id)
+            event_problem = _event_column_problem(df, "pitcher Statcast")
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
             # pybaseball asks for regular season, postseason and spring training.
             # Spring never counts; postseason counts only up to the cutoff above.
@@ -1198,18 +1233,16 @@ def fetch_pitcher_statcast(
         counts = None
         if len(df) > 0:
             print(f"[LIVE] {pitcher_name}: {len(df)} pitches fetched")
-            counts = _statcast_counts(df)
+            counts = _unavailable_statcast_counts(df) if event_problem is not None else _statcast_counts(df)
             if counts["batters_faced"] is None:
-                # Recorded whatever the API gave: the counts it gave are used, but the plate appearances
-                # of Statcast cannot be counted to compare with them (F21).
-                _record_error(
-                    "statcast_pitcher",
-                    "unusable_column",
+                event_problem = event_problem or UnusableColumn(
                     "pitcher Statcast data has no usable 'events' (the column is missing or has no plate "
                     "appearance in any row): batters faced, strikeouts, walks and home runs are "
-                    "unavailable from it",
-                    pitcher_id=pitcher_id,
+                    "unavailable from it"
                 )
+        if event_problem is not None:
+            _record_failure("statcast_pitcher", event_problem, pitcher_id=pitcher_id)
+        if len(df) > 0:
             processed = process_pitcher_statcast(df, pitcher_name)
             if not processed["pitch_mix"]:
                 processed = None
@@ -1229,7 +1262,9 @@ def fetch_pitcher_statcast(
             processed = _empty_pitcher_data(pitcher_name, throws)
             counts = None
         mlb_stats = fetch_pitcher_season_stats(pitcher_id, as_of=as_of)
-        problem = incomplete_sample(df, mlb_stats.get("batters_faced"))
+        # Invalid events cannot establish an incomplete sample either. Preserve
+        # sound pitch data and let the independent API line supply its figures.
+        problem = None if event_problem is not None else incomplete_sample(df, mlb_stats.get("batters_faced"))
         if problem:
             # A well-formed but incomplete answer is degraded (contract rule 2): the part that cannot be trusted,
             # his pitch data, is unavailable (unknown, not 0) and an error is recorded; the API counts are kept
@@ -1303,6 +1338,13 @@ def fetch_pitcher_hand(pitcher_id: int) -> str | None:
     return throws
 
 
+def _unavailable_statcast_counts(df: Any) -> dict[str, Any]:
+    return {
+        "batters_faced": None, "strikeouts": None, "walks": None, "home_runs": None,
+        "has_postseason": "game_type" in df.columns and bool((df["game_type"] != "R").any()),
+    }
+
+
 def _statcast_counts(df: Any) -> dict[str, Any]:
     """
     Plate-appearance counts from the Statcast frame (regular season + postseason).
@@ -1313,23 +1355,17 @@ def _statcast_counts(df: Any) -> dict[str, Any]:
     unusable column; his counts are unavailable rather than 0 (contract 6.4).
     """
 
-    has_postseason = "game_type" in df.columns and bool((df["game_type"] != "R").any())
-    unavailable = {
-        "batters_faced": None,
-        "strikeouts": None,
-        "walks": None,
-        "home_runs": None,
-        "has_postseason": has_postseason,
-    }
+    unavailable = _unavailable_statcast_counts(df)
     plate_appearances = _plate_appearance_events(df)
     if plate_appearances is None:
         return unavailable
+    line = _split_line(plate_appearances)
     return {
         "batters_faced": int(len(plate_appearances)),
-        "strikeouts": int(plate_appearances.isin(STRIKEOUT_EVENTS).sum()),
-        "walks": int(plate_appearances.isin(WALK_EVENTS).sum()),
-        "home_runs": int((plate_appearances == "home_run").sum()),
-        "has_postseason": has_postseason,
+        "strikeouts": line["strikeouts"],
+        "walks": line["walks"],
+        "home_runs": sum(STATCAST_EVENTS[event].bases == 4 for event in plate_appearances),
+        "has_postseason": unavailable["has_postseason"],
     }
 
 
