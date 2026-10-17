@@ -1551,9 +1551,8 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
     # Most thrown first by raw count (two pitches that both read 20.0% are not a tie);
     # a real tie in the counts is ranked by name so the order is stable.
     pitch_mix.sort(key=lambda row: (-pitch_counts[row["pitch"]], row["pitch"]))
-    pitch_mix = pitch_mix[:5]
-    top_pitch_names = {row["pitch"] for row in pitch_mix}
-    velocity_rows = [row for row in velocity_rows if row["pitch"] in top_pitch_names]
+    # Keep the complete source mix and measurements: the other starter's top five
+    # can select one of this starter's less-used pitches for the comparison.
     kept_names = [row["pitch"] for row in pitch_mix]
     movement = compute_movement(df, kept_names)
     # None when the frame cannot say: the fetcher then asks the MLB people endpoint. A guess
@@ -1764,18 +1763,25 @@ def _usage_pct(part: int, total: int) -> float | None:
     return round(part / total * 100, 1) if total > 0 else None
 
 
+def _display_pitch_names(
+    away_data: dict[str, Any],
+    home_data: dict[str, Any],
+) -> list[str]:
+    """Select rows from each top five without discarding either full source mix."""
+
+    return list(dict.fromkeys(
+        [row["pitch"] for row in away_data["pitch_mix"][:5]]
+        + [row["pitch"] for row in home_data["pitch_mix"][:5]]
+    ))
+
+
 def _combine_pitch_mix(
     away_data: dict[str, Any],
     home_data: dict[str, Any],
 ) -> list[dict[str, Any]]:
     away_pitches = {row["pitch"]: row for row in away_data["pitch_mix"]}
     home_pitches = {row["pitch"]: row for row in home_data["pitch_mix"]}
-    pitch_names = list(
-        dict.fromkeys(
-            [row["pitch"] for row in away_data["pitch_mix"]]
-            + [row["pitch"] for row in home_data["pitch_mix"]]
-        )
-    )
+    pitch_names = _display_pitch_names(away_data, home_data)
 
     def not_thrown(data: dict[str, Any]) -> dict[str, Any]:
         # A pitch he never threw: a real zero out of his own total (every row carries it), and a
@@ -1819,6 +1825,7 @@ def _combine_velocity(
         for row in home_data["velocity_by_pitch"]
     }
     pitch_names = list(dict.fromkeys(list(away_velos) + list(home_velos)))
+    displayed = set(_display_pitch_names(away_data, home_data))
     return [
         {
             "pitch": pitch_name,
@@ -1826,6 +1833,7 @@ def _combine_velocity(
             "home_starter_velocity": home_velos.get(pitch_name),
         }
         for pitch_name in pitch_names
+        if pitch_name in displayed
     ]
 
 

@@ -66,6 +66,17 @@ def build_matchup(
         "away_starter": build_starter(away, fg["away_team_abbr"], fg["away_pitcher_id"], through),
         "home_starter": build_starter(home, fg["home_team_abbr"], fg["home_pitcher_id"], through),
     }
+    displayed = {row["pitch"] for row in live_game["combined_charts"]["pitch_mix"]}
+
+    def movement(data: dict[str, Any]) -> dict[str, Any]:
+        return {pitch: values for pitch, values in (data.get("movement") or {}).items() if pitch in displayed}
+
+    def locations(data: dict[str, Any]) -> dict[str, Any]:
+        return {
+            side: [row for row in data["pitch_locations"][side] if row["pitch"] in displayed]
+            for side in ("vs_lhh", "vs_rhh")
+        }
+
     return {
         "id": matchup_id,
         "date": game_day,
@@ -107,20 +118,14 @@ def build_matchup(
             # There is no live source for the 0-100 strength scores.
             "strength_profile": [],
             "pitch_movement": {
-                "away_starter": away.get("movement") or {},
-                "home_starter": home.get("movement") or {},
+                "away_starter": movement(away),
+                "home_starter": movement(home),
             },
         },
         "pitch_locations": {
             "note": PITCH_LOCATIONS_NOTE,
-            "away_starter": {
-                "vs_lhh": away["pitch_locations"]["vs_lhh"],
-                "vs_rhh": away["pitch_locations"]["vs_rhh"],
-            },
-            "home_starter": {
-                "vs_lhh": home["pitch_locations"]["vs_lhh"],
-                "vs_rhh": home["pitch_locations"]["vs_rhh"],
-            },
+            "away_starter": locations(away),
+            "home_starter": locations(home),
         },
         "postgame": None,
         "data_confidence": confidence_note(matchup_id, fetch_day, starters, status),

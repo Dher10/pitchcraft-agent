@@ -500,6 +500,20 @@ def _hard_cases() -> dict[str, Scenario]:
         _world("two_gaps", replace(away, kind="debut", api="gap"), replace(home, kind="debut", api="gap")),  # both sides
         _world("unknown_figures", replace(away, kind="debut", api="gap"), replace(home, events="null", api="absent")),
         _world("no_offense_data", savant="blank"),
+        # QA5-01 / probe A: one starter's sixth pitch is the opponent's primary.
+        _world("six_type_overlap",
+               replace(away, mix={"FF": 400, "SI": 300, "SL": 200, "CH": 150, "CU": 90, "FC": 10}),
+               replace(home, mix={"FC": 600, "SL": 300})),
+        _world("six_type_overlap_reversed",
+               replace(away, mix={"FC": 600, "SL": 300}),
+               replace(home, mix={"FF": 400, "SI": 300, "SL": 200, "CH": 150, "CU": 90, "FC": 10})),
+        _world("six_type_no_overlap",
+               replace(away, mix={"FF": 400, "SI": 300, "SL": 200, "CH": 150, "CU": 90, "FC": 10}),
+               replace(home, mix={"FF": 600, "SL": 300})),
+        # Three raw codes are one display pitch; conservation sums every alias.
+        _world("six_type_alias_overlap",
+               replace(away, mix={"FF": 400, "SI": 300, "SL": 200, "CH": 150, "FC": 90, "CU": 5, "KC": 3, "CS": 2}),
+               replace(home, mix={"CU": 600, "SL": 300})),
         _world("events_null_in_every_row", replace(away, events="null", api="absent")),
         _world("pitch_type_null_in_every_row", replace(away, null_pitch_type=True)),
         _world("stand_null_in_every_row", replace(away, null_stand=True)),
