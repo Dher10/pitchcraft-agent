@@ -2,6 +2,12 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-21 - P0.17-e: vite 8.3.5 and close of P0.17 (QA6-05)
+
+- `npm install --save-exact vite@8.3.5` (npm's non-major fix version for the `launch-editor` advisories; the plan asked for >= 8.3.4). The lockfile also moved vite's own dependencies (rolldown 1.2.11 to 1.2.14, postcss 8.5.29 to 8.5.31, one 0.151.0 to 0.154.0 package) and nothing else. `npm ls vite` shows one version, deduped under `@vitejs/plugin-react`, `vite-tsconfig-paths` and `vitest` 5.0.2. Audit in the default terminal after the change: `npm audit --json` 5 high (`@next/eslint-plugin-next`, `braces`, `eslint-config-next`, `fast-glob`, `micromatch`: the documented chain), `npm audit --omit=dev --json` 0. STATUS audit line corrected.
+- The install printed a warning that `unrs-resolver` has an install script not covered by `allowScripts` (a transitive dependency of the lint chain, not changed by this task, nothing to approve for a dev-only tool); recorded, not acted on.
+- Close: PLAN P0.17 ticked, STATUS summary and the Pending Notion sync entry added. Phase 0 stays open until the owner accepts the conditions; no QA was run.
+
 ### 2026-10-21 - P0.17-d: label band edges at four sample sizes (QA6-03)
 
 - **Scope:** `tests/test_labels.py` tries every band edge of both labels with the same rate at several batters-faced sizes and asserts the same label at every size: strikeout (Above at 25%, Average at 24% and 18%, Below at 17%, plus 40%, 26%, 21% and 5%) at 100, 200, 600 and 1000; walk (Solid at 7% and 2%, Average at 8% and 9%, Below at 10% and 15%) at 200, 600, 1000 and 2000; tenth-of-a-point edges (25.0/24.9/18.0/17.9% and 7.0/7.1/9.9/10.0%) at 1000 and 2000; one test per rate asserting a single label across the sizes. The walk label has no size 100: D24 asks for 170 batters faced, so at 100 the dimension is limited and has no label, which `test_at_100_batters_faced_strikeout_has_a_label_and_control_still_has_none` asserts. No product code changed.
