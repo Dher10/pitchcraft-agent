@@ -192,3 +192,104 @@ def test_scopes_differ_only_when_the_kinds_differ():
 def test_unknown_scope_kind_is_rejected():
     with pytest.raises(ValueError):
         labels.make_scope("whole_career", "2026-07-14")
+
+
+# --- QA6-03 (P0.17-d): "labels use rates, not counts" at every sample size -----------------------------------------
+#
+# QA run 6 broke `labels.py` with count thresholds calibrated to 200 batters faced (`walks <= 14` for Solid command,
+# `strikeouts >= 50` for Above-average, `strikeouts < 36` for Below-average) and every label test still passed: they
+# all used 200. Each band edge below is tried at four sample sizes with the same rate; a count threshold that is
+# right for one size is wrong for the other three, so it fails here.
+
+K_SIZES = (100, 200, 600, 1000)  # all above the 70 batters faced that D24 asks for strikeout
+# 170 batters faced is the floor of the control label (D24), so its smallest size here is the first multiple above it.
+BB_SIZES = (200, 600, 1000, 2000)
+
+K_BANDS = [  # (percent of batters faced that strike out, the label)
+    (40, labels.SWING_MISS_ABOVE),
+    (26, labels.SWING_MISS_ABOVE),
+    (25, labels.SWING_MISS_ABOVE),  # the edge: at or above
+    (24, labels.SWING_MISS_AVERAGE),
+    (21, labels.SWING_MISS_AVERAGE),
+    (18, labels.SWING_MISS_AVERAGE),  # the edge: not below
+    (17, labels.SWING_MISS_BELOW),
+    (5, labels.SWING_MISS_BELOW),
+]
+BB_BANDS = [  # (percent of batters faced that walk, the label)
+    (2, labels.COMMAND_SOLID),
+    (7, labels.COMMAND_SOLID),  # the edge: at or below
+    (8, labels.COMMAND_AVERAGE),
+    (9, labels.COMMAND_AVERAGE),
+    (10, labels.COMMAND_BELOW),  # the edge: at or above
+    (15, labels.COMMAND_BELOW),
+]
+
+
+def _count(percent, size):
+    assert (percent * size) % 100 == 0, "the case must be an exact rate"
+    return percent * size // 100
+
+
+def _per_mille_count(per_mille, size):
+    assert (per_mille * size) % 1000 == 0, "the case must be an exact rate"
+    return per_mille * size // 1000
+
+
+@pytest.mark.parametrize("size", K_SIZES)
+@pytest.mark.parametrize("percent, expected", K_BANDS)
+def test_strikeout_bands_are_rates_at_every_sample_size(size, percent, expected):
+    assert labels.strikeout_label(sample(bf=size, k=_count(percent, size))) == expected
+
+
+@pytest.mark.parametrize("size", BB_SIZES)
+@pytest.mark.parametrize("percent, expected", BB_BANDS)
+def test_control_bands_are_rates_at_every_sample_size(size, percent, expected):
+    assert labels.control_label(sample(bf=size, bb=_count(percent, size))) == expected
+
+
+@pytest.mark.parametrize("percent, _expected", K_BANDS)
+def test_one_strikeout_rate_gets_one_label_at_every_size(percent, _expected):
+    found = {labels.strikeout_label(sample(bf=size, k=_count(percent, size))) for size in K_SIZES}
+
+    assert len(found) == 1
+
+
+@pytest.mark.parametrize("percent, _expected", BB_BANDS)
+def test_one_walk_rate_gets_one_label_at_every_size(percent, _expected):
+    found = {labels.control_label(sample(bf=size, bb=_count(percent, size))) for size in BB_SIZES}
+
+    assert len(found) == 1
+
+
+@pytest.mark.parametrize("size", (1000, 2000))
+@pytest.mark.parametrize(
+    "per_mille, expected",
+    [
+        (250, labels.SWING_MISS_ABOVE),  # 25.0%
+        (249, labels.SWING_MISS_AVERAGE),  # 24.9%
+        (180, labels.SWING_MISS_AVERAGE),  # 18.0%
+        (179, labels.SWING_MISS_BELOW),  # 17.9%
+    ],
+)
+def test_strikeout_edges_hold_to_a_tenth_of_a_point(size, per_mille, expected):
+    assert labels.strikeout_label(sample(bf=size, k=_per_mille_count(per_mille, size))) == expected
+
+
+@pytest.mark.parametrize("size", (1000, 2000))
+@pytest.mark.parametrize(
+    "per_mille, expected",
+    [
+        (70, labels.COMMAND_SOLID),  # 7.0%
+        (71, labels.COMMAND_AVERAGE),  # 7.1%
+        (99, labels.COMMAND_AVERAGE),  # 9.9%
+        (100, labels.COMMAND_BELOW),  # 10.0%
+    ],
+)
+def test_control_edges_hold_to_a_tenth_of_a_point(size, per_mille, expected):
+    assert labels.control_label(sample(bf=size, bb=_per_mille_count(per_mille, size))) == expected
+
+
+def test_at_100_batters_faced_strikeout_has_a_label_and_control_still_has_none():
+    # D24: 70 batters faced for strikeout, 170 for control. The size 100 is in K_SIZES and not in BB_SIZES for that reason.
+    assert labels.strikeout_label(sample(bf=100, k=25)) == labels.SWING_MISS_ABOVE
+    assert labels.control_label(sample(bf=100, bb=7)) is None
