@@ -7,8 +7,10 @@ a key is in neither, if an entry matches no key, or if this module and the contr
 
 A rule returns nothing; it records what is false with `Ctx.require`. Each failure has a reason, and
 the violation code is `<key>#<reason>` (see `data_pipeline/contract_checks.py`). The conditions are
-written as the contract states them: a sentence written without its condition holding is a violation, and every
-violation stops publication (nothing is tolerated since P0.15-D2.5c).
+written as the contract states them: a sentence written without its condition holding is a violation.
+Every violation reported by these checks stops publication (no tolerance since P0.15-D2.5c).
+This is not proof of detection completeness: source conservation and frontend phrases also need
+their own tests, and the remaining semantic-negative coverage gaps are listed in STATUS.md.
 """
 
 from __future__ import annotations

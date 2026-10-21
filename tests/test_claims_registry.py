@@ -126,8 +126,12 @@ def test_every_rule_is_a_function_of_the_context():
 # --- every rule runs ----------------------------------------------------------------------------
 
 
-def test_every_rule_the_corpus_reaches_reports_when_its_condition_is_false(monkeypatch):
-    """A rule that never reports (it reads nothing, or it was wired to the wrong key) cannot catch anything."""
+def test_each_reached_rule_reports_through_the_checking_mechanism(monkeypatch):
+    """Force reporting for reached rules; this does not falsify their actual conditions.
+
+    The corpus need only reach more than 40 patterns. Neither semantic negative
+    coverage nor complete registry/branch coverage follows from this guard.
+    """
 
     from data_pipeline.claims import catalogs_of
     from tests.corpus import KINDS, build, golden_payload, published
@@ -152,5 +156,5 @@ def test_every_rule_the_corpus_reaches_reports_when_its_condition_is_false(monke
                 if not fails:
                     never_reports.add(pattern)
 
-    assert len(reached) > 40  # the corpus reaches most of the registry
+    assert len(reached) > 40  # reach control; not complete pattern coverage
     assert sorted(never_reports) == []

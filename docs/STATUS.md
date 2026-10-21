@@ -7,26 +7,19 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
 - **Phase:** Phase 0 is open. The first QA gate (2026-10-10) returned FAIL and P0.12 (A–E) fixed its ten findings. The second gate (2026-10-11, `docs/qa/QA-phase-0-2026-10-11.md`) returned FAIL: one Blocker, two Highs, two Mediums, one Low. P0.13 (A–C) fixed them (A `c3e03da`, B `4a33315`, C in the commit after). The third gate (2026-10-11, `docs/qa/QA-phase-0-2026-10-11-run-3.md`) returned FAIL: two Highs, three Mediums. P0.14 (A–C) fixes them: A `ac1ec8b`, B `38aa4ed`, C done (this commit) plus a separate CI commit right after it. The fourth gate (2026-10-11, `docs/qa/QA-phase-0-2026-10-11-run-4.md`) returned FAIL: two Blockers, one High and one historical Low. P0.15 (A–D) fixes the classes behind them: A (live matchup built from an empty skeleton, game time as a UTC instant) is done in `31dca76`; B (one scope per group of figures) is done in `e0c3c17`; C (Statcast rows validated one by one) is done in `043db03`; D (data contract, generic checks, combination matrix) is under way: D1, D4, D3 (D3.1 to D3.3b-3) and D2.1a, D2.1b, D2.1c, D2.2 (a to f) D2.3 (a F15, b F11, c F10, d F22) is done and no strict `xfail` is left; D2.4 (a F4, b F3, c F9, d F19) and D2.5 (a F5, b F12, c F16) are done. QA run 5 (2026-10-16) returned FAIL: three Blockers, one High, two Mediums (`docs/qa/QA-phase-0-2026-10-16.md`). P0.16 fixes them; Phase 0 stays open until independent run 6 by Claude Code.
 - **Workflow (D35, 2026-10-15):** from the commit that adds `.claude/hooks/git_guard.py`, inside an approved plan the implementing session commits and pushes without a yes per commit when the full verification passes, the reviewer subagent (`.claude/agents/reviewer.md`) returns PASS and the CI of the previous commit is green; it stops on the cases listed in `AGENTS.md` ("Agency workflow"). Git safety is a hook (`tests/test_agent_git_guard.py`). D20 is marked "Closed; amended by D35" in `DECISIONS.md` (authorized by the owner); nothing else of D20 changed.
 - **Branch:** `v2` (D14). `main` serves v1.
-- **Next task:** P0.16-e (QA5-04/06) is prepared; repeated full verification passed and reviewer round 2 PASS (round 1 fixture findings corrected). A new explicit yes is required for its commit/push. After green CI, f closes documentation/registry coverage. Independent QA run 6 belongs to Claude Code.
-- **P0.16 progress (D35 Codex fallback; yes before each commit and push):**
-  - a: `8c72212` saves the approved plan, adds b-f to PLAN, ticks P0.14, records QA run 5 and corrects reviewer item 8. Pushed to `v2`; `gh run watch 38972739453 --interval 15 --exit-status` exited 0 (pytest and components green).
-  - b: QA5-03 is committed/pushed as `2bab544`. CI green: `gh run watch 39001776492 --interval 15 --exit-status` exit 0 (pytest 2m24s, components 36s). Non-finite populated Statcast measurements record `malformed_rows`; only velocity, movement or locations become unavailable. Counts, pitch mix, hand, API figures, the other groups and the game stay.
-  - One shared gate covers `release_speed`, `pfx_x`, `pfx_z`, `plate_x`, `plate_z` before filtering/aggregation and protects direct processing calls too. Source null/NaN stays missing; finite zeros in movement/location stay measured.
-  - Publication separately rejects non-finite numbers anywhere in the payload. Strict serialization fails without overwriting the previous file, even if a later validation gap misses one.
-  - Tests: 33 failures and 11 controls before implementation; the final baseline replay adds the full-pipeline case (34 failures, 11 controls). The final focused file passes all 45. No passing test was weakened or deleted; the error-audit guard now expects all 12 call sites (11 plus the new numeric-error call), with its AST/closed-code checks intact.
-  - Sweep: those five are all consumed numeric Statcast columns. Team batting derives from events/row counts; cached `game_pk`, `batter`, `at_bat_number` are unused. No live MLB/Savant requests; all source answers mocked.
-  - No schema version, error code, served JSON or fan-visible wording changed. No tolerance-table entry or `xfail` removed (both were already zero).
-  - Full verification: `python -m pytest` 3008 passed, 2 skipped; `npm test` 119 passed (both outside sandbox after WinError 5 / spawn EPERM); `npx tsc --noEmit`, `npm run lint`, `npm run build` and `git diff --check` exit 0. First full Python run failed only on the stale error-site count, corrected from 11 to 12; reviewer round 1 PASS (no findings). Next after b is c (event domain/cache). The broad historical claims below remain assigned to f and are not evidence that QA5's remaining findings are closed.
-- **P0.16-c committed (QA5-02/05):**
-  - `6182a62`, approved by the owner and pushed to `v2`. `gh run watch 39032885175 --interval 15 --exit-status` exit 0: pytest 2m22s, components 26s.
-  - One explicit known-event map drives pitcher and team outcomes. Unknown values make Statcast counts/rates unavailable with `unknown_value`; a populated team frame with all-null events records `unusable_column`.
-  - Pitch data and valid API figures stay. Events that cannot establish counts do not establish an incomplete sample either; the no-API sweep now suppresses the false zero counts and rate labels.
-  - Fetched and cached team months share required-column, row/event and row-cap validation. A bad cached month is refetched under the existing budgets/pacing and replaced only after validation; invalid replacements leave its bytes untouched.
-  - Known null/non-PA rows and valid empty months remain valid. Header-only cache/source CSVs must carry the required columns; a genuinely blank fresh response is normalized to a valid empty frame.
-  - Red evidence: pre-implementation set 35 failed, 11 passed; cached row-cap recovery separately seen failing before its catch was completed. The finalized set replayed against `2bab544`: 36 failed, 11 passed. Focused final set: 47 passed (two pandas warnings for deliberately malformed dates). Existing controls plus the earlier new set: 212 passed.
-  - Domain evidence: one existing public cache month (AZ April 2026, 3,624 rows) and existing compound-event fixtures; no MLB/Savant requests. The map refuses unlisted values, not claiming every possible provider value is supported.
-  - No schema version, error code, served/golden file or fan-visible wording changed. No tolerance entry or `xfail` removed (0/0). Full verification: `python -m pytest` 3055 passed, 2 skipped, two expected malformed-date warnings; `npm test` 119 passed on an unchanged standalone retry after seven worker-start timeouts (first attempt 62 passed, incomplete). Both suites outside sandbox; PATH/locale/config unchanged. Type checking, lint, build and diff check exited 0. Reviewer round 1 PASS (no findings); next is d, not phase-end QA.
-- **Known violations: none.** The temporary table `known_violations.py` and the tolerance in `validate_payload` were deleted in D2.5c (every violation of the contract stops publication; `tests/test_no_tolerance.py` guards it), and no `xfail` is left. History of the table, by the commit that closed each finding: F1, F2, F8, F17 and F18 in D2.1; F6, F7, F14, F20 and F21 in D2.2 (F21 never had an entry, it was born with its fix); F10 in D2.3c; F4 in D2.4a (with the two F5 entries of the archive row that a live file no longer has); F3 in D2.4b; F9 in D2.4c; F19 in D2.4d; F5's two constants in D2.5a; F16 and the end of the table in D2.5c. F6a, F6c, F11 and F15 were strict `xfail` tests in `tests/test_matrix.py` until D2.2 and D2.3 fixed their behaviour. F12 is a frontend finding, closed in D2.5b.
+- **Next task:** independent P0.10 QA run 6 by Claude Code after this P0.16-f commit is pushed and its exact-SHA CI is confirmed green. The owner approved f commit/push; full verification passed and reviewer round 1 PASS. Phase 0 remains open; do not run that QA in this implementing session.
+- **P0.16 closeout (f in this owner-approved commit):**
+  - a `8c72212`: saved the approved plan, corrected the P0.14 parent, recorded QA5 FAIL and fixed the reviewer guard reference.
+  - b `2bab544`: finite Statcast measurements before aggregation; affected groups unavailable with recorded errors; generic finite-payload and strict-JSON guards.
+  - c `6182a62`, c2 `71d8c52`: shared event classification and cache recovery; all 74 saved MLB metadata codes checked, plus the existing Savant truncated_pa extension. Exactly one owner-authorized metadata request; no other MLB/Savant request.
+  - d `850ef02`: merge full source mixes, select display rows later; displayed counts/shares/measurements retain sixth-pitch evidence, including aliases and reversed starters.
+  - e `164bb9b`: only approved measured movement facts (sideways fallback); location points labelled medians and empty selected arrays explicitly unavailable. Reviewer round 2 PASS after fixture corrections. CI run 39523295418 success for the exact SHA (pytest 1m32s, components 38s), checked through the GitHub connector.
+  - f (this commit): accurately names the reporting-mechanism guard; 25 genuine false-condition tests and six predicate experiments; lists the remaining 48 pattern-level gaps below and corrects the historical overclaims.
+  - For the fan: bad source groups are explicit without erasing valid game data; legitimate runner events retain figures; less-used selected pitches keep actual measurements; prose and empty-location states follow measured availability.
+  - Table/xfails: no tolerance entry or xfail removed in P0.16 (already 0/0); no schema, new error code, served/golden file, decision or workflow change. Tests cover specific properties, not every possible provider value or claim.
+  - Full verification: `python -m pytest` 3173 passed, 2 skipped, two expected malformed-date warnings (287.21s); `npm test` 13 files / 177 passed (15.03s), both outside sandbox after WinError 5 / spawn EPERM with default PATH/locale/config. Type checking, lint, build and diff check exit 0. Reviewer round 1 PASS; its independent focused run passed 536 tests in 27.88s outside sandbox after WinError 5. Optional stale reach comment corrected without changing the guard. Each prior commit was owner-approved, pushed to v2 and green in CI before the next task; details and actual command outputs are in the archive.
+  - Next: verify this commit's CI after the owner-approved push, then hand off to Claude Code for independent QA6. Phase 0 is not closed by this implementation.
+- **Publication evidence and limits:** The tolerance table/allowance and contract xfails are absent (`tests/test_no_tolerance.py`); the validator rejects reported violations. QA5 disproved the old universal claim: a plausible wrong source count and UI prose could escape those checks. P0.16 adds regressions for the six named findings; independent QA6 is still pending. This is not proof that all possible violations are detected. History of the table, by the commit that closed each finding: F1, F2, F8, F17 and F18 in D2.1; F6, F7, F14, F20 and F21 in D2.2 (F21 never had an entry, it was born with its fix); F10 in D2.3c; F4 in D2.4a (with the two F5 entries of the archive row that a live file no longer has); F3 in D2.4b; F9 in D2.4c; F19 in D2.4d; F5's two constants in D2.5a; F16 and the end of the table in D2.5c. F6a, F6c, F11 and F15 were strict `xfail` tests in `tests/test_matrix.py` until D2.2 and D2.3 fixed their behaviour. F12 is a frontend finding, closed in D2.5b.
 - **Blocked:** nothing. **Decided (owner, 2026-10-15):** the finding F21 (figures that cannot be true together or that show an incomplete Statcast sample) is part of D2.2, with the conditions written in its line of `PLAN.md`; closed in D2.2f.
 - **Closed: P0.15-D2.5 (summary, owner's request at its close).**
   - Commits: a `dec88d7` (F5, schema 0.8.0, D40), b `c1c48c9` (F12), c the commit that adds this line (F16 and the end of the table). All under D35: red tests seen failing, full verification, reviewer (a needed two rounds: round 1 BLOCK for a fan-visible text outside the plan; b and c one round), CI of the previous commit green. The plan is `docs/plans/P0.15-D2.5.md`.
@@ -56,7 +49,7 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
   - Next task I propose: P0.15-D2.4; its plan is written in plan mode and waits for the owner's approval.
 - **Closed: P0.15-D2.2 (summary, owner's request at its close).**
   - Commits: a `f2224bd` (F6c, F6a, F6b), b `4c8f547` (F14), c `aee872d` (schema 0.5.0, D37, every reader null-safe), d `471510d` (F20), e `111ffc2` (F6e, F7), f the commit that adds this line (F21). The agency workflow (D35) went in `6921361`; a to e were gated with a yes each, f ran under D35 (red tests, full verification, reviewer, CI).
-  - Closed: a malformed Statcast answer is rejected or has unavailable counts, never a silent debut or zeros; a count that is unknown is not written as none on record; a share of no pitches is `null`; an unmapped pitch keeps its code and has no family, and an unknown team has no abbreviation; a Statcast frame with fewer plate appearances than the API line has no pitch data for that starter, and figures that cannot be true together fail publication.
+  - Checked by the enumerated source tests and extended in P0.16: required columns and row domains are validated; unknown events record unavailable counts/rates, non-finite populated measurements disable their affected group with an error, and valid empty answers keep measured zeros. This does not cover every possible malformed provider value; a count that is unknown is not written as none on record; a share of no pitches is `null`; an unmapped pitch keeps its code and has no family, and an unknown team has no abbreviation; a Statcast frame with fewer plate appearances than the API line has no pitch data for that starter, and figures that cannot be true together fail publication.
   - For the fan: the card shows "—" where a count is unknown; the chart draws no 0% bar for a debut's opponent pitches; a team the data does not know is shown by its name; a starter whose Statcast data is incomplete is shown with his API season figures and "pitch count not available", with no mix, velocity, movement, locations or put-away pitch, and the report says "Statcast pitch data was available for A but not for B" (full list in the Pending Notion sync entries below).
   - Table and `xfail`s: 27 → 19 entries in `known_violations.py` (8 out: 4 in a, 1 in b, 1 in d, 2 in e), 9 strict `xfail`s out (7 in a, 2 in e; F11 and F15 stay for D2.3); F21 added none.
   - F21 measured, not assumed: 30 MLB API requests (the limit), 28 real pitchers comparable (818 appearances, 9,414 batters faced), gap 0 in all, so the tolerance is 0, not the plan's one per appearance (that would make the check vacuous after 25 appearances). It never needed more than 1 per appearance, so no stop.
@@ -68,37 +61,72 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
 - **Accepted exception (QA4-04, Low):** commits `813a0c7` and `0ca5626` (planning commits before the commit hook) lack the verification line CONTRIBUTING expects. It is frozen history: no history is rewritten and no retroactive test result is claimed. Every commit since carries its verification line.
 - **Committed JSON:** regenerated in P0.12-B from an empty cache, so it is `demo_cached` (demo names, labelled demo). Command: `python -c "import pathlib, tempfile; from data_pipeline.fetchers import cache_manager; cache_manager.PROCESSED_DIR = pathlib.Path(tempfile.mkdtemp()); from data_pipeline import generate_demo_json as g; raise SystemExit(g.main())"`. The bot's daily live file is a P1.2 matter.
 
-- **P0.16-d committed (QA5-01):**
-  - `850ef02`, approved by the owner and pushed to `v2`. `gh run watch 39037631480 --interval 15 --exit-status` exit 0: pytest 1m54s, components 25s.
-  - Both full source mixes and all measurements stay available until comparison. One ordered top-five union selects rows; a selected pitch retains each starter's actual count, shares, velocity, movement and locations.
-  - Public movement/location projection follows the same selection. A sixth pitch neither starter selects remains hidden; a genuinely absent pitch remains a measured zero, and zero-denominator shares remain unavailable.
-  - Four matrix hard cases cover overlap, reversed starters, no overlap and CU/KC/CS aliases. The source-row invariant checks every published count and share across the matrix and hard cases, without summing a partial display.
-  - `python -m pytest tests/test_pitch_mix_conservation.py -q --tb=short` before implementation: 4 failed, 2 passed (26.84s). Controls: hidden sixth pitch and genuinely absent pitch. Focused regression/existing-control run: 62 passed (29.33s), outside sandbox; no existing passing test changed or deleted.
-  - Sweep: the sole early truncation discarded all four groups. Full processing now feeds both combiners; public measurement projection uses selected names. No new schema, error code, fan-visible wording or served/golden file change; no tolerance entries or `xfail`s removed (0/0). No MLB/Savant requests.
-  - Full verification: `python -m pytest` 3070 passed, 2 skipped, two malformed-date warnings (233.45s); standalone `npm test` 12 files / 119 passed (36.04s). Both outside sandbox after the session's WinError 5 / spawn EPERM restrictions, default environment unchanged. `npx tsc --noEmit`, `npm run lint`, `npm run build` and `git diff --check` exit 0. Reviewer round 1 PASS (all 11 items, no findings); its independent regression/tolerance run passed 17 tests outside sandbox. Next after d: the owner-approved c2 sweep, then e; independent QA run 6 stays with Claude Code. Historical overclaims and registry negative-test enumeration remain f.
+## Registry negative-test coverage (P0.16-f)
 
-- **P0.16-c2 committed (QA5-02 sweep):**
-  - `71d8c52`, owner-approved commit/push on 2026-10-20. GitHub connector GET run `39520401771/attempts/1` reports completed/success for that exact SHA; both jobs success (pytest 2m37s, components 36s). Local gh lookup failed on transport errors; that is not a failed CI run.
-  - Owner amendment saved in `docs/plans/P0.16.md`: after d and before e, with the same verification/reviewer and per-commit yes gates.
-  - Exactly one authorized request to the MLB eventTypes endpoint; unchanged 8,735-byte response committed as a fixture with source/date/SHA-256. No other MLB/Savant request.
-  - The full 74-code metadata domain is checked: 47 non-PA codes ignored in denominators; 27 PA codes explicitly scored. The prior Savant-only `truncated_pa` remains non-PA. No runtime metadata fetch or unknown-code default.
-  - `caught_stealing_2b`, `pickoff_1b` and other runner events no longer erase figures; `triple_play` counts one PA. Both strikeout aliases/compound forms score K. Metadata PA/non-hit fan interference and scorer-pending use the non-hit at-bat class without asserting an out.
-  - Source regressions cover a 30-day, 600-PA team month plus the extra triple-play PA and a no-API starter, through fetchers and validated publication; all 74 codes also pass both numerical readers.
-  - Red: `python -m pytest tests/test_event_types_metadata.py -q --tb=short` before implementation, 56 failed / 22 passed (4.86s). Controls: 21 previously supported PA codes and provider_error in both paths. Focused final run with existing event/cache/team/starter controls: 171 passed, two malformed-date warnings (8.66s), outside sandbox.
-  - Sweep: metadata adds six PA codes and all 47 non-PA codes missing from c; caches and derivations share that map. Unknown values absent from the domain still record unknown_value and make counts/rates unavailable. No existing passing test weakened/deleted; no schema, error-code, served/golden or fan-copy change. Tolerance/xfail removals 0/0.
-  - Full verification: `python -m pytest` 3148 passed, 2 skipped, two expected malformed-date warnings (251.82s); standalone `npm test` 12 files / 119 passed (12.08s). Both outside sandbox after WinError 5 / spawn EPERM, default PATH/locale/config unchanged. `npx tsc --noEmit`, `npm run lint`, `npm run build` and `git diff --check` exit 0. Reviewer round 1 PASS (all 11 items, no findings); its independent event/domain/tolerance run passed 103 tests outside sandbox. Historical c domain-completeness limitation is corrected here; broad historical overclaims and registry negative-test enumeration remain f. Committed/pushed with green CI; e is next.
+There are 116 Python RULES patterns. A conservative audit found documented real false-condition assertions for 55 before f; these 25 tests add 13 previously untested patterns (and more reasons for five already tested). Thus 68 patterns have at least one genuine semantic negative and the 48 below have no such documented assertion found. This is **pattern-level evidence, not branch completeness**: tested patterns may still contain untested reasons, wildcard keys or branches. Incidental execution, passing corpus cases and forced reporting are not counted.
 
-- **P0.16-e prepared (QA5-04/06; uncommitted):**
-  - Movement descriptions now use only the approved measured-fact sentence: absolute published inches, signed vertical up/down, no speed comparison or hitter effect. All hands use the plan's sideways fallback; no local documentation confirms an arm/glove convention and no MLB/Savant request was made.
-  - Populated selected location arrays say median location; empty arrays show the approved hand-specific unavailable sentence and no zone. Conditions and exact phrases are registered in contract section 3.3.
-  - The sweep found the sole arm/glove inference in the old description helper. PitchTrajectoryCard already keeps the signed horizontal coordinate without arm/glove labels or hand mirroring; new component tests cover both signs for L/R/S/unknown hands. No other inference remains.
-  - New tests: 36 family/velocity/measurement combinations, eight signed hand cases, ten location states/transitions and four controls. Red command before implementation: 54 failed, 4 passed (25.78s). Final fixtures use matching pitch names/families; replay against committed 71d8c52 again failed 54 / passed 4 (4.04s), then current files were restored.
-  - Controls: unmapped-family sentence unchanged, either missing movement number suppresses the numeric description (two cases), limited arsenal suppresses it. Existing healthy-arsenal test's old qualitative-copy assertion was replaced because it required the unsafe behavior; its trajectory assertion stays and its replacement requires the exact approved measured sentence. No passing test deleted or loosened.
-  - Focused final: four component files / 98 tests passed (5.10s). Full verification: `python -m pytest` 3148 passed, 2 skipped, two expected malformed-date warnings (287.26s); standalone `npm test` 13 files / 177 passed (13.27s). Both outside sandbox after known WinError 5 / spawn EPERM, default PATH/locale/config unchanged. `npx tsc --noEmit`, `npm run lint`, `npm run build` and `git diff --check` exit 0. Reviewer round 1 BLOCK on incoherent new fixtures (40 pitches/400 BF and mismatched opposing hand); both corrected, plus matching profile names/limited labels. Final corrected baseline replay: 54 failed / 4 passed (4.65s), current production files restored. The repeated full verification above passed on these corrected fixtures; reviewer round 2 PASS (all 11 items, no findings). Its independent new-file run passed 58 tests in 4.96s outside sandbox after reproduced spawn EPERM. No schema, error code, served/golden file or unapproved fan-copy change; tolerance/xfail removals 0/0.
-  - Next after owner yes, commit/push and green CI: P0.16-f. Historical STATUS overclaims and remaining registry negative-test enumeration stay assigned to f; implementing session does not run phase QA.
+Of the 68, 66 have payload/claim mutations. `critic.betting.claim` and `critic.betting.absent` have vocabulary-only negatives: the forbidden vocabulary is changed so the real condition becomes false, without replacing the checker. They are not payload mutations. The evidence is in `tests/test_contract_checks.py`, `tests/test_critic_claims_on_payload.py`, `tests/test_unknown_counts_in_sentences.py`, `tests/test_unknown_hand.py`, `tests/test_unmapped_values.py`, `tests/test_nullable_shape.py`, `tests/test_fetch_and_build_time.py`, `tests/test_no_tolerance.py` and the new `tests/test_qa5_claim_conditions.py`.
+
+Remaining patterns without a documented real false-condition assertion:
+
+```text
+analyst.summary
+analyst.style.pair
+analyst.style.single
+analyst.read.mainly
+analyst.read.qualifier
+analyst.read.qualifier_both
+analyst.data.arsenal_unnamed
+analyst.strength.contact
+analyst.strength.trending
+analyst.risk.command
+analyst.risk.contact
+analyst.risk.volatile
+analyst.offense.average
+analyst.offense.weak
+analyst.pressure.ops
+analyst.pressure.strikeouts
+analyst.pressure.walks
+analyst.scope.no_season_figures
+analyst.scope.differ
+analyst.scope.groups
+analyst.scope.group_part
+analyst.scope.none
+analyst.watch.action.land
+writer.strength_none
+writer.arsenal.contrast
+writer.arsenal.works_off
+writer.arsenal.no_contrast
+writer.confidence.demo
+writer.watch_line
+writer.default_strength
+critic.summary.warnings
+critic.summary.unsupported
+critic.pitch.claim
+critic.pitch.low
+critic.pitch.low_counts
+critic.limited.unsupported_unavailable
+grader.call.*
+scout.final.*
+analyst.demo.*
+analyst.fallback.*
+analyst.command_note.*
+analyst.contact_note.*
+generator.workflow.identified
+generator.workflow.generated
+generator.workflow.graded
+generator.workflow.graded_none
+generator.metadata.last_updated.fallback
+generator.metadata.last_updated.demo
+```
+
+The renamed corpus test only verifies reporting through Ctx.require for reached patterns (>40), not every pattern or any actual false payload condition. Six deliberate predicate defects (zero-source, unknown-contact, missing-count-scope, false absence, wrong put-away usage, missing offense rate) cause ten expected failures with the ordinary Ctx.require unchanged; production was restored byte-for-byte afterwards. The new 25 tests pass against normal production. No new runtime bug or production logic fix is claimed in f.
+
+Separate evidence: `test_nonfinite_numbers.py` rejects malformed measurements/non-finite payload numbers and strict serialization; event/cache/c2 tests exercise source outcomes and recovery; `test_pitch_mix_conservation.py` compares source rows to published counts and measurements. The registry cannot detect a coherently fabricated upstream count from payload facts alone. Frontend 3.3 conditions are outside Python RULES; `MeasuredPitchFacts.test.tsx` provides real missing/mapped/limited/zero, sign/hand and populated/empty/tab-transition cases. These are bounded tests, not a guarantee of all frontend branches.
 
 ## Pending Notion sync
 
+- P0.16 complete implementation: finite numeric/source-event boundaries, validated/recoverable cache months, full-mix conservation and measured-only frontend claims. Six QA5 findings have regressions; registry reporting and semantic-negative evidence are now distinguished, with remaining gaps explicit. Independent QA6 by Claude Code is still required.
 - P0.16-e: pitch movement copy reports only measured inches; missing velocity no longer produces a speed comparison. Location points are labelled medians; empty hand-specific arrays show unavailable text instead of an empty zone.
 - P0.16-c2: legitimate runner events and every MLB metadata PA code now retain valid live figures; the complete event domain is checked against a committed public response, while genuinely unknown codes remain unavailable.
 - P0.16-d: selecting an opponent's top pitch no longer erases a starter's less-used pitch; displayed counts and measurements retain the full source evidence, including the sixth-pitch overlap.
