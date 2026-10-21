@@ -1,15 +1,28 @@
-"""PreToolUse hook for Bash: the git safety rules of D35 (docs/DECISIONS.md, AGENTS.md "Agency workflow").
+"""PreToolUse hook for the Bash and PowerShell tools: the git safety rules of D35 (docs/DECISIONS.md, AGENTS.md "Agency workflow").
 
-Claude Code runs this before every Bash call and gives it the call as JSON on stdin
-(`{"tool_name": "Bash", "tool_input": {"command": "..."}}`). Exit code 0 lets the call through; exit code 2
-blocks it and sends the reason (stderr) back to the session. Nothing here edits anything.
+Claude Code runs this before every Bash and PowerShell call (`.claude/settings.json` has one matcher for each)
+and gives it the call as JSON on stdin (`{"tool_name": "Bash", "tool_input": {"command": "..."}}`). Exit code 0
+lets the call through; exit code 2 blocks it and sends the reason (stderr) back to the session. Nothing here
+edits anything.
 
 It blocks:
   - a push to any branch other than `v2` or `experiment/*`;
   - any operation on `main` / `master` or on a tag (reading them is allowed: `git log main`, `git tag --list`);
-  - `--force`, `--force-with-lease`, a `+refspec`, `rebase`, `reset --hard`, `--no-verify`;
+  - `--force`, `--force-with-lease`, a `+refspec`, `rebase`, `reset --hard`, `--no-verify`, `filter-branch`;
+  - deleting or renaming `v2` or `main` (`git branch -d/-D/-m`);
+  - changing a remote (`git remote add`, `set-url`, `remove`, `rename`, ...);
   - `commit --amend` when HEAD is already on a remote;
-  - a commit whose author or committer is not Daniel Herdenez <edherdenez@gmail.com>, and a change of that identity.
+  - a commit whose author or committer is not Daniel Herdenez <edherdenez@gmail.com>, and a change of that identity;
+  - changing `core.hooksPath` (reading it, `git config --get core.hooksPath`, is allowed: CONTRIBUTING asks for it);
+  - git behind a wrapper that carries a string the parser cannot see into (`bash -c`, `sh -c`, `eval`,
+    `powershell`/`pwsh -Command`, `cmd /c`, `python -c`, `node -e`, `Invoke-Expression`, ...) whenever the string
+    mentions git, and git behind a program name built at run time (`x=git; $x push ...`). The session runs git
+    directly instead, where the rules above can read it.
+
+Git options are read the way git reads them: combined short flags (`-fu`) and unambiguous abbreviations (`--forc`).
+
+What it does not see: a script file or a program that runs git on its own, a function or alias a shell
+defines, and `gh` / the GitHub API. GitHub rulesets protect `main`, `v2` and the tag `v1.0.0-kaggle` on the server for those cases.
 
 The decision is `decide(command, git)`; `git(*args)` runs git and returns its output (the tests pass a fake).
 The parser reads the command the way a shell would, well enough for the commands an agent writes; a command it
@@ -41,7 +54,10 @@ READ_ONLY = {
 }
 # Subcommands that create commits (their identity must be the owner's).
 COMMITTING = {"commit", "merge", "revert", "cherry-pick", "am"}
-PUSH_OPTIONS_WITH_VALUE = {"-o", "--push-option", "--repo", "--receive-pack", "--exec"}
+CONFIG_WRITING_FLAGS = {"--unset", "--unset-all", "--add", "--replace-all", "-e", "--edit", "--rename-section", "--remove-section"}
+REMOTE_CHANGING = {"add", "set-url", "remove", "rm", "rename", "set-head", "set-branches", "prune"}
+BRANCH_REMOVING_FLAGS = {"-d", "-D", "--delete", "-m", "-M", "--move"}
+PUSH_OPTIONS_WITH_VALUE ={"-o", "--push-option", "--repo", "--receive-pack", "--exec"}
 TAG_LISTING_FLAGS = {"-l", "--list", "-n", "--contains", "--no-contains", "--points-at", "--sort", "--format", "--merged",
                      "--no-merged", "-v", "--verify", "--column", "--no-column", "-i", "--ignore-case"}
 
@@ -63,13 +79,15 @@ def strip_heredocs(command: str) -> str:
     lines, out, terminator = command.split("\n"), [], None
     for line in lines:
         if terminator is not None:
-            if line.strip() == terminator:
+            if line.strip() == terminator or (terminator in ("'@", '"@') and line.startswith(terminator)):
                 terminator = None
             continue
         out.append(line)
         match = re.search(r"(?<!<)<<(?!<)-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1", line)
         if match:
             terminator = match.group(2)
+        elif re.search(r"@['\"]\s*$", line):  # a PowerShell here-string: `@'` ... `'@`
+            terminator = line.rstrip()[-1] + "@"
     return "\n".join(out)
 
 
@@ -103,6 +121,30 @@ def segments(command: str) -> list[list[str]]:
     return commands
 
 
+# Long options the rules below look for. Git accepts any unambiguous abbreviation (`--forc`, `--no-ver`, `--amen`), so an
+# abbreviation of one of these is read as the option itself (the shortest one it could be).
+DANGEROUS_LONG = (
+    "--force", "--force-with-lease", "--force-if-includes", "--no-verify", "--amend", "--hard", "--mirror", "--delete",
+    "--tags", "--follow-tags", "--prune", "--rebase", "--all",
+)
+
+
+def canonical_option(arg: str) -> str:
+    name, equals, value = arg.partition("=")
+    if name.startswith("--") and len(name) >= 4 and name not in DANGEROUS_LONG:
+        candidates = [option for option in DANGEROUS_LONG if option.startswith(name)]
+        if candidates:
+            return min(candidates, key=len) + equals + value
+    return arg
+
+
+def program_name(token: str) -> str:
+    """`C:\\Program Files\\Git\\cmd\\git.exe` -> `git`: the program a command word runs, without directory and extension."""
+
+    name = re.split(r"[\\/]", token)[-1].lower()
+    return re.sub(r"\.(exe|cmd|bat|com|ps1)$", "", name)
+
+
 class Invocation:
     """One `git ...` simple command: its environment, its global options, its subcommand and its arguments."""
 
@@ -116,7 +158,7 @@ class Invocation:
             name, _, value = tokens[index].partition("=")
             self.env[name] = value
             index += 1
-        if index >= len(tokens) or os.path.basename(tokens[index]).lower() not in ("git", "git.exe"):
+        if index >= len(tokens) or program_name(tokens[index]) != "git":
             self.is_git = False
             return
         self.is_git = True
@@ -133,7 +175,7 @@ class Invocation:
                 index += 1
         if index < len(tokens):
             self.sub = tokens[index]
-            self.args = tokens[index + 1 :]
+            self.args = [canonical_option(arg) for arg in tokens[index + 1 :]]
 
     def flags(self) -> list[str]:
         """The arguments that are options (they start with `-`), up to a `--`."""
@@ -205,8 +247,10 @@ def _config_value(inv: Invocation, git: GitRunner, key: str, env_name: str | Non
 def _push_problem(inv: Invocation, git: GitRunner) -> str | None:
     flags = inv.flags()
     for flag in flags:
-        if flag in ("--force", "-f") or flag.startswith("--force-with-lease") or flag == "--force-if-includes":
+        if flag == "--force" or flag.startswith("--force-with-lease") or flag == "--force-if-includes" or re.fullmatch(r"-[a-zA-Z]*f[a-zA-Z]*", flag):
             return "a force push is never allowed (D35)"
+        if re.fullmatch(r"-[a-zA-Z]*d[a-zA-Z]*", flag):
+            return "git push -d can move or delete refs beyond v2 (D35)"
         if flag in ("--all", "--mirror", "--tags", "--follow-tags", "--delete", "-d", "--prune"):
             return f"git push {flag} can move or delete refs beyond v2 (D35)"
     positional = inv.positional(PUSH_OPTIONS_WITH_VALUE)
@@ -269,14 +313,19 @@ def _problem(inv: Invocation, git: GitRunner) -> str | None:
     # whatever the subcommand
     if any(f == "--force" or f.startswith("--force-with-lease") or f == "--force-if-includes" for f in flags):
         return "--force and --force-with-lease are never allowed (D35)"
-    if "-f" in flags and sub in ("push", "checkout", "switch", "branch", "clean", "tag", "reset", "worktree"):
+    if any(re.fullmatch(r"-[a-zA-Z]*f[a-zA-Z]*", f) for f in flags) and sub in ("push", "checkout", "switch", "branch", "clean", "tag", "reset", "worktree"):
         return f"git {sub} -f is a force and is never allowed (D35)"
     if "--no-verify" in args or (sub == "commit" and any(re.fullmatch(r"-[a-zA-Z]*n[a-zA-Z]*", f) for f in flags)):
         return "--no-verify skips the hooks and is never allowed (D35)"
+    if any("hookspath" in value.lower() for name, value in inv.env.items() if name.upper().startswith("GIT_CONFIG")):
+        return "overriding core.hooksPath through the environment skips the hooks (D35)"
     if "core.hookspath" in inv.config:
         return "overriding core.hooksPath skips the hooks (D35)"
-    if sub == "rebase" or "--rebase" in args:
+    pull_rebase = sub == "pull" and any(re.fullmatch(r"-[a-zA-Z]*r[a-zA-Z]*", f) for f in flags)
+    if sub == "rebase" or pull_rebase or any(a == "--rebase" or (a.startswith("--rebase=") and a != "--rebase=false") for a in args):
         return "rebase rewrites history and is never allowed (D35)"
+    if sub in ("filter-branch", "filter-repo"):
+        return f"git {sub} rewrites history and is never allowed (D35)"
     if sub == "reset" and "--hard" in args:
         return "reset --hard is never allowed (D35)"
 
@@ -295,8 +344,23 @@ def _problem(inv: Invocation, git: GitRunner) -> str | None:
             if positional[1] != expected:
                 return f"the git identity is {OWNER_NAME} <{OWNER_EMAIL}> and is not changed (D35)"
         if positional and positional[0].lower() == "core.hookspath":
-            return "core.hooksPath is not changed (D35)"
+            # `git config core.hooksPath` and `git config --get core.hooksPath` read it (CONTRIBUTING asks for that check)
+            if len(positional) >= 2 or any(flag in CONFIG_WRITING_FLAGS for flag in flags):
+                return "core.hooksPath is not changed (D35)"
         return None
+
+    if sub == "remote":
+        action = (inv.positional() or [""])[0]
+        if action in REMOTE_CHANGING:
+            return f"git remote {action} changes where the work is sent and is not allowed (D35)"
+        return None
+
+    if sub == "branch" and any(flag in BRANCH_REMOVING_FLAGS for flag in flags):
+        names = {_ref_name(arg) for arg in inv.positional()}
+        if names & set(PROTECTED_BRANCHES):  # `-m` takes a branch here, not a message: positional(), not positional_and_refs()
+            return f"{sorted(names & set(PROTECTED_BRANCHES))[0]!r} is the release branch: it is not deleted or renamed (D35)"
+        if "v2" in names:
+            return "'v2' cannot be deleted or renamed (D35)"
 
     if sub == "tag":
         positional = inv.positional()
@@ -330,6 +394,8 @@ def _problem(inv: Invocation, git: GitRunner) -> str | None:
     return None
 
 
+# The subcommands whose `-m`, `-c`, `-C`, `-F` take a message, a commit or a file; for the others they take a ref.
+MESSAGE_SUBCOMMANDS = {"commit", "merge", "revert", "cherry-pick", "am", "tag", "stash", "notes"}
 VALUE_OPTIONS = {"-m", "--message", "-F", "--file", "-C", "-c", "--author", "--date", "--reuse-message"}
 
 
@@ -342,7 +408,7 @@ def positional_and_refs(inv: Invocation) -> list[str]:
         if skip:
             skip = False
             continue
-        if arg in VALUE_OPTIONS:
+        if arg in VALUE_OPTIONS and inv.sub in MESSAGE_SUBCOMMANDS:  # `-c` and `-m` name a branch for switch, checkout, branch, reset
             skip = True
             continue
         if arg.startswith("-") and arg != "-":
@@ -353,11 +419,106 @@ def positional_and_refs(inv: Invocation) -> list[str]:
     return found
 
 
+# --- git behind a wrapper ----------------------------------------------------------------------------------------
+
+# Words that only pass the command along: `env git push`, `& git push`, `{ git push }`, `time git push`.
+TRANSPARENT = {"env", "command", "exec", "nohup", "time", "sudo", "builtin", "nice", "&", "{", "}", "(", ")", "!", "then", "do", "else"}
+MENTIONS_GIT = re.compile(r"(?<![A-Za-z0-9_])git(?![A-Za-z0-9_])", re.IGNORECASE)
+POSIX_SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "fish", "csh", "tcsh", "busybox", "wsl"}
+POWERSHELLS = {"powershell", "pwsh", "powershell_ise"}
+# program -> the flags that make its next argument code (`-c`, `-e`); a script file or `-m module` is not a string it reads
+INTERPRETER_CODE_FLAGS = {
+    "python": {"-c"}, "python3": {"-c"}, "py": {"-c"}, "pypy": {"-c"}, "pypy3": {"-c"},
+    "node": {"-e", "--eval", "-p", "--print"}, "nodejs": {"-e", "--eval", "-p", "--print"}, "bun": {"-e", "--eval", "-p", "--print"},
+    "deno": {"eval"}, "perl": {"-e", "-E"}, "ruby": {"-e"}, "php": {"-r"},
+}
+# Programs that run what they are given whatever the flags: any mention of git in them is a wrapper.
+ALWAYS_WRAPPERS = {
+    "eval", "iex", "invoke-expression", "invoke-command", "icm", "start-process", "saps", "start-job", "sajb",
+    "foreach-object", "foreach", "%", "where-object", "xargs", "ssh", "wsl", "watch",
+}
+
+
+def _strip_prefixes(tokens: list[str]) -> list[str]:
+    """The command a segment runs, after the words that only pass it along and a PowerShell `$result =`."""
+
+    index = 0
+    while index < len(tokens):
+        token = tokens[index].lower()
+        previous = tokens[index - 1].lower() if index else ""
+        if token in TRANSPARENT or (token.startswith("-") and previous in ("env", "sudo", "nice", "time")):
+            index += 1
+        elif token.startswith("$") and tokens[index + 1 : index + 2] in (["="], ["+="]):  # `$out = git push ...`
+            index += 2
+        elif len(token) > 1 and token[0] in "({" and token.lstrip("({"):  # `(git status)`, `{git push}`
+            tokens = [*tokens[:index], tokens[index].lstrip("({"), *tokens[index + 1 :]]
+        else:
+            break
+    rest = tokens[index:]
+    while rest and rest[-1] in (")", "}"):
+        rest = rest[:-1]
+    if len(rest) > 1 and rest[-1].endswith((")", "}")) and index < len(tokens):
+        rest[-1] = rest[-1].rstrip(")}") or rest[-1]
+    return rest
+
+
+def _substitutions(tokens: list[str]) -> list[list[str]]:
+    """The commands inside `$(...)` and backticks of a segment, quoted or not: the shell runs them, so the guard reads them too."""
+
+    found: list[list[str]] = []
+    for index, token in enumerate(tokens):
+        for marker, closer in (("$(", ")"), ("`", "`")):
+            if marker in token:
+                text = " ".join([token.split(marker, 1)[1], *tokens[index + 1 :]]).split(closer)[0]
+                found.extend(segments(text))
+    return found
+
+
+def _wrapper_problem(tokens: list[str], command: str) -> str | None:
+    """A program that carries a string the parser cannot read, with git in it; or a program name built at run time."""
+
+    rest = _strip_prefixes(tokens)
+    while rest and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", rest[0]):
+        rest = rest[1:]
+    if not rest:
+        return None
+    program, args = program_name(rest[0]), rest[1:]
+    flags = [arg.lower() for arg in args]
+    carries_git = any(MENTIONS_GIT.search(arg) for arg in args)
+    wrapped = None
+    if program in POSIX_SHELLS and carries_git and any(re.fullmatch(r"-[a-z]*c[a-z]*", flag) for flag in flags):
+        wrapped = f"{program} -c"
+    elif program == "cmd" and carries_git and any(flag in ("/c", "/k", "/r") for flag in flags):
+        wrapped = "cmd /c"
+    elif program in POWERSHELLS:
+        if any(re.fullmatch(r"-e(c|nc|ncodedcommand)?", flag) for flag in flags):
+            return f"{program} -EncodedCommand hides the command from the guard (D35)"
+        if carries_git and "-file" not in flags:
+            wrapped = f"{program} -Command"
+    elif program in INTERPRETER_CODE_FLAGS and carries_git and set(flags) & INTERPRETER_CODE_FLAGS[program]:
+        wrapped = f"{program} {sorted(set(flags) & INTERPRETER_CODE_FLAGS[program])[0]}"
+    elif program in ALWAYS_WRAPPERS and carries_git:
+        wrapped = program
+    elif program == "find" and carries_git and set(flags) & {"-exec", "-execdir", "-ok", "-okdir"}:
+        wrapped = "find -exec"
+    if wrapped:
+        return f"git inside {wrapped} cannot be read by the guard: run git directly (D35)"
+    if re.search(r"^\$|\$\(|`", rest[0]) and rest[1:2] != ["="] and MENTIONS_GIT.search(command):
+        return "a command word built at run time next to git cannot be read by the guard: run git directly (D35)"
+    return None
+
+
 def decide(command: str, git: GitRunner = run_git) -> str | None:
     """None if the command may run, else the reason it is blocked."""
 
-    for tokens in segments(command):
-        inv = Invocation(tokens)
+    pending = segments(command)
+    while pending:
+        tokens = pending.pop(0)
+        pending.extend(_substitutions(tokens))
+        wrapped = _wrapper_problem(tokens, command)
+        if wrapped:
+            return wrapped
+        inv = Invocation(_strip_prefixes(tokens))
         if not inv.is_git or not inv.sub:
             continue
         problem = _problem(inv, git)

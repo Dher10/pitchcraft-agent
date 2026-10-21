@@ -293,3 +293,301 @@ def test_the_hook_is_wired_in_the_settings():
         for entry in entries
     )
     assert settings["attribution"] == {"commit": "", "pr": ""}  # what was there stays
+
+
+# --- QA6-02: wrapped git, other tools, the rest of the QA list (P0.17-c) ---------------------------------------------
+
+# Every command of the QA run 6 list, as the report printed them, and the ones of the same class.
+WRAPPED_AND_INDIRECT = [
+    # the QA list
+    'bash -c "git push --force origin main"',
+    "sh -c 'git push origin main'",
+    'eval "git push origin main"',
+    'powershell -Command "git push origin main"',
+    "cmd /c git push origin main",
+    "x=git; $x push origin main",
+    "python -c \"import subprocess; subprocess.run(['git','push','origin','main'])\"",
+    # the same wrappers, other spellings
+    'pwsh -Command "git push origin main"',
+    'powershell -NoProfile -Command "& git push --force origin v2"',
+    'powershell "git push origin main"',
+    "bash -lc 'git reset --hard'",
+    "zsh -c 'git push origin main'",
+    "cmd /k git push origin main",
+    "cmd.exe /c git push origin main",
+    "node -e \"require('child_process').execSync('git push origin main')\"",
+    "python3 -c \"import os; os.system('git push origin main')\"",
+    'perl -e \'system("git push origin main")\'',
+    'Invoke-Expression "git push origin main"',
+    'iex "git push origin main"',
+    "echo main | xargs git checkout",
+    "Start-Process git -ArgumentList 'push origin main'",
+    "1..3 | ForEach-Object { git push origin main }",
+    "Invoke-Command -ScriptBlock { git push origin main }",
+    # a program the guard cannot read at all
+    "powershell -EncodedCommand ZwBpAHQAIABwAHUAcwBoAA==",
+    "pwsh -enc ZwBpAHQAIABwAHUAcwBoAA==",
+    # a program name built at run time
+    "$x = 'git'; & $x push origin main",
+    "g=git; $g push --force origin v2",
+]
+
+# git behind words that pass the command along, and inside substitutions: the guard reads them as plain git.
+PASSED_ALONG = [
+    "env git push origin main",
+    "env GIT_AUTHOR_EMAIL=other@example.com git commit -m 'feat: x'",
+    "command git push --force origin v2",
+    "& git push origin main",
+    "& 'C:\\Program Files\\Git\\cmd\\git.exe' push origin main",
+    '"C:\\Program Files\\Git\\cmd\\git.exe" push --force origin v2',
+    "$out = git push origin main",
+    "$out = & git push --force origin v2",
+    "x=$(git push origin main)",
+    "echo $(git push --force origin v2)",
+    "echo `git push origin main`",
+    "(git push origin main)",
+    "{ git push origin main }",
+    "time git reset --hard",
+]
+
+NEW_GIT_RULES = [
+    ("git filter-branch --all", "filter-branch"),
+    ("git filter-branch --env-filter 'true' HEAD", "filter-branch"),
+    ("git filter-repo --path docs", "filter-repo"),
+    ("git branch -D v2", "v2"),
+    ("git branch -d v2", "v2"),
+    ("git branch --delete v2", "v2"),
+    ("git branch -m v2 old", "v2"),
+    ("git branch -d origin/v2", "v2"),
+    ("git branch -D main", "release branch"),
+    ("git remote add evil https://x.y/z.git", "git remote add"),
+    ("git remote set-url origin https://x.y/z.git", "git remote set-url"),
+    ("git remote remove origin", "git remote remove"),
+    ("git remote rm origin", "git remote rm"),
+    ("git remote rename origin up", "git remote rename"),
+    ("git config --unset core.hooksPath", "hooksPath"),
+    ("git config --global core.hooksPath /x", "hooksPath"),
+    ("git config --replace-all core.hooksPath /x", "hooksPath"),
+    ("git config --add core.hooksPath /x", "hooksPath"),
+]
+
+ALLOWED_AGAIN = [
+    # the documented check (CONTRIBUTING.md), in every form that only reads
+    "git config core.hooksPath",
+    "git config --get core.hooksPath",
+    "git config --local --get core.hooksPath",
+    "git config --global --get core.hooksPath",
+    "git config --get-all core.hooksPath",
+    "git config --show-origin --get core.hooksPath",
+    # remotes and branches that are not v2 or main
+    "git remote",
+    "git remote -v",
+    "git remote show origin",
+    "git remote get-url origin",
+    "git branch -d experiment/spike",
+    "git branch -D experiment/spike",
+    "git branch -m experiment/a experiment/b",
+    "git branch --list",
+    # wrappers that do not mention git are ordinary commands
+    'bash -c "echo hello"',
+    "sh -c 'ls -la'",
+    'powershell -Command "Get-Date"',
+    'pwsh -NoProfile -Command "Write-Output 1"',
+    "cmd /c dir",
+    'python -c "print(1)"',
+    'python -c "import json; print(json.dumps({\'a\': 1}))"',
+    'node -e "console.log(1)"',
+    'eval "echo hi"',
+    'Invoke-Expression "Get-Date"',
+    "1..3 | ForEach-Object { $_ * 2 }",
+    # a script, a module or a file that has git in its name is not a string the shell reads
+    "python -m pytest tests/test_agent_git_guard.py -q",
+    "python .claude/hooks/git_guard.py",
+    "bash scripts/run.sh",
+    "powershell -File build.ps1",
+    "node scripts/git-info.js",
+    # PowerShell and shell habits around plain git
+    "$out = git status --short",
+    "$out = Get-Date",
+    "$branch = git branch --show-current",
+    "x=$(git rev-parse HEAD)",
+    "echo $(git log -1 --oneline)",
+    "(git status)",
+    "{ git status }",
+    "& git status",
+    "env GIT_AUTHOR_NAME='Daniel Herdenez' git status",
+    "git commit -q -m @'\nfeat: say it in the body\n\nA line about git push --force origin main and rebase that is only text.\n'@",
+    "git commit -q -m \"fix: cover $(git log -1 --format=%h)\"",
+]
+
+
+@pytest.mark.parametrize("command", WRAPPED_AND_INDIRECT)
+def test_git_behind_a_wrapper_or_a_runtime_name_is_blocked(command):
+    reason = verdict(command)
+
+    assert reason is not None and ("cannot be read by the guard" in reason or "hides the command" in reason), (command, reason)
+
+
+@pytest.mark.parametrize("command", PASSED_ALONG)
+def test_git_behind_words_that_pass_it_along_is_read_as_plain_git(command):
+    assert verdict(command) is not None, command
+
+
+@pytest.mark.parametrize("command,why", NEW_GIT_RULES)
+def test_the_new_git_rules_block_with_a_reason(command, why):
+    reason = verdict(command)
+
+    assert reason is not None and why in reason, (command, reason)
+
+
+@pytest.mark.parametrize("command", ALLOWED_AGAIN)
+def test_ordinary_commands_and_the_documented_reads_still_pass(command):
+    assert verdict(command) is None, command
+
+
+def test_a_program_name_with_a_directory_and_extension_is_still_the_program():
+    assert guard.program_name("C:\\Program Files\\Git\\cmd\\git.exe") == "git"
+    assert guard.program_name("/usr/bin/git") == "git"
+    assert guard.program_name("PowerShell.exe") == "powershell"
+    assert guard.program_name("gitk") == "gitk"
+
+
+def test_a_substitution_does_not_hide_a_second_command_after_it():
+    assert verdict("echo $(date) && git push --force origin v2") is not None
+    assert verdict("echo $(date) && git push origin v2") is None
+
+
+def test_the_hook_is_wired_for_both_shell_tools_with_the_same_script():
+    settings = json.loads((HOOK.parents[1] / "settings.json").read_text(encoding="utf-8"))
+    commands = {
+        entry["matcher"]: [h["command"] for h in entry["hooks"] if h["type"] == "command"]
+        for entry in settings["hooks"]["PreToolUse"]
+    }
+
+    assert set(commands) == {"Bash", "PowerShell"}
+    assert commands["Bash"] == commands["PowerShell"] and "git_guard.py" in commands["Bash"][0]
+
+
+@pytest.mark.parametrize("tool", ["Bash", "PowerShell"])
+def test_the_script_blocks_the_same_way_for_the_powershell_tool(tmp_path, tool):
+    event = json.dumps({"tool_name": tool, "tool_input": {"command": 'powershell -Command "git push origin main"'}})
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+    result = subprocess.run([sys.executable, str(HOOK)], input=event, capture_output=True, text=True, cwd=tmp_path, env=env)
+
+    assert result.returncode == 2 and "Blocked by .claude/hooks/git_guard.py" in result.stderr
+
+
+# --- reviewer round 1 of P0.17-c: renaming main, abbreviated and combined options, more wrappers ------------------
+
+SWEPT_BLOCKED = [
+    ("git branch -m main", "release branch"),
+    ("git branch -m main old", "release branch"),
+    ("git branch -M main old", "release branch"),
+    ("git branch -m v2 main", "release branch"),
+    ("git push -fu origin v2", "force"),
+    ("git push -uf origin v2", "force"),
+    ("git push -vf origin v2", "force"),
+    ("git push --forc origin v2", "force"),
+    ("git push --force-w origin v2", "force"),
+    ("git push -ud origin v2", "can move or delete"),
+    ("git push --mirro", "can move or delete"),
+    ("git push --del origin v2", "can move or delete"),
+    ("git commit --no-ver -m 'feat: x'", "--no-verify"),
+    ("git reset --har HEAD~1", "reset --hard"),
+    ("git clean -fd", "force"),
+    ("git checkout -fb x", "force"),
+    ("GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m 'feat: x'", "hooksPath"),
+    ("wsl git push origin main", "cannot be read by the guard"),
+    ("ssh host git push origin main", "cannot be read by the guard"),
+    ("find . -name x -exec git push origin main ;", "cannot be read by the guard"),
+]
+
+
+@pytest.mark.parametrize("command,why", SWEPT_BLOCKED)
+def test_combined_and_abbreviated_options_and_the_rest_of_the_sweep_are_blocked(command, why):
+    reason = verdict(command)
+
+    assert reason is not None and why in reason, (command, reason)
+
+
+def test_an_abbreviated_amend_is_blocked_on_a_pushed_commit_and_allowed_on_a_local_one():
+    assert "already on a remote" in verdict("git commit --amen -m 'feat: x'", pushed=True)
+    assert verdict("git commit --amen -m 'feat: x'", pushed=False) is None
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "git push -u origin v2",
+        "git push -q origin v2",
+        "git push -vu origin v2",
+        "git push --set-upstream origin v2",
+        "git push --dry-run origin v2",
+        "git log --all --oneline",
+        "git log --alternate-refs",
+        "git add --all",
+        "git commit --allow-empty -m 'chore: x'",
+        "git commit --amend --no-edit",
+        "git diff --stat --format=%h",
+        "git log --format=%h -3",
+        "git status --short --branch",
+        "git branch -vv",
+        "git branch --format=%(refname:short)",
+        "git branch -m experiment/a experiment/b",
+        "git clean -n",
+        "git checkout -b experiment/spike",
+        "GIT_CONFIG_NOSYSTEM=1 git status",
+        "find . -name '*.py' -exec python -m pytest {} ;",
+        "ssh host ls",
+    ],
+)
+def test_control_options_that_look_like_the_dangerous_ones_still_pass(command):
+    assert verdict(command, pushed=False) is None, command
+
+
+# --- reviewer round 2 of P0.17-c: -m/-c/-C name a branch outside the committing subcommands; pull's rebase spellings --
+
+@pytest.mark.parametrize(
+    "command,why",
+    [
+        ("git switch -c main", "release branch"),
+        ("git switch -C main", "release branch"),
+        ("git switch -m main", "release branch"),
+        ("git checkout -m main", "release branch"),
+        ("git checkout -C main", "release branch"),
+        ("git checkout -c main", "release branch"),
+        ("git reset -m main", "release branch"),
+        ("git switch -c v1.0.0-kaggle", "tag"),
+        ("git pull -r", "rebase"),
+        ("git pull -rv", "rebase"),
+        ("git pull --rebase=true", "rebase"),
+        ("git pull --rebase=merges", "rebase"),
+        ("git pull --reb=true", "rebase"),
+    ],
+)
+def test_a_branch_named_after_a_value_option_and_the_other_pull_rebase_spellings_are_blocked(command, why):
+    reason = verdict(command)
+
+    assert reason is not None and why in reason, (command, reason)
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "git commit -m main",
+        "git commit -m 'fix: main page'",
+        "git commit -F main.txt",
+        "git commit -C HEAD~1 --no-edit",
+        "git merge -m main v2",
+        "git stash push -m main",
+        "git switch -c experiment/spike",
+        "git checkout -b experiment/spike",
+        "git pull --rebase=false",
+        "git pull --no-rebase",
+        "git pull --ff-only",
+        "git pull -q",
+    ],
+)
+def test_control_messages_and_experiment_branches_still_pass(command):
+    assert verdict(command, pushed=False) is None, command

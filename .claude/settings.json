@@ -13,6 +13,15 @@
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/git_guard.py\""
           }
         ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/git_guard.py\""
+          }
+        ]
       }
     ]
   }
