@@ -154,10 +154,18 @@ function PitcherAttack({
             </aside>
           )}
           <div className="flex flex-col items-center">
-            <ZoneDiagram locations={locations[hand]} width={205} height={244} />
-            <p className="mt-2 max-w-[220px] text-center text-xs text-neutral-500">
-              Target locations {hand === "vs_lhh" ? "against left-handed hitters" : "against right-handed hitters"}.
-            </p>
+            {locations[hand].length > 0 ? (
+              <>
+                <ZoneDiagram locations={locations[hand]} width={205} height={244} />
+                <p className="mt-2 max-w-[220px] text-center text-xs text-neutral-500">
+                  Median location against {hand === "vs_lhh" ? "left" : "right"}-handed hitters.
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 max-w-[220px] text-center text-xs text-neutral-500">
+                Location data not available against {hand === "vs_lhh" ? "left" : "right"}-handed hitters.
+              </p>
+            )}
           </div>
         </div>
       ) : (

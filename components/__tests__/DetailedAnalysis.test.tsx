@@ -158,7 +158,7 @@ describe("a healthy arsenal is unchanged", () => {
     const away = article("Away Ace");
 
     expect(within(away).getByRole("img", { name: /Four-seam movement trajectory/i })).toBeTruthy();
-    expect(away.textContent).toMatch(/Rides through the zone|Runs|Shows a modest fastball shape/);
+    expect(away.textContent).toContain("Moves 7.8 in. sideways and 16.2 in. up compared with a pitch thrown without spin.");
   });
 });
 
