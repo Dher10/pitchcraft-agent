@@ -281,6 +281,52 @@ def test_an_absent_optional_field_is_not_a_failure(monkeypatch, case, path):
     expect_success(monkeypatch, case, broken(case, path, "delete"))
 
 
+# --- counts are non-negative integers (QA6-01) ---------------------------------------------------------------
+# Probe E2: `strikeOuts: -5` was published as a measurement. Generated from the schemas, like the rest of this file.
+
+COUNTS = [(case, path) for case in CASES for path, node in schemas._walk(case.schema)
+          if isinstance(node, schemas.Scalar) and node.kind == "count"]
+
+
+def test_the_schemas_mark_every_count_they_read_as_a_count():
+    names = {schemas.format_path(path) for _, path in COUNTS}
+
+    assert {"stats[0].splits[0].stat.strikeOuts", "stats[0].splits[0].stat.baseOnBalls",
+            "stats[0].splits[0].stat.homeRuns", "stats[0].splits[0].stat.battersFaced",
+            "stats[0].splits[0].stat.plateAppearances"} <= names
+
+
+@pytest.mark.parametrize(("case", "path"), COUNTS, ids=ids(COUNTS))
+@pytest.mark.parametrize("value", [-1, -5, -19])
+def test_a_negative_count_is_a_recorded_source_failure(monkeypatch, case, path, value):
+    expect_failure(monkeypatch, case, broken(case, path, "set", value), path)
+
+
+@pytest.mark.parametrize(("case", "path"), COUNTS, ids=ids(COUNTS))
+@pytest.mark.parametrize("value", [1.5, "5", True])
+def test_a_count_that_is_not_an_integer_is_a_recorded_source_failure(monkeypatch, case, path, value):
+    expect_failure(monkeypatch, case, broken(case, path, "set", value), path)
+
+
+POSITIVE = [(case, path) for case in CASES for path, node in schemas._walk(case.schema)
+            if isinstance(node, schemas.Scalar) and node.kind == "positive"]
+
+
+@pytest.mark.parametrize(("case", "path"), POSITIVE, ids=ids(POSITIVE))
+@pytest.mark.parametrize("value", [0, -3])
+def test_a_game_number_below_one_is_a_recorded_source_failure(monkeypatch, case, path, value):
+    expect_failure(monkeypatch, case, broken(case, path, "set", value), path)
+
+
+def test_the_series_game_number_is_one_of_the_positive_figures():
+    assert {schemas.format_path(path) for _, path in POSITIVE} == {"dates[0].games[0].seriesGameNumber"}
+
+
+@pytest.mark.parametrize(("case", "path"), COUNTS, ids=ids(COUNTS))
+def test_control_a_real_zero_count_is_valid(monkeypatch, case, path):
+    expect_success(monkeypatch, case, broken(case, path, "set", 0))
+
+
 @pytest.mark.parametrize("figure", ["strikeOuts", "baseOnBalls", "homeRuns", "battersFaced"])
 def test_an_absent_pitcher_count_is_none_never_zero(monkeypatch, figure):
     data = pitcher_stats()

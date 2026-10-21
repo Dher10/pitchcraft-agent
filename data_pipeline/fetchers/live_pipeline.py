@@ -7,6 +7,7 @@ from functools import lru_cache
 import io
 import json
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -500,6 +501,26 @@ def _season_line_split(splits: list[dict[str, Any]]) -> dict[str, Any]:
     return rollup
 
 
+_SEASON_FIGURE = re.compile(r"\d+(\.\d+)?")
+_RATE_STAT = re.compile(r"\d*\.\d+|\d+")
+
+
+def _season_figure(value: Any) -> str:
+    """
+    ERA, WHIP or innings as the API wrote them: a number is kept as text. A placeholder ("-.--", ".---", "-", what
+    a pitcher with no innings gets) or any other string is that figure unavailable ("N/A"), never a stop of the
+    file (QA6-01).
+    """
+
+    return value if isinstance(value, str) and _SEASON_FIGURE.fullmatch(value) else "N/A"
+
+
+def _rate_stat(value: Any) -> str | None:
+    """OPS or average as the API wrote it (".725"); a placeholder is unavailable (None)."""
+
+    return value if isinstance(value, str) and _RATE_STAT.fullmatch(value) else None
+
+
 def fetch_pitcher_season_stats(
     pitcher_id: int,
     season: int | None = None,
@@ -547,9 +568,9 @@ def fetch_pitcher_season_stats(
             return {}
         stat = _season_line_split(splits)["stat"]
         result = {
-            "era": stat.get("era", "N/A"),
-            "whip": stat.get("whip", "N/A"),
-            "innings": stat.get("inningsPitched", "N/A"),
+            "era": _season_figure(stat.get("era")),
+            "whip": _season_figure(stat.get("whip")),
+            "innings": _season_figure(stat.get("inningsPitched")),
             "strikeouts": stat.get("strikeOuts"),
             "walks": stat.get("baseOnBalls"),
             "home_runs_allowed": stat.get("homeRuns"),
@@ -638,8 +659,8 @@ def fetch_team_splits(
                 strikeouts = stat.get("strikeOuts")
                 walks = stat.get("baseOnBalls")
                 out[code] = {
-                    "ops": stat.get("ops"),
-                    "avg": stat.get("avg"),
+                    "ops": _rate_stat(stat.get("ops")),
+                    "avg": _rate_stat(stat.get("avg")),
                     "strikeouts": strikeouts,
                     "walks": walks,
                     "plate_appearances": plate_appearances,
@@ -776,6 +797,17 @@ PITCH_MEASUREMENT_GROUPS = (
     ("movement", ("pfx_x", "pfx_z")),
     ("locations", ("plate_x", "plate_z")),
 )
+# What a tracking sensor can report, per Statcast column, as (low, high, low is inclusive); the high end is
+# always inclusive. Units are the ones Statcast writes: mph for the speed, feet for the rest. These are
+# physical sanity limits, NOT thresholds of any label, ranking or claim: a populated value outside them is a
+# malformed cell (QA6-01: a finite 9999 was published as a 119,988 in. break), never a rare pitch.
+PITCH_VALUE_BOUNDS: dict[str, tuple[float, float, bool]] = {
+    "release_speed": (30.0, 110.0, False),  # 30 < mph <= 110
+    "pfx_x": (-3.0, 3.0, True),
+    "pfx_z": (-3.0, 3.0, True),
+    "plate_x": (-5.0, 5.0, True),
+    "plate_z": (-3.0, 10.0, True),
+}
 # Every game type Statcast writes: regular season, spring training, exhibition, all-star, then the
 # postseason rounds (wild card, division, league championship, world series).
 KNOWN_STATCAST_GAME_TYPES = ("R", "S", "E", "A") + POSTSEASON_GAME_TYPES
@@ -871,13 +903,13 @@ def require_usable_pitch_columns(df: Any, source: str) -> None:
         raise UnusableColumn(f"{source} data has {len(df)} row(s) and no usable stand (no L or R in any row)")
 
 
-def _finite_pitch_measurements(df: Any, *, pitcher_id: int | None = None) -> Any:
-    """Contain malformed numeric cells before filtering or aggregation (QA5-03).
+def _bounded_pitch_measurements(df: Any, *, pitcher_id: int | None = None) -> Any:
+    """Contain malformed numeric cells before filtering or aggregation (QA5-03, QA6-01).
 
-    Null measurements are absent, as before. A populated non-finite cell makes
-    its whole measurement group unavailable; dropping only that row would turn
-    a malformed answer into an apparently complete mean/median. Counts, mix,
-    hand and other groups stay usable. Never mutate the source/cache frame.
+    Null measurements are absent, as before. A populated cell that is not finite, or is outside the physical
+    limits of `PITCH_VALUE_BOUNDS`, makes its whole measurement group unavailable; dropping only that row
+    would turn a malformed answer into an apparently complete mean/median. Counts, mix, hand and other groups
+    stay usable. Never mutate the source/cache frame.
     """
 
     import pandas as pd
@@ -889,14 +921,16 @@ def _finite_pitch_measurements(df: Any, *, pitcher_id: int | None = None) -> Any
             if column not in df.columns:
                 continue
             values = pd.to_numeric(df[column], errors="coerce")
-            bad = df[column].notna() & ~np.isfinite(values)
+            low, high, low_inclusive = PITCH_VALUE_BOUNDS[column]
+            inside = np.isfinite(values) & ((values >= low) if low_inclusive else (values > low)) & (values <= high)
+            bad = df[column].notna() & ~inside
             if bad.any():
                 bad_columns.append(f"{column} ({int(bad.sum())} row(s), first at {df.index[bad][0]})")
         if not bad_columns:
             continue
         _record_error(
             "statcast_pitcher", "malformed_rows",
-            f"pitcher Statcast has non-finite or non-numeric measurements in {', '.join(bad_columns)}; "
+            f"pitcher Statcast has non-finite, non-numeric or out-of-bounds measurements in {', '.join(bad_columns)}; "
             f"{group} unavailable",
             pitcher_id=pitcher_id,
         )
@@ -1222,7 +1256,7 @@ def fetch_pitcher_statcast(
         # An empty frame is a valid answer (a debut) and may have no columns at all.
         if len(df) > 0:
             validate_pitcher_frame(df, "pitcher Statcast")
-            df = _finite_pitch_measurements(df, pitcher_id=pitcher_id)
+            df = _bounded_pitch_measurements(df, pitcher_id=pitcher_id)
             event_problem = _event_column_problem(df, "pitcher Statcast")
             df = df[pd.to_datetime(df["game_date"]).dt.date <= cutoff]
             # pybaseball asks for regular season, postseason and spring training.
@@ -1486,6 +1520,23 @@ def _attach_sample(
     labels.apply_profile_labels(processed["pitching_profile"], sample)
 
 
+def _finite_or_none(value: Any) -> float | None:
+    """`value` as a float when it is a finite number, else None: an overflowed or missing aggregate is unavailable, never `inf`."""
+
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if np.isfinite(number) else None
+
+
+def _aggregate(series: Any, how: str) -> float | None:
+    """The mean or median of a column, unavailable (None) when it is empty or not finite (a sum of finite cells can overflow)."""
+
+    with np.errstate(over="ignore", invalid="ignore"):
+        return _finite_or_none(getattr(series, how)())
+
+
 def normalize_plate_x(x: float) -> float:
     """Normalize plate_x (-1.7 to 1.7) to 0-1, left to right."""
 
@@ -1504,7 +1555,7 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
     import pandas as pd
 
     # Also protect direct callers; an already validated frame is unchanged.
-    df = _finite_pitch_measurements(df)
+    df = _bounded_pitch_measurements(df)
     df = df.dropna(subset=["pitch_type"])
     df = df[df["pitch_type"] != ""].copy()
     df["pitch_name"] = df["pitch_type"].map(PITCH_NAME_MAP).fillna(df["pitch_type"])
@@ -1538,8 +1589,8 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
             }
         )
 
-        avg_velo = sub["release_speed"].mean()
-        if not pd.isna(avg_velo):
+        avg_velo = _aggregate(sub["release_speed"], "mean")
+        if avg_velo is not None:
             velocity_rows.append(
                 {
                     "pitch": pitch_name,
@@ -1571,12 +1622,13 @@ def process_pitcher_statcast(df: Any, pitcher_name: str) -> dict[str, Any]:
         )
         for split, stand in (("vs_lhh", "L"), ("vs_rhh", "R")):
             sub = sub_all[sub_all["stand"] == stand]
-            if len(sub) >= 5:
+            median_x, median_z = _aggregate(sub["plate_x"], "median"), _aggregate(sub["plate_z"], "median")
+            if len(sub) >= 5 and median_x is not None and median_z is not None:
                 pitch_locations[split].append(
                     {
                         "pitch": pitch_name,
-                        "x": normalize_plate_x(sub["plate_x"].median()),
-                        "y": normalize_plate_z(sub["plate_z"].median()),
+                        "x": normalize_plate_x(median_x),
+                        "y": normalize_plate_z(median_z),
                     }
                 )
 
@@ -1621,11 +1673,12 @@ def compute_movement(df: Any, pitch_types_kept: list[str]) -> dict[str, Any]:
             sub = df[df["pitch_type"].isin(codes)].dropna(subset=["pfx_x", "pfx_z"])
         else:
             sub = []
+        h_break = v_break = None
         if len(sub) >= 3:
-            h_break = round(float(sub["pfx_x"].median()) * 12, 1)
-            v_break = round(float(sub["pfx_z"].median()) * 12, 1)
-        else:
-            h_break, v_break = None, None
+            median_x, median_z = _aggregate(sub["pfx_x"], "median"), _aggregate(sub["pfx_z"], "median")
+            inches = [_finite_or_none(median * 12) if median is not None else None for median in (median_x, median_z)]
+            if None not in inches:  # one component that cannot be read leaves no pair: half a movement is not a movement
+                h_break, v_break = round(inches[0], 1), round(inches[1], 1)
         result[name] = {
             "h_break": h_break,
             "v_break": v_break,

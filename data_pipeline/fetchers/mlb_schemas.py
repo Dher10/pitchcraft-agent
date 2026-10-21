@@ -11,6 +11,8 @@ Rules the schemas encode:
   schema says the endpoint needs at least one element (`min_items`).
 - An optional figure that is absent is simply absent: the fetcher reads it as `None`, never as
   zero. When it is present it must have its type.
+- A count is an integer of 0 or more. A figure the API writes as text (ERA, WHIP, innings, OPS) is accepted as any
+  string here; the fetcher keeps it only when it is a number and otherwise reads it as unavailable.
 - Fields the pipeline does not read are not listed and are not checked.
 
 Checked against live answers on 2026-10-11 (schedule with probable pitchers and with
@@ -36,7 +38,12 @@ _ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 @dataclass(frozen=True)
 class Scalar:
-    kind: str  # "str", "int", "bool", "date" (YYYY-MM-DD) or "utc_instant" (YYYY-MM-DDTHH:MM:SSZ)
+    # "str" (not empty), "int", "bool", "date" (YYYY-MM-DD), "utc_instant" (YYYY-MM-DDTHH:MM:SSZ),
+    # "count" (an integer of 0 or more: a negative number of strikeouts is not a measurement, QA6-01), "positive"
+    # (an integer of 1 or more: the number of a game in a series) and
+    # "text" (any string, empty or a placeholder such as "-.--": the fetcher reads it and a figure it cannot
+    # read is that figure unavailable, not a stop).
+    kind: str
     required: bool = True
 
 
@@ -79,6 +86,12 @@ def _is_scalar(kind: str, value: Any) -> bool:
         return isinstance(value, bool)
     if kind == "int":
         return isinstance(value, int) and not isinstance(value, bool)
+    if kind == "count":
+        return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+    if kind == "positive":
+        return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+    if kind == "text":
+        return isinstance(value, str)
     if kind == "str":
         return isinstance(value, str) and value != ""
     if kind == "date":
@@ -232,7 +245,7 @@ SERIES_SCHEDULE = Obj(
                                 "gamePk": Scalar("int"),
                                 "gameType": Scalar("str"),
                                 "officialDate": Scalar("date"),
-                                "seriesGameNumber": Scalar("int"),
+                                "seriesGameNumber": Scalar("positive"),
                                 "status": Obj({"abstractGameState": Scalar("str")}),
                                 "teams": Obj(
                                     {side: Obj({"team": Obj({"id": Scalar("int")})}) for side in ("away", "home")}
@@ -251,8 +264,8 @@ SERIES_SCHEDULE = Obj(
 # The seriesStatus of the last earlier final game of the series.
 SERIES_STATUS = Obj(
     {
-        "wins": Scalar("int"),
-        "losses": Scalar("int"),
+        "wins": Scalar("count"),
+        "losses": Scalar("count"),
         "isOver": Scalar("bool"),
         "result": Scalar("str"),
     }
@@ -273,13 +286,14 @@ PITCHER_STATS = Obj(
                                 "sport": Obj({"id": Scalar("int", required=False)}, required=False),
                                 "stat": Obj(
                                     {
-                                        "era": Scalar("str", required=False),
-                                        "whip": Scalar("str", required=False),
-                                        "inningsPitched": Scalar("str", required=False),
-                                        "strikeOuts": Scalar("int", required=False),
-                                        "baseOnBalls": Scalar("int", required=False),
-                                        "homeRuns": Scalar("int", required=False),
-                                        "battersFaced": Scalar("int", required=False),
+                                        # Text: a pitcher with no innings gets "-.--" (QA6-01).
+                                        "era": Scalar("text", required=False),
+                                        "whip": Scalar("text", required=False),
+                                        "inningsPitched": Scalar("text", required=False),
+                                        "strikeOuts": Scalar("count", required=False),
+                                        "baseOnBalls": Scalar("count", required=False),
+                                        "homeRuns": Scalar("count", required=False),
+                                        "battersFaced": Scalar("count", required=False),
                                     },
                                     non_empty=True,
                                 )
@@ -304,11 +318,11 @@ TEAM_SPLITS = Obj(
                                 "split": Obj({"code": Scalar("str")}),
                                 "stat": Obj(
                                     {
-                                        "ops": Scalar("str", required=False),
-                                        "avg": Scalar("str", required=False),
-                                        "plateAppearances": Scalar("int", required=False),
-                                        "strikeOuts": Scalar("int", required=False),
-                                        "baseOnBalls": Scalar("int", required=False),
+                                        "ops": Scalar("text", required=False),
+                                        "avg": Scalar("text", required=False),
+                                        "plateAppearances": Scalar("count", required=False),
+                                        "strikeOuts": Scalar("count", required=False),
+                                        "baseOnBalls": Scalar("count", required=False),
                                     },
                                     non_empty=True,
                                 ),
