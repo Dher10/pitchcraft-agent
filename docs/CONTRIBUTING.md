@@ -14,7 +14,7 @@ Applies to every commit in this repo, whoever writes it: the owner, Claude Code,
   git remote -v
   ```
   and stops if the email is not the owner's or the branch is not `v2`.
-- Exception: the GitHub Actions bot commits data under `public/data/` and `evals/live/` on `main` (D15). The hook does not run in CI.
+- Exception: the daily job of GitHub Actions commits data under `public/data/` and `evals/live/` on `main` (D15), under the same identity (Daniel Herdenez) with the subject `data: daily update YYYY-MM-DD` (D42). The hook does not run in CI.
 
 ## No AI attribution (enforced)
 
@@ -76,7 +76,7 @@ An item that touches neither (a note in a comment, a test helper, a cosmetic def
 - Staging is always complete: `git add -A` or whole files. Never `git add -p` or hand-edited hunks.
 - Agents may `git add -A`, `git commit` and `git push origin v2` **only after** showing the owner the changed files and the full message and getting an explicit yes (D20).
 - Agents never: touch `main`, merge into `main`, force push, rebase, reset, rewrite history, or create/move/delete tags.
-- Merging `v2` into `main` is the release and is done by the owner.
+- Merging `v2` into `main` is the release and is done by the owner: a pull request `v2` → `main`, merged in the GitHub UI with "Merge" (D42).
 
 ## One-time setup per clone
 
