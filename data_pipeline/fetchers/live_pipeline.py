@@ -28,7 +28,7 @@ from pybaseball import statcast_pitcher
 from data_pipeline import labels  # noqa: E402
 from data_pipeline.fetchers import mlb_schemas  # noqa: E402
 from data_pipeline.fetchers.statcast_events import COMPLETED_EVENTS, STATCAST_EVENTS  # noqa: E402
-from data_pipeline.schema import SCHEMA_VERSION  # noqa: E402
+from data_pipeline.schema import SCHEMA_VERSION, game_status  # noqa: E402
 
 pybaseball.cache.enable()
 
@@ -1131,6 +1131,29 @@ def derive_team_splits(df: Any, statcast_team: str, as_of: str | date | None) ->
     return splits
 
 
+# The pairs a real schedule sent for a game that was not played (measured 2026-10-16, D40). A pair neither in
+# `schema.GAME_STATUS` nor here is unknown, which is not the same as "not played".
+NOT_PLAYED_STATES = frozenset({("Final", "Postponed"), ("Final", "Cancelled")})
+
+
+def _series_game_was_played(entry: dict[str, Any]) -> bool:
+    """
+    Whether an earlier game of the series counts in its standing (D40: the pair decides, never "Final" alone).
+
+    A final game counts; a game that is upcoming or live, or a postponed or cancelled one, does not. Any other pair
+    cannot be told apart from a played game, so the standing would be a guess: the answer is refused whole (a recorded
+    `malformed_response`), never counted and never skipped.
+    """
+
+    pair = (entry["status"]["abstractGameState"], entry["status"]["detailedState"])
+    status = game_status(*pair)
+    if status == "final":
+        return True
+    if status in ("upcoming", "live") or pair in NOT_PLAYED_STATES:
+        return False
+    raise MalformedResponse(f"series game {entry['gamePk']} has a schedule state the table does not know: {pair}")
+
+
 def fetch_series_status(
     game_pk: int,
     as_of: str | date | None = None,
@@ -1177,7 +1200,7 @@ def fetch_series_status(
                 and entry_teams == team_ids
                 and entry["seriesGameNumber"] < number
                 and date.fromisoformat(entry["officialDate"]) <= cutoff
-                and entry["status"]["abstractGameState"] == "Final"
+                and _series_game_was_played(entry)
             ):
                 earlier.append(entry)
 
@@ -1797,7 +1820,8 @@ def build_live_snapshot(
                 "home": game["home_team_abbr"],
                 "away_pitcher": game["away_pitcher_name"],
                 "home_pitcher": game["home_pitcher_name"],
-                "status": game["status"],
+                # The schedule's state through the one table of D40: a cancelled game is not "Final".
+                "status": game_status(game["status"], game.get("detailed_state")),
             }
             for game in games
         ],

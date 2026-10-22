@@ -287,7 +287,7 @@ def _game_entry(pk: int) -> dict:
         "gamePk": pk,
         "officialDate": g["date"],
         "seriesGameNumber": g["num"],
-        "status": {"abstractGameState": "Final"},
+        "status": {"abstractGameState": "Final", "detailedState": "Final"},
         "teams": {
             "away": {"team": {"id": 144, "name": "Atlanta Braves"}},
             "home": {"team": {"id": 119, "name": "Los Angeles Dodgers"}},

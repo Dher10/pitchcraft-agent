@@ -246,7 +246,8 @@ SERIES_SCHEDULE = Obj(
                                 "gameType": Scalar("str"),
                                 "officialDate": Scalar("date"),
                                 "seriesGameNumber": Scalar("positive"),
-                                "status": Obj({"abstractGameState": Scalar("str")}),
+                                # The pair, never "Final" alone: a postponed game is Final here too (D40).
+                                "status": Obj({"abstractGameState": Scalar("str"), "detailedState": Scalar("str")}),
                                 "teams": Obj(
                                     {side: Obj({"team": Obj({"id": Scalar("int")})}) for side in ("away", "home")}
                                 ),
