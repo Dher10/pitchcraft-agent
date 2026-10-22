@@ -421,6 +421,126 @@ def test_a_date_that_is_not_a_date_is_a_usage_error_and_asks_nobody(sources, out
     assert caught.value.code == 2 and sources.requests == [] and not out.exists()
 
 
+# --- --check (the publish job re-validates the artifact it downloaded; no network) ------------------------------
+
+
+def check(path: Path, *extra: str) -> int:
+    return daily.main(["--check", str(path), *extra])
+
+
+@pytest.fixture
+def candidate(sources, out):
+    assert run(out) == 0
+    sources.requests.clear()
+    return out
+
+
+def test_check_accepts_the_candidate_a_good_run_wrote_and_asks_nobody(candidate, sources, capsys):
+    before = candidate.read_bytes()
+
+    assert check(candidate) == 0
+
+    assert sources.requests == [] and candidate.read_bytes() == before
+    assert "daily: check ok" in capsys.readouterr().out
+
+
+def test_check_refuses_the_committed_demo_file(sources, capsys):
+    demo = ROOT / "public" / "data" / "pitchcraft-demo.json"
+
+    assert check(demo) == 1
+
+    assert last_failure(capsys) == {"source": "pipeline", "code": "unexpected_error"}
+
+
+def test_check_refuses_a_file_that_fails_validation(candidate, capsys):
+    payload = json.loads(candidate.read_text(encoding="utf-8"))
+    del payload["matchups"][0]["report"]["sections"]
+    candidate.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    assert check(candidate) == 1
+
+    assert last_failure(capsys) == {"source": "pipeline", "code": "validation_failed"}
+
+
+@pytest.mark.parametrize("mode", ["demo_fallback", "demo_cached"])
+def test_check_refuses_a_demo_file_even_if_it_validates(candidate, capsys, monkeypatch, mode):
+    payload = json.loads(candidate.read_text(encoding="utf-8"))
+    payload["metadata"]["data_mode"] = mode
+    payload["metadata"]["data_status"]["mode"] = mode
+    candidate.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(daily, "validate_payload", lambda payload: [])
+
+    assert check(candidate) == 1
+
+    assert last_failure(capsys) == {"source": "pipeline", "code": "unexpected_error"}
+
+
+@pytest.mark.parametrize("field", ["data_mode", "data_status.mode"])
+def test_check_refuses_a_file_whose_two_mode_fields_disagree(candidate, capsys, monkeypatch, field):
+    payload = json.loads(candidate.read_text(encoding="utf-8"))
+    if field == "data_mode":
+        payload["metadata"]["data_mode"] = "demo_fallback"
+    else:
+        payload["metadata"]["data_status"]["mode"] = "demo_fallback"
+    candidate.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(daily, "validate_payload", lambda payload: [])
+
+    assert check(candidate) == 1
+
+    assert last_failure(capsys) == {"source": "pipeline", "code": "unexpected_error"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["", "not json", "[]", '"a string"', "null", '{"metadata": {"data_status": {"mode": "fetched_snapshot"}}}'],
+)
+def test_check_refuses_text_that_is_not_a_payload(tmp_path, capsys, text):
+    path = tmp_path / "x.json"
+    path.write_text(text, encoding="utf-8")
+
+    assert check(path) == 1
+
+    failure = last_failure(capsys)
+    assert set(failure) == {"source", "code"} and failure["source"] == "pipeline"
+
+
+def test_check_refuses_a_missing_file(tmp_path, capsys):
+    assert check(tmp_path / "nope.json") == 1
+
+    assert last_failure(capsys)["source"] == "pipeline"
+
+
+def test_check_refuses_a_number_that_is_not_finite(candidate, capsys, monkeypatch):
+    text = candidate.read_text(encoding="utf-8")
+    candidate.write_text(text.replace('"matchups": [', '"not_a_number": NaN, "matchups": [', 1), encoding="utf-8")
+    monkeypatch.setattr(daily, "validate_payload", lambda payload: [])
+
+    assert check(candidate) == 1
+
+    assert last_failure(capsys)["source"] == "pipeline"
+
+
+def test_check_never_echoes_the_text_of_the_file_it_refused(tmp_path, capsys):
+    path = tmp_path / "x.json"
+    path.write_text("secret internals: /home/runner/token=abc", encoding="utf-8")
+
+    assert check(path) == 1
+
+    captured = capsys.readouterr()
+    assert "token=abc" not in captured.out + captured.err
+
+
+@pytest.mark.parametrize("extra", [["--out", "x.json"], ["--date", GAME_DAY], ["--dry-run"]])
+def test_check_is_alone(tmp_path, capsys, extra):
+    path = tmp_path / "x.json"
+    path.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as caught:
+        check(path, *extra)
+
+    assert caught.value.code == 2
+
+
 # --- structure ------------------------------------------------------------------------------------------------
 
 

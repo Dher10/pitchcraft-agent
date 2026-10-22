@@ -27,13 +27,17 @@ PUBLISH_ENVIRONMENT = "data-publish"
 # The first major of each action whose `runs.using` is node24, read in the action.yml of the tags on 2026-10-21 with
 # `gh api repos/actions/<name>/contents/action.yml?ref=<sha>`: checkout v4.2.2 is node20 and v5.0.0 node24; setup-python
 # v5.6.0 node20, v6.0.0 node24; setup-node v4.4.0 node20, v5.0.0 node24; cache v4.3.0 node20, v5.0.0 node24;
-# upload-artifact v5.0.0 node20, v6.0.0 node24; download-artifact v6.0.0 node20, v7.0.0 node24. Raise a number only after
-# reading the tag.
+# upload-artifact v5.0.0 node20, v6.0.0 node24; download-artifact v6.0.0 node20, v7.0.0 node24. `cache/restore` and
+# `cache/save` are sub-actions of the same repository and tag as `cache` (P1.2-c); the tags used by daily.yml (cache
+# v6.1.0, upload-artifact v7.0.2, download-artifact v8.0.2) were read the same way on 2026-10-22: `using: node24`.
+# Raise a number only after reading the tag.
 NODE24_MAJOR = {
     "actions/checkout": 5,
     "actions/setup-python": 6,
     "actions/setup-node": 5,
     "actions/cache": 5,
+    "actions/cache/restore": 5,
+    "actions/cache/save": 5,
     "actions/upload-artifact": 6,
     "actions/download-artifact": 7,
 }
@@ -349,6 +353,16 @@ def test_a_secret_bound_in_the_workflow_env_and_printed_is_seen():
     text = CLEAN.replace("permissions:\n  contents: read\n", "permissions:\n  contents: read\nenv:\n  KEY: ${{ secrets.X }}\n", 1)
     text = text.replace("      - run: echo hello\n", "      - run: echo $KEY\n", 1)
     assert {"secret_printed", "secret_outside_publish_job"} <= violations(text)
+
+
+@pytest.mark.parametrize("name", ["actions/cache/restore", "actions/cache/save"])
+def test_the_cache_sub_actions_have_the_node_24_floor_of_the_cache_action(name):
+    old = f"{name}@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4"
+    new = f"{name}@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0"
+    sample = CLEAN.replace(CHECKOUT, old, 1)
+
+    assert violations(sample) == {"old_or_unversioned_action"}
+    assert violations(CLEAN.replace(CHECKOUT, new, 1)) == set()
 
 
 def test_a_local_action_is_not_an_unpinned_action():

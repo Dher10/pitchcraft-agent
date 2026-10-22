@@ -1,6 +1,7 @@
 """The daily job: build the day's file, and replace nothing unless it is valid and live (docs/plans/P1.md, 4.2).
 
     python -m data_pipeline.daily --out PATH [--date YYYY-MM-DD] [--dry-run]
+    python -m data_pipeline.daily --check FILE
 
 It runs the live fetch, the generator and `validate_payload`, and writes the candidate to `--out` only if every step
 passed and the payload is a live one (`fetched_snapshot`). Any other outcome leaves `--out` as it was and exits 1 after
@@ -10,6 +11,10 @@ candidate: the daily job publishes live files only, so a day with no games is a 
 The run record and snapshot are the hand-off between the fetch and the generator. They go to a private temporary
 directory that is removed afterwards, so a record left by an earlier run, or by the developer's own run, can never be
 taken for this one and the local cache is not touched.
+
+`--check FILE` is the publish job's second look at the artifact it downloaded: no network, nothing written. It reads the
+file as strict JSON, requires a live `fetched_snapshot` payload and runs `validate_payload`; exit 0 when all hold, 1 with
+the same `daily: failed {source, code}` line otherwise (the text of the file is never printed).
 
 Exit codes: 0 a valid live file; 1 a failure; 2 a usage error; 3 is reserved for the valid no-games file of P1.6 and is
 not produced yet. `--dry-run` guarantees the repository's published files stay as they are: it refuses an `--out` under
@@ -153,6 +158,36 @@ def run_daily(target_date: str | None, out: Path) -> dict[str, Any]:
     return summary
 
 
+def _reject_constant(name: str) -> None:
+    raise ValueError(f"{name} is not a JSON value")
+
+
+def check_file(path: Path) -> None:
+    """Raise `DailyFailure` unless `path` holds a valid live payload. No network, nothing written."""
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"), parse_constant=_reject_constant)
+    except (OSError, ValueError):
+        raise DailyFailure(dict(VALIDATION_FAILED)) from None
+    if not isinstance(payload, dict):
+        raise DailyFailure(dict(VALIDATION_FAILED))
+    metadata = payload.get("metadata")
+    status = metadata.get("data_status") if isinstance(metadata, dict) else None
+    if not (
+        isinstance(status, dict)
+        and status.get("mode") == config.DATA_MODE_SNAPSHOT
+        and metadata.get("data_mode") == config.DATA_MODE_SNAPSHOT
+    ):
+        raise DailyFailure(dict(UNEXPECTED))
+    try:
+        validate_payload(payload)
+    except ValidationError:
+        raise DailyFailure(dict(VALIDATION_FAILED)) from None
+    except Exception as exc:
+        print(f"daily: unexpected {type(exc).__name__}", file=sys.stderr)
+        raise DailyFailure(dict(UNEXPECTED)) from None
+
+
 def _iso_date(value: str) -> str:
     try:
         return date.fromisoformat(value).isoformat()
@@ -162,7 +197,8 @@ def _iso_date(value: str) -> str:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m data_pipeline.daily", description=__doc__.split("\n\n")[0])
-    parser.add_argument("--out", required=True, type=Path, help="where the candidate file is written, only if valid and live")
+    parser.add_argument("--out", type=Path, help="where the candidate file is written, only if valid and live")
+    parser.add_argument("--check", type=Path, metavar="FILE", help="re-validate a candidate file; no network, nothing written")
     parser.add_argument("--date", type=_iso_date, default=None, help="game day (default: today in New York)")
     parser.add_argument(
         "--dry-run",
@@ -175,6 +211,18 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
+    if args.check is not None:
+        if args.out is not None or args.date is not None or args.dry_run:
+            parser.error("--check is used alone")
+        try:
+            check_file(args.check)
+        except DailyFailure as failure:
+            print(f"daily: failed {json.dumps(failure.reason)}", file=sys.stderr)
+            return EXIT_FAILED
+        print("daily: check ok")
+        return EXIT_OK
+    if args.out is None:
+        parser.error("the following arguments are required: --out")
     if args.dry_run:
         target = args.out.resolve()
         if any(target == path or path in target.parents for path in PUBLISHED_PATHS):
