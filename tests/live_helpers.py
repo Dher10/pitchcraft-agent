@@ -138,6 +138,7 @@ def snapshot_from_starters(
         },
         "away_team_splits": {},
         "home_team_splits": {},
+        "series": None,  # P1.5: the series context of a postseason game; null until the producer of row 7
     }
     return {
         "data_mode": "fetched_snapshot",
@@ -208,6 +209,7 @@ def hand_snapshot(complete: bool) -> dict[str, Any]:
         },
         "away_team_splits": away_splits,
         "home_team_splits": home_splits,
+        "series": None,  # P1.5: the series context of a postseason game; null until the producer of row 7
     }
     return {
         "data_mode": "fetched_snapshot",

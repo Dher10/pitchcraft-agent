@@ -82,6 +82,8 @@ def build_matchup(
         "date": game_day,
         "status": status,
         "is_featured": is_featured,
+        # P1.5: the series context of a postseason game, from the snapshot game; null for any other and until row 7.
+        "series": live_game.get("series"),
         "game": {
             "title": f"{fg['away_team']} vs {fg['home_team']}",
             "venue": fg.get("venue") or None,

@@ -16,7 +16,9 @@ export interface Claim {
 
 export interface PitchCraftData {
   metadata: Metadata;
-  featured_matchup_id: string;
+  /** `null` for a day with no games (schema 0.9.0, D43). */
+  featured_matchup_id: string | null;
+  /** Empty for a day with no games (schema 0.9.0, D43). */
   matchups: Matchup[];
   archive: ArchiveItem[];
   agent_workflow: AgentWorkflow;
@@ -68,6 +70,8 @@ export interface Matchup {
   /** The schedule's game state (schema 0.8.0, D40); `null` when the schedule does not say or the game was not played to its end. */
   status: MatchupStatus | null;
   is_featured: boolean;
+  /** The series context of a postseason game (schema 0.9.0, D43); `null` for any other game. */
+  series: Series | null;
   game: Game;
   teams: { home: Team; away: Team };
   starters: { away_starter: Starter; home_starter: Starter };
@@ -77,6 +81,17 @@ export interface Matchup {
   critic_review: CriticReview;
   postgame: Postgame | null;
   data_confidence: DataConfidence;
+}
+
+/** A postseason series, as the schedule names it (schema 0.9.0, D43). */
+export interface Series {
+  series_name: string;
+  /** The number of this game in the series, from 1. */
+  game_number: number;
+  /** `null` when the schedule does not say how many games the series has. */
+  games_in_series: number | null;
+  /** The standing before first pitch; `null` when it is not available. */
+  standing: string | null;
 }
 
 export interface Game {
@@ -328,7 +343,8 @@ export interface ArchiveItem {
   status: MatchupStatus;
   featured: boolean;
   starter_summary: string;
-  result_label: string;
+  /** `null` for a report that was published and never graded (schema 0.9.0, D43). */
+  result_label: string | null;
   grade_label: string | null;
 }
 

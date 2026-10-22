@@ -7,7 +7,7 @@ from typing import Any
 
 METADATA: Any = {
   "project_name": "PitchCraft Matchup Agent",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "data_mode": "cached_demo",
   "generated_at": None,
   "data_fetched_at": None,
@@ -27,6 +27,7 @@ MATCHUPS: Any = [
     "date": "2026-06-28",
     "status": "upcoming",
     "is_featured": True,
+    "series": None,
     "game": {
       "title": "Los Angeles Dodgers vs San Francisco Giants",
       "venue": "Oracle Park",
@@ -440,6 +441,7 @@ MATCHUPS: Any = [
     "date": "2026-06-26",
     "status": "final",
     "is_featured": False,
+    "series": None,
     "game": {
       "title": "New York Yankees vs Boston Red Sox",
       "venue": "Fenway Park",

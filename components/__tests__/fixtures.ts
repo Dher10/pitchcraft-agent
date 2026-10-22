@@ -106,6 +106,7 @@ export function makeMatchup(options: {
     date: "2026-07-15",
     status: "upcoming",
     is_featured: true,
+    series: null,
     game: {
       title: "Test game",
       venue: "Test Park",

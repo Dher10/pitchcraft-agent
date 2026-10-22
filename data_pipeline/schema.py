@@ -1,4 +1,4 @@
-"""Schema constants for the PitchCraft v0.8.0 demo payload."""
+"""Schema constants for the PitchCraft v0.9.0 demo payload."""
 
 from __future__ import annotations
 
@@ -7,7 +7,11 @@ import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
-SCHEMA_VERSION = "0.8.0"
+SCHEMA_VERSION = "0.9.0"
+# 0.9.0 (P1.5-a, D43): `matchups[].series` is null for a game that is not a postseason game and an object
+# `{series_name, game_number, games_in_series, standing}` for one that is (null until the producer of row 7); `matchups` may
+# be empty and `featured_matchup_id` null for a day with no games, and `archive[].result_label` and `grade_label` may be
+# null (the page reads them; the producers are rows 7 and 9), so a reader of 0.8.0 breaks.
 # 0.8.0 (P0.15-D2.5, D40): `matchups[].status` is the schedule's game state (`upcoming`, `live`, `final`) or null, and
 # `data_confidence.lineup_status` follows it and may be null, so a reader of 0.7.0 (always `upcoming`) breaks.
 # 0.7.0 (P0.15-D2.4c, D39): `metadata.data_fetched_at` is the instant of the live fetch (null in a demo file) and
@@ -122,6 +126,7 @@ TOP_LEVEL_REQUIRED_KEYS = (
 )
 
 MATCHUP_REQUIRED_KEYS = (
+    "series",
     "game",
     "teams",
     "starters",

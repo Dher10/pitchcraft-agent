@@ -16,6 +16,7 @@ interface PitchCraftAppProps {
 
 export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftAppProps) {
   const [selectedId, setSelectedId] = useState(initialSelectedId ?? data.featured_matchup_id);
+  // A day with no games has no matchup (schema 0.9.0): the page keeps the rest and draws no game.
   const selected =
     data.matchups.find((matchup) => matchup.id === selectedId) ??
     data.matchups.find((matchup) => matchup.id === data.featured_matchup_id) ??
@@ -24,14 +25,18 @@ export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftApp
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-7 px-4 py-10">
       <Hero metadata={data.metadata} />
-      <GameCarousel
-        matchups={data.matchups}
-        archive={data.archive}
-        featuredId={data.featured_matchup_id}
-        selectedId={selected.id}
-        onSelect={setSelectedId}
-      />
-      <MatchupView matchup={selected} />
+      {selected ? (
+        <>
+          <GameCarousel
+            matchups={data.matchups}
+            archive={data.archive}
+            featuredId={data.featured_matchup_id}
+            selectedId={selected.id}
+            onSelect={setSelectedId}
+          />
+          <MatchupView matchup={selected} />
+        </>
+      ) : null}
       <AgentPipeline workflow={data.agent_workflow} />
       <ArchiveTable archive={data.archive} />
       <Disclaimer disclaimers={data.disclaimers} />

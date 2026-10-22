@@ -541,6 +541,22 @@ def test_check_is_alone(tmp_path, capsys, extra):
     assert caught.value.code == 2
 
 
+# --- schema 0.9.0 (P1.5-a): the series field --------------------------------------------------------------------
+
+
+def test_the_snapshot_of_each_live_game_carries_series_null_until_row_7(sources):
+    snapshot = lp.build_live_snapshot(GAME_DAY)
+
+    assert snapshot["live_games"] and all("series" in game and game["series"] is None for game in snapshot["live_games"])
+
+
+def test_a_good_run_publishes_series_null_for_its_matchups(sources, out):
+    assert run(out) == 0
+
+    matchups = json.loads(out.read_text(encoding="utf-8"))["matchups"]
+    assert matchups and all("series" in matchup and matchup["series"] is None for matchup in matchups)
+
+
 # --- structure ------------------------------------------------------------------------------------------------
 
 

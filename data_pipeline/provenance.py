@@ -638,6 +638,7 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "date", "the official date of the game (schedule `officialDate`)", STR, False, is_date),
         _source(M + "status", "the schedule's game state through `schema.GAME_STATUS` (`upcoming`, `live`, `final`); null when the table does not know it", STR, True, game_status_value),
         _label(M + "is_featured", "whether the matchup is the featured one", (bool,)),
+        _source(M + "series", "the series context of a postseason game (schedule); null for any other game. Its parts have no entry until the producer of P1.5 row 7", (dict,), True),
         _derived(M + "game.title", "the names of the two teams", STR, False, game_title),
         _source(M + "game.venue", "schedule venue name", STR, True),
         _source(M + "game.start_time_utc", "schedule `gameDate`", STR, False, is_utc),

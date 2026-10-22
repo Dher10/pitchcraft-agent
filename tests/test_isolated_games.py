@@ -36,8 +36,8 @@ TARGET, CUTOFF = date(2026, 7, 15), date(2026, 7, 14)
 
 
 def test_the_schema_is_0_6_0_and_a_snapshot_of_0_5_0_is_not_read():
-    assert SCHEMA_VERSION == "0.8.0"
-    assert snapshot_matches_schema("0.8.0") and not snapshot_matches_schema("0.7.0") and not snapshot_matches_schema("0.6.0") and not snapshot_matches_schema("0.5.0")
+    assert SCHEMA_VERSION == "0.9.0"
+    assert snapshot_matches_schema("0.9.0") and not snapshot_matches_schema("0.8.0") and not snapshot_matches_schema("0.7.0") and not snapshot_matches_schema("0.6.0") and not snapshot_matches_schema("0.5.0")
 
 
 # --- a switch pitcher: the lineup he faces ---------------------------------------------------------------------

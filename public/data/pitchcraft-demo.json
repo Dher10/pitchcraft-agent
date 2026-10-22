@@ -1,9 +1,9 @@
 {
   "metadata": {
     "project_name": "PitchCraft Matchup Agent",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "data_mode": "demo_cached",
-    "generated_at": "2026-10-16T18:06:16+00:00",
+    "generated_at": "2026-10-22T23:10:51+00:00",
     "data_fetched_at": null,
     "last_updated_label": "Demo data generated for capstone submission",
     "data_sources": [
@@ -28,6 +28,7 @@
       "date": "2026-06-28",
       "status": "upcoming",
       "is_featured": true,
+      "series": null,
       "game": {
         "title": "Los Angeles Dodgers vs San Francisco Giants",
         "venue": "Oracle Park",
@@ -1061,6 +1062,7 @@
       "date": "2026-06-26",
       "status": "final",
       "is_featured": false,
+      "series": null,
       "game": {
         "title": "New York Yankees vs Boston Red Sox",
         "venue": "Fenway Park",

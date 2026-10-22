@@ -9,7 +9,7 @@ import type { ArchiveItem, Matchup } from "@/lib/types";
 interface GameCarouselProps {
   matchups: Matchup[];
   archive: ArchiveItem[];
-  featuredId: string;
+  featuredId: string | null;
   selectedId: string;
   onSelect: (matchupId: string) => void;
   /** Today in New York as YYYY-MM-DD; the clock when absent (tests give it). */

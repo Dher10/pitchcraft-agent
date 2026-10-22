@@ -1864,6 +1864,8 @@ def build_live_snapshot(
                 },
                 "away_team_splits": away_splits,
                 "home_team_splits": home_splits,
+                # P1.5: the series context of a postseason game; null until the producer of row 7 (schema 0.9.0).
+                "series": None,
             }
         )
 
