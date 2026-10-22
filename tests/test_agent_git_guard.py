@@ -591,3 +591,246 @@ def test_a_branch_named_after_a_value_option_and_the_other_pull_rebase_spellings
 )
 def test_control_messages_and_experiment_branches_still_pass(command):
     assert verdict(command, pushed=False) is None, command
+
+
+# --- P1.0-b: gh and the GitHub REST API (docs/plans/P1.md, 3.2, layer 1) -----------------------------------------------
+# Reads stay allowed because the D35 loop needs them (CI runs, a pull request, the rulesets through a GET); every write is
+# blocked, and a gh family or verb that is not on the list of reads is blocked until it is added with a test.
+
+GH_READS = [
+    "gh run list --branch v2 --limit 3",
+    "gh run list --json databaseId,headSha,status,conclusion --jq '.[] | .status'",
+    "gh run view 39712693892 --log-failed",
+    "gh run watch 39712693892",
+    "gh run download 39712693892 -n candidate",
+    "gh pr view 5 --json state",
+    "gh pr list --state open",
+    "gh pr diff 5",
+    "gh pr checks 5",
+    "gh pr status",
+    "gh repo view",
+    "gh repo view Dher10/pitchcraft-agent --json name",
+    "gh repo list",
+    "gh workflow list",
+    "gh workflow view tests.yml",
+    "gh issue list",
+    "gh issue view 3",
+    "gh search issues foo",
+    "gh status",
+    "gh auth status",
+    "gh cache list",
+    "gh --version",
+    "gh",
+    "gh -R Dher10/pitchcraft-agent run list",
+    "gh --repo Dher10/pitchcraft-agent run list",
+    "gh run -R Dher10/pitchcraft-agent list",
+    "gh run list -R Dher10/pitchcraft-agent",
+    "gh pr -R Dher10/pitchcraft-agent view 5",
+    "gh api repos/Dher10/pitchcraft-agent -i",
+    "gh api repos/Dher10/pitchcraft-agent -i --jq .name",
+    "gh api repos/Dher10/pitchcraft-agent -iq .name",
+    "curl -m 10 https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl -fsSL https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "gh api repos/Dher10/pitchcraft-agent/rulesets",
+    "gh api repos/Dher10/pitchcraft-agent/rulesets/25520388 --jq '{enforcement, bypass_actors}'",
+    "gh api repos/Dher10/pitchcraft-agent/rulesets 2>&1 | head -5",
+    "gh api -X GET search/issues -f q=repo:Dher10/pitchcraft-agent",
+    "gh api --method GET repos/Dher10/pitchcraft-agent",
+    "gh api --method=GET repos/Dher10/pitchcraft-agent",
+    "gh api -XGET repos/Dher10/pitchcraft-agent",
+    "gh api -X get repos/Dher10/pitchcraft-agent",
+    "gh api repos/actions/checkout/git/ref/tags/v7.0.1 --jq '.object.sha'",
+    "gh api --paginate repos/Dher10/pitchcraft-agent/actions/runs",
+    "GH_TOKEN=abc gh run list",
+    "& gh run list",
+    "& 'C:\\Program Files\\GitHub CLI\\gh.exe' run list",
+    "gh run list | Select-Object -First 3",
+    "$runs = gh run list --limit 2",
+    "git push origin v2 && gh run list --branch v2 --limit 1",
+    "for r in a b; do gh api repos/actions/$r/releases/latest --jq '.tag_name'; done",
+    # other programs are untouched, and so is a request that is not to the GitHub API
+    "curl -s https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl -sS -X GET https://api.github.com/repos/Dher10/pitchcraft-agent/rulesets",
+    "curl -sS --request GET https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl -I https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl -X POST https://example.com/hook -d 'a=b'",
+    "curl -H 'Authorization: Bearer x' https://example.com/private",
+    "wget -q https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "wget --post-data=a=b https://example.com/form",
+    "Invoke-RestMethod https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "Invoke-RestMethod -Uri https://api.github.com/repos/Dher10/pitchcraft-agent -Method Get",
+    "Invoke-RestMethod -Method Post -Uri https://example.com/hook -Body 'x'",
+    "irm https://api.github.com/repos/Dher10/pitchcraft-agent/rulesets -UseBasicParsing",
+    "Invoke-WebRequest https://api.github.com/repos/Dher10/pitchcraft-agent -Method GET",
+    'bash -c "echo hello"',
+    "python -m pytest tests/test_workflows.py -q",
+]
+
+GH_WRITES = [
+    # gh api: any method but GET, any field or body that turns the call into a POST, graphql
+    ("gh api -X DELETE repos/Dher10/pitchcraft-agent/rulesets/25520388", "DELETE"),
+    ("gh api -X PUT repos/Dher10/pitchcraft-agent/topics", "PUT"),
+    ("gh api -X PATCH repos/Dher10/pitchcraft-agent -f name=x", "PATCH"),
+    ("gh api --method DELETE repos/Dher10/pitchcraft-agent/rulesets/1", "DELETE"),
+    ("gh api --method=PUT repos/Dher10/pitchcraft-agent/topics", "PUT"),
+    ("gh api -XPOST repos/Dher10/pitchcraft-agent/dispatches", "POST"),
+    ("gh api -X=DELETE repos/Dher10/pitchcraft-agent/rulesets/1", "DELETE"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets -f name=x", "POST"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets -F enabled=true", "POST"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets --field name=x", "POST"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets --raw-field name=x", "POST"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets -fname=x", "POST"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets --input body.json", "--input"),
+    ("gh api repos/Dher10/pitchcraft-agent/rulesets --input=body.json", "--input"),
+    ("gh api -X GET repos/Dher10/pitchcraft-agent/rulesets --input body.json", "--input"),
+    ("gh api graphql -f query='{ viewer { login } }'", "graphql"),
+    ("gh api /graphql -f query='mutation { x }'", "graphql"),
+    # the families and verbs that write
+    ("gh repo delete Dher10/pitchcraft-agent --yes", "gh repo delete"),
+    ("gh repo edit --visibility private", "gh repo edit"),
+    ("gh repo rename x", "gh repo rename"),
+    ("gh repo archive Dher10/pitchcraft-agent", "gh repo archive"),
+    ("gh repo create x", "gh repo create"),
+    ("gh repo fork", "gh repo fork"),
+    ("gh repo deploy-key add key.pub", "gh repo deploy-key"),
+    ("gh repo deploy-key delete 1", "gh repo deploy-key"),
+    ("gh secret set DATA_DEPLOY_KEY", "gh secret"),
+    ("gh secret list", "gh secret"),
+    ("gh variable set X --body y", "gh variable"),
+    ("gh ruleset list", "gh ruleset"),
+    ("gh ruleset view 25520388", "gh ruleset"),
+    ("gh workflow run daily.yml", "gh workflow run"),
+    ("gh workflow enable daily.yml", "gh workflow enable"),
+    ("gh workflow disable daily.yml", "gh workflow disable"),
+    ("gh run rerun 1", "gh run rerun"),
+    ("gh run cancel 1", "gh run cancel"),
+    ("gh run delete 1", "gh run delete"),
+    ("gh pr merge 5 --merge", "gh pr merge"),
+    ("gh pr close 5", "gh pr close"),
+    ("gh pr reopen 5", "gh pr reopen"),
+    ("gh pr edit 5 --title x", "gh pr edit"),
+    ("gh pr create --base main --head v2", "gh pr create"),
+    ("gh pr comment 5 --body x", "gh pr comment"),
+    ("gh pr checkout 5", "gh pr checkout"),
+    ("gh pr -R Dher10/pitchcraft-agent merge 5", "gh pr merge"),
+    ("gh pr -R view merge 5", "gh pr merge"),  # -R takes `view` as its value: the verb is merge
+    ("gh pr --repo view merge 5", "gh pr merge"),
+    ("gh run -R view rerun 1", "gh run rerun"),
+    ("gh issue close 3", "gh issue close"),
+    ("gh release create v9", "gh release is not on the list"),
+    ("gh release delete v1.0.0-kaggle", "gh release is not on the list"),
+    ("gh label create x", "gh label is not on the list"),
+    ("gh auth token", "gh auth token"),
+    ("gh auth refresh", "gh auth refresh"),
+    ("gh auth logout", "gh auth logout"),
+    ("gh auth setup-git", "gh auth setup-git"),
+    ("gh extension install x/y", "gh extension is not on the list"),
+    ("gh alias set x 'api -X DELETE'", "gh alias is not on the list"),
+    ("gh cache delete 1", "gh cache delete"),
+    ("gh gist create f", "gh gist is not on the list"),
+    ("gh codespace delete", "gh codespace is not on the list"),
+    ("gh config set editor vim", "gh config is not on the list"),
+    ("gh project delete 1", "gh project is not on the list"),
+    ("gh -R Dher10/pitchcraft-agent secret list", "gh secret"),
+    ("gh auth status --show-token", "show-token"),
+    ("gh auth status -t", "show-token"),
+    ("gh auth status -ht github.com", "show-token"),
+    ("gh api repos/Dher10/pitchcraft-agent -iX DELETE", "DELETE"),  # pflag reads `-iX DELETE` as `-i -X DELETE`
+    ("gh api repos/Dher10/pitchcraft-agent -hX DELETE", "DELETE"),
+    ("gh api repos/Dher10/pitchcraft-agent -iXDELETE", "DELETE"),
+    ("gh api repos/Dher10/pitchcraft-agent -ifa=b", "POST"),
+    ("GH_TOKEN=abc gh repo delete x", "gh repo delete"),
+    ("& gh repo delete x", "gh repo delete"),
+    ("& 'C:\\Program Files\\GitHub CLI\\gh.exe' pr merge 5", "gh pr merge"),
+    ("gh run list && gh pr merge 5", "gh pr merge"),
+    ("echo $(gh pr merge 5)", "gh pr merge"),
+    # a request to the GitHub API that writes, carries a body or carries credentials
+    ("curl -X DELETE https://api.github.com/repos/Dher10/pitchcraft-agent/rulesets/1", "non-GET"),
+    ("curl -XPOST https://api.github.com/repos/Dher10/pitchcraft-agent/dispatches", "non-GET"),
+    ("curl --request PATCH https://api.github.com/repos/Dher10/pitchcraft-agent", "non-GET"),
+    ("curl --request=PUT https://api.github.com/repos/Dher10/pitchcraft-agent/topics", "non-GET"),
+    ("curl -d '{}' https://api.github.com/repos/Dher10/pitchcraft-agent/dispatches", "body or credentials"),
+    ("curl --data-binary @f https://api.github.com/repos/Dher10/pitchcraft-agent", "body or credentials"),
+    ("curl --json '{}' https://api.github.com/repos/Dher10/pitchcraft-agent", "body or credentials"),
+    ("curl -F file=@f https://api.github.com/repos/Dher10/pitchcraft-agent", "body or credentials"),
+    ("curl -T f https://uploads.github.com/repos/Dher10/pitchcraft-agent/releases/1/assets", "body or credentials"),
+    ("curl -u user:pw https://api.github.com/user", "body or credentials"),
+    ("curl -H 'Authorization: Bearer abc' https://api.github.com/user", "credentials"),
+    ("curl -H 'authorization: token abc' https://api.github.com/user", "credentials"),
+    ("curl -H 'Accept: x' -H \"Authorization: $TOKEN\" https://api.github.com/user", "credentials"),
+    ("wget --method=DELETE https://api.github.com/repos/Dher10/pitchcraft-agent", "non-GET"),
+    ("wget --post-data=x https://api.github.com/repos/Dher10/pitchcraft-agent", "non-GET"),
+    ("wget --header='Authorization: token abc' https://api.github.com/user", "credentials"),
+    ("Invoke-RestMethod https://api.github.com/repos/Dher10/pitchcraft-agent/rulesets/1 -Method Delete", "non-GET"),
+    ("Invoke-RestMethod -Uri https://api.github.com/repos/Dher10/pitchcraft-agent/dispatches -Method Post -Body '{}'", "non-GET"),
+    ("Invoke-RestMethod -Uri https://api.github.com/repos/Dher10/pitchcraft-agent -Body '{}'", "non-GET"),
+    ("Invoke-RestMethod -Uri https://api.github.com/repos/Dher10/pitchcraft-agent -Meth Put", "non-GET"),
+    ("Invoke-RestMethod -Uri https://api.github.com/repos/Dher10/pitchcraft-agent -Headers @{Authorization='token abc'}", "credentials"),
+    ("irm https://api.github.com/user -Headers @{ authorization = \"Bearer $t\" }", "credentials"),
+    ("Invoke-WebRequest https://api.github.com/user -Credential $c", "non-GET"),
+    ("Invoke-WebRequest https://api.github.com/repos/Dher10/pitchcraft-agent -InFile f.json -Method Put", "non-GET"),
+    ("iwr https://api.github.com/user -Authentication Bearer -Token $t", "credentials"),
+    ("curl https://api.github.com/user -H 'X-Token: ghp_abcdefghijklmnop'", "credentials"),
+    ("Invoke-RestMethod https://api.github.com/repos/Dher10/pitchcraft-agent -CustomMethod DELETE", "non-GET"),  # PowerShell 7.4
+    ("wget -Uri https://api.github.com/repos/Dher10/pitchcraft-agent -Method Delete", "non-GET"),  # an alias of Invoke-WebRequest in 5.1
+    ("curl -Method Delete https://api.github.com/repos/Dher10/pitchcraft-agent", "non-GET"),
+    ("curl -method delete https://api.github.com/repos/Dher10/pitchcraft-agent", "non-GET"),
+]
+
+GH_BEHIND_WRAPPERS = [
+    'bash -c "gh api -X DELETE repos/Dher10/pitchcraft-agent/rulesets/1"',
+    "sh -c 'gh pr merge 5'",
+    'powershell -Command "gh repo delete Dher10/pitchcraft-agent"',
+    'pwsh -NoProfile -Command "Invoke-RestMethod https://api.github.com/user -Method Delete"',
+    'eval "gh pr merge 5"',
+    "cmd /c gh pr merge 5",
+    'python -c "import os; os.system(\'gh repo delete x\')"',
+    "node -e \"require('child_process').execSync('gh pr merge 5')\"",
+    'python -c "import requests; requests.delete(\'https://api.github.com/repos/x/y\')"',
+    "xargs gh pr merge",
+    "ssh host gh pr merge 5",
+    "x=gh; $x pr merge 5",
+]
+
+
+@pytest.mark.parametrize("command", GH_READS)
+def test_the_reads_of_gh_and_of_other_programs_pass(command):
+    assert verdict(command) is None, command
+
+
+@pytest.mark.parametrize("command,why", GH_WRITES)
+def test_every_write_through_gh_or_to_the_github_api_is_blocked_with_a_reason(command, why):
+    reason = verdict(command)
+
+    assert reason is not None and why in reason and "(P1.0)" in reason, (command, reason)
+
+
+@pytest.mark.parametrize("command", GH_BEHIND_WRAPPERS)
+def test_gh_and_the_github_api_behind_a_wrapper_are_blocked_as_git_is(command):
+    reason = verdict(command)
+
+    assert reason is not None and "cannot be read by the guard" in reason, (command, reason)
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "git commit -q -m 'fix: gh pr merge and curl -X DELETE https://api.github.com are only text'",
+        "git commit -q -F - <<'EOF'\nfeat: say it\n\ngh api -X DELETE x is only text here.\nEOF",
+        "echo gh pr merge",
+        "grep -n 'gh api' docs/plans/P1.md",
+        "python -m pytest tests/test_agent_git_guard.py -q",
+    ],
+)
+def test_text_that_names_gh_without_running_it_passes(command):
+    assert verdict(command) is None, command
+
+
+def test_the_hook_script_blocks_gh_for_both_shell_tools(tmp_path):
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    for tool in ("Bash", "PowerShell"):
+        event = json.dumps({"tool_name": tool, "tool_input": {"command": "gh api -X DELETE repos/Dher10/pitchcraft-agent/rulesets/1"}})
+
+        result = subprocess.run([sys.executable, str(HOOK)], input=event, capture_output=True, text=True, cwd=tmp_path, env=env)
+
+        assert result.returncode == 2 and "Blocked by .claude/hooks/git_guard.py" in result.stderr, tool

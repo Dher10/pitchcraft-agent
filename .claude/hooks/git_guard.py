@@ -19,10 +19,21 @@ It blocks:
     mentions git, and git behind a program name built at run time (`x=git; $x push ...`). The session runs git
     directly instead, where the rules above can read it.
 
+It also blocks every write through `gh` and to the GitHub API (P1.0, docs/plans/P1.md 3.2): `gh api` with any method
+but GET (`-X`/`--method`), with `-f`, `-F`, `--field`, `--raw-field` unless the method is an explicit GET, with `--input`,
+or on `graphql`; every `gh` family or verb that is not on the list of reads (READ_ONLY_GH: `run list/view/watch/download`,
+`pr view/list/diff/checks/status`, `issue view/list/status`, `repo view/list`, `workflow list/view`, `auth status`,
+`cache list`, `api` GET, `status`, `search`; `gh auth status --show-token` is blocked); and `curl`, `wget`, `Invoke-RestMethod`, `Invoke-WebRequest` (and their
+aliases) against api.github.com or uploads.github.com with a non-GET method, a body or credentials. `gh` and the API
+behind a wrapper are blocked like git. Reads stay allowed because the D35 loop needs them.
+
 Git options are read the way git reads them: combined short flags (`-fu`) and unambiguous abbreviations (`--forc`).
 
-What it does not see: a script file or a program that runs git on its own, a function or alias a shell
-defines, and `gh` / the GitHub API. GitHub rulesets protect `main`, `v2` and the tag `v1.0.0-kaggle` on the server for those cases.
+What it does not see: a script file or a program that runs git or gh on its own, a function or alias a shell
+defines, a gh alias already stored in the owner's gh config, a git alias that runs gh, a request whose URL or method is
+built at run time, git or gh inside a PowerShell script block or parentheses, behind a prefix that takes its own
+arguments (`timeout 5 gh ...`, `env -u X gh ...`), and any other tool. GitHub rulesets protect `main`, `v2` and the tag `v1.0.0-kaggle` on the server for those cases, and the
+read-only token of docs/plans/P1.md G6 is what makes a missed pattern harmless.
 
 The decision is `decide(command, git)`; `git(*args)` runs git and returns its output (the tests pass a fake).
 The parser reads the command the way a shell would, well enough for the commands an agent writes; a command it
@@ -419,11 +430,196 @@ def positional_and_refs(inv: Invocation) -> list[str]:
     return found
 
 
+# --- gh and the GitHub REST API (P1.0-b, docs/plans/P1.md 3.2 layer 1) -------------------------------------------
+
+# family -> the verbs that only read; None means the family takes no verb. A family or verb that is not here is blocked,
+# so a new `gh` command stays blocked until it is added with a test.
+READ_ONLY_GH: dict[str, set[str] | None] = {
+    "api": None,  # GET only: see _gh_api_problem
+    "status": None,
+    "search": None,
+    "help": None,
+    "version": None,
+    "run": {"list", "view", "watch", "download"},
+    "pr": {"view", "list", "diff", "checks", "status"},
+    "issue": {"view", "list", "status"},
+    "repo": {"view", "list"},
+    "workflow": {"list", "view"},
+    "auth": {"status"},
+    "cache": {"list"},
+}
+# the flags that go before the verb and take a value (`gh pr -R owner/repo view`); the value is not a word of the command
+GH_VALUE_FLAGS = {"-R", "--repo", "--hostname"}
+GITHUB_API = re.compile(r"(?:api|uploads)\.github\.com", re.IGNORECASE)
+CREDENTIAL = re.compile(r"authorization|bearer|\bgh[pousr]_[A-Za-z0-9]|github_pat_", re.IGNORECASE)
+WRITING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+# curl takes any unambiguous prefix of a long option, so `--req` and `--dat` count
+CURL_LONG_WRITING = ("--request", "--data", "--data-raw", "--data-binary", "--data-ascii", "--data-urlencode", "--json", "--form",
+                     "--form-string", "--upload-file", "--user", "--oauth2-bearer", "--aws-sigv4", "--digest", "--negotiate")
+CURL_VALUE_SHORT = set("oHAewmbcKxEyYzrQUCPD")  # short options that take a value; the rest of a cluster is that value
+POWERSHELL_WRITING = ("method", "custommethod", "body", "infile", "form", "authentication", "token", "credential", "usedefaultcredentials")
+WEB_REQUEST_PROGRAMS = {"curl", "wget", "invoke-restmethod", "irm", "invoke-webrequest", "iwr", "http", "https", "xh"}
+
+
+def _gh_api_problem(args: list[str]) -> str | None:
+    method, sends_data = None, False
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--input" or arg.startswith("--input="):
+            return "gh api --input sends a body and is not allowed (P1.0)"
+        if arg == "--method":
+            method = (args[index + 1] if index + 1 < len(args) else "").upper()
+            index += 1
+        elif arg.startswith("--method="):
+            method = arg.split("=", 1)[1].upper()
+        elif arg.startswith("--field=") or arg.startswith("--raw-field="):
+            sends_data = True
+        elif arg in ("--field", "--raw-field"):
+            sends_data = True
+            index += 1
+        elif arg.startswith("-") and not arg.startswith("--") and len(arg) > 1:
+            # a cluster of short flags is read the way pflag reads it: `-iX DELETE` is `-i -X DELETE`; a flag that takes a
+            # value ends the cluster (the rest of it, or the next argument, is that value)
+            cluster = arg[1:]
+            for position, flag in enumerate(cluster):
+                attached = cluster[position + 1 :]
+                if flag == "X":
+                    method = (attached or (args[index + 1] if index + 1 < len(args) else "")).lstrip("=").upper()
+                    index += 0 if attached else 1
+                    break
+                if flag in "fF":
+                    sends_data = True
+                    index += 0 if attached else 1
+                    break
+                if flag in "HqtEp":  # --header, --jq, --template, ... take a value
+                    index += 0 if attached else 1
+                    break
+        index += 1
+    if any(arg.lstrip("/").lower() == "graphql" for arg in args if not arg.startswith("-")):
+        return "gh api graphql is a POST and can carry a mutation: it is not allowed (P1.0)"
+    effective = method or ("POST" if sends_data else "GET")
+    if effective != "GET":
+        return f"gh api with the {effective} method writes to GitHub and is not allowed (P1.0)"
+    return None
+
+
+def _gh_problem(tokens: list[str]) -> str | None:
+    rest = tokens[1:]
+    words, skip = [], False
+    for token in rest:  # the family and the verb are the first two words that are not a flag or the value of one
+        if skip:
+            skip = False
+        elif token in GH_VALUE_FLAGS:
+            skip = True
+        elif not token.startswith("-"):
+            words.append(token)
+    if not words:
+        if set(rest) <= {"--help", "-h", "--version"}:
+            return None
+        return "gh with only flags is not on the list of read-only commands (P1.0)"
+    family = words[0]
+    if family not in READ_ONLY_GH:
+        return f"gh {family} is not on the list of read-only commands (P1.0)"
+    if family == "api":
+        return _gh_api_problem(rest[rest.index("api") + 1 :])
+    if family == "auth" and any(
+        flag == "--show-token" or (flag.startswith("-") and not flag.startswith("--") and "t" in flag) for flag in rest
+    ):
+        return "gh auth status --show-token prints the token and is not allowed (P1.0)"
+    verbs = READ_ONLY_GH[family]
+    if verbs is not None and (len(words) < 2 or words[1] not in verbs):
+        return f"gh {family} {words[1] if len(words) > 1 else '(no verb)'} writes or is not on the list of read-only commands (P1.0)"
+    return None
+
+
+NON_GET = "a non-GET request to the GitHub API is not allowed (P1.0)"
+BODY = "a request to the GitHub API with a body or credentials is not allowed (P1.0)"
+CREDENTIALS = "a request to the GitHub API with credentials is not allowed (P1.0)"
+
+
+def _curl_problem(args: list[str]) -> str | None:
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg.startswith("--"):
+            name, equals, value = arg.partition("=")
+            matches = [option for option in CURL_LONG_WRITING if len(name) >= 4 and option.startswith(name)]
+            if "--request" in matches and len(matches) == 1:
+                value = value if equals else (args[index + 1] if index + 1 < len(args) else "")
+                if value.upper() != "GET":
+                    return NON_GET
+            elif matches:
+                return BODY
+        elif arg.startswith("-") and len(arg) > 1:
+            cluster = arg[1:]
+            for position, flag in enumerate(cluster):
+                if flag == "X":
+                    value = cluster[position + 1 :] or (args[index + 1] if index + 1 < len(args) else "")
+                    if value.lstrip("=").upper() != "GET":
+                        return NON_GET
+                    break
+                if flag in "dFTu":
+                    return BODY
+                if flag in CURL_VALUE_SHORT:
+                    break
+        index += 1
+    return None
+
+
+def _wget_problem(args: list[str]) -> str | None:
+    for arg in args:
+        name = arg.split("=", 1)[0].lower()
+        if name.startswith("--") and len(name) >= 4:
+            if any(option.startswith(name) for option in ("--method", "--post-data", "--post-file", "--body-data", "--body-file")):
+                return NON_GET
+            if any(option.startswith(name) for option in ("--http-user", "--user", "--password", "--http-password")):
+                return BODY
+    return None
+
+
+def _powershell_web_problem(args: list[str], shortest: int = 1) -> str | None:
+    """PowerShell takes any unambiguous prefix of a parameter name, so `-Meth`, `-Bo` and `-Cred` count; `shortest` is the fewest letters of one."""
+
+    lowered = [arg.lower() for arg in args]
+    for index, arg in enumerate(lowered):
+        if len(arg) < shortest + 1 or not arg.startswith("-") or arg.startswith("--"):
+            continue
+        name, colon, given = arg[1:].partition(":")
+        for parameter in POWERSHELL_WRITING:
+            if parameter.startswith(name):
+                if parameter in ("method", "custommethod"):
+                    given = given if colon else (lowered[index + 1] if index + 1 < len(lowered) else "")
+                    if given.strip("'\"") == "get":
+                        break
+                return NON_GET
+    return None
+
+
+def _github_request_problem(tokens: list[str], command: str) -> str | None:
+    """A request from curl, wget, Invoke-RestMethod and the like to the GitHub API that is not a plain read."""
+
+    if not GITHUB_API.search(command):
+        return None
+    program, args = program_name(tokens[0]), tokens[1:]
+    if any(CREDENTIAL.search(arg) for arg in args):
+        return CREDENTIALS
+    if program in ("curl", "wget"):
+        # in Windows PowerShell 5.1 `curl` and `wget` are Invoke-WebRequest, whose parameters read like PowerShell's
+        # (a one-letter flag is curl's: `-m 10` is a timeout, and PowerShell would call it ambiguous)
+        return (_curl_problem(args) if program == "curl" else _wget_problem(args)) or _powershell_web_problem(args, shortest=2)
+    if program in ("invoke-restmethod", "irm", "invoke-webrequest", "iwr"):
+        return _powershell_web_problem(args)
+    if any(arg in WRITING_METHODS for arg in args):  # httpie: `http DELETE api.github.com/...`
+        return NON_GET
+    return None
+
+
 # --- git behind a wrapper ----------------------------------------------------------------------------------------
 
 # Words that only pass the command along: `env git push`, `& git push`, `{ git push }`, `time git push`.
 TRANSPARENT = {"env", "command", "exec", "nohup", "time", "sudo", "builtin", "nice", "&", "{", "}", "(", ")", "!", "then", "do", "else"}
-MENTIONS_GIT = re.compile(r"(?<![A-Za-z0-9_])git(?![A-Za-z0-9_])", re.IGNORECASE)
+MENTIONS_GIT = re.compile(r"(?<![A-Za-z0-9_])(?:git|gh)(?![A-Za-z0-9_])|(?:api|uploads)\.github\.com", re.IGNORECASE)  # git, gh or the GitHub API
 POSIX_SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "fish", "csh", "tcsh", "busybox", "wsl"}
 POWERSHELLS = {"powershell", "pwsh", "powershell_ise"}
 # program -> the flags that make its next argument code (`-c`, `-e`); a script file or `-m module` is not a string it reads
@@ -502,7 +698,7 @@ def _wrapper_problem(tokens: list[str], command: str) -> str | None:
     elif program == "find" and carries_git and set(flags) & {"-exec", "-execdir", "-ok", "-okdir"}:
         wrapped = "find -exec"
     if wrapped:
-        return f"git inside {wrapped} cannot be read by the guard: run git directly (D35)"
+        return f"git or gh inside {wrapped} cannot be read by the guard: run it directly (D35, P1.0)"
     if re.search(r"^\$|\$\(|`", rest[0]) and rest[1:2] != ["="] and MENTIONS_GIT.search(command):
         return "a command word built at run time next to git cannot be read by the guard: run git directly (D35)"
     return None
@@ -518,6 +714,20 @@ def decide(command: str, git: GitRunner = run_git) -> str | None:
         wrapped = _wrapper_problem(tokens, command)
         if wrapped:
             return wrapped
+        command_tokens = _strip_prefixes(tokens)
+        while command_tokens and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", command_tokens[0]):
+            command_tokens = command_tokens[1:]
+        if command_tokens:
+            program = program_name(command_tokens[0])
+            github = (
+                _gh_problem(command_tokens)
+                if program == "gh"
+                else _github_request_problem(command_tokens, command)
+                if program in WEB_REQUEST_PROGRAMS
+                else None
+            )
+            if github:
+                return github
         inv = Invocation(_strip_prefixes(tokens))
         if not inv.is_git or not inv.sub:
             continue
