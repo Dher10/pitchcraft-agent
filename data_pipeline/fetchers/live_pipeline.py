@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 import io
@@ -24,6 +25,7 @@ os.environ.setdefault("PYBASEBALL_CACHE", str(PYBASEBALL_CACHE_DIR))
 import numpy as np
 import pybaseball
 from pybaseball import statcast_pitcher
+from requests.adapters import HTTPAdapter
 
 from data_pipeline import labels  # noqa: E402
 from data_pipeline.fetchers import mlb_schemas  # noqa: E402
@@ -114,6 +116,10 @@ SAVANT_PAUSE_SECONDS = 2.0
 # does not change, so an answer is cached for good; only a cache miss counts. 10 is the most a
 # run can need: 5 candidate games x 2 starters.
 PITCHER_HAND_MAX_REQUESTS_PER_RUN = 10
+# D42: the Statcast pitcher fetch (`statcast_pitcher`) is capped per run: up to 5 candidate games x 2 starters = 10,
+# with margin. Counted at the HTTP layer, so a hit of pybaseball's own cache costs nothing. Paced like D23.
+PITCHER_STATCAST_MAX_REQUESTS_PER_RUN = 20
+PITCHER_STATCAST_TIMEOUT_SECONDS = 60
 PITCHER_HANDS = ("L", "R", "S")
 SAVANT_BATTING_URL = (
     "https://baseballsavant.mlb.com/statcast_search/csv?all=true&type=details"
@@ -263,8 +269,17 @@ class UnknownValue(ValueError):
     """A value outside the set the pipeline knows (a throwing hand that is not L, R or S)."""
 
 
+class PitcherStatcastBudgetExceeded(RuntimeError):
+    """A run tried to make more Statcast pitcher requests than PITCHER_STATCAST_MAX_REQUESTS_PER_RUN (D42)."""
+
+
+class SavantRequestFailed(OSError):
+    """Savant answered a pitcher request with a status other than 200 (the body is never kept: it may be a block page)."""
+
+
 _savant_run = {"requests": 0, "open_requests": 0}
 _pitcher_hand_run = {"requests": 0}
+_pitcher_statcast_run = {"requests": 0}
 
 # Failures of the current run, written to data_cache/processed/live_run.json by main().
 _run_errors: list[dict[str, Any]] = []
@@ -283,7 +298,7 @@ def error_code(exc: BaseException) -> str:
 
     import pandas as pd
 
-    if isinstance(exc, (SavantRequestCapExceeded, SavantOpenMonthBudgetExceeded)):
+    if isinstance(exc, (SavantRequestCapExceeded, SavantOpenMonthBudgetExceeded, PitcherStatcastBudgetExceeded)):
         return "budget_spent"
     if isinstance(exc, MissingColumn):
         return "missing_column"
@@ -331,6 +346,59 @@ def _record_warning(source: str, code: str, message: str, **context: Any) -> Non
     _run_warnings.append({"source": source, "code": code, "message": str(message)[:300], **context})
 
 
+def _pace_savant() -> None:
+    """The 2 s pause of D23 before every Savant request but the first of the run: team batting and pitchers share it."""
+
+    made = (
+        _savant_run.get("requests", 0)
+        + _savant_run.get("open_requests", 0)
+        + _pitcher_statcast_run.get("requests", 0)
+    )
+    if made > 0:
+        time.sleep(SAVANT_PAUSE_SECONDS)
+
+
+@contextmanager
+def _counted_pitcher_transport():
+    """
+    Count, pace and check every HTTP request that `pybaseball.statcast_pitcher` makes while the block runs (D42).
+
+    pybaseball calls `requests.get` with no timeout and no status check, so the guard sits on `HTTPAdapter.send`: it
+    refuses the request past PITCHER_STATCAST_MAX_REQUESTS_PER_RUN, pauses like `_savant_get`, gives the request a
+    timeout and raises `SavantRequestFailed` for a status other than 200 (so a block page never reaches the parser).
+    A failed request still counts. A hit of pybaseball's own cache never reaches this code.
+    """
+
+    real_send = HTTPAdapter.send
+
+    def send(adapter, request, **kwargs):
+        made = _pitcher_statcast_run.get("requests", 0)
+        if made >= PITCHER_STATCAST_MAX_REQUESTS_PER_RUN:
+            raise PitcherStatcastBudgetExceeded(
+                f"more than {PITCHER_STATCAST_MAX_REQUESTS_PER_RUN} Statcast pitcher requests in one run"
+            )
+        _pace_savant()
+        _pitcher_statcast_run["requests"] = made + 1
+        kwargs["timeout"] = kwargs.get("timeout") or PITCHER_STATCAST_TIMEOUT_SECONDS
+        response = real_send(adapter, request, **kwargs)
+        if response.status_code != 200:  # a redirect is a failure too: the probe saw a direct 200 (P1.1)
+            raise SavantRequestFailed(f"Savant answered HTTP {response.status_code} to a pitcher request")
+        return response
+
+    HTTPAdapter.send = send
+    try:
+        yield
+    finally:
+        HTTPAdapter.send = real_send
+
+
+def _statcast_pitcher_frame(start: str, end: str, pitcher_id: int) -> Any:
+    """The only call to `pybaseball.statcast_pitcher` of the pipeline: counted, paced, timed out and status-checked."""
+
+    with _counted_pitcher_transport():
+        return statcast_pitcher(start, end, player_id=pitcher_id)
+
+
 def _savant_get(url: str, open_month: bool = False) -> str:
     """
     One paced, counted Savant request. Sleeps SAVANT_PAUSE_SECONDS before every
@@ -351,8 +419,7 @@ def _savant_get(url: str, open_month: bool = False) -> str:
         raise SavantRequestCapExceeded(
             f"more than {SAVANT_MAX_REQUESTS_PER_RUN} Savant requests in one run"
         )
-    if closed_made + open_made > 0:
-        time.sleep(SAVANT_PAUSE_SECONDS)
+    _pace_savant()
     counter = "open_requests" if open_month else "requests"
     _savant_run[counter] = _savant_run.get(counter, 0) + 1
     return _get_text(url)
@@ -1272,7 +1339,7 @@ def fetch_pitcher_statcast(
             df = pd.DataFrame()
         else:
             print(f"[LIVE] Fetching Statcast for {pitcher_name} (id={pitcher_id})...")
-            df = statcast_pitcher(start, cutoff.isoformat(), player_id=pitcher_id)
+            df = _statcast_pitcher_frame(start, cutoff.isoformat(), pitcher_id)
         if df is None:
             raise MalformedResponse("Statcast returned no result (None)")
         event_problem = None
@@ -1955,6 +2022,7 @@ def run_live_pipeline(
     _run_warnings.clear()
     _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
     _pitcher_hand_run.update(requests=0)  # so is the pitcher-hand budget
+    _pitcher_statcast_run.update(requests=0)  # and the Statcast pitcher budget (D42)
     info: dict[str, Any] = {}
     run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     target = target_date or today_eastern().isoformat()
