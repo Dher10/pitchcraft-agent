@@ -332,6 +332,13 @@ if _live:
     print(f"[CONFIG] Live snapshot found: {_live.get('fetched_date')} - using live data")
 
 
+def refresh_live_input() -> None:
+    """Read the live run record and snapshot again: `data_pipeline.daily` writes them after this module was imported."""
+
+    global _live, _live_status
+    _live, _live_status = _resolve_live_input()
+
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
