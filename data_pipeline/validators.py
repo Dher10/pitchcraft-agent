@@ -25,6 +25,7 @@ from data_pipeline.schema import (
     TEAM_SIDES,
     TOP_LEVEL_REQUIRED_KEYS,
     is_utc_instant,
+    is_no_games_file,
 )
 from data_pipeline.labels import SCOPE_REGULAR, SEASON_RATE_FIELDS, is_available
 
@@ -112,7 +113,7 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
     featured_matchup_id = payload.get("featured_matchup_id")
     record(
         "featured_matchup_id resolves to an existing matchup",
-        featured_matchup_id in matchup_ids,
+        featured_matchup_id in matchup_ids or is_no_games_file(payload),
         f"{featured_matchup_id!r} not in {sorted(matchup_ids)!r}",
     )
 

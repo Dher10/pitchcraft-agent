@@ -2,12 +2,46 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
+from collections.abc import Mapping
 import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
 SCHEMA_VERSION = "0.9.0"
+
+
+def is_no_games_run(run: Any) -> bool:
+    """Only a sound empty schedule, never an error or missing data, is an empty live day (D43)."""
+    if not isinstance(run, Mapping):
+        return False
+    try:
+        target, cutoff = (date.fromisoformat(run[key]) for key in ("target_date", "as_of"))
+        return (
+            run["status"] == "no_games"
+            and target.isoformat() == run["target_date"] and cutoff.isoformat() == run["as_of"]
+            and cutoff == target - timedelta(days=1)
+            and new_york_day(run["run_at"]) is not None
+            and all(type(run[key]) is int and run[key] == 0 for key in ("games_scheduled", "games_live"))
+            and run["errors"] == [] and run["warnings"] == []
+        )
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return False
+
+
+def is_no_games_file(payload: Any) -> bool:
+    """The complete empty-live state; shared by validation and the manifest."""
+    try:
+        metadata = payload["metadata"]
+        status = metadata["data_status"]
+        return (
+            metadata["data_mode"] == status["mode"] == "fetched_snapshot"
+            and status["reason"] is None and is_no_games_run(status["live_run"])
+            and metadata["data_fetched_at"] == status["live_run"]["run_at"]
+            and payload["matchups"] == [] and payload["featured_matchup_id"] is None
+        )
+    except (KeyError, TypeError):
+        return False
 # 0.9.0 (P1.5-a, D43): `matchups[].series` is null for a game that is not a postseason game and an object
 # `{series_name, game_number, games_in_series, standing}` for one that is (null until the producer of row 7); `matchups` may
 # be empty and `featured_matchup_id` null for a day with no games, and `archive[].result_label` and `grade_label` may be

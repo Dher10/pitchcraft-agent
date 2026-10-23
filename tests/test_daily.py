@@ -175,11 +175,6 @@ def failure_schedule_unreachable(sources):
     return {"source": "mlb_schedule", "code": "request_failed"}
 
 
-def failure_no_games(sources):
-    sources.schedule = {"dates": []}
-    return {"source": "mlb_schedule", "code": "no_games"}
-
-
 def failure_no_usable_game(sources):
     sources.schedule = schedule_with(lambda game: game["teams"]["away"].pop("probablePitcher"))
     return {"source": "pipeline", "code": "no_usable_games"}
@@ -192,7 +187,6 @@ def failure_malformed_schedule(sources):
 
 FAILURES = {
     "schedule_unreachable": failure_schedule_unreachable,
-    "no_games": failure_no_games,
     "no_usable_game": failure_no_usable_game,
     "malformed_schedule": failure_malformed_schedule,
 }
@@ -366,7 +360,7 @@ def test_the_file_is_replaced_in_one_step_or_not_at_all(sources, out, capsys, mo
 
 
 def test_the_failure_line_is_only_a_source_and_a_code(sources, out, capsys):
-    failure_no_games(sources)
+    failure_schedule_unreachable(sources)
 
     run(out)
 

@@ -22,7 +22,7 @@ no entry matches): `rule1:unlisted`,
 `rule2:unknown_written_as_value`.
 
 `findings(payload)` returns (code, where, message). Only a live file is asked (rule 6: a demo file is a
-demo). Demo matchups and archive rows inside a live file are rule 6's finding (F4) and are not walked.
+demo). Demo matchups inside a live file are rule 6's finding (F4) and are not walked. Every archive row is walked (D43).
 
 The limit of the zero check: the payload does not carry the Statcast `events` column, so a zero count
 is judged by what must hold around it. A starter hurt on his first pitch has pitches and no batter faced:
@@ -39,13 +39,14 @@ import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from data_pipeline import config, labels, series
+from data_pipeline import archive, config, labels, series
 from data_pipeline.schema import (
     CRITIC_STATUSES,
     SCHEMA_VERSION,
     STATE_OF_STATUS,
     WORKFLOW_AGENTS,
     is_utc_instant,
+    is_no_games_file,
     lineup_status_of,
     new_york_day,
 )
@@ -458,7 +459,16 @@ def _live_ids(c: Ctx) -> set[str]:
 
 
 def featured_is_live(c: Ctx) -> Problem | None:
-    return None if c.value in _live_ids(c) else _mismatch(f"featured_matchup_id {c.value!r} is not a live matchup of the file")
+    return None if c.value in _live_ids(c) or is_no_games_file(c.root) else _mismatch(f"featured_matchup_id {c.value!r} is not a live matchup of the file")
+
+
+def empty_matchups(c: Ctx) -> Problem | None:
+    return None if is_no_games_file(c.root) else _mismatch("only a valid no-games live file has no matchups")
+
+
+def archive_row(c: Ctx) -> Problem | None:
+    target = c.root["metadata"]["data_status"]["live_run"]["target_date"]
+    return None if archive.row_valid(c.around(1), target) else _mismatch("an archive row must be an earlier ungraded live report")
 
 
 def pitch_data_status(c: Ctx) -> str:
@@ -666,7 +676,8 @@ def _scope_entries(prefix: str, origin: str, nullable_parent: bool = False) -> l
 MANIFEST: tuple[Entry, ...] = tuple(
     [
         # -- the file
-        _label("featured_matchup_id", "the id of the featured slot", STR, featured_is_live),
+        replace(_derived("featured_matchup_id", "the featured live slot, null on a no-games day (D43)", STR, True, featured_is_live), check_null=True),
+        _derived("matchups", "an empty list only on a validated no-games live day (D43)", (list,), False, empty_matchups),
         _label("metadata.project_name", "the name of the product"),
         _label("metadata.version", "the schema version", STR, equals(lambda c: SCHEMA_VERSION, "the schema version")),
         _label("metadata.language", "the catalog the keys of the claims belong to"),
@@ -684,8 +695,14 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _label("agent_workflow.steps[].agent", "the name of an agent", STR, in_set(WORKFLOW_AGENTS)),
         _derived("agent_workflow.steps[].status", "each step is read from the result of its agent: the postgame from what it graded, the other four from what the matchups carry of their work (F19 closed)", STR, False, step_status),
         _claim("agent_workflow.steps[].output"),
-        # -- the archive: a live file has none (D2.4a); a row is rule 6's finding and has no entry
-        _label("archive", "an empty list: a live file has no archive row (rule 6, F4); a row has no entry, so it is unlisted", (list,)),
+        # D43: lineage is checked at the previous-file boundary; the manifest checks every public row field.
+        _label("archive", "an empty list when there are no earlier live reports", (list,)),
+        *[_source(f"archive[].{key}", "an earlier published live report (D43)", STR, False, archive_row)
+          for key in ("id", "date", "title", "starter_summary")],
+        replace(_source("archive[].status", "the earlier report's schedule state, unknown stays null", STR, True, archive_row), check_null=True),
+        _source("archive[].featured", "whether the earlier report was featured", (bool,), False, archive_row),
+        *[replace(_source(f"archive[].{key}", "null: no automated postgame in v2.0-a (D41)", (), True, archive_row), check_null=True)
+          for key in ("result_label", "grade_label")],
         # -- the matchup
         _label(M + "id", "the id of the matchup", STR),
         _source(M + "date", "the official date of the game (schedule `officialDate`)", STR, False, is_date),
@@ -834,13 +851,10 @@ def _is_live_matchup(matchup: Any) -> bool:
 
 
 def _in_scope(payload: Mapping[str, Any], path: tuple) -> bool:
-    """Demo matchups and archive rows of a live file are rule 6's finding, not walked here."""
+    """Demo matchups are rule 6's finding; historical archive rows are fully walked (D43)."""
 
     if len(path) > 1 and path[0] == "matchups":
         return _is_live_matchup(payload["matchups"][path[1]])
-    if len(path) > 1 and path[0] == "archive":  # an empty archive is one leaf, `("archive",)`
-        live = {m.get("id") for m in payload["matchups"] if _is_live_matchup(m)}
-        return payload["archive"][path[1]].get("id") in live
     return True
 
 

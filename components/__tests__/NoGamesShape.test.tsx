@@ -5,6 +5,7 @@ import GameCarousel from "@/components/GameCarousel";
 import PitchCraftApp from "@/components/PitchCraftApp";
 import type { ArchiveItem, Metadata, PitchCraftData, Series } from "@/lib/types";
 import { makeMatchup } from "./fixtures";
+import noGamesLive from "@/tests/fixtures/no_games_live.json";
 
 // P1.5-a (schema 0.9.0, D43): the page is ready for a day with no games, for archive rows with no result and for a
 // series object, before any producer writes one. No new wording is drawn: the sentence for an empty day and the series
@@ -71,6 +72,41 @@ describe("a day with no games", () => {
     expect(() => render(<PitchCraftApp data={empty} initialSelectedId="matchup_404" />)).not.toThrow();
   });
 
+  it("shows the no-games date above the archive only for a live no-games record", () => {
+    const data = file({
+      featured_matchup_id: null, matchups: [], archive: [row()],
+      metadata: { ...metadata, data_status: {
+        mode: "fetched_snapshot", reason: null,
+        live_run: { status: "no_games", target_date: "2026-10-23", as_of: "2026-10-22",
+          run_at: "2026-10-23T15:00:01+00:00", games_scheduled: 0, games_live: 0, errors: [], warnings: [] },
+      } },
+    });
+    const { container } = render(<PitchCraftApp data={data} />);
+    expect(container.textContent).toContain("No MLB games scheduled on 2026-10-23.");
+    expect(container.textContent).toContain("Rays vs Brewers");
+    expect(container.textContent!.indexOf("No MLB games")).toBeLessThan(container.textContent!.indexOf("Archive"));
+    expect(container.textContent).not.toContain("Away Ace");
+    expect(container.textContent).toContain("Live data");
+  });
+
+  it("control: a demo empty file makes no no-games assertion", () => {
+    const { container } = render(<PitchCraftApp data={file({
+      featured_matchup_id: null, matchups: [], metadata: { ...metadata, data_mode: "demo_cached" },
+    })} />);
+    expect(container.textContent).not.toContain("No MLB games scheduled");
+  });
+
+  it("renders the actual fake-schedule → daily → validated artifact without a demo matchup", () => {
+    const { container } = render(<PitchCraftApp data={noGamesLive as PitchCraftData} />);
+    expect(container.textContent).toContain("No MLB games scheduled on 2026-07-16.");
+    expect(container.textContent).toContain("Boston Red Sox vs New York Yankees");
+    expect(container.textContent).toContain("MLB Stats API");
+    expect(container.textContent).toContain("Baseball Savant");
+    expect(container.querySelectorAll("button").length).toBe(0);
+    expect(container.textContent).not.toContain("Featured game has not been completed");
+    expect(container.textContent).toContain("Live data · fetched 2026-07-16");
+  });
+
   it("control: a file with a matchup still draws the carousel and the matchup", () => {
     const { container } = render(<PitchCraftApp data={file()} />);
 
@@ -96,6 +132,10 @@ describe("a day with no games", () => {
 });
 
 describe("an archive row with no result", () => {
+  it("preserves an unknown source state as a dash", () => {
+    const { container } = render(<ArchiveTable archive={[row({ status: null })]} />);
+    expect(container.querySelectorAll("tbody tr td")[2].textContent).toBe("—");
+  });
   it("shows the page's dash for the result and for the grade, and never 'Pending'", () => {
     const { container } = render(<ArchiveTable archive={[row()]} />);
     const cells = Array.from(container.querySelectorAll("tbody tr td")).map((cell) => cell.textContent);

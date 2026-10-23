@@ -17,6 +17,7 @@ if __package__ in (None, ""):
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
 from agents.language import DEFAULT_LANGUAGE
 from data_pipeline import claims
+from data_pipeline import archive
 from data_pipeline import config
 from data_pipeline import demo_inputs
 from data_pipeline import labels
@@ -34,7 +35,6 @@ SNAPSHOT_SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_misma
 SNAPSHOT_MISMATCH = {"source": "snapshot", "code": "snapshot_mismatch"}
 SNAPSHOT_UNREADABLE = {"source": "snapshot", "code": "malformed_response"}
 GAME_REJECTED = {"source": "snapshot", "code": "game_rejected"}
-NO_GAMES = {"source": "mlb_schedule", "code": "no_games"}
 NO_USABLE_GAMES = {"source": "pipeline", "code": "no_usable_games"}
 NO_LIVE_RUN = {"source": "pipeline", "code": "no_live_run"}  # a demo file for a day with no live run at all (D39)
 UNEXPECTED = {"source": "pipeline", "code": "unexpected_error"}
@@ -87,8 +87,6 @@ def _run_failure_reason(summary: dict[str, Any]) -> dict[str, str]:
     """Why a run that is not `ok` produced no live page, as a source and a code."""
 
     status = summary["status"]
-    if status == "no_games":
-        return dict(NO_GAMES)
     if status == "no_usable_games":
         return dict(NO_USABLE_GAMES)
     if status == "failed" and summary["errors"]:
@@ -114,6 +112,10 @@ def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
         return None, _status(config.DATA_MODE_DEMO, dict(NO_LIVE_RUN), None)
 
     summary = _run_summary(run)
+    if run.get("status") == "no_games":
+        if schema.is_no_games_run(run):
+            return None, _status(config.DATA_MODE_SNAPSHOT, None, summary)
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_MISMATCH), summary)
     if run.get("status") != "ok":
         print(f"[CONFIG] Live run {run.get('status')}; showing demo data")
         return None, _status(config.DATA_MODE_FALLBACK, _run_failure_reason(summary), summary)
@@ -347,7 +349,7 @@ class CriticBlocked(RuntimeError):
     """The critic found a claim the data does not back up: nothing is published (QA-04)."""
 
 
-def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None) -> dict[str, Any]:
+def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None, previous: Any = None) -> dict[str, Any]:
     """
     The full payload; every agent writes its text in `language` (English by default).
 
@@ -367,6 +369,9 @@ def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None)
         else text("generator.metadata.last_updated.demo")
     )
     _apply_live_snapshot(payload)
+    if _live_status["mode"] == config.DATA_MODE_SNAPSHOT:
+        target = _live["fetched_date"] if _live else _live_status["live_run"]["target_date"]
+        payload["archive"] = archive.carry_forward(previous, target)
     run = _run_agents(payload["matchups"], language)
     _apply_live_confidence(payload)
     _update_archive_postgame_labels(payload)
@@ -390,9 +395,13 @@ def _stamp_times(payload: dict[str, Any], now: datetime | None) -> None:
 
 def main() -> int:
     try:
-        payload = build_payload()
+        previous = archive.read_previous(OUTPUT_PATH) if _live_status["mode"] == config.DATA_MODE_SNAPSHOT else None
+        payload = build_payload(previous=previous)
     except CriticBlocked as exc:
         print(f"Publication blocked by the critic: {exc}", file=sys.stderr)
+        return 1
+    except archive.ArchiveError:
+        print("Publication blocked: previous live file is invalid", file=sys.stderr)
         return 1
     matchup_ids = [matchup["id"] for matchup in payload["matchups"]]
 
@@ -485,25 +494,25 @@ def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE
 
 def _apply_live_snapshot(payload: dict[str, Any]) -> None:
     live_games = _live_game_entries()
-    if not live_games:
+    if _live_status["mode"] != config.DATA_MODE_SNAPSHOT:
         return
 
-    # Rule 6 (F4): a live file holds only live matchups. Nothing of the demo is kept: not its other matchups, not its
-    # archive rows. The archive stays empty (today's game is not a past report; the page says "No past reports yet").
+    # D43: discard every demo matchup/row, including on a no-games day. build_payload adds only earlier live reports.
     payload["matchups"] = [
         _build_live_matchup(live_games[0], "matchup_001", True),
         *(
             _build_live_matchup(live_game, f"matchup_live_{index}", False)
             for index, live_game in enumerate(live_games[1:3], start=2)
         ),
-    ]
+    ] if live_games else []
+    payload["featured_matchup_id"] = payload["matchups"][0]["id"] if live_games else None
     payload["archive"] = []
     # Rule 6 (F3): what a live file says about its data is its own, not the demo's.
     payload["metadata"]["data_sources"] = list(config.LIVE_SOURCE_LABELS)
     payload["disclaimers"] = list(config.LIVE_DISCLAIMERS)
 
     payload["metadata"]["data_mode"] = "fetched_snapshot"
-    payload["metadata"]["data_fetched_at"] = _live["run_at"]
+    payload["metadata"]["data_fetched_at"] = _live["run_at"] if live_games else _live_status["live_run"]["run_at"]
     payload["metadata"]["last_updated_label"] = generator_catalog()(
         "generator.metadata.last_updated.live", date=_fetch_day()
     )
@@ -524,7 +533,8 @@ def _build_live_matchup(live_game: dict[str, Any], matchup_id: str, is_featured:
 def _fetch_day() -> str:
     """The day of the live fetch in New York: the date every label that says "fetched" shows (D39)."""
 
-    day = new_york_day((_live or {}).get("run_at"))
+    origin = _live if _live is not None else (_live_status.get("live_run") or {})
+    day = new_york_day(origin.get("run_at"))
     if day is None:  # `_snapshot_unsafe` accepts a run only if its time is an instant
         raise ValueError("the live run has no time to say when the data was fetched")
     return day
@@ -563,6 +573,8 @@ def _apply_live_confidence(payload: dict[str, Any]) -> None:
             matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _fetch_day(), matchup["starters"], matchup["status"])
 
 def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
+    if payload["metadata"]["data_mode"] == config.DATA_MODE_SNAPSHOT:
+        return  # Historical reports must never join today's reused matchup IDs.
     matchups_by_id = {matchup["id"]: matchup for matchup in payload["matchups"]}
     for row in payload["archive"]:
         matchup = matchups_by_id.get(row["id"])
@@ -590,6 +602,10 @@ def _build_agent_workflow(matchup_ids: list[str], run: AgentRun) -> dict[str, An
 
     text = generator_catalog()
     scout, analyst, writer, critic_agent, grader = WORKFLOW_AGENTS
+    if not matchup_ids:
+        return {"description": text("generator.workflow.description"), "steps": [{
+            "agent": scout, "status": "pending", "output": text("generator.workflow.loaded", count=0),
+        }]}
     postgame_step = (
         {
             "agent": grader,

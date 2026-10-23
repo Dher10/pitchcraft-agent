@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "project_name": "PitchCraft Matchup Agent",
+    "version": "0.9.0",
+    "data_mode": "fetched_snapshot",
+    "generated_at": "2026-07-16T15:00:00+00:00",
+    "data_fetched_at": "2026-07-16T15:00:00+00:00",
+    "last_updated_label": "Live data fetched 2026-07-16",
+    "data_sources": [
+      "MLB Stats API (schedule, probable pitchers, season statistics)",
+      "Baseball Savant / Statcast (pitch data, team batting splits)"
+    ],
+    "data_status": {
+      "mode": "fetched_snapshot",
+      "reason": null,
+      "live_run": {
+        "status": "no_games",
+        "run_at": "2026-07-16T15:00:00+00:00",
+        "target_date": "2026-07-16",
+        "as_of": "2026-07-15",
+        "games_scheduled": 0,
+        "games_live": 0,
+        "errors": [],
+        "warnings": []
+      }
+    },
+    "language": "en"
+  },
+  "featured_matchup_id": null,
+  "matchups": [],
+  "archive": [
+    {
+      "id": "2026-07-15:matchup_001",
+      "date": "2026-07-15",
+      "title": "Boston Red Sox vs New York Yankees",
+      "status": "upcoming",
+      "featured": true,
+      "starter_summary": "Away Ace vs Home Ace",
+      "result_label": null,
+      "grade_label": null
+    }
+  ],
+  "agent_workflow": {
+    "description": "PitchCraft uses a multi-agent workflow to convert matchup data into a fan-facing scouting report.",
+    "steps": [
+      {
+        "agent": "Data Scout Agent",
+        "status": "pending",
+        "output": "Loaded data for 0 matchups."
+      }
+    ]
+  },
+  "disclaimers": [
+    "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
+    "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
+    "Requests to the data sources are cached and the data is not downloaded in bulk.",
+    "For information only: no predictions and no betting advice."
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "key": "generator.metadata.last_updated.live",
+      "args": {
+        "date": "2026-07-16"
+      },
+      "subject": null,
+      "location": "metadata.last_updated_label"
+    },
+    {
+      "id": "c2",
+      "key": "generator.workflow.description",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.description"
+    },
+    {
+      "id": "c3",
+      "key": "generator.workflow.loaded",
+      "args": {
+        "count": 0
+      },
+      "subject": null,
+      "location": "agent_workflow.steps[0].output"
+    }
+  ]
+}

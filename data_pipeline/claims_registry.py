@@ -1137,10 +1137,11 @@ def _wf_loaded(c: Ctx) -> None:
 
 
 def _wf_done(c: Ctx) -> None:
-    c.require(all(isinstance(m.get("report"), Mapping) for m in _counted(c)), "report", "a matchup has no report")
+    c.require(bool(_counted(c)) and all(isinstance(m.get("report"), Mapping) for m in _counted(c)), "report", "no report was produced")
 
 
 def _wf_checked(c: Ctx) -> None:
+    c.require(bool(_counted(c)), "report", "there was no report to check")
     warnings = sum(1 for m in _counted(c) for check in m["critic_review"]["checks"] if check["status"] == "warning")
     c.require(c.args["warnings"] == warnings, "count", "the warnings are not the ones of the matchups the file counts")
 
@@ -1154,6 +1155,7 @@ def _wf_graded(c: Ctx) -> None:
 
 
 def _wf_graded_none(c: Ctx) -> None:
+    c.require(bool(_counted(c)), "report", "there is no featured game")
     c.require(_graded_count(c) == 0, "count", "a completed game was graded")
 
 

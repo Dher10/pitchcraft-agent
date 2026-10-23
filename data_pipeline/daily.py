@@ -6,7 +6,7 @@
 It runs the live fetch, the generator and `validate_payload`, and writes the candidate to `--out` only if every step
 passed and the payload is a live one (`fetched_snapshot`). Any other outcome leaves `--out` as it was and exits 1 after
 printing one line on stderr, `daily: failed {"source": ..., "code": ...}`. A demo or fallback payload is never a
-candidate: the daily job publishes live files only, so a day with no games is a failure here until P1.6.
+candidate. A sound no-games run publishes an empty live day with the earlier live archive (P1.6).
 
 The run record and snapshot are the hand-off between the fetch and the generator. They go to a private temporary
 directory that is removed afterwards, so a record left by an earlier run, or by the developer's own run, can never be
@@ -16,8 +16,8 @@ taken for this one and the local cache is not touched.
 file as strict JSON, requires a live `fetched_snapshot` payload and runs `validate_payload`; exit 0 when all hold, 1 with
 the same `daily: failed {source, code}` line otherwise (the text of the file is never printed).
 
-Exit codes: 0 a valid live file; 1 a failure; 2 a usage error; 3 is reserved for the valid no-games file of P1.6 and is
-not produced yet. `--dry-run` guarantees the repository's published files stay as they are: it refuses an `--out` under
+Exit codes: 0 a valid live game day; 1 a failure; 2 a usage error; 3 a valid no-games live file.
+`--dry-run` guarantees the repository's published files stay as they are: it refuses an `--out` under
 `public/data/` or `evals/live/` (D15's paths) before asking any source for anything.
 
 The `{source, code}` printed here is for the log and the workflow summary. It never reaches the public file, where
@@ -40,6 +40,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from data_pipeline import config
+from data_pipeline import archive
 from data_pipeline import generate_demo_json as gdj
 from data_pipeline.contract_checks import RUN_ERROR_CODES, RUN_SOURCES
 from data_pipeline.fetchers import cache_manager
@@ -52,6 +53,7 @@ PUBLISHED_PATHS = (REPO_ROOT / "public" / "data", REPO_ROOT / "evals" / "live")
 EXIT_OK = 0
 EXIT_FAILED = 1
 EXIT_USAGE = 2
+EXIT_NO_GAMES = 3
 
 CRITIC_UNSUPPORTED = {"source": "pipeline", "code": "critic_unsupported"}
 VALIDATION_FAILED = {"source": "pipeline", "code": "validation_failed"}
@@ -93,15 +95,18 @@ def _build_candidate(target_date: str | None) -> dict[str, Any]:
         cache_manager.PROCESSED_DIR = Path(scratch)
         try:
             record, snapshot = live_pipeline.run_live_pipeline(target_date)
+            print(f"daily: requests {json.dumps(record.get('requests', {}), sort_keys=True)}")
             cache_manager.save_processed("live_run", record)
             if snapshot is not None:
                 cache_manager.save_processed("live_matchup", snapshot)
             gdj.refresh_live_input()
             _require_live(gdj._live_status)
             try:
-                payload = gdj.build_payload()
+                payload = gdj.build_payload(previous=archive.read_previous(gdj.OUTPUT_PATH))
             except gdj.CriticBlocked:
                 raise DailyFailure(dict(CRITIC_UNSUPPORTED)) from None
+            except archive.ArchiveError:
+                raise DailyFailure({"source": "snapshot", "code": "malformed_response"}) from None
             _require_live(payload["metadata"]["data_status"])
             if payload["metadata"].get("data_mode") != config.DATA_MODE_SNAPSHOT:
                 raise DailyFailure(dict(UNEXPECTED))
@@ -234,7 +239,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"daily: failed {json.dumps(failure.reason)}", file=sys.stderr)
         return EXIT_FAILED
     print(f"daily: ok {json.dumps(summary)}")
-    return EXIT_OK
+    return EXIT_NO_GAMES if summary["games_scheduled"] == 0 else EXIT_OK
 
 
 if __name__ == "__main__":
