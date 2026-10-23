@@ -9,6 +9,9 @@ name: daily
 # with the subject `data: daily update YYYY-MM-DD` and pushes to main with the deploy key. A failed build leaves the
 # previous published file in place; the run is red and its summary names the {source, code} (rule 5 exception, D42).
 #
+# A day with no MLB games (an off day, the offseason) is a failed build with {mlb_schedule, no_games} and no file: the
+# previous published file stays and the run is red until the no-games state exists (P1.6). Seen on v2 on 2026-10-22.
+#
 # A push to v2 runs only the build, and only when this file changes, so a code push never spends Savant requests (D16).
 # Each run of the build asks MLB and Baseball Savant for real data; the budget is D42's (20 pitcher requests per run).
 
