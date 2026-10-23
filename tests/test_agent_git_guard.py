@@ -834,3 +834,116 @@ def test_the_hook_script_blocks_gh_for_both_shell_tools(tmp_path):
         result = subprocess.run([sys.executable, str(HOOK)], input=event, capture_output=True, text=True, cwd=tmp_path, env=env)
 
         assert result.returncode == 2 and "Blocked by .claude/hooks/git_guard.py" in result.stderr, tool
+
+
+# --- QA1-02: every spelling of the option that prints the token (P1-R1fix) -----------------------------------------------
+#
+# `gh auth status --show-token=true` is a valid spelling of the same flag (pflag reads a boolean with `=value`; the CLI
+# parses it with strconv.ParseBool), and `-t=true` is the short form. The guard normalizes the option before it judges:
+# the name (case, `_` for `-`), the `=value` of any kind, a cluster of short flags. Any value is blocked, `false` included,
+# because the guard cannot know what a future version does with a value it does not recognize.
+
+SHOW_TOKEN_SPELLINGS = [
+    "gh auth status --show-token",
+    *(f"gh auth status --show-token={value}" for value in ("true", "True", "TRUE", "1", "t", "T", "false", "False", "FALSE", "0", "f", "F", "", "yes", "garbage")),
+    "gh auth status --SHOW-TOKEN",
+    "gh auth status --Show-Token=true",
+    "gh auth status --show_token",
+    "gh auth status --show_token=true",
+    "gh auth status -t",
+    "gh auth status -t=true",
+    "gh auth status -t=false",
+    "gh auth status -th github.com",
+    "gh auth status -ht github.com",
+    "gh auth status -at",
+    "gh auth status --hostname github.com --show-token=true",
+    "gh auth status --show-token=true --hostname github.com",
+    "gh --show-token=true auth status",
+    "gh auth --show-token=1 status",
+    "gh -R Dher10/pitchcraft-agent auth status --show-token=True",
+    "GH_TOKEN=abc gh auth status --show-token=true",
+    "& gh auth status --show-token=true",
+    "gh auth status --show-token=true | Select-Object -First 3",
+    "$out = gh auth status --show-token=1",
+]
+
+SHOW_TOKEN_CONTROLS = [
+    "gh auth status",
+    "gh auth status --hostname github.com",
+    "gh auth status -h github.com",
+    "gh auth status --active",
+    "gh auth status --hostname=github.com",
+    "gh -R Dher10/pitchcraft-agent auth status",
+    "gh run list --limit 3",
+    "gh api repos/Dher10/pitchcraft-agent/rulesets --jq '.[].name'",
+]
+
+
+@pytest.mark.parametrize("command", SHOW_TOKEN_SPELLINGS)
+def test_every_spelling_of_the_token_printing_option_is_blocked(command):
+    reason = verdict(command)
+
+    assert reason is not None and "show-token" in reason, (command, reason)
+
+
+@pytest.mark.parametrize("command", SHOW_TOKEN_CONTROLS)
+def test_control_the_status_of_gh_without_the_token_option_passes(command):
+    assert verdict(command) is None, command
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "bash -c 'gh auth status --show-token=true'",
+        'powershell -Command "gh auth status --show-token=1"',
+        "env gh auth status --show-token=true",
+    ],
+)
+def test_the_token_option_behind_a_wrapper_is_blocked_too(command):
+    assert verdict(command) is not None, command
+
+
+# --- QA1-04: credentials in the user information of a URL to the GitHub API ----------------------------------------------
+
+USERINFO = [
+    "curl https://user:pw@api.github.com/user",
+    "curl https://token@api.github.com/user",
+    "curl user:pw@api.github.com/user",
+    "curl -s https://Dher10:ghp_abcdefghijklmnop@api.github.com/user",
+    "curl -sS -X GET https://user:pw@api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl https://user:pw@uploads.github.com/repos/Dher10/pitchcraft-agent/releases/1/assets",
+    "curl https://user%40mail:pw@api.github.com/user",
+    "wget https://user:pw@api.github.com/user",
+    "Invoke-RestMethod https://user:pw@api.github.com/user",
+    "irm https://user:pw@api.github.com/user",
+    "Invoke-WebRequest -Uri https://user:pw@api.github.com/user -Method Get",
+    "iwr https://token@api.github.com/user",
+    "http https://user:pw@api.github.com/user",
+    "curl 'https://user:pw@api.github.com/user'",
+    "curl https://user:pw@@api.github.com/user",  # an @ inside the user information
+    "curl https://user:@@api.github.com/user",
+    "curl https://user:p@ss@api.github.com/user",
+]
+
+USERINFO_CONTROLS = [
+    "curl https://api.github.com/user",
+    "curl -s https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl -sS https://api.github.com/repos/Dher10/pitchcraft-agent/rulesets?per_page=1",
+    "curl https://api.github.com/search/issues?q=user@example.com",
+    "wget -q https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "Invoke-RestMethod https://api.github.com/repos/Dher10/pitchcraft-agent",
+    "curl https://user:pw@example.com/private",  # not the GitHub API: out of the guard's scope
+    "git clone git@github.com:Dher10/pitchcraft-agent.git x",
+]
+
+
+@pytest.mark.parametrize("command", USERINFO)
+def test_a_url_to_the_github_api_with_user_information_is_a_credential_and_is_blocked(command):
+    reason = verdict(command)
+
+    assert reason is not None and "credentials" in reason, (command, reason)
+
+
+@pytest.mark.parametrize("command", USERINFO_CONTROLS)
+def test_control_a_url_without_user_information_passes(command):
+    assert verdict(command) is None, command

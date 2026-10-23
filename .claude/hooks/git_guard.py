@@ -23,8 +23,10 @@ It also blocks every write through `gh` and to the GitHub API (P1.0, docs/plans/
 but GET (`-X`/`--method`), with `-f`, `-F`, `--field`, `--raw-field` unless the method is an explicit GET, with `--input`,
 or on `graphql`; every `gh` family or verb that is not on the list of reads (READ_ONLY_GH: `run list/view/watch/download`,
 `pr view/list/diff/checks/status`, `issue view/list/status`, `repo view/list`, `workflow list/view`, `auth status`,
-`cache list`, `api` GET, `status`, `search`; `gh auth status --show-token` is blocked); and `curl`, `wget`, `Invoke-RestMethod`, `Invoke-WebRequest` (and their
-aliases) against api.github.com or uploads.github.com with a non-GET method, a body or credentials. `gh` and the API
+`cache list`, `api` GET, `status`, `search`; `gh auth status` with the token option in any spelling is blocked: `--show-token`,
+`--show-token=<any value>`, `-t`, `-t=<value>`, a cluster with `t`, any case, `_` for `-`); and `curl`, `wget`, `Invoke-RestMethod`, `Invoke-WebRequest` (and their
+aliases) against api.github.com or uploads.github.com with a non-GET method, a body or credentials (a header, a token, `-u`, or
+`user:password@` in the URL). `gh` and the API
 behind a wrapper are blocked like git. Reads stay allowed because the D35 loop needs them.
 
 Git options are read the way git reads them: combined short flags (`-fu`) and unambiguous abbreviations (`--forc`).
@@ -452,6 +454,9 @@ READ_ONLY_GH: dict[str, set[str] | None] = {
 GH_VALUE_FLAGS = {"-R", "--repo", "--hostname"}
 GITHUB_API = re.compile(r"(?:api|uploads)\.github\.com", re.IGNORECASE)
 CREDENTIAL = re.compile(r"authorization|bearer|\bgh[pousr]_[A-Za-z0-9]|github_pat_", re.IGNORECASE)
+# `user:password@` or `token@` right before the host of the GitHub API (`https://user:pw@api.github.com/...`, or without the
+# scheme): curl and the like send it as basic-auth credentials, so it is a credential whether or not an option says so.
+USERINFO = re.compile(r"[^/\s]+@(?:api|uploads)\.github\.com", re.IGNORECASE)
 WRITING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 # curl takes any unambiguous prefix of a long option, so `--req` and `--dat` count
 CURL_LONG_WRITING = ("--request", "--data", "--data-raw", "--data-binary", "--data-ascii", "--data-urlencode", "--json", "--form",
@@ -504,6 +509,24 @@ def _gh_api_problem(args: list[str]) -> str | None:
     return None
 
 
+def _is_show_token(flag: str) -> bool:
+    """
+    Whether a word is the option that makes `gh auth status` print the token, in any spelling.
+
+    The option is judged by its name, after normalizing: the `=value` part is dropped whatever the value is (`=true`,
+    `=True`, `=1`, `=false`, `=garbage`: a boolean flag accepts `=value`, and a value the guard does not know is no reason to
+    let the option through), the name is compared without case and with `_` read as `-`, and the short form `-t` is found
+    in a cluster of short flags (`-th`, `-ht`, `-t=true`).
+    """
+
+    if not flag.startswith("-") or flag == "-":
+        return False
+    name = flag.partition("=")[0]
+    if name.startswith("--"):
+        return name[2:].lower().replace("_", "-") == "show-token"
+    return "t" in name[1:].lower()
+
+
 def _gh_problem(tokens: list[str]) -> str | None:
     rest = tokens[1:]
     words, skip = [], False
@@ -523,9 +546,7 @@ def _gh_problem(tokens: list[str]) -> str | None:
         return f"gh {family} is not on the list of read-only commands (P1.0)"
     if family == "api":
         return _gh_api_problem(rest[rest.index("api") + 1 :])
-    if family == "auth" and any(
-        flag == "--show-token" or (flag.startswith("-") and not flag.startswith("--") and "t" in flag) for flag in rest
-    ):
+    if family == "auth" and any(_is_show_token(flag) for flag in rest):
         return "gh auth status --show-token prints the token and is not allowed (P1.0)"
     verbs = READ_ONLY_GH[family]
     if verbs is not None and (len(words) < 2 or words[1] not in verbs):
@@ -602,7 +623,7 @@ def _github_request_problem(tokens: list[str], command: str) -> str | None:
     if not GITHUB_API.search(command):
         return None
     program, args = program_name(tokens[0]), tokens[1:]
-    if any(CREDENTIAL.search(arg) for arg in args):
+    if any(CREDENTIAL.search(arg) or USERINFO.search(arg) for arg in args):
         return CREDENTIALS
     if program in ("curl", "wget"):
         # in Windows PowerShell 5.1 `curl` and `wget` are Invoke-WebRequest, whose parameters read like PowerShell's
