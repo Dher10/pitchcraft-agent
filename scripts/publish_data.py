@@ -19,7 +19,9 @@ This script does not judge its contents; it only publishes them, and only safely
 allowlist. The checkout is left as it was.
 
 Output goes to stdout as `publish: ...` lines; a failure is `publish: failed CODE` with the code one of
-`candidate_unreadable`, `dirty_tree`, `not_on_main`, `outside_allowlist`, `git_failed`, `push_rejected`.
+`candidate_unreadable`, `dirty_tree`, `not_on_main`, `outside_allowlist`, `git_failed`, `push_rejected`. A failure after the copy
+puts the work tree and the index back as they were, and an operating-system error (a process that cannot be started, a
+file that cannot be written) is `git_failed`; the text of the exception is never printed.
 Exit codes: 0 published, unchanged or dry run done; 1 failed; 2 usage error.
 """
 
@@ -151,6 +153,22 @@ def _env(extra: dict[str, str] | None = None) -> dict[str, str]:
     return env
 
 
+def _commit_env() -> dict[str, str]:
+    """
+    The identity of the commit, in the environment of the commit process.
+
+    Git gives `GIT_AUTHOR_*` and `GIT_COMMITTER_*` priority over `-c user.name` / `user.email`, so an inherited variable
+    would win over the owner's identity; setting all four here overrides whatever the process inherited (QA1-05).
+    """
+
+    return {
+        "GIT_AUTHOR_NAME": IDENTITY_NAME,
+        "GIT_AUTHOR_EMAIL": IDENTITY_EMAIL,
+        "GIT_COMMITTER_NAME": IDENTITY_NAME,
+        "GIT_COMMITTER_EMAIL": IDENTITY_EMAIL,
+    }
+
+
 def _git(repo: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, env=_env(env))
 
@@ -224,36 +242,50 @@ def _work_in(repo: Path, candidate_bytes: bytes, subject: str) -> bool:
         old_bytes = target.read_bytes()
         if same_apart_from_timestamps(old_bytes.decode("utf-8", errors="replace"), candidate_bytes.decode("utf-8")):
             return False
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(candidate_bytes)
-    paths = changed_paths(repo)
-    outside = outside_allowlist(paths)
-    if outside or not paths:
-        if old_bytes is None:
-            target.unlink(missing_ok=True)
-        else:
-            target.write_bytes(old_bytes)
-        for path in outside:
-            say(f"outside {path}")
-        raise Failure("outside_allowlist" if outside else "git_failed")
-    for path in sorted(paths):
-        say(f"file {path}")
-    say("allowlist ok")
-    _git_ok(repo, "add", "-A")
-    result = _git(
-        repo,
-        "-c", f"user.name={IDENTITY_NAME}",
-        "-c", f"user.email={IDENTITY_EMAIL}",
-        "-c", "commit.gpgsign=false",
-        "commit", "-q", "-m", subject,
-    )  # fmt: skip
-    if result.returncode != 0:
-        _git(repo, "reset", "-q")
-        if old_bytes is None:
-            target.unlink(missing_ok=True)
-        else:
-            target.write_bytes(old_bytes)
-        raise Failure("git_failed")
+
+    def roll_back() -> None:
+        """Put the work tree and the index back as they were; whatever fails here must not hide the failure that led to it."""
+
+        try:
+            _git(repo, "reset", "-q")
+        except (OSError, subprocess.SubprocessError, UnicodeError):
+            pass
+        try:
+            if old_bytes is None:
+                target.unlink(missing_ok=True)
+            else:
+                target.write_bytes(old_bytes)
+        except (OSError, UnicodeError):
+            pass
+
+    # One rollback for every step after the copy (copy, status, allowlist, add, commit), for a refusal and for a process
+    # that cannot be started alike (QA1-06).
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(candidate_bytes)
+        paths = changed_paths(repo)
+        outside = outside_allowlist(paths)
+        if outside or not paths:
+            for path in outside:
+                say(f"outside {path}")
+            raise Failure("outside_allowlist" if outside else "git_failed")
+        for path in sorted(paths):
+            say(f"file {path}")
+        say("allowlist ok")
+        _git_ok(repo, "add", "-A")
+        result = _git(
+            repo,
+            "-c", f"user.name={IDENTITY_NAME}",
+            "-c", f"user.email={IDENTITY_EMAIL}",
+            "-c", "commit.gpgsign=false",
+            "commit", "-q", "-m", subject,
+            env=_commit_env(),
+        )  # fmt: skip
+        if result.returncode != 0:
+            raise Failure("git_failed")
+    except (Failure, OSError, subprocess.SubprocessError, UnicodeError):
+        roll_back()
+        raise
     return True
 
 
@@ -348,6 +380,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         publish(args.candidate, args.repo.resolve(), args.remote, args.key_file, args.dry_run)
     except Failure as failure:
         say(f"failed {failure.code}")
+        return EXIT_FAILED
+    except (OSError, subprocess.SubprocessError, UnicodeError):
+        # A process that cannot be started, a file that cannot be written: the same closed label, never the exception's
+        # text (it can carry a path or an argument).
+        say("failed git_failed")
         return EXIT_FAILED
     return EXIT_OK
 

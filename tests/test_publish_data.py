@@ -621,3 +621,259 @@ def test_the_script_runs_as_a_program(world):
 
     assert result.returncode == 0, result.stderr
     assert "publish: allowlist ok" in result.stdout and world.remote_head() == world.seed
+
+
+# --- QA1-05: the identity of the commit is the owner's whatever the environment says --------------------------------------
+
+OTHER_IDENTITY = {
+    "GIT_AUTHOR_NAME": "Other Author",
+    "GIT_AUTHOR_EMAIL": "other@example.com",
+    "GIT_COMMITTER_NAME": "Other Committer",
+    "GIT_COMMITTER_EMAIL": "committer@example.com",
+}
+
+
+def test_inherited_identity_variables_do_not_change_the_author_or_the_committer(publish, world, monkeypatch):
+    for name, value in OTHER_IDENTITY.items():
+        monkeypatch.setenv(name, value)
+
+    assert publish.main(world.argv()) == 0
+
+    fields = git(world.remote, "log", "-1", "--format=%an|%ae|%cn|%ce", "main").split("|")
+    assert fields == [OWNER[0], OWNER[1], OWNER[0], OWNER[1]]
+
+
+@pytest.mark.parametrize("name", sorted(OTHER_IDENTITY))
+def test_each_inherited_identity_variable_alone_is_overridden(publish, world, monkeypatch, name):
+    monkeypatch.setenv(name, "Somebody Else" if name.endswith("NAME") else "somebody@example.com")
+
+    assert publish.main(world.argv()) == 0
+
+    fields = git(world.remote, "log", "-1", "--format=%an|%ae|%cn|%ce", "main").split("|")
+    assert fields == [OWNER[0], OWNER[1], OWNER[0], OWNER[1]]
+
+
+def test_the_commit_environment_names_the_owner_for_author_and_committer(publish):
+    env = publish._commit_env()
+
+    assert (env["GIT_AUTHOR_NAME"], env["GIT_AUTHOR_EMAIL"]) == OWNER
+    assert (env["GIT_COMMITTER_NAME"], env["GIT_COMMITTER_EMAIL"]) == OWNER
+
+
+def test_control_a_clean_environment_gives_the_owner_too(publish, world):
+    assert publish.main(world.argv()) == 0
+
+    assert git(world.remote, "log", "-1", "--format=%an|%cn", "main") == f"{OWNER[0]}|{OWNER[0]}"
+
+
+# --- QA1-06: a failure at any step after the copy leaves the tree as it was, and is a closed failure ----------------------
+
+CLOSED_CODES = ("candidate_unreadable", "dirty_tree", "not_on_main", "outside_allowlist", "git_failed", "push_rejected")
+OLD_TEXT = text_of(payload("2026-07-14", "2026-07-14T15:00:01+00:00", "OLD"))
+
+
+def fail_at(publish, monkeypatch, step: str, error: Exception, nth: int = 1) -> dict:
+    """Make the `nth` git call that has `step` among its arguments raise `error`, as a process that cannot be started would."""
+
+    real = publish._git
+    seen = {"calls": 0, "raised": 0}
+
+    def wrapper(repo, *args, env=None):
+        if step in args:
+            seen["calls"] += 1
+            if seen["calls"] == nth:
+                seen["raised"] += 1
+                raise error
+        return real(repo, *args, env=env)
+
+    monkeypatch.setattr(publish, "_git", wrapper)
+    return seen
+
+
+def assert_untouched(world, capsys, code: str) -> None:
+    shown = capsys.readouterr()
+    assert f"publish: failed {code}" in shown.out, shown
+    assert "Traceback" not in shown.err and "Traceback" not in shown.out
+    assert (world.work / TARGET).read_text(encoding="utf-8") == OLD_TEXT
+    assert git(world.work, "status", "--porcelain") == ""
+    assert world.remote_head() == world.seed
+
+
+@pytest.mark.parametrize(
+    "step, nth",
+    [("status", 2), ("add", 1), ("commit", 1)],  # status 1 is the clean-tree check before the copy
+)
+@pytest.mark.parametrize("error", [OSError("synthetic process failure"), FileNotFoundError("git"), PermissionError("denied")])
+def test_a_process_that_cannot_be_started_after_the_copy_is_git_failed_and_the_tree_is_put_back(
+    publish, world, monkeypatch, capsys, step, nth, error
+):
+    seen = fail_at(publish, monkeypatch, step, error, nth)
+
+    assert publish.main(world.argv()) == 1
+
+    assert seen["raised"] == 1
+    assert_untouched(world, capsys, "git_failed")
+
+
+def test_a_failing_status_after_the_copy_puts_the_tree_back(publish, world, monkeypatch, capsys):
+    real = publish.changed_paths
+    calls = {"n": 0}
+
+    def second_call_fails(repo):
+        calls["n"] += 1
+        if calls["n"] == 2:
+            raise publish.Failure("git_failed")
+        return real(repo)
+
+    monkeypatch.setattr(publish, "changed_paths", second_call_fails)
+
+    assert publish.main(world.argv()) == 1
+
+    assert calls["n"] == 2
+    assert_untouched(world, capsys, "git_failed")
+
+
+def test_a_git_add_that_fails_for_real_puts_the_tree_back(publish, world, capsys):
+    lock = world.work / ".git" / "index.lock"
+    lock.write_text("", encoding="utf-8")  # git add cannot take the lock
+
+    assert publish.main(world.argv()) == 1
+
+    lock.unlink()
+    assert_untouched(world, capsys, "git_failed")
+
+
+def test_a_commit_that_fails_for_real_and_a_reset_that_cannot_run_still_end_in_the_closed_failure(publish, world, monkeypatch, capsys):
+    hook = world.work / ".git" / "hooks" / "pre-commit"
+    hook.write_text("#!/bin/sh" + chr(10) + "exit 1" + chr(10), encoding="utf-8", newline=chr(10))
+    hook.chmod(0o755)
+    fail_at(publish, monkeypatch, "reset", OSError("synthetic"))
+
+    assert publish.main(world.argv()) == 1
+
+    hook.unlink()
+    git(world.work, "reset", "-q")  # the reset the script could not run: the index still holds the staged copy
+    shown = capsys.readouterr()
+    assert "publish: failed git_failed" in shown.out and "Traceback" not in shown.err
+    assert (world.work / TARGET).read_text(encoding="utf-8") == OLD_TEXT and git(world.work, "status", "--porcelain") == ""
+
+
+def test_a_reset_whose_output_cannot_be_decoded_does_not_stop_the_file_from_being_put_back(publish, world, monkeypatch, capsys):
+    fail_at(publish, monkeypatch, "reset", UnicodeDecodeError("utf-8", bytes([255]), 0, 1, "invalid start byte"))
+    monkeypatch.setattr(publish, "TARGET", "app/page.txt")  # outside the allowlist: the rollback runs, the code stays outside_allowlist
+
+    assert publish.main(world.argv()) == 1
+
+    assert (world.work / "app" / "page.txt").read_text(encoding="utf-8") == "page" + chr(10)
+    assert "publish: failed outside_allowlist" in capsys.readouterr().out
+
+
+def test_a_write_that_fails_halfway_puts_the_old_bytes_back(publish, world, monkeypatch, capsys):
+    real = publish.Path.write_bytes
+    calls = {"n": 0}
+
+    def write_then_fail(path, data):
+        written = real(path, data)
+        if path.as_posix().endswith(TARGET):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise OSError("disk full")
+        return written
+
+    monkeypatch.setattr(publish.Path, "write_bytes", write_then_fail)
+
+    assert publish.main(world.argv()) == 1
+
+    assert_untouched(world, capsys, "git_failed")
+
+
+def test_a_target_that_does_not_exist_yet_is_removed_when_the_commit_fails(publish, world, monkeypatch, capsys):
+    git(world.work, "rm", "-q", TARGET)
+    git(world.work, "commit", "-q", "-m", "remove the file")
+    removed = git(world.work, "rev-parse", "HEAD")
+    git(world.work, "push", "-q", "origin", "main")
+    seed = world.remote_head()
+    fail_at(publish, monkeypatch, "commit", OSError("synthetic"))
+
+    assert publish.main(world.argv()) == 1
+
+    assert not (world.work / TARGET).exists() and git(world.work, "status", "--porcelain") == ""
+    assert git(world.work, "rev-parse", "HEAD") == removed and world.remote_head() == seed
+    assert "publish: failed git_failed" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("step", ["branch", "status"])
+def test_a_process_that_cannot_be_started_before_the_copy_is_a_closed_failure_too(publish, world, monkeypatch, capsys, step):
+    fail_at(publish, monkeypatch, step, OSError("synthetic"))
+
+    assert publish.main(world.argv()) == 1
+
+    assert_untouched(world, capsys, "git_failed")
+
+
+def test_a_push_that_cannot_be_started_is_a_closed_failure_and_nothing_is_pushed(publish, world, monkeypatch, capsys):
+    real = publish.subprocess.run
+
+    def run(command, *args, **kwargs):
+        if "push" in command:
+            raise OSError("synthetic")
+        return real(command, *args, **kwargs)
+
+    monkeypatch.setattr(publish.subprocess, "run", run)
+
+    assert publish.main(world.argv()) == 1
+
+    shown = capsys.readouterr()
+    assert "publish: failed git_failed" in shown.out and "Traceback" not in shown.err
+    assert world.remote_head() == world.seed
+
+
+def test_a_dry_run_whose_clone_cannot_be_made_is_a_closed_failure_and_leaves_no_clone(publish, world, monkeypatch, capsys, tmp_path):
+    real = publish.subprocess.run
+
+    def run(command, *args, **kwargs):
+        if "clone" in command:
+            raise OSError("synthetic")
+        return real(command, *args, **kwargs)
+
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    monkeypatch.setattr(publish.subprocess, "run", run)
+    monkeypatch.setattr(publish.tempfile, "tempdir", str(scratch))
+
+    assert publish.main(world.argv("--dry-run")) == 1
+
+    assert "publish: failed git_failed" in capsys.readouterr().out
+    assert list(scratch.iterdir()) == []
+    assert git(world.work, "status", "--porcelain") == ""
+
+
+def test_a_dry_run_that_fails_in_the_clone_leaves_the_checkout_and_the_clone_clean(publish, world, monkeypatch, capsys, tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    monkeypatch.setattr(publish.tempfile, "tempdir", str(scratch))
+    fail_at(publish, monkeypatch, "add", OSError("synthetic"))
+
+    assert publish.main(world.argv("--dry-run")) == 1
+
+    assert "publish: failed git_failed" in capsys.readouterr().out
+    assert list(scratch.iterdir()) == []
+    assert (world.work / TARGET).read_text(encoding="utf-8") == OLD_TEXT
+    assert git(world.work, "status", "--porcelain") == ""
+
+
+def test_an_exception_message_is_never_printed(publish, world, monkeypatch, capsys):
+    fail_at(publish, monkeypatch, "add", OSError("SECRET-LOOKING-MESSAGE /home/runner/key"), 1)
+
+    assert publish.main(world.argv()) == 1
+
+    shown = capsys.readouterr()
+    assert "SECRET-LOOKING-MESSAGE" not in shown.out + shown.err
+
+
+def test_every_failure_the_script_raises_is_one_of_the_closed_codes():
+    import re
+
+    codes = set(re.findall(r'Failure\("([a-z_]+)"\)', SCRIPT.read_text(encoding="utf-8")))
+
+    assert codes and codes <= set(CLOSED_CODES), codes
