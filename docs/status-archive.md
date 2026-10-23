@@ -2,6 +2,14 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-23 - P1-R1fix: the fixes of the Phase 1 gate (QA1-01 to QA1-06)
+
+- **Review rounds:** one per commit, PASS each time, no finding rejected. Optional points taken: a doubled `@` in a URL's user information (b, added to the tests), the named violation code in the live-file demo-sentence test (c), `UnicodeError` in the rollback of the publish script with a test (d). Optional points left: the new vocabulary test restates the implementation as its expected value (the parametrized test above it carries the behaviour); the `docs/data-inventory.md` row about the demo notes is a historical snapshot; `_remove_tree` of the dry-run clone after a successful push.
+- **Red first, counted:** a 21, b 42, c 5 (4 Python, 1 frontend; the typed-notes page tests pass either way by design), d 26. In c, one test was too narrow at first (it looked at rule 6 only; the manifest is what rejects the demo sentence in a live file) and was rewritten to name the manifest's code.
+- **Process notes:** the commit message of b first said 4497 passed for the whole suite, a number not measured (the full run was 4495 before three added cases); the unpushed commit was amended to say what was run. The full verification of d ran again on the final tree because a test was added after the first full run (4535 passed, 2 skipped).
+- **CI:** c's first `site` run failed on a Google Fonts fetch in `next build` (not related to the change); the owner re-ran the job and it passed. d and e waited for the previous commit's CI as D35 says.
+- **Requests:** none to MLB or Savant; no workflow was triggered by the implementing session (the pushes ran `tests.yml`, which does not touch the sources).
+
 ### 2026-10-21 - P0.17-e: vite 8.3.5 and close of P0.17 (QA6-05)
 
 - `npm install --save-exact vite@8.3.5` (npm's non-major fix version for the `launch-editor` advisories; the plan asked for >= 8.3.4). The lockfile also moved vite's own dependencies (rolldown 1.2.11 to 1.2.14, postcss 8.5.29 to 8.5.31, one 0.151.0 to 0.154.0 package) and nothing else. `npm ls vite` shows one version, deduped under `@vitejs/plugin-react`, `vite-tsconfig-paths` and `vitest` 5.0.2. Audit in the default terminal after the change: `npm audit --json` 5 high (`@next/eslint-plugin-next`, `braces`, `eslint-config-next`, `fast-glob`, `micromatch`: the documented chain), `npm audit --omit=dev --json` 0. STATUS audit line corrected.
