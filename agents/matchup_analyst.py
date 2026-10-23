@@ -6,6 +6,7 @@ from typing import Any
 
 from agents.language import DEFAULT_LANGUAGE, Catalog, catalog_for
 from data_pipeline import labels
+from data_pipeline import series as series_vocab
 
 
 def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
@@ -113,12 +114,22 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
 
 
 def _series_note(t: Catalog, packet: dict[str, Any]) -> str | None:
-    """The sentence about the series the game belongs to (D43), or None: no series, or no standing after game 1."""
+    """
+    The sentence about the series the game belongs to (D43), or None: no series, no standing after game 1, or a first game
+    that is not upcoming.
+
+    "The series has not started" is a present-tense statement, true only before the game: it is written for an upcoming
+    game and for no other state (live, final or unknown), whenever the file is read (QA1-01). "Before first pitch, ..." says
+    in its own words that the standing is the one before the game, which is computed as of the day before (D29), so it
+    is true in any state and is written in all of them.
+    """
 
     series = packet.get("series")
     if not isinstance(series, dict):
         return None
     if series["game_number"] == 1:
+        if packet.get("status") != "upcoming":
+            return None
         return t("analyst.series.opening", series_name=series["series_name"])
     if series["standing"] is None:
         return None  # "Series standing not available" is the page's line; the report claims nothing
@@ -126,7 +137,7 @@ def _series_note(t: Catalog, packet: dict[str, Any]) -> str | None:
         "analyst.series.standing",
         n=series["game_number"],
         series_name=series["series_name"],
-        result=series["standing"],
+        result=series_vocab.in_sentence(series["standing"]),
     )
 
 

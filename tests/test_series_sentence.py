@@ -22,7 +22,7 @@ from data_pipeline.contract_checks import check_contract
 from tests.matrix import hard_outcome
 
 STANDING = "This is Game 3 of the AL Championship Series. Before first pitch, BOS leads 2-0."
-TIED = "This is Game 3 of the NL Division Series. Before first pitch, Series tied 1-1."
+TIED = "This is Game 3 of the NL Division Series. Before first pitch, series tied 1-1."
 OPENING = "This is Game 1 of the World Series; the series has not started."
 KEYS = ("analyst.series.standing", "analyst.series.opening")
 

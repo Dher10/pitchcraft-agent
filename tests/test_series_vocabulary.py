@@ -259,3 +259,28 @@ def test_the_postseason_game_types_are_the_ones_the_fetchers_use():
     from data_pipeline.fetchers import live_pipeline
 
     assert series.POSTSEASON_GAME_TYPES == live_pipeline.POSTSEASON_GAME_TYPES == ("F", "D", "L", "W")
+
+
+# --- how a standing is quoted inside the sentence (QA1-01, P1-R1fix) ----------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "text, quoted",
+    [
+        ("Series tied 1-1", "series tied 1-1"),
+        ("Series tied 2-2", "series tied 2-2"),
+        ("BOS leads 2-0", "BOS leads 2-0"),
+        ("MIL leads 3-1", "MIL leads 3-1"),
+    ],
+)
+def test_a_standing_is_quoted_with_the_first_letter_of_series_in_lower_case_and_nothing_else(text, quoted):
+    assert series.in_sentence(text) == quoted
+
+
+def test_every_standing_of_the_real_answer_is_quoted_by_the_one_rule():
+    for game in PLAYED:
+        text = game["seriesStatus"]["result"]
+        quoted = series.in_sentence(text)
+
+        assert quoted == (text[:1].lower() + text[1:] if text.startswith("Series ") else text), text
+        assert quoted.lower() == text.lower()

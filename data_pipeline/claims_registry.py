@@ -623,7 +623,13 @@ def _scope_part(c: Ctx) -> None:
 
 
 def _series_sentence(c: Ctx) -> None:
-    """`analyst.series.standing` and `.opening`: the matchup has this series, and the numbers are the matchup's own."""
+    """
+    `analyst.series.standing` and `.opening`: the matchup has this series, and the numbers are the matchup's own.
+
+    The opening sentence says the series has not started, which is true only before the game: it needs the game to be
+    known as Preview (QA1-01). The standing sentence needs no state: it is framed "Before first pitch", and the standing is
+    the one as of the day before the game (D29), so it is true in every state, an unknown one included.
+    """
 
     series = (c.matchup or {}).get("series")
     if not c.require(isinstance(series, Mapping), "series", "the matchup has no series"):
@@ -645,12 +651,13 @@ def _series_sentence(c: Ctx) -> None:
     )
     if c.key.endswith(".opening"):
         c.require(number == 1, "game_number", "the sentence says the series has not started, but this is not game 1")
+        _preview(c, "the sentence says the series has not started, and it")
         return
     c.require(c.args["n"] == number and number >= 2, "game_number", "the game number is not the matchup's, or is the first")
     standing = series["standing"]
     c.require(
         standing is not None
-        and c.args["result"] == standing
+        and c.args["result"] == series_vocab.in_sentence(standing)
         and series_vocab.standing(standing, number, series["games_in_series"]) == standing,
         "standing",
         "the standing is not the matchup's, or cannot be true before this game",

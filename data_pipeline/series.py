@@ -69,6 +69,19 @@ def standing(value: Any, game_number: Any, games_in_series: Any = None) -> str |
     return value if wins + losses <= game_number - 1 else None
 
 
+def in_sentence(text: str) -> str:
+    """
+    A recognized standing as the report quotes it in the middle of a sentence ("Before first pitch, {result}.").
+
+    MLB writes a tie as "Series tied 1-1"; after "Before first pitch," the capital reads as a typo, so a text that starts
+    with "Series " has its first letter in lower case (contract rule 4, form 3: first letter in lower case). A team
+    standing ("BOS leads 2-0") is quoted as it is. The analyst writes the sentence with this and the registry judges it
+    with the same function, so the rule is stated once.
+    """
+
+    return text[:1].lower() + text[1:] if text.startswith("Series ") else text
+
+
 def build(
     game_type: Any,
     name: Any,
