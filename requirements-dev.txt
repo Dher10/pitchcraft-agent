@@ -1,0 +1,10 @@
+# Test dependencies (kept apart from runtime requirements.txt), the whole tree pinned (P1.0-a).
+# Fetcher tests import live_pipeline, which needs pybaseball/numpy/pandas.
+# tests/test_workflows.py reads the workflow files with PyYAML.
+# Generated on 2026-10-21 with a pip freeze of a clean virtual environment on Python 3.14 (see requirements.txt).
+-r requirements.txt
+pytest==9.1.1
+iniconfig==2.3.1
+pluggy==1.7.0
+Pygments==2.21.0
+PyYAML==6.0.3

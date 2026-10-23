@@ -1,0 +1,139 @@
+name: daily
+
+# P1.2: build the day's data file once a day and publish it to main (docs/plans/P1.md, 4.2).
+#
+# Two jobs. `build` has no secret and no write access: it fetches, generates, validates, rehearses the publication in a
+# temporary clone and uploads the candidate file. `publish` runs only on main, only after `build`, only when the run is
+# not a dry run, and only there is the deploy key (the environment's one secret) available: it validates the downloaded
+# artifact again with no network and hands it to scripts/publish_data.py, which commits the owner's identity
+# with the subject `data: daily update YYYY-MM-DD` and pushes to main with the deploy key. A failed build leaves the
+# previous published file in place; the run is red and its summary names the {source, code} (rule 5 exception, D42).
+#
+# A day with no MLB games (an off day, the offseason) is a failed build with {mlb_schedule, no_games} and no file: the
+# previous published file stays and the run is red until the no-games state exists (P1.6). Seen on v2 on 2026-10-22.
+#
+# A push to v2 runs only the build, and only when this file changes, so a code push never spends Savant requests (D16).
+# Each run of the build asks MLB and Baseball Savant for real data; the budget is D42's (20 pitcher requests per run).
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and rehearse only; do not publish
+        type: boolean
+        default: false
+      date:
+        description: Game day to build, YYYY-MM-DD (default is today in New York)
+        type: string
+        required: false
+  push:
+    branches: [v2]
+    paths:
+      - .github/workflows/daily.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Restore the data cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data_cache/raw
+          key: data-cache-${{ github.run_id }}
+          restore-keys: |
+            data-cache-
+      - name: Build the day's file
+        env:
+          INPUT_DATE: ${{ inputs.date }}
+        run: |
+          args=(--out "$RUNNER_TEMP/candidate/pitchcraft-demo.json" --dry-run)
+          if [ -n "$INPUT_DATE" ]; then args+=(--date "$INPUT_DATE"); fi
+          status=0
+          python -m data_pipeline.daily "${args[@]}" > "$RUNNER_TEMP/daily.out" 2> "$RUNNER_TEMP/daily.err" || status=$?
+          cat "$RUNNER_TEMP/daily.out"
+          cat "$RUNNER_TEMP/daily.err" >&2
+          {
+            echo "### Daily build (exit $status)"
+            echo '```'
+            grep -h '^daily: ' "$RUNNER_TEMP/daily.out" "$RUNNER_TEMP/daily.err" || echo "no daily line"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Save the data cache
+        if: always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data_cache/raw
+          key: data-cache-${{ github.run_id }}
+      - name: Rehearse the publication in a temporary clone
+        run: |
+          status=0
+          python scripts/publish_data.py "$RUNNER_TEMP/candidate/pitchcraft-demo.json" --dry-run > "$RUNNER_TEMP/publish.out" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/publish.out"
+          {
+            echo "### Publication rehearsal (exit $status)"
+            echo '```'
+            cat "$RUNNER_TEMP/publish.out"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: candidate
+          path: ${{ runner.temp }}/candidate/pitchcraft-demo.json
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'push' && inputs.dry_run != true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: data-publish
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: candidate
+          path: ${{ runner.temp }}/candidate
+      - name: Validate the artifact again, with no network
+        run: python -m data_pipeline.daily --check "$RUNNER_TEMP/candidate/pitchcraft-demo.json"
+      - name: Write the deploy key to a private file
+        env:
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+        run: |
+          umask 077
+          printf '%s\n' "$DATA_DEPLOY_KEY" > "$RUNNER_TEMP/deploy_key"
+          chmod 600 "$RUNNER_TEMP/deploy_key"
+      - name: Commit and push the file
+        run: python scripts/publish_data.py "$RUNNER_TEMP/candidate/pitchcraft-demo.json" --key-file "$RUNNER_TEMP/deploy_key"
+      - name: Remove the deploy key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deploy_key"

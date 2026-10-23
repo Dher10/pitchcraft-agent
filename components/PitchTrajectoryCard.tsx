@@ -5,13 +5,13 @@ import type { PitchFamily } from "@/lib/types";
 
 interface PitchTrajectoryCardProps {
   pitchName: string;
-  family: PitchFamily;
+  family: PitchFamily | null;
   velocity: number | string;
-  usagePct: number;
+  usagePct: number | null;
   hBreak: number;
   vBreak: number;
-  throwsHand: "L" | "R";
-  team: string;
+  throwsHand: "L" | "R" | null;
+  team: string | null;
   description: string;
 }
 
@@ -27,7 +27,8 @@ export default function PitchTrajectoryCard({
   description,
 }: PitchTrajectoryCardProps) {
   const velo = typeof velocity === "number" ? velocity : Number.parseFloat(String(velocity));
-  const velocityPct = Number.isFinite(velo) ? clamp(((velo - 65) / 35) * 100, 0, 100) : 0;
+  // An unavailable velocity has no meter: an empty bar beside "N/A" would read as a measured zero.
+  const velocityPct = Number.isFinite(velo) ? clamp(((velo - 65) / 35) * 100, 0, 100) : null;
   const breakMagnitude = Math.sqrt(hBreak * hBreak + vBreak * vBreak);
   const breakPct = clamp((breakMagnitude / 20) * 100, 0, 100);
   const xOffset = clamp(hBreak * 3.4, -46, 46);
@@ -43,17 +44,21 @@ export default function PitchTrajectoryCard({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h4 className="text-base font-bold text-neutral-900">{pitchName}</h4>
-          <span
-            className="rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide"
-            style={{ background: teamColor.bg, color: teamColor.ink }}
-          >
-            {family}
-          </span>
+          {family ? (
+            <span
+              data-testid="pitch-family"
+              className="rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide"
+              style={{ background: teamColor.bg, color: teamColor.ink }}
+            >
+              {family}
+            </span>
+          ) : null}
         </div>
         <TeamBadge abbreviation={team} size={20} fontSize={7.5} />
       </div>
       <p className="mt-1 font-mono text-[10.5px] text-neutral-400">
-        {throwsHand}HP shape &middot; {formatVelocity(velocity)} &middot; {usagePct}% usage
+        {throwsHand ? `${throwsHand}HP shape` : "Pitch shape"} &middot; {formatVelocity(velocity)} &middot;{" "}
+        {usagePct === null ? "usage not available" : `${usagePct}% usage`}
       </p>
 
       <svg
@@ -93,7 +98,9 @@ export default function PitchTrajectoryCard({
       <p className="mt-3 text-sm leading-6 text-neutral-700">{description}</p>
 
       <div className="mt-4 space-y-3">
-        <Meter label="Velocity" value={formatVelocity(velocity)} percent={velocityPct} color={stroke} />
+        {velocityPct === null ? null : (
+          <Meter label="Velocity" value={formatVelocity(velocity)} percent={velocityPct} color={stroke} />
+        )}
         <Meter label="Break" value={`${breakMagnitude.toFixed(1)} in`} percent={breakPct} color={stroke} />
       </div>
     </aside>

@@ -1,7 +1,7 @@
 import { getTeamColor } from "@/lib/teamColors";
 
 interface TeamBadgeProps {
-  abbreviation: string;
+  abbreviation: string | null;
   size?: number;
   fontSize?: number;
 }
@@ -21,7 +21,7 @@ export default function TeamBadge({ abbreviation, size = 42, fontSize }: TeamBad
       }}
       aria-hidden="true"
     >
-      {abbreviation}
+      {abbreviation ?? ""}
     </span>
   );
 }

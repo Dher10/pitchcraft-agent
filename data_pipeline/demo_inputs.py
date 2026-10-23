@@ -7,9 +7,10 @@ from typing import Any
 
 METADATA: Any = {
   "project_name": "PitchCraft Matchup Agent",
-  "version": "0.2.0",
+  "version": "0.9.0",
   "data_mode": "cached_demo",
-  "generated_at": "2026-06-28T09:00:00-05:00",
+  "generated_at": None,
+  "data_fetched_at": None,
   "last_updated_label": "Demo data generated for capstone submission",
   "data_sources": [
     "MLB public schedule/probable pitchers",
@@ -26,8 +27,9 @@ MATCHUPS: Any = [
     "date": "2026-06-28",
     "status": "upcoming",
     "is_featured": True,
+    "series": None,
     "game": {
-      "title": "San Francisco Giants vs Los Angeles Dodgers",
+      "title": "Los Angeles Dodgers vs San Francisco Giants",
       "venue": "Oracle Park",
       "start_time_local": "7:15 PM",
       "timezone": "America/Los_Angeles",
@@ -365,7 +367,7 @@ MATCHUPS: Any = [
       ],
       "sections": [
         {
-          "title": "Today's Matchup Summary",
+          "title": "Matchup Summary",
           "body": "This matchup features two different starter profiles: one built around power and swing-and-miss, the other around command, movement, and contact control."
         },
         {
@@ -420,9 +422,7 @@ MATCHUPS: Any = [
         }
       ],
       "revision_notes": [
-        "Corrected the put-away pitch claim for Pitcher A from changeup to slider.",
-        "Kept the report focused on matchup fit rather than outcome prediction.",
-        "Avoided claiming official Stuff+."
+        "Corrected the put-away pitch claim for Pitcher A from changeup to slider."
       ]
     },
     "postgame": None,
@@ -441,6 +441,7 @@ MATCHUPS: Any = [
     "date": "2026-06-26",
     "status": "final",
     "is_featured": False,
+    "series": None,
     "game": {
       "title": "New York Yankees vs Boston Red Sox",
       "venue": "Fenway Park",
@@ -506,9 +507,8 @@ MATCHUPS: Any = [
         "pitching_profile": {
           "style_label": "High-velocity fastball-curveball starter",
           "primary_pitch": "Four-seam fastball",
-          # Intentional QA mismatch: the scouting profile claims a changeup put-away pitch,
-          # but the pitch mix does not fully support it, so the critic revises the claim.
-          "putaway_pitch": "Changeup",
+          # The second most thrown pitch (curveball, 26%); the changeup is 12%, under the 15% a put-away pitch needs (D30).
+          "putaway_pitch": "Curveball",
           "command_label": "Below-average command",
           "swing_miss_label": "Above-average swing-and-miss",
           "contact_risk_label": "Elevated contact risk"
@@ -780,7 +780,7 @@ MATCHUPS: Any = [
       ],
       "sections": [
         {
-          "title": "Today's Matchup Summary",
+          "title": "Matchup Summary",
           "body": "A high-velocity arm faces a command-first lefty. The story is whether power can outrun the walk risk against a patient lineup."
         },
         {
@@ -871,7 +871,7 @@ ARCHIVE: Any = [
   {
     "id": "matchup_001",
     "date": "2026-06-28",
-    "title": "Giants vs Dodgers",
+    "title": "Dodgers vs Giants",
     "status": "upcoming",
     "featured": True,
     "starter_summary": "Demo Pitcher A vs Demo Pitcher B",
@@ -963,6 +963,8 @@ AGENT_WORKFLOW: Any = {
 
 DISCLAIMERS: Any = [
   "PitchCraft is a capstone demo and not a betting or gambling tool.",
+  "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
+  "Demo data. Live reports use data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
   "The analysis explains matchup fit and what to watch, not guaranteed outcomes.",
   "Cached demo data may be used to ensure stable public evaluation.",
   "Any internal Stuff or Strength signals are PitchCraft-specific and are not official Stuff+ metrics."

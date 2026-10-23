@@ -5,6 +5,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+from agents.language import DEFAULT_LANGUAGE, catalog_for
+
 
 SECTION_CHECKS = (
     ("game", ("game",)),
@@ -19,14 +21,16 @@ SECTION_CHECKS = (
 )
 
 
-def run(matchup_input: dict[str, Any]) -> dict[str, Any]:
+def run(matchup_input: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
     """
     Receive raw matchup input and return a full matchup packet.
 
     The packet passes through the matchup data, adds section availability flags,
-    and supplies deterministic cached-demo confidence metadata.
+    and supplies deterministic cached-demo confidence metadata, with its notes in
+    `language`.
     """
 
+    t = catalog_for(language)
     packet = deepcopy(matchup_input)
     status = packet.get("status")
     existing_confidence = packet.get("data_confidence")
@@ -35,15 +39,9 @@ def run(matchup_input: dict[str, Any]) -> dict[str, Any]:
     else:
         lineup_status = "final" if status == "final" else "not_required_for_demo"
         notes = (
-            [
-                "Completed demo game used to show the postgame grading flow.",
-                "Grades are PitchCraft-specific and explainable, not official metrics.",
-            ]
+            [t("scout.final.note_1"), t("scout.final.note_2")]
             if status == "final"
-            else [
-                "This demo uses cached data to guarantee stable judging.",
-                "Live data integration can be added after the capstone.",
-            ]
+            else [t("scout.demo.note_1"), t("scout.demo.note_2")]
         )
         data_confidence = {
             "level": "demo_cached",

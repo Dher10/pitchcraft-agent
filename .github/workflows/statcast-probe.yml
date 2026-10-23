@@ -1,0 +1,145 @@
+name: statcast-probe
+
+# P1.1: can a GitHub-hosted runner reach Baseball Savant? One question, one run, no side effects.
+#
+# It runs on a push to v2 only when this file changes (workflow_dispatch needs the file on the default branch,
+# so it could not be triggered from v2 otherwise). It makes exactly two requests: one to the MLB Stats API schedule
+# (to pick a pitcher who threw in the 2026 postseason) and one to Baseball Savant for that pitcher over three days,
+# through pybaseball.statcast_pitcher, the call the daily job would make. It prints the HTTP status, the content type,
+# the size, the row count and the elapsed time. It never prints a body, has no secret, and commits nothing (D16).
+# The exit code is the verdict: 0 reachable, 1 blocked or unusable, 2 inconclusive. The check goes red for 1 and 2,
+# so a block is never read as a success. The range is three days; the daily job asks for the whole season, so a pass
+# here does not prove the size or the rate of the daily job.
+
+on:
+  push:
+    branches: [v2]
+    paths:
+      - .github/workflows/statcast-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: One MLB schedule request and one Savant request
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import time
+          import urllib.request
+          from datetime import date, timedelta
+
+          import requests
+          from requests.adapters import HTTPAdapter
+
+          SCHEDULE = (
+              "https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameType=F,D,L,W"
+              "&startDate=2026-09-29&endDate=2026-10-08&hydrate=probablePitcher"
+          )
+          lines = []
+
+
+          def say(text):
+              print(text, flush=True)
+              lines.append(text)
+
+
+          def finish(result, code):
+              # The exit code is the verdict: 0 reachable, 1 blocked or unusable, 2 inconclusive (the check goes red
+              # for 1 and 2, so a block is never read as a success). The summary is written before exiting.
+              say("PROBE RESULT: " + result)
+              summary = os.environ.get("GITHUB_STEP_SUMMARY")
+              if summary:
+                  with open(summary, "a", encoding="utf-8") as handle:
+                      handle.write("### Statcast probe\n\n```\n" + "\n".join(lines) + "\n```\n")
+              sys.exit(code)
+
+
+          # 1. One MLB Stats API request: who started a finished postseason game?
+          started = time.monotonic()
+          request = urllib.request.Request(SCHEDULE, headers={"User-Agent": "PitchCraft-Capstone/1.0"})
+          with urllib.request.urlopen(request, timeout=30) as response:
+              status = response.status
+              body = response.read()
+          elapsed = time.monotonic() - started
+          games = [game for entry in json.loads(body)["dates"] for game in entry["games"]]
+          say(f"mlb_schedule http_status={status} games={len(games)} bytes={len(body)} elapsed={elapsed:.2f}s")
+
+          pitcher = None
+          for game in games:
+              if game.get("status", {}).get("detailedState") != "Final":
+                  continue
+              for side in ("home", "away"):
+                  probable = game["teams"][side].get("probablePitcher")
+                  if probable and probable.get("id"):
+                      pitcher = (probable["id"], game["officialDate"])
+                      break
+              if pitcher:
+                  break
+          if pitcher is None:
+              finish("inconclusive (no finished postseason game with a probable pitcher in the window)", 2)
+          pitcher_id, game_day = pitcher
+          start = game_day
+          end = (date.fromisoformat(game_day) + timedelta(days=2)).isoformat()
+          say(f"savant request: one pitcher, {start} to {end}")
+
+          # 2. One Savant request through the code path of the daily job. pybaseball calls requests.get with no timeout
+          # and no status check, so the adapter records what the server answered and refuses a second request.
+          real_send = HTTPAdapter.send
+          calls = []
+
+
+          def send(self, req, **kwargs):
+              if calls:
+                  raise RuntimeError("a second request was refused")
+              kwargs["timeout"] = kwargs.get("timeout") or 60
+              t0 = time.monotonic()
+              resp = real_send(self, req, **kwargs)
+              calls.append(resp)
+              say(
+                  f"savant http_status={resp.status_code} content_type={resp.headers.get('content-type')} "
+                  f"bytes={len(resp.content)} elapsed={time.monotonic() - t0:.2f}s"
+                  + (f" location={resp.headers.get('location')}" if 300 <= resp.status_code < 400 else "")
+              )
+              return resp
+
+
+          HTTPAdapter.send = send
+
+          from pybaseball import statcast_pitcher
+
+          rows = None
+          columns_ok = False
+          failure = None
+          started = time.monotonic()
+          try:
+              frame = statcast_pitcher(start, end, player_id=pitcher_id)
+              rows = len(frame)
+              columns_ok = "pitch_type" in frame.columns
+              say(f"savant rows={rows} has_pitch_type_column={columns_ok} elapsed_total={time.monotonic() - started:.2f}s")
+          except Exception as exc:  # the type only: never a body
+              failure = type(exc).__name__
+              say(f"savant failed: {failure}")
+
+          answered = bool(calls) and calls[0].status_code == 200
+          if answered and failure is None and columns_ok and rows > 0:
+              finish("savant reachable from the runner", 0)
+          if answered and failure is None and columns_ok:
+              finish("inconclusive (Savant answered with a valid frame of zero rows: the pitcher did not throw in the window)", 2)
+          finish("savant NOT usable from the runner (blocked, redirected, timed out or not a pitch table)", 1)
+          PY

@@ -19,6 +19,14 @@ interface StrengthProfileProps {
 }
 
 export default function StrengthProfile({ data, awayStarterName, homeStarterName }: StrengthProfileProps) {
+  if (data.length === 0) {
+    return (
+      <section className="rounded-xl border border-neutral-200 bg-white p-4">
+        <h3 className="text-lg font-bold text-neutral-900">Strength Profile</h3>
+        <p className="mt-2 text-sm text-neutral-500">Not available for live data yet.</p>
+      </section>
+    );
+  }
   return (
     <section className="rounded-xl border border-neutral-200 bg-white p-4">
       <h3 className="text-lg font-bold text-neutral-900">Strength Profile</h3>

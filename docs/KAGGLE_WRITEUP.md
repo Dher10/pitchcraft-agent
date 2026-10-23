@@ -1,3 +1,5 @@
+> **Archived: v1 capstone submission (July 2026).** This document describes PitchCraft as submitted to the Kaggle AI Agents Intensive and is kept unchanged as a historical record. Known v1 limitations and the v2 plan live in `docs/PRD_v2.md`, `docs/DECISIONS.md` and `docs/PLAN.md`.
+
 # PitchCraft: A Fact-Checked Scouting Report Generator
 
 ### Turning MLB matchups into readable scouting reports, verified line by line by a critic agent.

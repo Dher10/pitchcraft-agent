@@ -1,0 +1,68 @@
+#!/bin/sh
+# PitchCraft commit-msg hook (decision D21).
+# Runs on every local commit, from any tool (Claude Code, Codex, terminal).
+#   1. Author and committer must be the owner.
+#   2. AI attribution lines are removed from the message.
+#   3. The message must follow docs/CONTRIBUTING.md: prefix + lowercase subject + body.
+
+MSG_FILE="$1"
+OWNER_EMAIL="edherdenez@gmail.com"
+
+# Everything that reads the message text runs in the C locale, so the result does not depend on
+# the locale of the shell that runs `git commit`. Under a UTF-8 locale, Git for Windows' grep did
+# not match `[^[:alnum:]]*` over an emoji outside the Basic Multilingual Plane (QA2-05). The
+# message is read from stdin so the C locale never touches a file name.
+in_c() { LC_ALL=C "$@"; }
+
+email_of() { git var "$1" | sed -E 's/^.*<([^>]*)>.*$/\1/'; }
+AUTHOR_EMAIL=$(email_of GIT_AUTHOR_IDENT)
+COMMITTER_EMAIL=$(email_of GIT_COMMITTER_IDENT)
+
+if [ "$AUTHOR_EMAIL" != "$OWNER_EMAIL" ] || [ "$COMMITTER_EMAIL" != "$OWNER_EMAIL" ]; then
+  echo "commit-msg: blocked. Author/committer must be $OWNER_EMAIL." >&2
+  echo "  author:    $AUTHOR_EMAIL" >&2
+  echo "  committer: $COMMITTER_EMAIL" >&2
+  echo "  Fix: git config user.name \"Daniel Herdenez\" && git config user.email $OWNER_EMAIL" >&2
+  exit 1
+fi
+
+# Remove AI attribution lines, whatever the tool: trailers (Co-authored-by, Claude-Session,
+# Codex-Session, Assisted-by, Generated-by), "Generated with/by <tool>" lines (an emoji
+# before them is fine), a Signed-off-by from a tool, and any line with a tool's noreply address.
+# Prose that merely mentions a tool is kept.
+TOOLS='claude|codex|openai|chatgpt|gpt|copilot|gemini|cursor|aider|windsurf|cody'
+TMP_FILE="$MSG_FILE.pitchcraft.tmp"
+in_c grep -v -i -E "^[[:space:]]*(co-authored-by|claude-session|codex-session|assisted-by|generated-by):|^[^[:alnum:]]*generated (with|by) .*($TOOLS)|^[[:space:]]*signed-off-by:.*($TOOLS)|noreply@(anthropic|openai)\.com" < "$MSG_FILE" > "$TMP_FILE"
+mv "$TMP_FILE" "$MSG_FILE"
+
+CONTENT=$(in_c grep -v '^#' < "$MSG_FILE")
+SUBJECT=$(printf '%s\n' "$CONTENT" | in_c sed '/^[[:space:]]*$/d' | head -n 1)
+
+# Merge and Revert: only the messages git writes itself, never free text.
+if printf '%s\n' "$SUBJECT" | in_c grep -q -E "^Merge (branch|remote-tracking branch|tag) '[^']+'( of [^ ]+)?( into [^ ]+)?$"; then
+  exit 0
+fi
+if printf '%s\n' "$SUBJECT" | in_c grep -q -E '^Revert ".+"$' \
+  && printf '%s\n' "$CONTENT" | in_c grep -q -E '^This reverts commit [0-9a-f]{40}(, reversing changes made to [0-9a-f]{40})?\.$'; then
+  exit 0
+fi
+
+# type: lowercase imperative summary, no trailing period. Code in backticks may keep its case.
+SUBJECT_WITHOUT_CODE=$(printf '%s\n' "$SUBJECT" | in_c sed -E 's/`[^`]*`//g')
+if ! printf '%s\n' "$SUBJECT" | in_c grep -q -E '^(feat|fix|docs|chore|style|refactor|test|perf|ci|build)(\([a-z0-9._-]+\))?: [a-z0-9`]' \
+  || printf '%s\n' "$SUBJECT_WITHOUT_CODE" | in_c grep -q '[A-Z]' \
+  || printf '%s\n' "$SUBJECT" | in_c grep -q '\.$'; then
+  echo "commit-msg: blocked. Subject must look like 'fix: lowercase imperative summary' (no capitals, no trailing period)." >&2
+  echo "  got: $SUBJECT" >&2
+  echo "  See docs/CONTRIBUTING.md" >&2
+  exit 1
+fi
+
+BODY_LINES=$(printf '%s\n' "$CONTENT" | in_c sed '/^[[:space:]]*$/d' | in_c sed '1d' | wc -l | tr -d ' ')
+if [ "$BODY_LINES" -lt 1 ]; then
+  echo "commit-msg: blocked. A body explaining what changed and why is required." >&2
+  echo "  See docs/CONTRIBUTING.md" >&2
+  exit 1
+fi
+
+exit 0

@@ -1,32 +1,77 @@
-export type MatchupStatus = "upcoming" | "final" | "demo";
-export type CriticCheckStatus = "supported" | "unsupported" | "revised" | "not_present" | "warning";
+export type MatchupStatus = "upcoming" | "live" | "final" | "demo";
+export type CriticCheckStatus = "supported" | "unsupported" | "not_present" | "warning";
 export type ConfidenceLevel = "live_confirmed" | "fetched_snapshot" | "partial" | "demo_cached" | "limited";
 export type CallResult = "held_up" | "partially_held_up" | "did_not_hold_up" | "unclear";
 export type AgentStatus = "completed" | "not_applicable" | "pending";
 
+// One sentence of the file, recorded with the catalog key and the arguments it was made from
+// (docs/DATA_CONTRACT.md, rule 4). The page does not read claims; the validator does.
+export interface Claim {
+  id: string;
+  key: string;
+  args: Record<string, unknown>;
+  subject: "away_starter" | "home_starter" | null;
+  location: string | null;
+}
+
 export interface PitchCraftData {
   metadata: Metadata;
-  featured_matchup_id: string;
+  /** `null` for a day with no games (schema 0.9.0, D43). */
+  featured_matchup_id: string | null;
+  /** Empty for a day with no games (schema 0.9.0, D43). */
   matchups: Matchup[];
   archive: ArchiveItem[];
   agent_workflow: AgentWorkflow;
   disclaimers: string[];
+  claims?: Claim[];
 }
 
 export interface Metadata {
   project_name: string;
   version: string;
+  language?: string;
   data_mode: string;
+  /** The instant the file was built (schema 0.7.0): always real, in every mode. */
   generated_at: string;
+  /** The instant of the live fetch; `null` in a demo file (schema 0.7.0, D39). */
+  data_fetched_at: string | null;
   last_updated_label: string;
   data_sources: string[];
+  data_status?: DataStatus;
+}
+
+export interface LiveRunSummary {
+  status: string;
+  run_at: string;
+  target_date: string | null;
+  as_of: string | null;
+  games_scheduled: number;
+  games_live: number;
+  errors: RunIssue[];
+  warnings: RunIssue[];
+}
+
+/** What the file says about a failure or a warning of the run (rule 8, schema 0.6.0): a source and a code, no text. */
+export interface RunIssue {
+  source: string;
+  code: string;
+}
+
+export interface DataStatus {
+  mode: string;
+  /** `null` for a live file; a source and a code for a fallback and for a demo file with no live run (`pipeline` / `no_live_run`). */
+  reason: RunIssue | null;
+  live_run: LiveRunSummary | null;
 }
 
 export interface Matchup {
   id: string;
   date: string;
-  status: MatchupStatus;
+  /** The schedule's game state (schema 0.8.0, D40); `null` when the schedule does not say or the game was not played to its end. */
+  status: MatchupStatus | null;
   is_featured: boolean;
+  /** The series context of a postseason game (schema 0.9.0, D43); `null` for any other game. */
+  series: Series | null;
   game: Game;
   teams: { home: Team; away: Team };
   starters: { away_starter: Starter; home_starter: Starter };
@@ -38,12 +83,31 @@ export interface Matchup {
   data_confidence: DataConfidence;
 }
 
+/** A postseason series, as the schedule names it (schema 0.9.0, D43). */
+export interface Series {
+  series_name: string;
+  /** The number of this game in the series, from 1. */
+  game_number: number;
+  /** `null` when the schedule does not say how many games the series has. */
+  games_in_series: number | null;
+  /** The standing before first pitch; `null` when it is not available. */
+  standing: string | null;
+}
+
 export interface Game {
   title: string;
-  venue: string;
-  start_time_local: string;
-  timezone: string;
-  broadcast_note: string;
+  /** Null when the schedule did not name the venue (live data). */
+  venue: string | null;
+  /**
+   * Live games (D33): the schedule's UTC instant, YYYY-MM-DDTHH:MM:SSZ. Absent in the demo, whose
+   * times are written pre-formatted in `start_time_local`.
+   */
+  start_time_utc?: string | null;
+  /** Demo games only; null for a live game. */
+  start_time_local: string | null;
+  /** The venue's IANA zone when the source gave one (live), the demo's own zone otherwise; null if unknown. */
+  timezone: string | null;
+  broadcast_note: string | null;
   home_team_id: string;
   away_team_id: string;
 }
@@ -51,18 +115,27 @@ export interface Game {
 export interface Team {
   id: string;
   name: string;
-  abbreviation: string;
-  record: string;
+  /** null when the schedule and the maps do not know the team: the page shows the name. */
+  abbreviation: string | null;
+  record: string | null;
   offense_profile: OffenseProfile;
 }
 
 export interface OffenseProfile {
-  summary_label: string;
-  vs_pitcher_hand: string;
-  ops_vs_hand: string;
-  k_rate_vs_hand: string;
-  bb_rate_vs_hand: string;
-  recent_form: string;
+  summary_label: string | null;
+  vs_pitcher_hand: string | null;
+  ops_vs_hand: string | null;
+  k_rate_vs_hand: string | null;
+  bb_rate_vs_hand: string | null;
+  recent_form: string | null;
+  scope?: DataScope | null;
+}
+
+/** Which games a group of figures covers (live data only). */
+export interface DataScope {
+  kind: "regular_season" | "regular_and_postseason";
+  through: string;
+  label: string;
 }
 
 export interface StarterBio {
@@ -78,30 +151,54 @@ export interface StarterBio {
 export interface Starter {
   id: string;
   name: string;
-  team: string;
+  /** The abbreviation of his team; null when the team has none. */
+  team: string | null;
   throws: string;
-  bio: StarterBio;
+  bio: StarterBio | null;
   season_summary: SeasonSummary;
   pitching_profile: PitchingProfile;
-  recent_form: RecentForm;
+  recent_form: RecentForm | null;
+  sample?: Sample;
+}
+
+/** The sample behind a live starter's labels (D24). Absent for demo starters. */
+export interface Sample {
+  /** `scope` is null when the pitch count is unknown (a measured zero keeps its scope). */
+  arsenal: { pitches: number | null; scope: DataScope | null };
+  rates: {
+    batters_faced: number | null;
+    strikeouts: number | null;
+    walks: number | null;
+    home_runs: number | null;
+    source: "mlb_api" | "statcast" | "unavailable";
+    /** Null when the counts are unavailable: a group with no figure has no scope. */
+    scope: DataScope | null;
+  };
+  limited: { arsenal: boolean; strikeout: boolean; control: boolean };
+  thresholds: { arsenal: number; strikeout: number; control: number };
 }
 
 export interface SeasonSummary {
   era: string;
   whip: string;
   innings: string;
-  strikeouts: number;
-  walks: number;
-  home_runs_allowed: number;
+  strikeouts: number | null;
+  walks: number | null;
+  home_runs_allowed: number | null;
+  /**
+   * One scope per group of figures (live data only): ERA, WHIP and innings come from the MLB API
+   * (regular season), the counts (K, BB, HR) from the source that gave them. Null: the group has no figures.
+   */
+  scopes?: { season_rates: DataScope | null; counts: DataScope | null };
 }
 
 export interface PitchingProfile {
   style_label: string;
   primary_pitch: string;
   putaway_pitch: string;
-  command_label: string;
-  swing_miss_label: string;
-  contact_risk_label: string;
+  command_label: string | null;
+  swing_miss_label: string | null;
+  contact_risk_label: string | null;
 }
 
 export interface RecentForm {
@@ -110,9 +207,15 @@ export interface RecentForm {
 }
 
 export interface PitchUsage {
-  overall: number;
-  vs_lhh: number;
-  vs_rhh: number;
+  // null: the starter threw no pitch, so there is no share to take (not 0%).
+  overall: number | null;
+  // null: the starter never faced that side, so there is no share (not 0%).
+  vs_lhh: number | null;
+  vs_rhh: number | null;
+  // Raw pitches behind the rounded shares (live data only; the demo has none): `count` of this
+  // pitch out of the starter's `total`. Decisions use these, the chart shows the rounded share.
+  count?: number;
+  total?: number;
 }
 
 export interface PitchMixRow {
@@ -136,9 +239,11 @@ export interface StrengthRow {
 export type PitchFamily = "Fastball" | "Breaking" | "Offspeed";
 
 export interface PitchMovement {
-  h_break: number;
-  v_break: number;
-  family: PitchFamily;
+  /** Inches; null when the movement was not measured (never 0 for "unknown"). */
+  h_break: number | null;
+  v_break: number | null;
+  /** null for a pitch the family map does not know: it is never given one. */
+  family: PitchFamily | null;
 }
 
 export interface Charts {
@@ -178,6 +283,7 @@ export interface Report {
   headline: string;
   short_summary: string[];
   sections: ReportSection[];
+  claims?: Claim[];
 }
 
 export interface CriticCheck {
@@ -224,7 +330,8 @@ export interface Postgame {
 
 export interface DataConfidence {
   level: ConfidenceLevel;
-  lineup_status: string;
+  /** Follows `status`; `null` when the status is (schema 0.8.0). */
+  lineup_status: string | null;
   pitch_data_status: string;
   notes: string[];
 }
@@ -236,7 +343,8 @@ export interface ArchiveItem {
   status: MatchupStatus;
   featured: boolean;
   starter_summary: string;
-  result_label: string;
+  /** `null` for a report that was published and never graded (schema 0.9.0, D43). */
+  result_label: string | null;
   grade_label: string | null;
 }
 

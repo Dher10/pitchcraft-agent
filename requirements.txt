@@ -1,4 +1,39 @@
-# PitchCraft data pipeline dependencies
+# PitchCraft data pipeline dependencies, the whole tree pinned (P1.0-a): what CI installs does not change under us.
 # Core generator/agents use the Python standard library.
 # Live data integration uses pybaseball (MLB Statcast) + the MLB Stats API.
-pybaseball>=2.2.7
+# Generated on 2026-10-21 with `pip install pybaseball==2.2.7` followed by `pip freeze` in a clean virtual
+# environment on Python 3.14, minus colorama (a Windows-only dependency of tqdm; CI runs on Linux).
+# To refresh: do the same, replace the lines below, and run `python -m pytest tests/test_requirements_pinned.py`.
+pybaseball==2.2.7
+attrs==26.1.0
+beautifulsoup4==4.15.0
+certifi==2026.10.19
+cffi==2.1.1
+charset-normalizer==3.5.2
+contourpy==1.4.0
+cryptography==50.0.2
+cycler==0.12.1
+fonttools==4.67.0
+idna==3.20
+kiwisolver==1.5.1
+lxml==6.1.3
+matplotlib==3.11.2
+numpy==2.5.4
+packaging==26.3
+pandas==3.0.6
+pillow==13.0.0
+pyarrow==26.0.0
+pycparser==3.11
+PyGithub==2.10.0
+PyJWT==2.15.1
+PyNaCl==1.6.2
+pyparsing==3.3.3
+python-dateutil==3.0.0
+requests==2.34.2
+scipy==1.18.1
+six==1.17.0
+soupsieve==3.0.4
+tqdm==4.70.1
+typing_extensions==4.16.0
+tzdata==2026.5
+urllib3==2.8.0

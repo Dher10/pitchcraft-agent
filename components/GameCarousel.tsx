@@ -1,15 +1,19 @@
 "use client";
 
 import TeamBadge from "@/components/TeamBadge";
+import { UNAVAILABLE, formatStartTime, todayInNewYork } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
+import { teamLabel } from "@/lib/teamLabel";
 import type { ArchiveItem, Matchup } from "@/lib/types";
 
 interface GameCarouselProps {
   matchups: Matchup[];
   archive: ArchiveItem[];
-  featuredId: string;
+  featuredId: string | null;
   selectedId: string;
   onSelect: (matchupId: string) => void;
+  /** Today in New York as YYYY-MM-DD; the clock when absent (tests give it). */
+  today?: string;
 }
 
 export default function GameCarousel({
@@ -18,7 +22,9 @@ export default function GameCarousel({
   featuredId,
   selectedId,
   onSelect,
+  today,
 }: GameCarouselProps) {
+  const todayDate = today ?? todayInNewYork();
   return (
     <section className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -50,24 +56,24 @@ export default function GameCarousel({
               />
               <div className="px-3.5 pb-4 pt-3">
                 <div className="flex items-center justify-between gap-2">
-                  <DateBadge date={matchup.date} />
+                  <DateBadge date={matchup.date} today={todayDate} />
                   <span className={`rounded-md px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide ${statusClass(matchup.status, isFeatured)}`}>
-                    {isFeatured ? "recommended" : matchup.status}
+                    {isFeatured ? "recommended" : statusLabel(matchup.status)}
                   </span>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <TeamBadge abbreviation={matchup.teams.away.abbreviation} size={26} />
                   <p className="font-semibold text-neutral-900">
-                    {matchup.teams.away.abbreviation}
+                    {teamLabel(matchup.teams.away)}
                     <span className="mx-1 font-normal text-neutral-400">@</span>
-                    {matchup.teams.home.abbreviation}
+                    {teamLabel(matchup.teams.home)}
                   </p>
                   <TeamBadge abbreviation={matchup.teams.home.abbreviation} size={26} />
                 </div>
                 <p className="mt-2.5 font-mono text-[10px] text-neutral-400">
                   {matchup.status === "final" && matchup.postgame
-                    ? `${matchup.teams.away.abbreviation} ${matchup.postgame.final_score.away_team_runs} - ${matchup.teams.home.abbreviation} ${matchup.postgame.final_score.home_team_runs}`
-                    : matchup.game.start_time_local}
+                    ? `${teamLabel(matchup.teams.away)} ${matchup.postgame.final_score.away_team_runs} - ${teamLabel(matchup.teams.home)} ${matchup.postgame.final_score.home_team_runs}`
+                    : formatStartTime(matchup.game)}
                 </p>
                 <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-neutral-600">
                   {matchup.report.headline}
@@ -81,15 +87,22 @@ export default function GameCarousel({
   );
 }
 
-function DateBadge({ date }: { date: string }) {
-  const today = new Date().toISOString().slice(0, 10);
+function DateBadge({ date, today }: { date: string; today: string }) {
   const label = date === today ? "Today" : date;
   return <span className="font-mono text-[11px] font-medium text-neutral-400">{label}</span>;
+}
+
+/**
+ * What the badge says of the game: its state, or the dash of every unavailable figure when the schedule did not give one
+ * (never a guessed "upcoming"). The dash is the page's existing way to say "not available": no new wording.
+ */
+export function statusLabel(status: Matchup["status"]): string {
+  return status ?? UNAVAILABLE;
 }
 
 function statusClass(status: Matchup["status"], featured: boolean) {
   if (featured) return "bg-blue-600 text-white";
   if (status === "final") return "bg-green-100 text-green-800";
-  if (status === "upcoming") return "border border-neutral-200 bg-neutral-100 text-neutral-500";
+  if (status === "live") return "bg-amber-100 text-amber-800";
   return "border border-neutral-200 bg-neutral-100 text-neutral-500";
 }

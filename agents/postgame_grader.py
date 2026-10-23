@@ -13,6 +13,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+from agents.language import DEFAULT_LANGUAGE, Catalog, catalog_for
 from data_pipeline.schema import STARTER_SLOTS
 
 
@@ -55,9 +56,10 @@ def game_score(line: dict[str, Any]) -> int:
     )
 
 
-def run(matchup_input: dict[str, Any]) -> dict[str, Any]:
-    """Return generated postgame grading output for a final matchup."""
+def run(matchup_input: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dict[str, Any]:
+    """Return generated postgame grading output for a final matchup, written in `language`."""
 
+    t = catalog_for(language)
     raw_postgame = matchup_input.get("postgame")
     if not isinstance(raw_postgame, dict):
         raise ValueError(f"{matchup_input.get('id', '<unknown>')} is missing raw postgame facts")
@@ -73,9 +75,10 @@ def run(matchup_input: dict[str, Any]) -> dict[str, Any]:
         line["game_score"] = score
         line["pitchcraft_grade"] = pitchcraft_grade(score)
         starter = matchup_input["starters"][slot]
-        line["grade_explanation"] = _grade_explanation(line, score)
-        line["plan_vs_execution"] = _plan_vs_execution(starter, line)
-        line["what_to_watch_next"] = _what_to_watch_next(starter, line)
+        with t.subject(slot):
+            line["grade_explanation"] = _grade_explanation(t, score)
+            line["plan_vs_execution"] = _plan_vs_execution(t, starter, line)
+            line["what_to_watch_next"] = _what_to_watch_next(t, starter, line)
         starter_lines[slot] = line
 
     duel_winner_slot = _starter_duel_winner_slot(starter_lines)
@@ -83,7 +86,7 @@ def run(matchup_input: dict[str, Any]) -> dict[str, Any]:
         "final_score": deepcopy(raw_postgame["final_score"]),
         "starter_lines": starter_lines,
         "starter_duel_winner": starter_lines[duel_winner_slot]["name"],
-        "call_check": _call_check(matchup_input, starter_lines),
+        "call_check": _call_check(t, matchup_input, starter_lines),
     }
 
 
@@ -122,70 +125,55 @@ def _starter_duel_winner_slot(starter_lines: dict[str, dict[str, Any]]) -> str:
     return max(STARTER_SLOTS, key=sort_key)
 
 
-def _grade_explanation(line: dict[str, Any], score: int) -> str:
+def _grade_explanation(t: Catalog, score: int) -> str:
     if score >= 68:
-        return (
-            f"A Game Score of {score} reflects a standout start - he worked deep, "
-            "missed bats, and controlled the run damage."
-        )
+        return t("grader.explanation.standout", score=score)
     if score >= 56:
-        return (
-            f"A Game Score of {score} reflects a solid, above-average start - he worked "
-            "deep, limited walks, and kept the damage in check."
-        )
+        return t("grader.explanation.solid", score=score)
     if score >= 45:
-        return (
-            f"A Game Score of {score} reflects a mixed start - there were useful innings, "
-            "but traffic kept it from becoming a clean outing."
-        )
+        return t("grader.explanation.mixed", score=score)
     if score >= 35:
-        return (
-            f"A Game Score of {score} reflects a rough outing - the hits and walks piled "
-            "up and shortened his night."
-        )
-    return (
-        f"A Game Score of {score} reflects a difficult outing - too much traffic and "
-        "run damage overwhelmed the bright spots."
-    )
+        return t("grader.explanation.rough", score=score)
+    return t("grader.explanation.difficult", score=score)
 
 
-def _plan_vs_execution(starter: dict[str, Any], line: dict[str, Any]) -> str:
+def _plan_vs_execution(t: Catalog, starter: dict[str, Any], line: dict[str, Any]) -> str:
     profile = starter["pitching_profile"]
     primary = profile["primary_pitch"].lower()
     putaway = profile["putaway_pitch"].lower()
+    walks = t.count("walk", line["walks"])
+    earned_runs = t.count("earned_run", line["earned_runs"])
 
     if int(line["walks"]) <= 1 and int(line["earned_runs"]) <= 2:
-        return (
-            f"The plan was to command the {primary} and finish with the {putaway}; "
-            f"{_plural(line['walks'], 'walk')} and {_plural(line['earned_runs'], 'earned run')} "
-            "show the execution mostly matched it."
-        )
+        return t("grader.plan.matched", primary=primary, putaway=putaway, walks=walks, earned_runs=earned_runs)
     if int(line["walks"]) >= 3:
-        return (
-            f"The plan was to use the {primary} to reach {putaway} counts, but "
-            f"{_plural(line['walks'], 'walk')} kept him from controlling the sequence."
-        )
-    return (
-        f"The plan was built around the {primary} and {putaway}, but "
-        f"{_plural(line['hits_allowed'], 'hit')} and {_plural(line['earned_runs'], 'earned run')} "
-        "left only partial execution."
+        return t("grader.plan.walks", primary=primary, putaway=putaway, walks=walks)
+    return t(
+        "grader.plan.partial",
+        primary=primary,
+        putaway=putaway,
+        hits=t.count("hit", line["hits_allowed"]),
+        earned_runs=earned_runs,
     )
 
 
-def _what_to_watch_next(starter: dict[str, Any], line: dict[str, Any]) -> str:
+def _what_to_watch_next(t: Catalog, starter: dict[str, Any], line: dict[str, Any]) -> str:
     profile = starter["pitching_profile"]
     if int(line["walks"]) >= 3:
-        return "The next checkpoint is tightening strike-zone control before traffic builds."
+        return t("grader.next.walks")
     if int(line["hits_allowed"]) >= 7:
-        return "The next checkpoint is limiting contact before counts turn stressful."
+        return t("grader.next.hits")
     if int(line["earned_runs"]) >= 4:
-        return "The next checkpoint is cutting off big innings after the first damage."
-    if int(line["strikeouts"]) <= 3 and "average" in profile["swing_miss_label"].lower():
-        return f"The next checkpoint is getting more chase from the {profile['putaway_pitch'].lower()}."
-    return "The next checkpoint is repeating that walk suppression deep into another start."
+        return t("grader.next.runs")
+    # Only the "Average ..." label: "Above-average" and "Below-average" also contain "average".
+    swing_miss = (profile.get("swing_miss_label") or "").lower()
+    if int(line["strikeouts"]) <= 3 and swing_miss.startswith("average"):
+        return t("grader.next.chase", putaway=profile["putaway_pitch"].lower())
+    return t("grader.next.default")
 
 
 def _call_check(
+    t: Catalog,
     matchup_input: dict[str, Any],
     starter_lines: dict[str, dict[str, Any]],
 ) -> list[dict[str, str]]:
@@ -194,51 +182,46 @@ def _call_check(
     away_line = starter_lines["away_starter"]
     home_line = starter_lines["home_starter"]
 
-    return [
-        _command_check(home_starter, home_line),
-        _walk_risk_check(away_starter, away_line),
-        _swing_miss_check(away_starter, away_line),
-    ]
+    with t.subject("home_starter"):
+        command = _command_check(t, home_starter, home_line)
+    with t.subject("away_starter"):
+        walk_risk = _walk_risk_check(t, away_starter, away_line)
+        swing_miss = _swing_miss_check(t, away_starter, away_line)
+    return [command, walk_risk, swing_miss]
 
 
-def _command_check(starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:
+def _command_check(t: Catalog, starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:
     walks = int(line["walks"])
     result = "held_up" if walks <= 1 else "partially_held_up" if walks <= 3 else "did_not_hold_up"
     return {
-        "pregame_note": f"{starter['name']} needed his command edge to limit free passes.",
+        "pregame_note": t("grader.call.command.note", name=starter["name"]),
         "result": result,
-        "postgame_evidence": (
-            f"He issued {_plural(walks, 'walk')} over {line['innings_pitched']} innings."
+        "postgame_evidence": t(
+            "grader.call.command.evidence", walks=t.count("walk", walks), innings=line["innings_pitched"]
         ),
     }
 
 
-def _walk_risk_check(starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:
+def _walk_risk_check(t: Catalog, starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:
     walks = int(line["walks"])
     result = "held_up" if walks >= 3 else "partially_held_up" if walks == 2 else "did_not_hold_up"
     return {
-        "pregame_note": f"{starter['name']} carried elevated walk risk.",
+        "pregame_note": t("grader.call.walk_risk.note", name=starter["name"]),
         "result": result,
-        "postgame_evidence": (
-            f"He walked {_plural(walks, 'batter')} and exited after {line['innings_pitched']} innings."
+        "postgame_evidence": t(
+            "grader.call.walk_risk.evidence", batters=t.count("batter", walks), innings=line["innings_pitched"]
         ),
     }
 
 
-def _swing_miss_check(starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:
+def _swing_miss_check(t: Catalog, starter: dict[str, Any], line: dict[str, Any]) -> dict[str, str]:
     strikeouts = int(line["strikeouts"])
     score = int(line["game_score"])
     result = "held_up" if strikeouts >= 6 else "partially_held_up" if strikeouts >= 4 else "did_not_hold_up"
     return {
-        "pregame_note": f"{starter['name']} had swing-and-miss upside from the scouting profile.",
+        "pregame_note": t("grader.call.swing_miss.note", name=starter["name"]),
         "result": result,
-        "postgame_evidence": (
-            f"He recorded {_plural(strikeouts, 'strikeout')}, but the full line landed at "
-            f"a Game Score of {score}."
+        "postgame_evidence": t(
+            "grader.call.swing_miss.evidence", strikeouts=t.count("strikeout", strikeouts), score=score
         ),
     }
-
-
-def _plural(value: int, singular: str) -> str:
-    suffix = "" if value == 1 else "s"
-    return f"{value} {singular}{suffix}"

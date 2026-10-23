@@ -1,0 +1,307 @@
+{
+ "about": "Real pairs measured on 2026-10-15 for P0.15-D2.2f (F21): the MLB Stats API season line (stats=byDateRange, 2026-01-01 through `through`, regular season; the aggregate split when the pitcher was traded) against the plate appearances of the cached Statcast frame (game_type R, same window). `pairs` are the pitchers whose frame has every one of his appearances; `short_frames` are two traded pitchers whose cached frame holds only the games of his second club: incomplete against the aggregate line given here, which the pipeline does not read yet (it reads `splits[0]`, one club; F22).",
+ "pairs": [
+  {
+   "pitcher_id": 518585,
+   "through": "2026-08-25",
+   "appearances": 61,
+   "statcast_games": 61,
+   "api_batters_faced": 234,
+   "statcast_plate_appearances": 234,
+   "api_intentional_walks": 2,
+   "statcast_intent_walks": 2
+  },
+  {
+   "pitcher_id": 519242,
+   "through": "2026-09-23",
+   "appearances": 27,
+   "statcast_games": 27,
+   "api_batters_faced": 648,
+   "statcast_plate_appearances": 648,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 543037,
+   "through": "2026-09-23",
+   "appearances": 22,
+   "statcast_games": 22,
+   "api_batters_faced": 519,
+   "statcast_plate_appearances": 519,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 547179,
+   "through": "2026-06-27",
+   "appearances": 18,
+   "statcast_games": 18,
+   "api_batters_faced": 391,
+   "statcast_plate_appearances": 391,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 607074,
+   "through": "2026-09-22",
+   "appearances": 16,
+   "statcast_games": 16,
+   "api_batters_faced": 340,
+   "statcast_plate_appearances": 340,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 608331,
+   "through": "2026-09-22",
+   "appearances": 20,
+   "statcast_games": 20,
+   "api_batters_faced": 434,
+   "statcast_plate_appearances": 434,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 615698,
+   "through": "2026-06-27",
+   "appearances": 17,
+   "statcast_games": 17,
+   "api_batters_faced": 149,
+   "statcast_plate_appearances": 149,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 621112,
+   "through": "2026-09-25",
+   "appearances": 62,
+   "statcast_games": 62,
+   "api_batters_faced": 336,
+   "statcast_plate_appearances": 336,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 642232,
+   "through": "2026-09-25",
+   "appearances": 38,
+   "statcast_games": 38,
+   "api_batters_faced": 268,
+   "statcast_plate_appearances": 268,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 656234,
+   "through": "2026-07-19",
+   "appearances": 36,
+   "statcast_games": 36,
+   "api_batters_faced": 139,
+   "statcast_plate_appearances": 139,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 656427,
+   "through": "2026-06-28",
+   "appearances": 16,
+   "statcast_games": 16,
+   "api_batters_faced": 326,
+   "statcast_plate_appearances": 326,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 657612,
+   "through": "2026-09-24",
+   "appearances": 67,
+   "statcast_games": 67,
+   "api_batters_faced": 241,
+   "statcast_plate_appearances": 241,
+   "api_intentional_walks": 2,
+   "statcast_intent_walks": 2
+  },
+  {
+   "pitcher_id": 660787,
+   "through": "2026-09-25",
+   "appearances": 16,
+   "statcast_games": 16,
+   "api_batters_faced": 94,
+   "statcast_plate_appearances": 94,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 661563,
+   "through": "2026-09-24",
+   "appearances": 9,
+   "statcast_games": 9,
+   "api_batters_faced": 124,
+   "statcast_plate_appearances": 124,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 666808,
+   "through": "2026-07-29",
+   "appearances": 44,
+   "statcast_games": 44,
+   "api_batters_faced": 178,
+   "statcast_plate_appearances": 178,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 669358,
+   "through": "2026-06-29",
+   "appearances": 17,
+   "statcast_games": 17,
+   "api_batters_faced": 434,
+   "statcast_plate_appearances": 434,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 670280,
+   "through": "2026-09-25",
+   "appearances": 64,
+   "statcast_games": 64,
+   "api_batters_faced": 280,
+   "statcast_plate_appearances": 280,
+   "api_intentional_walks": 2,
+   "statcast_intent_walks": 2
+  },
+  {
+   "pitcher_id": 677952,
+   "through": "2026-06-29",
+   "appearances": 17,
+   "statcast_games": 17,
+   "api_batters_faced": 416,
+   "statcast_plate_appearances": 416,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 677960,
+   "through": "2026-08-22",
+   "appearances": 25,
+   "statcast_games": 25,
+   "api_batters_faced": 568,
+   "statcast_plate_appearances": 568,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 680732,
+   "through": "2026-06-29",
+   "appearances": 17,
+   "statcast_games": 17,
+   "api_batters_faced": 387,
+   "statcast_plate_appearances": 387,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 683409,
+   "through": "2026-08-03",
+   "appearances": 15,
+   "statcast_games": 15,
+   "api_batters_faced": 73,
+   "statcast_plate_appearances": 73,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 687396,
+   "through": "2026-09-25",
+   "appearances": 81,
+   "statcast_games": 81,
+   "api_batters_faced": 326,
+   "statcast_plate_appearances": 326,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 687473,
+   "through": "2026-06-27",
+   "appearances": 7,
+   "statcast_games": 7,
+   "api_batters_faced": 99,
+   "statcast_plate_appearances": 99,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 693645,
+   "through": "2026-09-24",
+   "appearances": 33,
+   "statcast_games": 33,
+   "api_batters_faced": 761,
+   "statcast_plate_appearances": 761,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 694819,
+   "through": "2026-06-26",
+   "appearances": 16,
+   "statcast_games": 16,
+   "api_batters_faced": 376,
+   "statcast_plate_appearances": 376,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 695505,
+   "through": "2026-06-27",
+   "appearances": 16,
+   "statcast_games": 16,
+   "api_batters_faced": 367,
+   "statcast_plate_appearances": 367,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 701542,
+   "through": "2026-09-25",
+   "appearances": 32,
+   "statcast_games": 32,
+   "api_batters_faced": 677,
+   "statcast_plate_appearances": 677,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 1
+  },
+  {
+   "pitcher_id": 805673,
+   "through": "2026-06-29",
+   "appearances": 9,
+   "statcast_games": 9,
+   "api_batters_faced": 229,
+   "statcast_plate_appearances": 229,
+   "api_intentional_walks": 0,
+   "statcast_intent_walks": 0
+  }
+ ],
+ "short_frames": [
+  {
+   "pitcher_id": 605242,
+   "through": "2026-09-24",
+   "appearances": 15,
+   "statcast_games": 12,
+   "api_batters_faced": 61,
+   "statcast_plate_appearances": 46,
+   "api_intentional_walks": 1,
+   "statcast_intent_walks": 0
+  },
+  {
+   "pitcher_id": 670167,
+   "through": "2026-09-25",
+   "appearances": 66,
+   "statcast_games": 11,
+   "api_batters_faced": 246,
+   "statcast_plate_appearances": 43,
+   "api_intentional_walks": 4,
+   "statcast_intent_walks": 1
+  }
+ ]
+}

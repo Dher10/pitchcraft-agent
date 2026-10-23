@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass, field
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any
 
@@ -12,44 +15,385 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agents import critic, data_scout, matchup_analyst, postgame_grader, report_writer
+from agents.language import DEFAULT_LANGUAGE
+from data_pipeline import claims
 from data_pipeline import config
 from data_pipeline import demo_inputs
+from data_pipeline import labels
+from data_pipeline import live_matchup
+from data_pipeline import schema
+from data_pipeline.contract_checks import RUN_ERROR_CODES, RUN_SOURCES, RUN_WARNING_CODES
 from data_pipeline.fetchers.cache_manager import load_processed
+from data_pipeline.generator_texts import generator_catalog
+from data_pipeline.schema import WORKFLOW_AGENTS, new_york_day
 from data_pipeline.validators import ValidationError, validate_payload
 
-def _load_live_snapshot() -> dict[str, Any] | None:
+# Rule 8: what the file says about a failure is a source and a code of the closed sets (D38); the text goes to this log
+# and the local run record. The reasons of a fallback that no fetcher recorded:
+SNAPSHOT_SCHEMA_MISMATCH = {"source": "snapshot", "code": "snapshot_schema_mismatch"}
+SNAPSHOT_MISMATCH = {"source": "snapshot", "code": "snapshot_mismatch"}
+SNAPSHOT_UNREADABLE = {"source": "snapshot", "code": "malformed_response"}
+GAME_REJECTED = {"source": "snapshot", "code": "game_rejected"}
+NO_GAMES = {"source": "mlb_schedule", "code": "no_games"}
+NO_USABLE_GAMES = {"source": "pipeline", "code": "no_usable_games"}
+NO_LIVE_RUN = {"source": "pipeline", "code": "no_live_run"}  # a demo file for a day with no live run at all (D39)
+UNEXPECTED = {"source": "pipeline", "code": "unexpected_error"}
+PUBLISHED_LIST_LIMIT = 20
+
+
+def _status(mode: str, reason: dict[str, str] | None, live_run: dict[str, Any] | None) -> dict[str, Any]:
+    return {"mode": mode, "reason": reason, "live_run": live_run}
+
+
+def _published(items: Any, codes: tuple[str, ...], unknown: dict[str, str] | None) -> list[dict[str, str]]:
+    """
+    The errors (or warnings) of a run record as the file may say them: exactly a source and a code of the closed
+    sets, the first of each kind only, at most 20. An item the sets do not know is `unknown` (an error) or left out
+    (a warning): fail closed, never the text of the record.
+    """
+
+    shown: list[dict[str, str]] = []
+    for item in items if isinstance(items, list) else []:
+        source = item.get("source") if isinstance(item, dict) else None
+        code = item.get("code") if isinstance(item, dict) else None
+        if source in RUN_SOURCES and code in codes:
+            entry = {"source": source, "code": code}
+        elif unknown is not None:
+            entry = {
+                "source": source if source in RUN_SOURCES else unknown["source"],
+                "code": unknown["code"],
+            }
+        else:
+            continue
+        if entry not in shown:
+            shown.append(entry)
+    return shown[:PUBLISHED_LIST_LIMIT]
+
+
+def _run_summary(run: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": run.get("status"),
+        "run_at": run.get("run_at"),
+        "target_date": run.get("target_date"),
+        "as_of": run.get("as_of"),
+        "games_scheduled": run.get("games_scheduled"),
+        "games_live": run.get("games_live"),
+        "errors": _published(run.get("errors"), RUN_ERROR_CODES, UNEXPECTED),
+        "warnings": _published(run.get("warnings"), RUN_WARNING_CODES, None),
+    }
+
+
+def _run_failure_reason(summary: dict[str, Any]) -> dict[str, str]:
+    """Why a run that is not `ok` produced no live page, as a source and a code."""
+
+    status = summary["status"]
+    if status == "no_games":
+        return dict(NO_GAMES)
+    if status == "no_usable_games":
+        return dict(NO_USABLE_GAMES)
+    if status == "failed" and summary["errors"]:
+        return dict(summary["errors"][0])
+    return dict(UNEXPECTED)
+
+
+def _resolve_live_input() -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """
+    Decide what the published data is, from the live run record and its snapshot.
+
+    Returns (snapshot or None, status). The snapshot is used only when the latest
+    live run succeeded and wrote it; a failed run, a missing or unreadable record,
+    or a snapshot left by an earlier run never counts as live.
+    """
+
     try:
-        return load_processed("live_matchup")
+        run = load_processed("live_run")
     except Exception as exc:
-        print(f"[CONFIG] Live snapshot unavailable: {exc} - using demo data")
+        print(f"[CONFIG] Live run record unreadable: {exc}")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_UNREADABLE), None)
+    if run is None:
+        return None, _status(config.DATA_MODE_DEMO, dict(NO_LIVE_RUN), None)
+
+    summary = _run_summary(run)
+    if run.get("status") != "ok":
+        print(f"[CONFIG] Live run {run.get('status')}; showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, _run_failure_reason(summary), summary)
+    try:
+        snapshot = load_processed("live_matchup")
+    except Exception as exc:
+        print(f"[CONFIG] Live snapshot unreadable: {exc}")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_UNREADABLE), summary)
+    mismatch = _snapshot_mismatch(run, snapshot)
+    if mismatch:
+        print(f"[CONFIG] Live snapshot does not belong to the latest live run ({mismatch}); showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_MISMATCH), summary)
+    # Rejected by the schema it was written under, not by looking inside it (0.4.0 made the scope of a group
+    # with no figure null). The file says only {source, code} (rule 8); the detail stays in this log.
+    if not schema.snapshot_matches_schema(snapshot.get("schema_version")):
+        print(
+            f"[CONFIG] Live snapshot rejected: schema {snapshot.get('schema_version')!r}, this code reads "
+            f"{schema.SCHEMA_VERSION!r} (a snapshot from before P0.15-D2.1, or from newer code)"
+        )
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_SCHEMA_MISMATCH), summary)
+    unsafe = _snapshot_unsafe(run, snapshot)
+    if unsafe:
+        print(f"[CONFIG] Live snapshot rejected ({unsafe}); showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(SNAPSHOT_MISMATCH), summary)
+    # Rule 5: an unsafe game is dropped with a recorded reason and the others are published; the page falls back to the
+    # demo only when no game is left. The checks above are about the run and the snapshot as a whole.
+    safe, dropped = _split_games(run, snapshot)
+    if not safe:
+        index, problem = dropped[0]
+        print(f"[CONFIG] Live snapshot rejected (game {index}: {problem}); showing demo data")
+        return None, _status(config.DATA_MODE_FALLBACK, dict(GAME_REJECTED), summary)
+    if dropped:
+        for index, problem in dropped:
+            print(f"[CONFIG] Live game dropped: game {index}: {problem}")
+        snapshot = {**snapshot, **_primary_game(safe[0]), "live_games": safe}
+        summary["games_live"] = len(safe)  # the games the file shows, not the ones the run built
+        if GAME_REJECTED not in summary["errors"] and len(summary["errors"]) < PUBLISHED_LIST_LIMIT:
+            summary["errors"] = [*summary["errors"], dict(GAME_REJECTED)]
+    return snapshot, _status(config.DATA_MODE_SNAPSHOT, None, summary)
+
+
+def _snapshot_mismatch(run: dict[str, Any], snapshot: Any) -> str | None:
+    """
+    Why `snapshot` cannot be proven to belong to `run`, or None if it can.
+
+    Both need the same non-empty run identifier, the same game date and the same
+    cutoff. A missing value is never equal to another missing value.
+    """
+
+    if not isinstance(snapshot, dict) or not snapshot:
+        return "no snapshot"
+    run_at = run.get("run_at")
+    if not isinstance(run_at, str) or not run_at.strip():
+        return "the run record has no run identifier"
+    if snapshot.get("run_at") != run_at:
+        return "different run identifier"
+    for key, snapshot_key in (("target_date", "fetched_date"), ("as_of", "as_of")):
+        expected, found = run.get(key), snapshot.get(snapshot_key)
+        if not isinstance(expected, str) or not expected or expected != found:
+            return f"{snapshot_key.replace('_', ' ')} does not match the run"
+    return None
+
+
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+_SLOTS = ("away_starter", "home_starter")
+
+
+def _parse_date(value: Any) -> date | None:
+    """A date written exactly as YYYY-MM-DD, or None. Anything else is not a date."""
+
+    if not isinstance(value, str) or not _ISO_DATE.fullmatch(value):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
         return None
 
 
-print(f"[CONFIG] Data mode: {config.ACTIVE_MODE}")
-_live = _load_live_snapshot()
+def _run_dates(run: dict[str, Any]) -> tuple[date | None, date | None]:
+    return _parse_date(run.get("target_date")), _parse_date(run.get("as_of"))
+
+
+def _snapshot_unsafe(run: dict[str, Any], snapshot: dict[str, Any]) -> str | None:
+    """
+    Why a snapshot that belongs to its run still cannot be published as live at all, or None.
+
+    Equal strings prove ownership, not safety (QA2-01). The dates of the run are parsed and the relationship D29
+    relies on is checked: the cutoff of the run is before the game day. This is about the run and the snapshot as a
+    whole; a game that is unsafe on its own is dropped by `_split_games` (rule 5).
+    """
+
+    target, cutoff = _run_dates(run)
+    if target is None:
+        return f"run game date {run.get('target_date')!r} is not a date"
+    if cutoff is None:
+        return f"run cutoff {run.get('as_of')!r} is not a date"
+    if cutoff >= target:
+        return f"run cutoff {cutoff} is not before the game date {target}"
+
+    if new_york_day(run.get("run_at")) is None:
+        return f"run time {run.get('run_at')!r} is not an instant with a time zone"
+    games = snapshot.get("live_games")
+    if not isinstance(games, list) or not games:
+        return "the snapshot has no games"
+    return None
+
+
+def _split_games(run: dict[str, Any], snapshot: dict[str, Any]) -> tuple[list[Any], list[tuple[int, str]]]:
+    """The games that are safe to publish and, for each of the others, its place (from 1) and why it is not."""
+
+    target, cutoff = _run_dates(run)
+    assert target is not None and cutoff is not None  # `_snapshot_unsafe` has accepted them
+    safe: list[Any] = []
+    dropped: list[tuple[int, str]] = []
+    for index, game in enumerate(snapshot["live_games"], start=1):
+        problem = _game_unsafe(game, target, cutoff)
+        if problem:
+            dropped.append((index, problem))
+        else:
+            safe.append(game)
+    return safe, dropped
+
+
+_PRIMARY_KEYS = ("featured_game", "away_starter", "home_starter", "combined_charts", "away_team_splits", "home_team_splits")
+
+
+def _primary_game(game: dict[str, Any]) -> dict[str, Any]:
+    """The fields of the snapshot that repeat its first game, taken from the first game that is left."""
+
+    return {key: game[key] for key in _PRIMARY_KEYS if key in game}
+
+
+def _game_unsafe(game: Any, target: date, cutoff: date) -> str | None:
+    if not isinstance(game, dict) or not isinstance(game.get("featured_game"), dict):
+        return "no game record"
+    official_raw = game["featured_game"].get("official_date")
+    official = _parse_date(official_raw)
+    if official is None:
+        return f"official date {official_raw!r} is not a date"
+    if official != target:
+        return f"official date {official} is not the run's game date {target}"
+    game_cutoff_raw = game.get("as_of")
+    game_cutoff = _parse_date(game_cutoff_raw)
+    if game_cutoff is None:
+        return f"cutoff {game_cutoff_raw!r} is not a date"
+    if game_cutoff >= official:
+        return f"cutoff {game_cutoff} is not before the official date {official}"
+    if game_cutoff != cutoff:
+        return f"cutoff {game_cutoff} is not the run's cutoff {cutoff}"
+    problem = _featured_game_problem(game["featured_game"])
+    if problem:
+        return problem
+
+    for slot in _SLOTS:
+        starter = game.get(slot)
+        if not isinstance(starter, dict) or not starter.get("name"):
+            return f"{slot} has no name"
+        # A switch pitcher ("S") is a hand: the lineup he faces has no split and the page says so (F11, D38).
+        if starter.get("throws") not in ("L", "R", "S"):
+            return f"{slot} throws {starter.get('throws')!r}, not L, R or S"
+        scopes = (starter.get("season_summary") or {}).get("scopes")
+        if not isinstance(scopes, dict) or set(scopes) != {"season_rates", "counts"}:
+            return f"{slot} has no scope for each group of figures (a snapshot from before P0.15-B)"
+        for through in _starter_throughs(starter):
+            reached = _parse_date(through)
+            if reached is None:
+                return f"{slot} has a figure through {through!r}, not a date"
+            if reached > game_cutoff:
+                return f"{slot} has a figure through {reached}, after the cutoff {game_cutoff}"
+    return None
+
+
+_REQUIRED_GAME_TEXT = ("away_team", "home_team")
+# The schedule and the maps may not know a team's abbreviation (F7): the field is there and says so with null.
+_NULLABLE_GAME_TEXT = ("away_team_abbr", "home_team_abbr")
+_REQUIRED_GAME_IDS = ("away_team_id", "home_team_id", "away_pitcher_id", "home_pitcher_id")
+
+
+def _featured_game_problem(featured: dict[str, Any]) -> str | None:
+    """
+    What the schedule always sends and a live game cannot do without. A game missing one is
+    malformed; the matchup is never completed from the demo (QA4-03). The venue, its zone, the status
+    and the game number are optional: the schedule may leave them out and they are then unavailable.
+    """
+
+    for field in _REQUIRED_GAME_TEXT:
+        value = featured.get(field)
+        if not isinstance(value, str) or not value.strip():
+            return f"featured_game.{field} is missing"
+    for field in _NULLABLE_GAME_TEXT:
+        if field not in featured or not (featured[field] is None or (isinstance(featured[field], str) and featured[field].strip())):
+            return f"featured_game.{field} is missing"
+    for field in _REQUIRED_GAME_IDS:
+        value = featured.get(field)
+        if not isinstance(value, int) or isinstance(value, bool):
+            return f"featured_game.{field} is missing"
+    if not schema.is_utc_instant(featured.get("start_time_utc")):
+        return f"featured_game.start_time_utc {featured.get('start_time_utc')!r} is not a UTC instant"
+    return None
+
+
+def _starter_throughs(starter: dict[str, Any]) -> list[Any]:
+    """The last day every group of figures of a starter claims to cover."""
+
+    scopes = []
+    sample = starter.get("sample")
+    if isinstance(sample, dict):
+        scopes += [(sample.get("arsenal") or {}).get("scope"), (sample.get("rates") or {}).get("scope")]
+    scopes += ((starter.get("season_summary") or {}).get("scopes") or {}).values()
+    return [scope.get("through") for scope in scopes if isinstance(scope, dict)]
+
+
+_live, _live_status = _resolve_live_input()
+print(f"[CONFIG] Data mode: {_live_status['mode']} - {_live_status['reason']}")
 if _live:
     print(f"[CONFIG] Live snapshot found: {_live.get('fetched_date')} - using live data")
-else:
-    print("[CONFIG] No live snapshot - using demo data")
+
+
+def refresh_live_input() -> None:
+    """Read the live run record and snapshot again: `data_pipeline.daily` writes them after this module was imported."""
+
+    global _live, _live_status
+    _live, _live_status = _resolve_live_input()
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_PATH = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 
 
-def main() -> int:
+class CriticBlocked(RuntimeError):
+    """The critic found a claim the data does not back up: nothing is published (QA-04)."""
+
+
+def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None) -> dict[str, Any]:
+    """
+    The full payload; every agent writes its text in `language` (English by default).
+
+    `now` is the clock of the build (injected by tests): `metadata.generated_at` is that instant, in every mode.
+    `metadata.data_fetched_at` is the live fetch (null in a demo file), set by `_apply_live_snapshot` (D39).
+    """
+
     payload = demo_inputs.build_demo_payload()
-    payload["metadata"]["data_mode"] = config.ACTIVE_MODE
+    _stamp_times(payload, now)
+    payload["metadata"]["data_mode"] = _live_status["mode"]
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
+    payload["metadata"]["data_status"] = deepcopy(_live_status)
+    text = generator_catalog()
+    payload["metadata"]["last_updated_label"] = (
+        text("generator.metadata.last_updated.fallback")
+        if _live_status["mode"] == config.DATA_MODE_FALLBACK
+        else text("generator.metadata.last_updated.demo")
+    )
     _apply_live_snapshot(payload)
-    total_revised, graded_starters = _run_agents(payload["matchups"])
+    run = _run_agents(payload["matchups"], language)
     _apply_live_confidence(payload)
     _update_archive_postgame_labels(payload)
-    payload["agent_workflow"] = _build_agent_workflow(
-        len(payload["matchups"]),
-        total_revised,
-        graded_starters,
-    )
+    payload["agent_workflow"] = _build_agent_workflow([matchup["id"] for matchup in payload["matchups"]], run)
+    claims.attach_claims(payload, language)
+    return payload
+
+
+def _stamp_times(payload: dict[str, Any], now: datetime | None) -> None:
+    """
+    The two times of a file (D39): `generated_at` is the build, from the clock, in every mode (never a constant of the
+    demo); `data_fetched_at` is `null` until `_apply_live_snapshot` sets the live fetch.
+    """
+
+    built = now if now is not None else datetime.now(timezone.utc)
+    if built.tzinfo is None:
+        raise ValueError("the clock of the build must carry a time zone")
+    payload["metadata"]["generated_at"] = built.astimezone(timezone.utc).isoformat(timespec="seconds")
+    payload["metadata"]["data_fetched_at"] = None
+
+
+def main() -> int:
+    try:
+        payload = build_payload()
+    except CriticBlocked as exc:
+        print(f"Publication blocked by the critic: {exc}", file=sys.stderr)
+        return 1
     matchup_ids = [matchup["id"] for matchup in payload["matchups"]]
 
     print("PitchCraft demo JSON generator")
@@ -63,43 +407,68 @@ def main() -> int:
         return 1
 
     _print_checks(checks)
-    OUTPUT_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    try:
+        serialized = json.dumps(payload, indent=2, allow_nan=False)
+    except ValueError as exc:
+        print(f"JSON serialization failed: {exc}", file=sys.stderr)
+        return 1
+    OUTPUT_PATH.write_text(serialized + "\n", encoding="utf-8")
     print(f"Wrote v{payload['metadata']['version']} demo JSON to {OUTPUT_PATH}")
     return 0
 
 
-def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
-    total_revised = 0
-    graded_starters = 0
+@dataclass
+class AgentRun:
+    """What the agents did: the warnings the critic raised, the starters graded, and the matchups each agent finished (F19)."""
+
+    total_warnings: int
+    graded_starters: int
+    finished: dict[str, list[str]] = field(default_factory=dict)
+
+    def finish(self, agent: str, matchup_id: str) -> None:
+        self.finished.setdefault(agent, []).append(matchup_id)
+
+
+def _run_agents(matchups: list[dict[str, Any]], language: str = DEFAULT_LANGUAGE) -> AgentRun:
+    scout, analyst, writer, critic_agent, _ = WORKFLOW_AGENTS
+    run = AgentRun(0, 0)
     for matchup_input in matchups:
-        packet = data_scout.run(matchup_input)
+        packet = data_scout.run(matchup_input, language=language)
+        run.finish(scout, matchup_input["id"])
         available_count = sum(1 for available in packet["availability"].values() if available)
         print(f"[AGENT] Data Scout: {available_count} sections available")
 
-        findings = matchup_analyst.run(packet)
+        findings = matchup_analyst.run(packet, language=language)
+        run.finish(analyst, matchup_input["id"])
         print(f"[AGENT] Matchup Analyst: headline = {findings['matchup_headline'][:50]}")
 
-        report = report_writer.run(findings, matchup_input)
+        report = report_writer.run(findings, matchup_input, language=language)
+        run.finish(writer, matchup_input["id"])
         print(f"[AGENT] Report Writer: {len(report['sections'])} sections generated")
 
-        critic_review = critic.run(report, matchup_input)
-        revised_count = sum(
-            1 for check in critic_review["checks"] if check["status"] == "revised"
-        )
-        total_revised += revised_count
+        critic_review = critic.run(report, matchup_input, language=language)
+        unsupported = [c for c in critic_review["checks"] if c["status"] == "unsupported"]
+        warnings = sum(1 for c in critic_review["checks"] if c["status"] == "warning")
+        run.total_warnings += warnings
         print(
             f"[AGENT] Critic: {len(critic_review['checks'])} checks, "
-            f"{revised_count} revised"
+            f"{warnings} warning(s), {len(unsupported)} unsupported"
         )
+        if unsupported:
+            details = "; ".join(f"{c['claim']} {c['evidence']}" for c in unsupported)
+            raise CriticBlocked(f"{matchup_input['id']}: {details}")
+        run.finish(critic_agent, matchup_input["id"])
 
         matchup_input["report"] = report
         matchup_input["critic_review"] = critic_review
         matchup_input["data_confidence"] = packet["data_confidence"]
 
-        if matchup_input["status"] == "final":
-            postgame = postgame_grader.run(matchup_input)
+        # A live game keeps its pregame report whatever its state; its postgame stays null until the daily postgame
+        # exists (rule 7, P1.2). Only a demo game that is final is graded: it has its box score.
+        if matchup_input["status"] == "final" and matchup_input.get("data_confidence", {}).get("level") != "fetched_snapshot":
+            postgame = postgame_grader.run(matchup_input, language=language)
             matchup_input["postgame"] = postgame
-            graded_starters += len(postgame["starter_lines"])
+            run.graded_starters += len(postgame["starter_lines"])
             al = postgame["starter_lines"]["away_starter"]
             hl = postgame["starter_lines"]["home_starter"]
             print(
@@ -111,7 +480,7 @@ def _run_agents(matchups: list[dict[str, Any]]) -> tuple[int, int]:
         else:
             matchup_input["postgame"] = None
 
-    return total_revised, graded_starters
+    return run
 
 
 def _apply_live_snapshot(payload: dict[str, Any]) -> None:
@@ -119,47 +488,46 @@ def _apply_live_snapshot(payload: dict[str, Any]) -> None:
     if not live_games:
         return
 
-    template_index = next(
-        (
-            index
-            for index, matchup in enumerate(payload["matchups"])
-            if matchup["id"] == "matchup_001"
+    # Rule 6 (F4): a live file holds only live matchups. Nothing of the demo is kept: not its other matchups, not its
+    # archive rows. The archive stays empty (today's game is not a past report; the page says "No past reports yet").
+    payload["matchups"] = [
+        _build_live_matchup(live_games[0], "matchup_001", True),
+        *(
+            _build_live_matchup(live_game, f"matchup_live_{index}", False)
+            for index, live_game in enumerate(live_games[1:3], start=2)
         ),
-        None,
-    )
-    if template_index is None:
-        return
-
-    template = deepcopy(payload["matchups"][template_index])
-    primary = _apply_live_game_to_matchup(
-        deepcopy(template),
-        live_games[0],
-        matchup_id="matchup_001",
-        is_featured=True,
-    )
-    payload["matchups"][template_index] = primary
-
-    extra_matchups = [
-        _apply_live_game_to_matchup(
-            deepcopy(template),
-            live_game,
-            matchup_id=f"matchup_live_{index}",
-            is_featured=False,
-        )
-        for index, live_game in enumerate(live_games[1:3], start=2)
     ]
-    if extra_matchups:
-        payload["matchups"][template_index + 1 : template_index + 1] = extra_matchups
-
-    fg = live_games[0]["featured_game"]
-    away = live_games[0]["away_starter"]
-    home = live_games[0]["home_starter"]
-    if payload["archive"]:
-        payload["archive"][0]["title"] = f"{fg['away_team_abbr']} vs {fg['home_team_abbr']}"
-        payload["archive"][0]["starter_summary"] = f"{away['name']} vs {home['name']}"
+    payload["archive"] = []
+    # Rule 6 (F3): what a live file says about its data is its own, not the demo's.
+    payload["metadata"]["data_sources"] = list(config.LIVE_SOURCE_LABELS)
+    payload["disclaimers"] = list(config.LIVE_DISCLAIMERS)
 
     payload["metadata"]["data_mode"] = "fetched_snapshot"
-    payload["metadata"]["last_updated_label"] = f"Live data fetched {_live['fetched_date']}"
+    payload["metadata"]["data_fetched_at"] = _live["run_at"]
+    payload["metadata"]["last_updated_label"] = generator_catalog()(
+        "generator.metadata.last_updated.live", date=_fetch_day()
+    )
+
+
+
+def _build_live_matchup(live_game: dict[str, Any], matchup_id: str, is_featured: bool) -> dict[str, Any]:
+    return live_matchup.build_matchup(
+        live_game,
+        matchup_id=matchup_id,
+        is_featured=is_featured,
+        game_day=_live["fetched_date"],
+        fetch_day=_fetch_day(),
+        through=_live_through(),
+    )
+
+
+def _fetch_day() -> str:
+    """The day of the live fetch in New York: the date every label that says "fetched" shows (D39)."""
+
+    day = new_york_day((_live or {}).get("run_at"))
+    if day is None:  # `_snapshot_unsafe` accepts a run only if its time is an instant
+        raise ValueError("the live run has no time to say when the data was fetched")
+    return day
 
 
 def _live_game_entries() -> list[dict[str, Any]]:
@@ -180,190 +548,9 @@ def _live_game_entries() -> list[dict[str, Any]]:
     ]
 
 
-def _apply_live_game_to_matchup(
-    matchup: dict[str, Any],
-    live_game: dict[str, Any],
-    matchup_id: str,
-    is_featured: bool,
-) -> dict[str, Any]:
-    fg = live_game["featured_game"]
-    away = live_game["away_starter"]
-    home = live_game["home_starter"]
+def _live_through() -> str:
+    return (_live or {}).get("as_of") or (_live or {}).get("fetched_date") or ""
 
-    matchup["id"] = matchup_id
-    matchup["date"] = _live.get("fetched_date", matchup["date"])
-    matchup["status"] = "upcoming"
-    matchup["is_featured"] = is_featured
-    matchup["postgame"] = None
-
-    matchup["game"].update(
-        {
-            "title": f"{fg['away_team']} vs {fg['home_team']}",
-            "venue": fg.get("venue", matchup["game"]["venue"]),
-            "start_time_local": fg.get("start_time", matchup["game"]["start_time_local"]),
-            "home_team_id": str(fg.get("home_team_id", matchup["game"]["home_team_id"])),
-            "away_team_id": str(fg.get("away_team_id", matchup["game"]["away_team_id"])),
-        }
-    )
-
-    matchup["teams"]["away"].update(
-        {
-            "id": str(fg.get("away_team_id", matchup["teams"]["away"]["id"])),
-            "name": fg["away_team"],
-            "abbreviation": fg["away_team_abbr"],
-        }
-    )
-    matchup["teams"]["home"].update(
-        {
-            "id": str(fg.get("home_team_id", matchup["teams"]["home"]["id"])),
-            "name": fg["home_team"],
-            "abbreviation": fg["home_team_abbr"],
-        }
-    )
-
-    _apply_live_starter(matchup["starters"]["away_starter"], away, fg["away_team_abbr"], fg.get("away_pitcher_id"))
-    _apply_live_starter(matchup["starters"]["home_starter"], home, fg["home_team_abbr"], fg.get("home_pitcher_id"))
-
-    _apply_offense_split(
-        matchup["teams"]["home"]["offense_profile"],
-        live_game.get("home_team_splits", {}),
-        away.get("throws", "R"),
-    )
-    _apply_offense_split(
-        matchup["teams"]["away"]["offense_profile"],
-        live_game.get("away_team_splits", {}),
-        home.get("throws", "L"),
-    )
-
-    matchup["charts"]["pitch_mix"] = live_game["combined_charts"]["pitch_mix"]
-    matchup["charts"]["velocity_by_pitch"] = live_game["combined_charts"]["velocity_by_pitch"]
-    matchup["charts"]["pitch_movement"] = {
-        "away_starter": away.get("movement", {}),
-        "home_starter": home.get("movement", {}),
-    }
-
-    matchup["pitch_locations"]["away_starter"] = {
-        "vs_lhh": away["pitch_locations"]["vs_lhh"],
-        "vs_rhh": away["pitch_locations"]["vs_rhh"],
-    }
-    matchup["pitch_locations"]["home_starter"] = {
-        "vs_lhh": home["pitch_locations"]["vs_lhh"],
-        "vs_rhh": home["pitch_locations"]["vs_rhh"],
-    }
-
-    matchup["data_confidence"] = _live_confidence_note(matchup_id)
-    return matchup
-
-
-def _apply_live_starter(
-    starter: dict[str, Any],
-    live_starter: dict[str, Any],
-    team_abbr: str,
-    pitcher_id: int | None,
-) -> None:
-    throws = live_starter.get("throws", "R")
-    starter["id"] = str(pitcher_id or starter["id"])
-    starter["name"] = live_starter["name"]
-    starter["team"] = team_abbr
-    starter["throws"] = throws
-    starter["bio"]["throws"] = throws
-    starter["season_summary"].update(live_starter["season_summary"])
-    starter["pitching_profile"].update(live_starter["pitching_profile"])
-    _sanitize_pitching_profile(starter)
-
-
-def _sanitize_pitching_profile(starter: dict[str, Any]) -> None:
-    profile = starter["pitching_profile"]
-    season = starter["season_summary"]
-    if _is_placeholder_label(profile.get("command_label")):
-        profile["command_label"] = _derive_command_label(_safe_int(season.get("walks")))
-    if _is_placeholder_label(profile.get("swing_miss_label")):
-        profile["swing_miss_label"] = _derive_swing_miss_label(_safe_int(season.get("strikeouts")))
-    if _is_placeholder_label(profile.get("contact_risk_label")):
-        profile["contact_risk_label"] = _derive_contact_risk_label(_safe_int(season.get("home_runs_allowed")))
-
-
-def _is_placeholder_label(value: Any) -> bool:
-    return not value or str(value).strip().lower() == "see live data"
-
-
-def _derive_swing_miss_label(strikeouts: int) -> str:
-    if strikeouts >= 80:
-        return "Above-average swing-and-miss ability"
-    if strikeouts >= 40:
-        return "Moderate swing-and-miss ability"
-    return "Limited swing-and-miss data available"
-
-
-def _derive_command_label(walks: int) -> str:
-    if walks <= 25:
-        return "Solid command this season"
-    if walks <= 40:
-        return "Average command this season"
-    return "Below-average command this season"
-
-
-def _derive_contact_risk_label(home_runs: int) -> str:
-    if home_runs <= 8:
-        return "Limited hard contact allowed"
-    if home_runs <= 15:
-        return "Moderate contact risk"
-    return "Elevated contact risk"
-
-
-def _safe_int(value: Any) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return 0
-
-
-def _apply_offense_split(
-    offense_profile: dict[str, Any],
-    splits: dict[str, Any],
-    starter_hand: str,
-) -> None:
-    hand = starter_hand if starter_hand in ("L", "R") else starter_hand[:1]
-    split = splits.get("vl" if hand == "L" else "vr", {})
-    if not split:
-        offense_profile["vs_pitcher_hand"] = f"{hand}HP"
-        return
-
-    offense_profile["summary_label"] = f"Real season split vs {hand}HP"
-    offense_profile["vs_pitcher_hand"] = f"{hand}HP"
-    offense_profile["ops_vs_hand"] = _format_ops(split.get("ops"))
-    offense_profile["k_rate_vs_hand"] = _format_pct(split.get("k_rate"))
-    offense_profile["bb_rate_vs_hand"] = _format_pct(split.get("bb_rate"))
-    offense_profile["recent_form"] = "Season split"
-
-
-def _format_ops(value: Any) -> str:
-    if value is None:
-        return "N/A"
-    if isinstance(value, str):
-        stripped = value.strip()
-        if stripped.startswith("0."):
-            return stripped[1:]
-        return stripped
-    return f"{float(value):.3f}".replace("0.", ".", 1)
-
-
-def _format_pct(value: Any) -> str:
-    if value is None:
-        return "N/A"
-    return f"{float(value):.1f}%"
-
-
-def _live_confidence_note(matchup_id: str) -> dict[str, Any]:
-    return {
-        "level": "fetched_snapshot",
-        "lineup_status": "probable_pitchers",
-        "pitch_data_status": "fetched_snapshot",
-        "notes": [
-            f"Live snapshot fetched {_live['fetched_date']} for {matchup_id}.",
-            "If live fetching fails, PitchCraft falls back to cached demo data.",
-        ],
-    }
 
 def _apply_live_confidence(payload: dict[str, Any]) -> None:
     if not _live:
@@ -373,7 +560,7 @@ def _apply_live_confidence(payload: dict[str, Any]) -> None:
     live_ids.update(f"matchup_live_{index}" for index in range(2, len(_live_game_entries()) + 1))
     for matchup in payload["matchups"]:
         if matchup["id"] in live_ids:
-            matchup["data_confidence"] = _live_confidence_note(matchup["id"])
+            matchup["data_confidence"] = live_matchup.confidence_note(matchup["id"], _fetch_day(), matchup["starters"], matchup["status"])
 
 def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
     matchups_by_id = {matchup["id"]: matchup for matchup in payload["matchups"]}
@@ -391,54 +578,54 @@ def _update_archive_postgame_labels(payload: dict[str, Any]) -> None:
         row["grade_label"] = f"Starter Duel: {winner}, {winner_line['pitchcraft_grade']}"
 
 
-def _build_agent_workflow(
-    matchup_count: int,
-    total_revised: int,
-    graded_starters: int,
-) -> dict[str, Any]:
+def _step_status(agent: str, matchup_ids: list[str], run: AgentRun) -> str:
+    """`completed` only if the agent finished every matchup the file counts; otherwise `pending` (F19)."""
+
+    finished = set(run.finished.get(agent, ()))
+    return "completed" if matchup_ids and set(matchup_ids) <= finished else "pending"
+
+
+def _build_agent_workflow(matchup_ids: list[str], run: AgentRun) -> dict[str, Any]:
+    """The steps of the workflow, each with the status of what the agent did in this run (D2.4d, F19)."""
+
+    text = generator_catalog()
+    scout, analyst, writer, critic_agent, grader = WORKFLOW_AGENTS
     postgame_step = (
         {
-            "agent": "Postgame Grader Agent",
+            "agent": grader,
             "status": "completed",
-            "output": (
-                f"Graded {graded_starters} completed starter(s) with Bill James Game Score."
-            ),
+            "output": text("generator.workflow.graded", count=run.graded_starters),
         }
-        if graded_starters
+        if run.graded_starters
         else {
-            "agent": "Postgame Grader Agent",
+            "agent": grader,
             "status": "not_applicable",
-            "output": "Featured game has not been completed.",
+            "output": text("generator.workflow.graded_none"),
         }
     )
 
     return {
-        "description": (
-            "PitchCraft uses a multi-agent workflow to convert matchup data into a "
-            "fan-facing scouting report."
-        ),
+        "description": text("generator.workflow.description"),
         "steps": [
             {
-                "agent": "Data Scout Agent",
-                "status": "completed",
-                "output": f"Loaded cached data for {matchup_count} matchups.",
+                "agent": scout,
+                "status": _step_status(scout, matchup_ids, run),
+                "output": text("generator.workflow.loaded", count=len(matchup_ids)),
             },
             {
-                "agent": "Matchup Analyst Agent",
-                "status": "completed",
-                "output": "Identified pitcher strengths, risks, and lineup pressure points.",
+                "agent": analyst,
+                "status": _step_status(analyst, matchup_ids, run),
+                "output": text("generator.workflow.identified"),
             },
             {
-                "agent": "Report Writer Agent",
-                "status": "completed",
-                "output": "Generated fan-friendly scouting report.",
+                "agent": writer,
+                "status": _step_status(writer, matchup_ids, run),
+                "output": text("generator.workflow.generated"),
             },
             {
-                "agent": "Critic / Fact-check Agent",
-                "status": "completed",
-                "output": (
-                    f"Verified claims. {total_revised} claim(s) revised across all matchups."
-                ),
+                "agent": critic_agent,
+                "status": _step_status(critic_agent, matchup_ids, run),
+                "output": text("generator.workflow.checked", warnings=run.total_warnings),
             },
             postgame_step,
         ],

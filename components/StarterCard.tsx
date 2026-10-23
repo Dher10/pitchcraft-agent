@@ -1,7 +1,8 @@
-import type { PitchLocation, Starter, StarterLine } from "@/lib/types";
+import type { PitchLocation, SeasonSummary, Starter, StarterLine } from "@/lib/types";
 import StatTile from "@/components/StatTile";
 import TeamBadge from "@/components/TeamBadge";
 import ZoneDiagram from "@/components/ZoneDiagram";
+import { formatFigure, throwingHand } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 
 interface StarterCardProps {
@@ -10,6 +11,8 @@ interface StarterCardProps {
   mode: "pregame" | "postgame";
   starterLine?: StarterLine;
   locations?: PitchLocation[];
+  /** Shown in place of the abbreviation when his team has none. */
+  teamName?: string;
 }
 
 const sideLabel = {
@@ -23,21 +26,24 @@ export default function StarterCard({
   mode,
   starterLine,
   locations = [],
+  teamName,
 }: StarterCardProps) {
   if (mode === "postgame" && starterLine) {
-    return <PostgameStarter starter={starter} side={side} starterLine={starterLine} />;
+    return <PostgameStarter starter={starter} side={side} starterLine={starterLine} teamName={teamName} />;
   }
 
-  const bio = [
-    `Age ${starter.bio.age}`,
-    starter.bio.height,
-    `${starter.bio.weight} lb`,
-    `B/T ${starter.bio.bats}/${starter.bio.throws}`,
-    starter.bio.mlb_service,
-    starter.bio.accolades.join(", "),
-  ].filter(Boolean);
+  const bio = starter.bio
+    ? [
+        `Age ${starter.bio.age}`,
+        starter.bio.height,
+        `${starter.bio.weight} lb`,
+        `B/T ${starter.bio.bats}/${starter.bio.throws}`,
+        starter.bio.mlb_service,
+        starter.bio.accolades.join(", "),
+      ].filter(Boolean)
+    : ["Bio not available"];
 
-  const throwsHand = normalizeThrows(starter.throws);
+  const throwsHand = throwingHand(starter.throws);
   const teamColor = getTeamColor(starter.team);
 
   return (
@@ -48,7 +54,7 @@ export default function StarterCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-            {starter.team} &middot; {sideLabel[side]}
+            {starter.team ?? teamName ?? "Team not available"} &middot; {sideLabel[side]}
           </p>
           <h3 className="mt-2 text-xl font-bold leading-tight text-neutral-900">{starter.name}</h3>
         </div>
@@ -56,17 +62,23 @@ export default function StarterCard({
       </div>
       <p className="mt-2 text-[11px] leading-5 text-neutral-500">{bio.join(" · ")}</p>
       <p className="mt-1 text-[12px] font-semibold text-neutral-700">
-        {throwsHand}HP &middot; {starter.pitching_profile.style_label}
+        {throwsHand ? <>{throwsHand}HP &middot; </> : null}
+        {starter.pitching_profile.style_label}
       </p>
       <dl className="mt-4 grid grid-cols-3 gap-2">
-        <StatTile label="ERA" title="Earned Run Average. Lower is better." value={starter.season_summary.era} />
-        <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={starter.season_summary.whip} />
-        <StatTile label="K" title="Strikeouts." value={starter.season_summary.strikeouts} />
+        <StatTile label="ERA" title="Earned Run Average. Lower is better." value={formatFigure(starter.season_summary.era)} />
+        <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={formatFigure(starter.season_summary.whip)} />
+        <StatTile label="K" title="Strikeouts." value={formatFigure(starter.season_summary.strikeouts)} />
       </dl>
+      {scopeCaptions(starter.season_summary).map((caption) => (
+        <p key={caption} className="mt-1.5 font-mono text-[10px] text-neutral-400">
+          {caption}
+        </p>
+      ))}
       <div className="mt-4 flex items-center gap-3.5">
         <ZoneDiagram locations={locations} width={64} height={76} />
         <p className="text-[13px] leading-5 text-neutral-600">
-          {starter.recent_form.last_three_starts_summary}
+          {starter.recent_form?.last_three_starts_summary ?? "Recent form not available"}
         </p>
       </div>
     </article>
@@ -77,10 +89,12 @@ function PostgameStarter({
   starter,
   side,
   starterLine,
+  teamName,
 }: {
   starter: Starter;
   side: "away" | "home";
   starterLine: StarterLine;
+  teamName?: string;
 }) {
   const teamColor = getTeamColor(starter.team);
 
@@ -93,7 +107,7 @@ function PostgameStarter({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-              {starter.team} &middot; {sideLabel[side]}
+              {starter.team ?? teamName ?? "Team not available"} &middot; {sideLabel[side]}
             </span>
             <span className="rounded-md bg-neutral-100 px-1.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide text-neutral-500">
               Game Score {starterLine.game_score}
@@ -119,8 +133,18 @@ function PostgameStarter({
   );
 }
 
-function normalizeThrows(raw: string): "L" | "R" {
-  return raw?.toUpperCase().startsWith("L") ? "L" : "R";
+/**
+ * Which games the figures on the card cover (QA4-01). ERA and WHIP come from the MLB API and K from the
+ * source that gave the counts, so each group states its own scope; one caption only if they agree.
+ */
+function scopeCaptions(summary: SeasonSummary): string[] {
+  const rates = summary.scopes?.season_rates ?? null;
+  const counts = summary.scopes?.counts ?? null;
+  if (rates && counts && rates.label === counts.label) return [`ERA, WHIP and K: ${rates.label}`];
+  const captions: string[] = [];
+  if (rates) captions.push(`ERA and WHIP: ${rates.label}`);
+  if (counts) captions.push(`K: ${counts.label}`);
+  return captions;
 }
 
 function gradeClass(grade: string) {

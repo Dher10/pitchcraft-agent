@@ -8,7 +8,9 @@ import ScoutingReport from "@/components/ScoutingReport";
 import StarterCard from "@/components/StarterCard";
 import TeamBadge from "@/components/TeamBadge";
 import { getPitchColor } from "@/components/ZoneDiagram";
+import { formatSeriesLine, formatStartTime } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
+import { teamLabel } from "@/lib/teamLabel";
 import type { Matchup, ReportSection } from "@/lib/types";
 
 interface MatchupViewProps {
@@ -28,14 +30,16 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
   const awaySection = findStarterSection(matchup.report.sections, "Pitcher A", matchup.starters.away_starter.name);
   const homeSection = findStarterSection(matchup.report.sections, "Pitcher B", matchup.starters.home_starter.name);
   const watchSection = matchup.report.sections.find((section) => section.title === "Three Things to Watch");
+  const seriesLine = formatSeriesLine(matchup.series);
 
   return (
     <section className="space-y-4">
       <header className="rounded-xl border border-neutral-200 bg-white p-4">
         <p className="font-mono text-[11px] text-neutral-400">
-          {matchup.game.venue} &middot; {matchup.game.start_time_local} {matchup.game.timezone}
+          {matchup.game.venue ?? "Venue not available"} &middot; {formatStartTime(matchup.game)}
         </p>
         <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-neutral-900">{matchup.report.headline}</h2>
+        {seriesLine ? <p className="mt-1 font-mono text-[11px] text-neutral-500">{seriesLine}</p> : null}
         {matchup.report.short_summary[0] ? (
           <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
@@ -47,12 +51,14 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <StarterCard
           starter={matchup.starters.away_starter}
+          teamName={matchup.teams.away.name}
           side="away"
           mode="pregame"
           locations={matchup.pitch_locations.away_starter.vs_rhh}
         />
         <StarterCard
           starter={matchup.starters.home_starter}
+          teamName={matchup.teams.home.name}
           side="home"
           mode="pregame"
           locations={matchup.pitch_locations.home_starter.vs_rhh}
@@ -114,8 +120,8 @@ function PostgameMode({ matchup }: { matchup: Matchup }) {
         <div className="mt-3 flex items-center justify-center gap-4">
           <TeamBadge abbreviation={matchup.teams.away.abbreviation} size={34} />
           <h2 className="text-3xl font-bold tracking-tight text-neutral-900" style={{ fontVariantNumeric: "tabular-nums" }}>
-            {matchup.teams.away.abbreviation} {postgame.final_score.away_team_runs}{" "}
-            <span className="text-neutral-300">-</span> {matchup.teams.home.abbreviation} {postgame.final_score.home_team_runs}
+            {teamLabel(matchup.teams.away)} {postgame.final_score.away_team_runs}{" "}
+            <span className="text-neutral-300">-</span> {teamLabel(matchup.teams.home)} {postgame.final_score.home_team_runs}
           </h2>
           <TeamBadge abbreviation={matchup.teams.home.abbreviation} size={34} />
         </div>
@@ -124,12 +130,14 @@ function PostgameMode({ matchup }: { matchup: Matchup }) {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <StarterCard
           starter={matchup.starters.away_starter}
+          teamName={matchup.teams.away.name}
           side="away"
           mode="postgame"
           starterLine={postgame.starter_lines.away_starter}
         />
         <StarterCard
           starter={matchup.starters.home_starter}
+          teamName={matchup.teams.home.name}
           side="home"
           mode="postgame"
           starterLine={postgame.starter_lines.home_starter}
@@ -159,7 +167,7 @@ function ExecutionBlock({
   team,
   line,
 }: {
-  team: string;
+  team: string | null;
   line: NonNullable<Matchup["postgame"]>["starter_lines"]["away_starter"];
 }) {
   const teamColor = getTeamColor(team);

@@ -6,7 +6,6 @@ interface CriticReviewPanelProps {
 
 const statusClasses: Record<CriticCheckStatus, string> = {
   supported: "bg-green-100 text-green-800",
-  revised: "bg-amber-100 text-amber-800",
   warning: "bg-amber-100 text-amber-800",
   unsupported: "bg-red-100 text-red-800",
   not_present: "bg-neutral-100 text-neutral-500",
@@ -33,7 +32,7 @@ export default function CriticReviewPanel({ criticReview }: CriticReviewPanelPro
       </div>
       {criticReview.revision_notes.length > 0 ? (
         <div className="mt-3.5 rounded-lg border border-neutral-100 bg-neutral-50 p-3">
-          <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Revision Notes</h3>
+          <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Critic Notes</h3>
           <ul className="mt-2 space-y-1.5 text-[12px] leading-5 text-neutral-600">
             {criticReview.revision_notes.map((note) => (
               <li key={note}>{note}</li>

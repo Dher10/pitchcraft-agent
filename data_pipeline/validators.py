@@ -1,12 +1,17 @@
-"""Lightweight stdlib validation for the PitchCraft v0.2.0 demo payload."""
+"""Lightweight stdlib validation for the PitchCraft v0.6.0 demo payload."""
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import date
+import math
+from numbers import Integral, Real
 import re
 from typing import Any
 
+from data_pipeline.claims import verify_claims
+from data_pipeline.contract_checks import check_contract
 from data_pipeline.schema import (
     BATTER_HAND_SPLITS,
     BETTING_TERMS,
@@ -19,7 +24,9 @@ from data_pipeline.schema import (
     STARTER_SLOTS,
     TEAM_SIDES,
     TOP_LEVEL_REQUIRED_KEYS,
+    is_utc_instant,
 )
+from data_pipeline.labels import SCOPE_REGULAR, SEASON_RATE_FIELDS, is_available
 
 
 @dataclass(frozen=True)
@@ -44,6 +51,20 @@ class ValidationError(Exception):
         self.checks = checks
 
 
+def _nonfinite_paths(value: Any, path: str = "$") -> list[str]:
+    """Walk all payload numbers, independently of the schema/manifest."""
+
+    if isinstance(value, Mapping):
+        return [found for key, child in value.items() for found in _nonfinite_paths(child, f"{path}.{key}")]
+    if isinstance(value, (list, tuple)):
+        return [found for index, child in enumerate(value) for found in _nonfinite_paths(child, f"{path}[{index}]")]
+    # Integers (including bools) are finite without float conversion, even when
+    # an arbitrarily large integer would overflow math.isfinite's conversion.
+    if isinstance(value, Real) and not isinstance(value, Integral) and not math.isfinite(value):
+        return [path]
+    return []
+
+
 def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
     """Validate the assembled payload and return pass/fail check records."""
 
@@ -55,6 +76,12 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
     def has_keys(value: Any, keys: Sequence[str]) -> bool:
         return isinstance(value, Mapping) and all(key in value for key in keys)
 
+    nonfinite = _nonfinite_paths(payload)
+    record("every payload number is finite", not nonfinite, ", ".join(nonfinite))
+    if nonfinite:
+        # Reject before any downstream arithmetic can hide or choke on it.
+        raise ValidationError(checks)
+
     record(
         "top-level required keys",
         has_keys(payload, TOP_LEVEL_REQUIRED_KEYS),
@@ -63,9 +90,17 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
 
     metadata = payload.get("metadata")
     record(
-        "metadata.version is 0.2.0",
+        f"metadata.version is {SCHEMA_VERSION}",
         isinstance(metadata, Mapping) and metadata.get("version") == SCHEMA_VERSION,
         f"found {metadata.get('version')!r}" if isinstance(metadata, Mapping) else "metadata missing",
+    )
+
+    # Rule 6 (F9, D39): a demo file was never fetched; a time of fetch would present it as live data.
+    fetched_at = metadata.get("data_fetched_at") if isinstance(metadata, Mapping) else None
+    record(
+        "a demo file has no time of fetch",
+        fetched_at is None or (isinstance(metadata, Mapping) and metadata.get("data_mode") == "fetched_snapshot"),
+        f"data_fetched_at is {fetched_at!r} in a {metadata.get('data_mode')!r} file" if isinstance(metadata, Mapping) else "metadata missing",
     )
 
     matchups = payload.get("matchups")
@@ -87,6 +122,24 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
             _validate_matchup(matchup, matchup_label, record)
     else:
         record("matchups is a list", False, f"found {type(matchups).__name__}")
+
+    # Contract rule 4: every sentence is a registered phrase and the text is exactly what it renders to.
+    claim_problems = verify_claims(payload)
+    for problem in claim_problems:
+        record(f"claims: {problem}", False)
+    if not claim_problems:
+        record("claims: every sentence is registered and matches its text", True)
+
+    # Contract rules 1 to 4, 6 and 8 (D34): every violation stops publication.
+    try:
+        violations = check_contract(payload)
+    except (AttributeError, KeyError, TypeError) as exc:
+        record("contract: the payload has the shape the checks read", False, f"{type(exc).__name__}: {exc}")
+        violations = []
+    for violation in violations:
+        record(f"contract: {violation.code}", False, f"{violation.where}: {violation.message}")
+    if not violations:
+        record("contract: rules 3, 4, 6 and 8 hold", True)
 
     failures = [check for check in checks if not check.passed]
     if failures:
@@ -123,13 +176,15 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
         for slot in STARTER_SLOTS:
             starter = starters.get(slot)
             record(
-                f"{label}: {slot} includes bio",
-                isinstance(starter, Mapping) and "bio" in starter,
+                f"{label}: {slot} includes bio (or marks it unavailable)",
+                isinstance(starter, Mapping)
+                and "bio" in starter
+                and (starter["bio"] is None or isinstance(starter["bio"], Mapping)),
                 "bio missing",
             )
             record(
-                f"{label}: {slot}.throws is L or R",
-                isinstance(starter, Mapping) and starter.get("throws") in ("L", "R"),
+                f"{label}: {slot}.throws is L, R or S",
+                isinstance(starter, Mapping) and starter.get("throws") in ("L", "R", "S"),
                 f"found {starter.get('throws')!r}" if isinstance(starter, Mapping) else "starter missing",
             )
 
@@ -139,7 +194,7 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
         has_nested_keys(charts, CHART_KEYS),
         _missing_keys(charts, CHART_KEYS),
     )
-    _validate_pitch_mix(charts, label, record)
+    _validate_pitch_mix(charts, label, record, starters)
     _validate_pitch_movement(charts, label, record)
 
     pitch_locations = matchup.get("pitch_locations")
@@ -150,12 +205,212 @@ def _validate_matchup(matchup: Any, label: str, record: Any) -> None:
     )
     _validate_pitch_locations(pitch_locations, label, record)
 
+    _validate_data_cutoff(matchup, label, record)
+    _validate_live_game_time(matchup, label, record)
+    _validate_figure_scopes(matchup, label, record)
     _validate_final_postgame(matchup, label, record)
     _validate_critic_review(matchup.get("critic_review"), label, record)
     _validate_report_betting_terms(matchup.get("report"), label, record)
 
 
-def _validate_pitch_mix(charts: Any, label: str, record: Any) -> None:
+def _iso_date(value: Any) -> date | None:
+    """A date written exactly as YYYY-MM-DD, or None."""
+
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _scope_throughs(matchup: Mapping[str, Any]) -> list[tuple[str, Any]]:
+    """(where, last day covered) of every group of figures the matchup says how far it reaches."""
+
+    found: list[tuple[str, Any]] = []
+
+    def add(where: str, scope: Any) -> None:
+        if isinstance(scope, Mapping):
+            found.append((where, scope.get("through")))
+
+    starters = matchup.get("starters")
+    for slot in STARTER_SLOTS:
+        starter = starters.get(slot) if isinstance(starters, Mapping) else None
+        if not isinstance(starter, Mapping):
+            continue
+        sample = starter.get("sample")
+        if isinstance(sample, Mapping):
+            for group in ("arsenal", "rates"):
+                part = sample.get(group)
+                add(f"{slot} {group}", part.get("scope") if isinstance(part, Mapping) else None)
+        summary = starter.get("season_summary")
+        scopes = summary.get("scopes") if isinstance(summary, Mapping) else None
+        for group, scope in (scopes.items() if isinstance(scopes, Mapping) else ()):
+            add(f"{slot} season summary {group}", scope)
+    teams = matchup.get("teams")
+    for side in TEAM_SIDES:
+        team = teams.get(side) if isinstance(teams, Mapping) else None
+        offense = team.get("offense_profile") if isinstance(team, Mapping) else None
+        add(f"{side} offense", offense.get("scope") if isinstance(offense, Mapping) else None)
+    return found
+
+
+def _validate_data_cutoff(matchup: Mapping[str, Any], label: str, record: Any) -> None:
+    """No figure of a game may cover that game's own day or later (D29): last line of defense."""
+
+    scopes = _scope_throughs(matchup)
+    if not scopes:
+        return
+    game_day = _iso_date(matchup.get("date"))
+    late = []
+    for where, through in scopes:
+        day = _iso_date(through)
+        if game_day is None or day is None or day >= game_day:
+            late.append(f"{where} through {through!r}")
+    record(
+        f"{label}: data cutoff is before the game date",
+        not late,
+        f"game date {matchup.get('date')!r}: {', '.join(late)}",
+    )
+
+
+def _validate_live_game_time(matchup: Mapping[str, Any], label: str, record: Any) -> None:
+    """
+    A live game's start is an explicit UTC instant and its zone is text or unknown (D33).
+
+    Live means the matchup says so itself (`data_confidence.level`); the demo matchups keep their
+    pre-formatted local time. A live game that lost the field fails: the page would otherwise have no
+    time, or fall back to a demo one.
+    """
+
+    confidence = matchup.get("data_confidence")
+    if not isinstance(confidence, Mapping) or confidence.get("level") != "fetched_snapshot":
+        return
+    game = matchup.get("game")
+    game = game if isinstance(game, Mapping) else {}
+    zone = game.get("timezone")
+    record(
+        f"{label}: live game start time is a UTC instant and its zone is text or unknown",
+        is_utc_instant(game.get("start_time_utc")) and (zone is None or (isinstance(zone, str) and zone.strip() != "")),
+        f"start_time_utc {game.get('start_time_utc')!r}, timezone {zone!r}",
+    )
+
+
+def _scope_problem(starter: Mapping[str, Any]) -> str | None:
+    """
+    Why the scope of a live starter's groups of figures does not match the source of each, or None.
+
+    ERA, WHIP and innings come from the MLB API: regular season only, and no scope when unavailable.
+    The counts have the scope the sample records for them, which must agree with the source that
+    gave them: the API is regular season, Statcast covers the same games as the pitch data.
+    """
+
+    sample = starter.get("sample")
+    summary = starter.get("season_summary")
+    if not isinstance(sample, Mapping) or not isinstance(summary, Mapping):
+        return None  # the demo's starters have no sample and no scopes
+    scopes = summary.get("scopes")
+    if not isinstance(scopes, Mapping) or set(scopes) != {"season_rates", "counts"}:
+        return "the summary has no scope for ERA, WHIP and innings and one for the counts"
+
+    rates_scope, counts_scope = scopes["season_rates"], scopes["counts"]
+    if any(is_available(summary.get(key)) for key in SEASON_RATE_FIELDS):
+        if not isinstance(rates_scope, Mapping) or rates_scope.get("kind") != SCOPE_REGULAR:
+            return (
+                "ERA, WHIP and innings come from the MLB API (regular season only) "
+                f"but are scoped {_kind(rates_scope)}"
+            )
+    elif rates_scope is not None:
+        return "ERA, WHIP and innings are unavailable but carry a scope"
+
+    arsenal_part = sample.get("arsenal") if isinstance(sample.get("arsenal"), Mapping) else {}
+    if (arsenal_part.get("pitches") is None) != (arsenal_part.get("scope") is None):
+        return "the pitch data have a scope if and only if the pitch count is known"
+    rates = sample.get("rates") if isinstance(sample.get("rates"), Mapping) else {}
+    source = rates.get("source")
+    if source == "unavailable":
+        carried = counts_scope is not None or rates.get("scope") is not None
+        return "the counts are unavailable but carry a scope" if carried else None
+    if not isinstance(counts_scope, Mapping) or counts_scope != rates.get("scope"):
+        return "the counts' scope in the summary is not the one in the sample"
+    if source == "mlb_api" and counts_scope.get("kind") != SCOPE_REGULAR:
+        return f"the counts come from the MLB API (regular season only) but are scoped {_kind(counts_scope)}"
+    arsenal = (sample.get("arsenal") or {}).get("scope") or {}
+    if source == "statcast" and counts_scope.get("kind") != arsenal.get("kind"):
+        return f"the counts come from the Statcast pitches ({_kind(arsenal)}) but are scoped {_kind(counts_scope)}"
+    if source not in ("mlb_api", "statcast"):
+        return f"the counts have an unknown source {source!r}"
+    return None
+
+
+def _kind(scope: Any) -> str:
+    return str(scope.get("kind")) if isinstance(scope, Mapping) else "nothing"
+
+
+def _validate_figure_scopes(matchup: Mapping[str, Any], label: str, record: Any) -> None:
+    """Each group of figures of a live starter has the scope of its source (QA4-01)."""
+
+    starters = matchup.get("starters")
+    if not isinstance(starters, Mapping):
+        return
+    for slot in STARTER_SLOTS:
+        starter = starters.get(slot)
+        if isinstance(starter, Mapping) and isinstance(starter.get("sample"), Mapping):
+            problem = _scope_problem(starter)
+            record(f"{label}: {slot} scope of each group of figures matches its source", problem is None, problem or "")
+
+
+def _is_share_or_none(value: Any) -> bool:
+    """A percentage (0-100, not a bool) or None: a side the starter never faced has no share."""
+
+    if value is None:
+        return True
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and 0 <= value <= 100
+
+
+def _is_count(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _validate_pitch_counts(starter_mix: Any, sample: Any, row_label: str, slot: str, record: Any) -> None:
+    """
+    A live starter's mix row carries the raw pitch count and the total behind its share (QA3-03):
+    the critic decides on them, never on the rounded `overall`. Both are whole numbers, the
+    count is part of the total, the total is the starter's sample of pitches, and the share
+    shown is the one they give.
+    """
+
+    count = starter_mix.get("count") if isinstance(starter_mix, Mapping) else None
+    total = starter_mix.get("total") if isinstance(starter_mix, Mapping) else None
+    ok = _is_count(count) and _is_count(total) and count <= total
+    record(
+        f"{row_label}.{slot} carries its raw pitch count and total",
+        ok,
+        f"count {count!r}, total {total!r}",
+    )
+    if not ok:
+        return
+    pitches = ((sample.get("arsenal") or {}).get("pitches")) if isinstance(sample, Mapping) else None
+    if pitches is not None:
+        record(
+            f"{row_label}.{slot} total is the starter's pitches in the sample",
+            total == pitches,
+            f"total {total}, sample pitches {pitches}",
+        )
+    shown = starter_mix.get("overall")
+    if total == 0:
+        # A share of nothing is unknown (F20): `null` is the only right state; a 0 would read as a measured 0%.
+        record(f"{row_label}.{slot} share matches its counts", shown is None, f"shows {shown!r}, out of no pitches the share is unknown (null)")
+        return
+    expected = round(count / total * 100, 1)
+    record(
+        f"{row_label}.{slot} share matches its counts",
+        isinstance(shown, (int, float)) and abs(shown - expected) < 0.05,
+        f"shows {shown!r}, counts give {expected}",
+    )
+
+
+def _validate_pitch_mix(charts: Any, label: str, record: Any, starters: Any = None) -> None:
     pitch_mix = charts.get("pitch_mix") if isinstance(charts, Mapping) else None
     if not isinstance(pitch_mix, list):
         record(f"{label}: charts.pitch_mix is a list", False, f"found {type(pitch_mix).__name__}")
@@ -174,6 +429,21 @@ def _validate_pitch_mix(charts: Any, label: str, record: Any) -> None:
                 and all(split in starter_mix for split in BATTER_HAND_SPLITS),
                 _missing_keys(starter_mix, BATTER_HAND_SPLITS),
             )
+            record(
+                f"{row_label}.{slot} shares against each side are a percentage or unavailable (null)",
+                isinstance(starter_mix, Mapping)
+                and all(_is_share_or_none(starter_mix.get(split)) for split in BATTER_HAND_SPLITS),
+                "found "
+                + (
+                    ", ".join(f"{split}={starter_mix.get(split)!r}" for split in BATTER_HAND_SPLITS)
+                    if isinstance(starter_mix, Mapping)
+                    else "no object"
+                ),
+            )
+            starter = starters.get(slot) if isinstance(starters, Mapping) else None
+            sample = starter.get("sample") if isinstance(starter, Mapping) else None
+            if sample is not None:  # live data; the demo has no sample and no counts
+                _validate_pitch_counts(starter_mix, sample, row_label, slot, record)
 
 
 def _validate_pitch_movement(charts: Any, label: str, record: Any) -> None:
@@ -211,6 +481,10 @@ def _validate_pitch_locations(pitch_locations: Any, label: str, record: Any) -> 
 def _validate_final_postgame(matchup: Mapping[str, Any], label: str, record: Any) -> None:
     if matchup.get("status") != "final":
         return
+    # A live game that is final keeps its pregame report; its postgame stays null until the daily postgame exists
+    # (rule 7, P1.2), so there is no box score to ask for. Only a demo game that is final carries one.
+    if (matchup.get("data_confidence") or {}).get("level") == "fetched_snapshot":
+        return
 
     postgame = matchup.get("postgame")
     starter_lines = postgame.get("starter_lines") if isinstance(postgame, Mapping) else None
@@ -244,6 +518,11 @@ def _validate_critic_review(critic_review: Any, label: str, record: Any) -> None
             f"{label}: critic_review.checks[{index}].status is allowed",
             status in CRITIC_STATUSES,
             f"found {status!r}",
+        )
+        record(
+            f"{label}: critic_review.checks[{index}] is not an unsupported claim",
+            status != "unsupported",
+            "an unsupported claim must not be published",
         )
 
 

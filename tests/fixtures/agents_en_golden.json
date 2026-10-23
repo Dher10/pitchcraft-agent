@@ -1,0 +1,3088 @@
+{
+  "demo_final": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Demo Pitcher C's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 48% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher C's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher D's primary pitch is Cutter.",
+          "evidence": "Pitch mix shows 41% Cutter usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher D's put-away pitch is Changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher D's command label is supported.",
+          "evidence": "Command signal is 81 in the strength profile.",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic",
+        "Contact risk can turn missed spots into damage",
+        "Recent form has been volatile"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam fastball to set up, Curveball to finish"
+      ],
+      "away_style": "Four-seam fastball to set up, Curveball to finish",
+      "away_vs_home_offense": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
+      "home_data_notes": [],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Plus command supports strike-zone control",
+        "Low contact-risk profile supports contact management",
+        "Recent form is trending in the right direction",
+        "Cutter to set up, Changeup to finish"
+      ],
+      "home_style": "Cutter to set up, Changeup to finish",
+      "home_vs_away_offense": "Demo Pitcher D needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.756 OPS), so Demo Pitcher D cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher D needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "bos": [],
+        "nyy": [
+          "has strong OPS against this pitcher's hand",
+          "draws walks at an above-average rate"
+        ]
+      },
+      "matchup_headline": "High-velocity fastball-curveball starter against Command-first cutter-changeup starter",
+      "matchup_summary": "This matchup features High-velocity fastball-curveball starter against Command-first cutter-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [],
+      "three_things_to_watch": [
+        "Can Demo Pitcher C land the curveball early in counts?",
+        "Can Demo Pitcher D keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "demo_cached",
+      "lineup_status": "final",
+      "notes": [
+        "Completed demo game used to show the postgame grading flow.",
+        "Grades are PitchCraft-specific and explainable, not official metrics."
+      ],
+      "pitch_data_status": "cached"
+    },
+    "postgame": {
+      "call_check": [
+        {
+          "postgame_evidence": "He issued 1 walk over 6.2 innings.",
+          "pregame_note": "Demo Pitcher D needed his command edge to limit free passes.",
+          "result": "held_up"
+        },
+        {
+          "postgame_evidence": "He walked 4 batters and exited after 4.2 innings.",
+          "pregame_note": "Demo Pitcher C carried elevated walk risk.",
+          "result": "held_up"
+        },
+        {
+          "postgame_evidence": "He recorded 5 strikeouts, but the full line landed at a Game Score of 35.",
+          "pregame_note": "Demo Pitcher C had swing-and-miss upside from the scouting profile.",
+          "result": "partially_held_up"
+        }
+      ],
+      "final_score": {
+        "away_team_runs": 3,
+        "home_team_runs": 5,
+        "winning_team": "BOS"
+      },
+      "starter_duel_winner": "Demo Pitcher D",
+      "starter_lines": {
+        "away_starter": {
+          "earned_runs": 4,
+          "game_score": 35,
+          "grade_explanation": "A Game Score of 35 reflects a rough outing - the hits and walks piled up and shortened his night.",
+          "hits_allowed": 7,
+          "home_runs_allowed": 1,
+          "innings_pitched": "4.2",
+          "name": "Demo Pitcher C",
+          "pitchcraft_grade": "C-",
+          "plan_vs_execution": "The plan was to use the four-seam fastball to reach curveball counts, but 4 walks kept him from controlling the sequence.",
+          "strikeouts": 5,
+          "unearned_runs": 0,
+          "walks": 4,
+          "what_to_watch_next": "The next checkpoint is tightening strike-zone control before traffic builds."
+        },
+        "home_starter": {
+          "earned_runs": 2,
+          "game_score": 61,
+          "grade_explanation": "A Game Score of 61 reflects a solid, above-average start - he worked deep, limited walks, and kept the damage in check.",
+          "hits_allowed": 5,
+          "home_runs_allowed": 0,
+          "innings_pitched": "6.2",
+          "name": "Demo Pitcher D",
+          "pitchcraft_grade": "B",
+          "plan_vs_execution": "The plan was to command the cutter and finish with the changeup; 1 walk and 2 earned runs show the execution mostly matched it.",
+          "strikeouts": 6,
+          "unearned_runs": 0,
+          "walks": 1,
+          "what_to_watch_next": "The next checkpoint is repeating that walk suppression deep into another start."
+        }
+      }
+    },
+    "report": {
+      "headline": "High-velocity fastball-curveball starter against Command-first cutter-changeup starter",
+      "sections": [
+        {
+          "body": "This matchup features High-velocity fastball-curveball starter against Command-first cutter-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
+          "title": "Demo Pitcher C vs Boston Red Sox"
+        },
+        {
+          "body": "Demo Pitcher D needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.756 OPS), so Demo Pitcher D cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher D needs efficient strikes.",
+          "title": "Demo Pitcher D vs New York Yankees"
+        },
+        {
+          "body": "The main contrast is Four-seam fastball to set up, Curveball to finish versus Cutter to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Cutter, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Demo Pitcher C land the curveball early in counts?",
+            "Can Demo Pitcher D keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report is based on cached demo data for the capstone. Live lineup confirmation is not required for this version.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Demo Pitcher C brings this strength: Above-average swing-and-miss ability.",
+        "Demo Pitcher D brings this strength: Plus command supports strike-zone control.",
+        "The early what to watch is whether Demo Pitcher C can land the curveball early in counts."
+      ]
+    }
+  },
+  "demo_upcoming": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Demo Pitcher A's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 42% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher A's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 28% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher B's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 39% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher B's put-away pitch is Changeup.",
+          "evidence": "Put-away pitch usage at 24% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Demo Pitcher B's command label is supported.",
+          "evidence": "Command signal is 74 in the strength profile.",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Recent form is trending in the right direction",
+        "Four-seam fastball to set up, Slider to finish"
+      ],
+      "away_style": "Four-seam fastball to set up, Slider to finish",
+      "away_vs_home_offense": "Demo Pitcher A's four-seam-slider combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.721 OPS), with no glaring weakness to attack.",
+      "home_data_notes": [],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Solid command supports strike-zone control",
+        "Low contact-risk profile supports contact management",
+        "Sinker to set up, Changeup to finish"
+      ],
+      "home_style": "Sinker to set up, Changeup to finish",
+      "home_vs_away_offense": "Demo Pitcher B needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.768 OPS), so Demo Pitcher B cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher B needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "lad": [
+          "has strong OPS against this pitcher's hand",
+          "draws walks at an above-average rate"
+        ],
+        "sf": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Command-oriented sinker-changeup starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Command-oriented sinker-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [],
+      "three_things_to_watch": [
+        "Can Demo Pitcher A land the slider early in counts?",
+        "Can Demo Pitcher B keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "demo_cached",
+      "lineup_status": "not_required_for_demo",
+      "notes": [
+        "This demo uses cached data to guarantee stable judging.",
+        "Live data integration can be added after the capstone."
+      ],
+      "pitch_data_status": "cached"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Command-oriented sinker-changeup starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Command-oriented sinker-changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Demo Pitcher A's four-seam-slider combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.721 OPS), with no glaring weakness to attack.",
+          "title": "Demo Pitcher A vs San Francisco Giants"
+        },
+        {
+          "body": "Demo Pitcher B needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.768 OPS), so Demo Pitcher B cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher B needs efficient strikes.",
+          "title": "Demo Pitcher B vs Los Angeles Dodgers"
+        },
+        {
+          "body": "The main contrast is Four-seam fastball to set up, Slider to finish versus Sinker to set up, Changeup to finish. The primary pitch contrast is Four-seam fastball against Sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Demo Pitcher A land the slider early in counts?",
+            "Can Demo Pitcher B keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report is based on cached demo data for the capstone. Live lineup confirmation is not required for this version.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Demo Pitcher A brings this strength: Above-average swing-and-miss ability.",
+        "Demo Pitcher B brings this strength: Solid command supports strike-zone control.",
+        "The early what to watch is whether Demo Pitcher A can land the slider early in counts."
+      ]
+    }
+  },
+  "live_both_limited": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's arsenal is limited.",
+          "evidence": "10 pitches, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's arsenal is limited.",
+          "evidence": "40 pitches, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 6 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm's arsenal data is limited (10 pitches; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Alpha Livearm is limited (3 batters faced; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Alpha Livearm is limited (3 batters faced; 170 needed), so no command claim is made.",
+        "Alpha Livearm has allowed 0 home runs over 3 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm's arsenal data is limited (10 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (3 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (3 batters faced; 170 needed), so no command claim is made. Alpha Livearm has allowed 0 home runs over 3 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft's arsenal data is limited (40 pitches; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Bravo Liveleft is limited (10 batters faced; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Bravo Liveleft is limited (10 batters faced; 170 needed), so no command claim is made.",
+        "Bravo Liveleft has allowed 1 home run over 10 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft's arsenal data is limited (40 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bravo Liveleft is limited (10 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Bravo Liveleft is limited (10 batters faced; 170 needed), so no command claim is made. Bravo Liveleft has allowed 1 home run over 10 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Alpha Livearm against Bravo Liveleft",
+      "matchup_summary": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm stay ahead of hitters early in counts?",
+        "Can Bravo Liveleft work efficiently through the lineup?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Alpha Livearm against Bravo Liveleft",
+      "sections": [
+        {
+          "body": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (10 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (3 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (3 batters faced; 170 needed), so no command claim is made. Alpha Livearm has allowed 0 home runs over 3 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft's arsenal data is limited (40 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bravo Liveleft is limited (10 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Bravo Liveleft is limited (10 batters faced; 170 needed), so no command claim is made. Bravo Liveleft has allowed 1 home run over 10 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (10 pitches; 100 needed), so this report makes no arsenal claim for him. Bravo Liveleft's arsenal data is limited (40 pitches; 100 needed), so this report makes no arsenal claim for him. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm stay ahead of hitters early in counts?",
+            "Can Bravo Liveleft work efficiently through the lineup?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm has no claimed strength because the data is limited.",
+        "Bravo Liveleft has no claimed strength because the data is limited.",
+        "The early what to watch is whether Alpha Livearm can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_debut": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Alpha Livearm is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Alpha Livearm is limited (batters faced not available; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Alpha Livearm."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Alpha Livearm against Bravo Liveleft",
+      "matchup_summary": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm: all pitcher figures cover the regular season through 2026-07-04.",
+        "Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm stay ahead of hitters early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Alpha Livearm against Bravo Liveleft",
+      "sections": [
+        {
+          "body": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Bravo Liveleft works off Nimbus sinker to set up, Vortex changeup to finish. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm stay ahead of hitters early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers. Statcast pitch data was available for Bravo Liveleft but not for Alpha Livearm, so the pitch read makes no arsenal claims about Alpha Livearm. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm: all pitcher figures cover the regular season through 2026-07-04. Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm has no claimed strength because the data is limited.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_debut_no_figures": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 6 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Alpha Livearm is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Alpha Livearm is limited (batters faced not available; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Alpha Livearm."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Bravo Liveleft is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Bravo Liveleft is limited (batters faced not available; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Bravo Liveleft."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bravo Liveleft is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Bravo Liveleft is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Bravo Liveleft. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Alpha Livearm against Bravo Liveleft",
+      "matchup_summary": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: no season figures are available."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm stay ahead of hitters early in counts?",
+        "Can Bravo Liveleft work efficiently through the lineup?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "unavailable"
+    },
+    "report": {
+      "headline": "Alpha Livearm against Bravo Liveleft",
+      "sections": [
+        {
+          "body": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bravo Liveleft is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Bravo Liveleft is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Bravo Liveleft. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Bravo Liveleft's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm stay ahead of hitters early in counts?",
+            "Can Bravo Liveleft work efficiently through the lineup?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers. Statcast pitch data was not available for either starter, so the pitch read makes no arsenal claims. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: no season figures are available. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm has no claimed strength because the data is limited.",
+        "Bravo Liveleft has no claimed strength because the data is limited.",
+        "The early what to watch is whether Alpha Livearm can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_healthy": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_limited_arsenal": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's arsenal is limited.",
+          "evidence": "Pitch count not available (the minimum is 100); the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "51 walks in 487 batters faced (regular season through 2026-07-03).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him.",
+        "Away Ace has allowed 44 home runs over 487 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability"
+      ],
+      "away_style": "Not available as the main pitch",
+      "away_vs_home_offense": "Away Ace shows above-average swing-and-miss ability. He shows below-average command. Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Away Ace has allowed 44 home runs over 487 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.086 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Away Ace against Home Ace",
+      "matchup_summary": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-07-03.",
+        "Team offense splits cover the regular season through 2026-07-03."
+      ],
+      "three_things_to_watch": [
+        "Can Away Ace stay ahead of hitters early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Away Ace against Home Ace",
+      "sections": [
+        {
+          "body": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace shows above-average swing-and-miss ability. He shows below-average command. Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Away Ace has allowed 44 home runs over 487 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.086 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Home Ace works off Four-seam to set up, Curveball to finish. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace stay ahead of hitters early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and season offense splits. Statcast pitch data was available for Home Ace but not for Away Ace, so the pitch read makes no arsenal claims about Away Ace. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-07-03. Team offense splits cover the regular season through 2026-07-03. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_limited_rates_only": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Strikeout data for Alpha Livearm is limited (51 batters faced; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Alpha Livearm is limited (51 batters faced; 170 needed), so no command claim is made.",
+        "Alpha Livearm has allowed 10 home runs over 51 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. Strikeout data for Alpha Livearm is limited (51 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (51 batters faced; 170 needed), so no command claim is made. Alpha Livearm has allowed 10 home runs over 51 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Control data for Bravo Liveleft is limited (100 batters faced; 170 needed), so no command claim is made.",
+        "Bravo Liveleft has allowed 10 home runs over 100 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows below-average swing-and-miss ability. Control data for Bravo Liveleft is limited (100 batters faced; 170 needed), so no command claim is made. Bravo Liveleft has allowed 10 home runs over 100 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. Strikeout data for Alpha Livearm is limited (51 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (51 batters faced; 170 needed), so no command claim is made. Alpha Livearm has allowed 10 home runs over 51 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows below-average swing-and-miss ability. Control data for Bravo Liveleft is limited (100 batters faced; 170 needed), so no command claim is made. Bravo Liveleft has allowed 10 home runs over 100 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_measured_zero_counts": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Alpha Livearm is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Alpha Livearm is limited (no batters faced on record; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Alpha Livearm."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (no batters faced on record; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Alpha Livearm against Bravo Liveleft",
+      "matchup_summary": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm: all pitcher figures cover the regular season through 2026-07-04.",
+        "Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm stay ahead of hitters early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Alpha Livearm against Bravo Liveleft",
+      "sections": [
+        {
+          "body": "This matchup features Alpha Livearm against Bravo Liveleft. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Alpha Livearm is limited (no batters faced on record; 70 needed), so no swing-and-miss claim is made. Control data for Alpha Livearm is limited (no batters faced on record; 170 needed), so no command claim is made. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "Alpha Livearm's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Bravo Liveleft works off Nimbus sinker to set up, Vortex changeup to finish. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm stay ahead of hitters early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers. Statcast pitch data was available for Bravo Liveleft but not for Alpha Livearm, so the pitch read makes no arsenal claims about Alpha Livearm. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm: all pitcher figures cover the regular season through 2026-07-04. Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm has no claimed strength because the data is limited.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_no_home_runs": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Home runs allowed are not available for Alpha Livearm."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Home runs allowed are not available for Alpha Livearm. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_no_putaway_pitch": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam as the main pitch"
+      ],
+      "away_style": "Zephyr-seam as the main pitch",
+      "away_vs_home_offense": "Alpha Livearm works mainly off a zephyr-seam. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Zephyr-seam starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Zephyr-seam starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm stay ahead of hitters early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Zephyr-seam starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Zephyr-seam starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works mainly off a zephyr-seam. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam as the main pitch versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm stay ahead of hitters early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam as the main pitch.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_one_offense_split": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.801 OPS), so Alpha Livearm cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Alpha Livearm needs efficient strikes.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ]
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+        "Team offense splits cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.801 OPS), so Alpha Livearm cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Alpha Livearm needs efficient strikes.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were available for the Test Home lineup but not for the Test Away lineup, so the lineup read makes no offense claims about the Test Away lineup. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04. Team offense splits cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_scopes_differ": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "The report says the figures for Alpha Livearm, Bravo Liveleft cover different samples.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the regular season through 2026-07-04; the pitch mix, velocity and movement cover the regular season and postseason through 2026-07-04. They are different samples."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the regular season through 2026-07-04; the pitch mix, velocity and movement cover the regular season and postseason through 2026-07-04. They are different samples.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_series_opening": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 60.9% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 26.1% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "36 walks in 287 batters faced (regular season through 2026-10-09).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Sinker to set up, Slider to finish"
+      ],
+      "away_style": "Sinker to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "matchup_summary": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09.",
+        "Team offense splits cover the regular season through 2026-10-09."
+      ],
+      "series_note": "This is Game 1 of the World Series; the series has not started.",
+      "three_things_to_watch": [
+        "Can Away Ace land the slider early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-10-10 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "sections": [
+        {
+          "body": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 1 of the World Series; the series has not started.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "The main contrast is Sinker to set up, Slider to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace land the slider early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09. Team offense splits cover the regular season through 2026-10-09.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can land the slider early in counts."
+      ]
+    }
+  },
+  "live_series_standing": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 60.9% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 26.1% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "36 walks in 287 batters faced (regular season through 2026-10-09).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Sinker to set up, Slider to finish"
+      ],
+      "away_style": "Sinker to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "matchup_summary": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09.",
+        "Team offense splits cover the regular season through 2026-10-09."
+      ],
+      "series_note": "This is Game 3 of the AL Championship Series. Before first pitch, BOS leads 2-0.",
+      "three_things_to_watch": [
+        "Can Away Ace land the slider early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-10-10 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "sections": [
+        {
+          "body": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 3 of the AL Championship Series. Before first pitch, BOS leads 2-0.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "The main contrast is Sinker to set up, Slider to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace land the slider early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09. Team offense splits cover the regular season through 2026-10-09.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can land the slider early in counts."
+      ]
+    }
+  },
+  "live_series_standing_unavailable": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 60.9% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 26.1% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "36 walks in 287 batters faced (regular season through 2026-10-09).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Sinker to set up, Slider to finish"
+      ],
+      "away_style": "Sinker to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "matchup_summary": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09.",
+        "Team offense splits cover the regular season through 2026-10-09."
+      ],
+      "three_things_to_watch": [
+        "Can Away Ace land the slider early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-10-10 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "sections": [
+        {
+          "body": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "The main contrast is Sinker to set up, Slider to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace land the slider early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09. Team offense splits cover the regular season through 2026-10-09.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can land the slider early in counts."
+      ]
+    }
+  },
+  "live_strong_strikeouts_weak_command": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm carries below-average command risk.",
+          "evidence": "50 walks in 400 batters faced (regular season through 2026-07-04).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Solid command supports strike-zone control",
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows below-average swing-and-miss ability. He shows solid command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows below-average swing-and-miss ability. He shows solid command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Above-average swing-and-miss ability.",
+        "Bravo Liveleft brings this strength: Solid command supports strike-zone control.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_switch_pitcher": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's arsenal is limited.",
+          "evidence": "No pitches on record, below the 100 needed; the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace carries below-average command risk.",
+          "evidence": "28 walks in 225 batters faced (regular season through 2026-07-03).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Away Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Away Ace is limited (batters faced not available; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Away Ace."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Not available as the main pitch",
+      "away_vs_home_offense": "Away Ace's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Away Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Away Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Away Ace. Season offense data cannot be matched to this pitcher's hand, so the lineup read makes no offense claims.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": []
+      },
+      "matchup_headline": "Away Ace against Home Ace",
+      "matchup_summary": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace: no season figures are available.",
+        "Home Ace: all pitcher figures cover the regular season through 2026-07-03.",
+        "Team offense splits cover the regular season through 2026-07-03."
+      ],
+      "three_things_to_watch": [
+        "Can Away Ace stay ahead of hitters early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Away Ace against Home Ace",
+      "sections": [
+        {
+          "body": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Away Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Away Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Away Ace. Season offense data cannot be matched to this pitcher's hand, so the lineup read makes no offense claims.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "Away Ace's arsenal data is limited (no pitches on record; 100 needed), so this report makes no arsenal claim for him. Home Ace works off Four-seam to set up, Curveball to finish. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace stay ahead of hitters early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers. Statcast pitch data was available for Home Ace but not for Away Ace, so the pitch read makes no arsenal claims about Away Ace. Season offense splits were available for the Boston Red Sox lineup but not for the New York Yankees lineup, so the lineup read makes no offense claims about the New York Yankees lineup. Lineups can still change before first pitch. Away Ace: no season figures are available. Home Ace: all pitcher figures cover the regular season through 2026-07-03. Team offense splits cover the regular season through 2026-07-03. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace has no claimed strength because the data is limited.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_unavailable_era_whip_ip": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "The report says the figures for Alpha Livearm cover different samples.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+      "lineup_pressure_points": [],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": []
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm: the strikeout, walk and home-run counts cover the regular season through 2026-07-04; the pitch mix, velocity and movement cover the regular season and postseason through 2026-07-04. They are different samples.",
+        "Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against RHP pitching is not available for this lineup yet.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. Season offense data against LHP pitching is not available for this lineup yet.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and Statcast pitch data. Season offense splits were not available for this game, so the lineup read makes no offense claims. Lineups can still change before first pitch. Alpha Livearm: the strikeout, walk and home-run counts cover the regular season through 2026-07-04; the pitch mix, velocity and movement cover the regular season and postseason through 2026-07-04. They are different samples. Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  },
+  "live_unknown_figures": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's arsenal is limited.",
+          "evidence": "Pitch count not available (the minimum is 100); the report makes no arsenal claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him.",
+        "Strikeout data for Away Ace is limited (25 batters faced; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Away Ace is limited (25 batters faced; 170 needed), so no command claim is made.",
+        "Away Ace has allowed 1 home run over 25 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Not available as the main pitch",
+      "away_vs_home_offense": "Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Away Ace is limited (25 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Away Ace is limited (25 batters faced; 170 needed), so no command claim is made. Away Ace has allowed 1 home run over 25 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.086 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made.",
+        "Home runs allowed are not available for Home Ace."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Home Ace. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Away Ace against Home Ace",
+      "matchup_summary": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace: all pitcher figures cover the regular season through 2026-07-03.",
+        "Home Ace: all pitcher figures cover the regular season through 2026-07-03.",
+        "Team offense splits cover the regular season through 2026-07-03."
+      ],
+      "three_things_to_watch": [
+        "Can Away Ace stay ahead of hitters early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Away Ace against Home Ace",
+      "sections": [
+        {
+          "body": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Away Ace is limited (25 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Away Ace is limited (25 batters faced; 170 needed), so no command claim is made. Away Ace has allowed 1 home run over 25 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.086 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Home Ace. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "Away Ace's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Home Ace works off Four-seam to set up, Curveball to finish. No arsenal contrast is drawn because at least one arsenal has too little data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace stay ahead of hitters early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers and season offense splits. Statcast pitch data was available for Home Ace but not for Away Ace, so the pitch read makes no arsenal claims about Away Ace. Lineups can still change before first pitch. Away Ace: all pitcher figures cover the regular season through 2026-07-03. Home Ace: all pitcher figures cover the regular season through 2026-07-03. Team offense splits cover the regular season through 2026-07-03. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace has no claimed strength because the data is limited.",
+        "Home Ace brings this strength: Four-seam to set up, Curveball to finish.",
+        "The early what to watch is whether Away Ace can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_unnamed_lead_pitch": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 33.3% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace carries below-average command risk.",
+          "evidence": "28 walks in 225 batters faced (regular season through 2026-07-03).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 7 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace throws pitches the data does not name, so this report makes no arsenal claim for him.",
+        "Strikeout data for Away Ace is limited (45 batters faced; 70 needed), so no swing-and-miss claim is made.",
+        "Control data for Away Ace is limited (45 batters faced; 170 needed), so no command claim is made.",
+        "Away Ace has allowed 5 home runs over 45 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [],
+      "away_style": "Not available to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace throws pitches the data does not name, so this report makes no arsenal claim for him. Strikeout data for Away Ace is limited (45 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Away Ace is limited (45 batters faced; 170 needed), so no command claim is made. Away Ace has allowed 5 home runs over 45 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.086 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Away Ace against Home Ace",
+      "matchup_summary": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-07-03.",
+        "Team offense splits cover the regular season through 2026-07-03."
+      ],
+      "three_things_to_watch": [
+        "Can Away Ace stay ahead of hitters early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Away Ace against Home Ace",
+      "sections": [
+        {
+          "body": "This matchup features Away Ace against Home Ace. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace throws pitches the data does not name, so this report makes no arsenal claim for him. Strikeout data for Away Ace is limited (45 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Away Ace is limited (45 batters faced; 170 needed), so no command claim is made. Away Ace has allowed 5 home runs over 45 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.086 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "Away Ace throws pitches the data does not name, so this report makes no arsenal claim for him. Home Ace works off Four-seam to set up, Curveball to finish. No arsenal contrast is drawn because one starter's pitches are not named in the data.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace stay ahead of hitters early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-07-03. Team offense splits cover the regular season through 2026-07-03. Samples below the minimum are flagged as limited and no claim is made from them.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace has no claimed strength because the data is limited.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can stay ahead of hitters early in counts."
+      ]
+    }
+  },
+  "live_with_offense_splits": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Alpha Livearm's primary pitch is Zephyr-seam.",
+          "evidence": "Pitch mix shows 60% Zephyr-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Alpha Livearm's put-away pitch is Quasar slider.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's primary pitch is Nimbus sinker.",
+          "evidence": "Pitch mix shows 60% Nimbus sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Bravo Liveleft's put-away pitch is Vortex changeup.",
+          "evidence": "Put-away pitch usage at 30% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report makes a command claim.",
+          "evidence": "No command claim requiring correction was found.",
+          "status": "not_present"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [],
+      "away_starter_strengths": [
+        "Zephyr-seam to set up, Quasar slider to finish"
+      ],
+      "away_style": "Zephyr-seam to set up, Quasar slider to finish",
+      "away_vs_home_offense": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.801 OPS), so Alpha Livearm cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Alpha Livearm needs efficient strikes.",
+      "home_data_notes": [
+        "Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [],
+      "home_starter_strengths": [
+        "Nimbus sinker to set up, Vortex changeup to finish"
+      ],
+      "home_style": "Nimbus sinker to set up, Vortex changeup to finish",
+      "home_vs_away_offense": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.655 OPS), which gives Bravo Liveleft an edge if he gets ahead.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "901": [],
+        "902": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ]
+      },
+      "matchup_headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "matchup_summary": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04.",
+        "Team offense splits cover the regular season through 2026-07-04."
+      ],
+      "three_things_to_watch": [
+        "Can Alpha Livearm land the quasar slider early in counts?",
+        "Can Bravo Liveleft keep the ball low?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-07-04 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Power fastball-slider starter against Power fastball-slider starter",
+      "sections": [
+        {
+          "body": "This matchup features Power fastball-slider starter against Power fastball-slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Alpha Livearm works off a zephyr-seam-quasar slider combination. He shows average swing-and-miss ability. He shows average command. Alpha Livearm has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.801 OPS), so Alpha Livearm cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Alpha Livearm needs efficient strikes.",
+          "title": "Alpha Livearm vs Test Home"
+        },
+        {
+          "body": "Bravo Liveleft works off a nimbus sinker-vortex changeup combination. He shows average swing-and-miss ability. He shows average command. Bravo Liveleft has allowed 10 home runs over 400 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.655 OPS), which gives Bravo Liveleft an edge if he gets ahead.",
+          "title": "Bravo Liveleft vs Test Away"
+        },
+        {
+          "body": "The main contrast is Zephyr-seam to set up, Quasar slider to finish versus Nimbus sinker to set up, Vortex changeup to finish. The primary pitch contrast is Zephyr-seam against Nimbus sinker, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Alpha Livearm land the quasar slider early in counts?",
+            "Can Bravo Liveleft keep the ball low?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Alpha Livearm and Bravo Liveleft: all pitcher figures cover the regular season through 2026-07-04. Team offense splits cover the regular season through 2026-07-04.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Alpha Livearm brings this strength: Zephyr-seam to set up, Quasar slider to finish.",
+        "Bravo Liveleft brings this strength: Nimbus sinker to set up, Vortex changeup to finish.",
+        "The early what to watch is whether Alpha Livearm can land the quasar slider early in counts."
+      ]
+    }
+  }
+}
