@@ -3,7 +3,7 @@
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.9.0",
     "data_mode": "demo_cached",
-    "generated_at": "2026-10-23T13:51:16+00:00",
+    "generated_at": "2026-10-23T16:45:21+00:00",
     "data_fetched_at": null,
     "last_updated_label": "Demo data generated for capstone submission",
     "data_sources": [
@@ -2419,6 +2419,7 @@
   "disclaimers": [
     "PitchCraft is a capstone demo and not a betting or gambling tool.",
     "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
+    "Demo data. Live reports use data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
     "The analysis explains matchup fit and what to watch, not guaranteed outcomes.",
     "Cached demo data may be used to ensure stable public evaluation.",
     "Any internal Stuff or Strength signals are PitchCraft-specific and are not official Stuff+ metrics."

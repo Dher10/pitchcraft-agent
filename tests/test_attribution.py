@@ -24,6 +24,10 @@ ATTRIBUTION = "Data from the MLB Stats API and Baseball Savant (Statcast). Not a
 NON_COMMERCIAL = "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features."
 CACHING = "Requests to the data sources are cached and the data is not downloaded in bulk."
 INFORMATION_ONLY = "For information only: no predictions and no betting advice."
+DEMO_ATTRIBUTION = (
+    "Demo data. Live reports use data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB."
+)
+SOURCE_NAMES = ("MLB Stats API", "Baseball Savant")
 
 DEMO_WORDS = re.compile(r"capstone|demo|judging", re.IGNORECASE)
 
@@ -49,6 +53,53 @@ def test_the_demo_notes_say_it_is_free_and_non_commercial_and_nothing_about_requ
     assert NON_COMMERCIAL in notes and CACHING not in notes
     assert notes.count(NON_COMMERCIAL) == 1
     assert "PitchCraft is a capstone demo and not a betting or gambling tool." in notes  # the demo keeps its own notes
+
+
+# --- QA1-03: the demo and the fallback name the sources too (D16, P1.9 "both modes") ----------------------------------------
+
+
+def test_the_demo_notes_carry_the_approved_attribution_sentence_once():
+    notes = demo_inputs.build_demo_payload()["disclaimers"]
+
+    assert notes.count(DEMO_ATTRIBUTION) == 1
+    assert DEMO_ATTRIBUTION == next(note for note in notes if note.startswith("Demo data."))
+
+
+@pytest.mark.parametrize("kind", ["demo", "fallback"])
+def test_a_demo_or_fallback_file_names_both_sources_in_its_notes(monkeypatch, kind):
+    notes = published(build(monkeypatch, kind))["disclaimers"]
+
+    assert DEMO_ATTRIBUTION in notes
+    for name in SOURCE_NAMES:
+        assert any(name in note for note in notes), (kind, name)
+    assert CACHING not in notes  # the live-only note stays out of the demo
+
+
+@pytest.mark.parametrize("kind", ["live_complete", "live_debuts", "live_errors"])
+def test_a_live_file_names_both_sources_and_does_not_carry_the_demo_sentence(monkeypatch, kind):
+    notes = published(build(monkeypatch, kind))["disclaimers"]
+
+    assert DEMO_ATTRIBUTION not in notes
+    for name in SOURCE_NAMES:
+        assert any(name in note for note in notes), (kind, name)
+
+
+def test_the_served_file_names_both_sources_in_its_notes():
+    from tests.corpus import served
+
+    notes = served()["disclaimers"]
+
+    assert DEMO_ATTRIBUTION in notes
+    for name in SOURCE_NAMES:
+        assert any(name in note for note in notes), name
+
+
+def test_the_demo_attribution_sentence_in_a_live_file_is_a_finding(live):
+    assert check_contract(live) == []  # control
+
+    live["disclaimers"].append(DEMO_ATTRIBUTION)
+
+    assert any(v.code.startswith("rule1:wrong_type") and "disclaimers" in v.code for v in check_contract(live))
 
 
 @pytest.mark.parametrize("kind", ["live_complete", "live_debuts", "live_errors"])
