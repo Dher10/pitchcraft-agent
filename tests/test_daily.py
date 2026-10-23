@@ -35,6 +35,8 @@ class Sources:
     def __init__(self) -> None:
         self.schedule: object = SCHEDULE
         self.schedule_error: Exception | None = None
+        # The answer to the series standing requests (`hydrate=seriesStatus`): url -> payload. None: they get `schedule`.
+        self.series_route = None
         self.requests: list[str] = []
 
 
@@ -66,6 +68,8 @@ def sources(monkeypatch, tmp_path):
         if "schedule" in url:
             if fake.schedule_error is not None:
                 raise fake.schedule_error
+            if "hydrate=seriesStatus" in url and fake.series_route is not None:
+                return FakeResponse(fake.series_route(url))
             return FakeResponse(fake.schedule)
         if "/stats?" in url:
             return FakeResponse({"stats": [{"splits": [{"stat": {

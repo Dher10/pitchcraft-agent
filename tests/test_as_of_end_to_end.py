@@ -9,7 +9,7 @@ returns pitches from after the cutoff and from spring training, the season-stats
 answers with "future" numbers for any end date after the cutoff, and the Savant
 team-batting source ignores the requested end date. The snapshot is then inspected.
 
-Series status is not part of the packet yet (P1.5); its cutoff is covered at fetcher
+Series status joins the snapshot in P1.5-b (tests/test_series_snapshot.py); its cutoff is covered at fetcher
 level in test_fetchers_as_of.py and, for the historical dataset, by P2.4 (D28).
 """
 

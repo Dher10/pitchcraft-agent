@@ -1,4 +1,4 @@
-import type { Game } from "@/lib/types";
+import type { Game, Series } from "@/lib/types";
 
 /** The dash shown wherever a figure is not available. */
 export const UNAVAILABLE = "—";
@@ -89,4 +89,18 @@ export function formatModeLine(dataMode: string, fetchedAt: string | null | unde
   if (dataMode !== "fetched_snapshot") return MODE_LINE_DEMO;
   const day = newYorkDay(fetchedAt);
   return day ? `Live data · fetched ${day}` : MODE_LINE_FETCH_UNKNOWN;
+}
+
+export const SERIES_STANDING_UNAVAILABLE = "Series standing not available";
+
+/**
+ * The line under a matchup's headline for a postseason game (D43): "World Series · Game 3 · MIL leads 2-0".
+ * Game 1 has no standing to show, a later game without one says so, and a game that is in no series has no line
+ * (`null`: a regular-season game has no series, which is not an unknown). Made of the series object and nothing else.
+ */
+export function formatSeriesLine(series: Series | null): string | null {
+  if (series === null) return null;
+  const head = `${series.series_name} · Game ${series.game_number}`;
+  if (series.game_number === 1) return head;
+  return `${head} · ${series.standing ?? SERIES_STANDING_UNAVAILABLE}`;
 }

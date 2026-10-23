@@ -39,7 +39,7 @@ import re
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from data_pipeline import config, labels
+from data_pipeline import config, labels, series
 from data_pipeline.schema import (
     CRITIC_STATUSES,
     SCHEMA_VERSION,
@@ -550,6 +550,59 @@ def lineup_follows_status(c: Ctx) -> Problem | None:
     return None if c.value == want else _mismatch(f"the lineup status follows the status {c.matchup.get('status')!r}: expected {want!r}")
 
 
+SERIES_KEYS = {"series_name", "game_number", "games_in_series", "standing"}
+
+
+def _series_keys(c: Ctx) -> Problem | None:
+    """A series object has exactly its four parts: a part missing from it is not a leaf, so each part asks."""
+
+    node = c.around(1)
+    if not isinstance(node, Mapping) or set(node) != SERIES_KEYS:
+        return ("rule1:wrong_type", f"a series has exactly the keys {sorted(SERIES_KEYS)}")
+    return None
+
+
+def series_empty(c: Ctx) -> Problem | None:
+    """The only non-null leaf at `series` is an empty object: the unavailable state is `null`, not `{}`."""
+
+    return ("rule1:wrong_type", "an empty series: the unavailable state is null")
+
+
+def series_name_value(c: Ctx) -> Problem | None:
+    if (problem := _series_keys(c)) is not None:
+        return problem
+    return None if series.series_name(c.value) is not None else ("rule1:wrong_type", f"{c.value!r} is not a series name the code knows")
+
+
+def series_game_number(c: Ctx) -> Problem | None:
+    if (problem := _series_keys(c)) is not None:
+        return problem
+    number, length = c.value, c.around(1, "games_in_series")
+    if isinstance(number, bool) or not isinstance(number, int) or not 1 <= number <= series.MAX_GAMES:
+        return ("rule1:wrong_type", f"{number!r} is not the number of a game in a series (1 to {series.MAX_GAMES})")
+    if length is not None and isinstance(length, int) and not isinstance(length, bool) and number > length:
+        return ("rule1:wrong_type", f"game {number} is beyond the {length} games of the series")
+    return None
+
+
+def series_games_in_series(c: Ctx) -> Problem | None:
+    if (problem := _series_keys(c)) is not None:
+        return problem
+    length = c.value
+    if isinstance(length, bool) or length not in series.SERIES_LENGTHS:
+        return ("rule1:wrong_type", f"{length!r} is not a length a series has {list(series.SERIES_LENGTHS)}")
+    return None
+
+
+def series_standing(c: Ctx) -> Problem | None:
+    if (problem := _series_keys(c)) is not None:
+        return problem
+    number, length = c.around(1, "game_number"), c.around(1, "games_in_series")
+    if series.standing(c.value, number, length) != c.value:
+        return ("rule1:wrong_type", f"{c.value!r} is not a standing that can be true before game {number!r}")
+    return None
+
+
 def game_title(c: Ctx) -> Problem | None:
     teams = c.matchup["teams"]
     want = f"{teams['away']['name']} vs {teams['home']['name']}"
@@ -638,7 +691,11 @@ MANIFEST: tuple[Entry, ...] = tuple(
         _source(M + "date", "the official date of the game (schedule `officialDate`)", STR, False, is_date),
         _source(M + "status", "the schedule's game state through `schema.GAME_STATUS` (`upcoming`, `live`, `final`); null when the table does not know it", STR, True, game_status_value),
         _label(M + "is_featured", "whether the matchup is the featured one", (bool,)),
-        _source(M + "series", "the series context of a postseason game (schedule); null for any other game. Its parts have no entry until the producer of P1.5 row 7", (dict,), True),
+        _source(M + "series", "the series context of a postseason game (schedule); null for any other game, or one whose series the code cannot name", (dict,), True, series_empty),
+        _source(M + "series.series_name", "schedule `seriesDescription`, one of the seven names of `series.SERIES_NAME`", STR, False, series_name_value),
+        _source(M + "series.game_number", "schedule `seriesGameNumber`", (int,), False, series_game_number),
+        _source(M + "series.games_in_series", "schedule `gamesInSeries` when it is a length a series has (3, 5 or 7); null otherwise", (int,), True, series_games_in_series),
+        _source(M + "series.standing", "`seriesStatus.result` after the last played game before this one, as `series.standing` recognizes it; null for game 1 and when unavailable", STR, True, series_standing),
         _derived(M + "game.title", "the names of the two teams", STR, False, game_title),
         _source(M + "game.venue", "schedule venue name", STR, True),
         _source(M + "game.start_time_utc", "schedule `gameDate`", STR, False, is_utc),

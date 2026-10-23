@@ -64,7 +64,12 @@ def test_the_generator_passes_the_language_to_the_agents(monkeypatch):
     assert inspect.signature(gdj.build_payload).parameters["language"].default == "en"
     with pytest.raises(language.UnknownLanguageError):
         gdj.build_payload(language="es")
-    assert gdj.build_payload(language="en") == gdj.build_payload()
+    # One clock for both builds: `generated_at` is the real time otherwise, and a second that ticks between them is a failure
+    # of the test, not of the generator (seen on a loaded machine, P1.5-b).
+    from datetime import datetime, timezone
+
+    clock = datetime(2026, 7, 4, 12, 0, 0, tzinfo=timezone.utc)
+    assert gdj.build_payload(language="en", now=clock) == gdj.build_payload(now=clock)
 
 
 def test_the_default_and_an_explicit_en_give_the_same_output(monkeypatch):

@@ -8,7 +8,7 @@ import ScoutingReport from "@/components/ScoutingReport";
 import StarterCard from "@/components/StarterCard";
 import TeamBadge from "@/components/TeamBadge";
 import { getPitchColor } from "@/components/ZoneDiagram";
-import { formatStartTime } from "@/lib/format";
+import { formatSeriesLine, formatStartTime } from "@/lib/format";
 import { getTeamColor } from "@/lib/teamColors";
 import { teamLabel } from "@/lib/teamLabel";
 import type { Matchup, ReportSection } from "@/lib/types";
@@ -30,6 +30,7 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
   const awaySection = findStarterSection(matchup.report.sections, "Pitcher A", matchup.starters.away_starter.name);
   const homeSection = findStarterSection(matchup.report.sections, "Pitcher B", matchup.starters.home_starter.name);
   const watchSection = matchup.report.sections.find((section) => section.title === "Three Things to Watch");
+  const seriesLine = formatSeriesLine(matchup.series);
 
   return (
     <section className="space-y-4">
@@ -38,6 +39,7 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
           {matchup.game.venue ?? "Venue not available"} &middot; {formatStartTime(matchup.game)}
         </p>
         <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-neutral-900">{matchup.report.headline}</h2>
+        {seriesLine ? <p className="mt-1 font-mono text-[11px] text-neutral-500">{seriesLine}</p> : null}
         {matchup.report.short_summary[0] ? (
           <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />

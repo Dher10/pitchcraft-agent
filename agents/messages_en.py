@@ -136,6 +136,9 @@ EN_MESSAGES: dict[str, object] = {
     "analyst.scope.none": "{who}: no season figures are available.",
     "analyst.scope.same": "{who}: all pitcher figures cover the {label}.",
     "analyst.scope.offense": "Team offense splits cover the {label}.",
+    # The series context of a postseason game (P1.5-b, D43): the second only for the first game of a series.
+    "analyst.series.standing": "This is Game {n} of the {series_name}. Before first pitch, {result}.",
+    "analyst.series.opening": "This is Game 1 of the {series_name}; the series has not started.",
     # --- report writer ------------------------------------------------------------------------------
     "writer.default_strength": "Has a defined scouting note for this matchup fit",
     "writer.watch_line": "The early what to watch is {observation}.",

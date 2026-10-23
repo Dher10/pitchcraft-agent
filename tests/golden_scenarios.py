@@ -124,7 +124,8 @@ def from_the_pipeline(mp, hard_case: str) -> dict[str, Any]:
     from tests.matrix import hard_outcome  # not at the top: the matrix imports the corpus, which imports this module
 
     # the pipeline stamps the real time of its run; the golden file must not depend on the clock (the note says the fetch day)
-    snapshot = {**hard_outcome(hard_case).snapshot, "run_at": "2026-07-04T12:00:00+00:00"}
+    base = hard_outcome(hard_case).snapshot
+    snapshot = {**base, "run_at": f"{base['fetched_date']}T12:00:00+00:00"}  # noon UTC of the game's own day
     mp.setattr(gdj, "_live", snapshot)
     return gdj._build_live_matchup(snapshot["live_games"][0], "matchup_001", True)
 
@@ -155,6 +156,10 @@ def scenarios(mp) -> dict[str, dict[str, Any]]:
         "live_unknown_figures": from_the_pipeline(mp, "unknown_figures"),
         "live_unnamed_lead_pitch": from_the_pipeline(mp, "unmapped_pitch_code"),
         "live_switch_pitcher": from_the_pipeline(mp, "switch_pitcher"),
+        # P1.5-b: a postseason game, as the pipeline builds it from the real vocabulary of the schedule
+        "live_series_standing": from_the_pipeline(mp, "series_standing"),
+        "live_series_opening": from_the_pipeline(mp, "series_opening"),
+        "live_series_standing_unavailable": from_the_pipeline(mp, "series_standing_unavailable"),
     }
 
 

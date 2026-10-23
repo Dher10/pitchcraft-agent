@@ -1786,6 +1786,464 @@
       ]
     }
   },
+  "live_series_opening": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 60.9% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 26.1% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "36 walks in 287 batters faced (regular season through 2026-10-09).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Sinker to set up, Slider to finish"
+      ],
+      "away_style": "Sinker to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "matchup_summary": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09.",
+        "Team offense splits cover the regular season through 2026-10-09."
+      ],
+      "series_note": "This is Game 1 of the World Series; the series has not started.",
+      "three_things_to_watch": [
+        "Can Away Ace land the slider early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-10-10 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "sections": [
+        {
+          "body": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 1 of the World Series; the series has not started.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "The main contrast is Sinker to set up, Slider to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace land the slider early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09. Team offense splits cover the regular season through 2026-10-09.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can land the slider early in counts."
+      ]
+    }
+  },
+  "live_series_standing": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 60.9% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 26.1% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "36 walks in 287 batters faced (regular season through 2026-10-09).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Sinker to set up, Slider to finish"
+      ],
+      "away_style": "Sinker to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "matchup_summary": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09.",
+        "Team offense splits cover the regular season through 2026-10-09."
+      ],
+      "series_note": "This is Game 3 of the AL Championship Series. Before first pitch, BOS leads 2-0.",
+      "three_things_to_watch": [
+        "Can Away Ace land the slider early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-10-10 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "sections": [
+        {
+          "body": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 3 of the AL Championship Series. Before first pitch, BOS leads 2-0.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "The main contrast is Sinker to set up, Slider to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace land the slider early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09. Team offense splits cover the regular season through 2026-10-09.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can land the slider early in counts."
+      ]
+    }
+  },
+  "live_series_standing_unavailable": {
+    "critic": {
+      "checks": [
+        {
+          "claim": "Away Ace's primary pitch is Sinker.",
+          "evidence": "Pitch mix shows 60.9% Sinker usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace's put-away pitch is Slider.",
+          "evidence": "Put-away pitch usage at 26.1% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's primary pitch is Four-seam.",
+          "evidence": "Pitch mix shows 62.2% Four-seam usage.",
+          "status": "supported"
+        },
+        {
+          "claim": "Home Ace's put-away pitch is Curveball.",
+          "evidence": "Put-away pitch usage at 26.7% supports this claim.",
+          "status": "supported"
+        },
+        {
+          "claim": "The report names only pitches that appear in the pitch mix.",
+          "evidence": "Every pitch named in the report was thrown by the starter it is credited to.",
+          "status": "supported"
+        },
+        {
+          "claim": "Away Ace carries below-average command risk.",
+          "evidence": "36 walks in 287 batters faced (regular season through 2026-10-09).",
+          "status": "supported"
+        },
+        {
+          "claim": "Pitch data and season figures are not presented as one sample.",
+          "evidence": "Each starter's figures cover the same games.",
+          "status": "not_present"
+        },
+        {
+          "claim": "The report predicts the winner.",
+          "evidence": "No win prediction or betting language found.",
+          "status": "not_present"
+        }
+      ],
+      "revision_notes": [
+        "No betting or outcome-prediction language found."
+      ],
+      "status": "reviewed",
+      "summary": "The critic checked 8 claims and found them supported by the data."
+    },
+    "findings": {
+      "away_data_notes": [
+        "Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "away_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "away_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Sinker to set up, Slider to finish"
+      ],
+      "away_style": "Sinker to set up, Slider to finish",
+      "away_vs_home_offense": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+      "home_data_notes": [
+        "Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+      ],
+      "home_starter_risks": [
+        "Below-average command can create deep-count traffic"
+      ],
+      "home_starter_strengths": [
+        "Above-average swing-and-miss ability",
+        "Four-seam to set up, Curveball to finish"
+      ],
+      "home_style": "Four-seam to set up, Curveball to finish",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "lineup_pressure_points": [
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "has strong OPS against this pitcher's hand",
+        "has elevated swing-and-miss risk",
+        "draws walks at an above-average rate"
+      ],
+      "lineup_pressure_points_by_team": {
+        "111": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk",
+          "draws walks at an above-average rate"
+        ],
+        "147": [
+          "has strong OPS against this pitcher's hand",
+          "has elevated swing-and-miss risk"
+        ]
+      },
+      "matchup_headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "matchup_summary": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+      "scope_notes": [
+        "Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09.",
+        "Team offense splits cover the regular season through 2026-10-09."
+      ],
+      "three_things_to_watch": [
+        "Can Away Ace land the slider early in counts?",
+        "Can Home Ace keep the ball in the zone?",
+        "Which lineup forces more deep counts by the third inning?"
+      ]
+    },
+    "packet_confidence": {
+      "level": "fetched_snapshot",
+      "lineup_status": "probable_pitchers",
+      "notes": [
+        "Live snapshot fetched 2026-10-10 for matchup_001."
+      ],
+      "pitch_data_status": "fetched_snapshot"
+    },
+    "report": {
+      "headline": "Sinker-Slider starter against Four-seam-Curveball starter",
+      "sections": [
+        {
+          "body": "This matchup features Sinker-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+          "title": "Matchup Summary"
+        },
+        {
+          "body": "Away Ace works off a sinker-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Away Ace has allowed 36 home runs over 287 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (1.126 OPS), so Away Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach.",
+          "title": "Away Ace vs New York Yankees"
+        },
+        {
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "title": "Home Ace vs Boston Red Sox"
+        },
+        {
+          "body": "The main contrast is Sinker to set up, Slider to finish versus Four-seam to set up, Curveball to finish. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point.",
+          "title": "Arsenal Scout"
+        },
+        {
+          "bullets": [
+            "Can Away Ace land the slider early in counts?",
+            "Can Home Ace keep the ball in the zone?",
+            "Which lineup forces more deep counts by the third inning?"
+          ],
+          "title": "Three Things to Watch"
+        },
+        {
+          "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Away Ace and Home Ace: all pitcher figures cover the regular season through 2026-10-09. Team offense splits cover the regular season through 2026-10-09.",
+          "title": "Data Confidence Note"
+        }
+      ],
+      "short_summary": [
+        "Away Ace brings this strength: Above-average swing-and-miss ability.",
+        "Home Ace brings this strength: Above-average swing-and-miss ability.",
+        "The early what to watch is whether Away Ace can land the slider early in counts."
+      ]
+    }
+  },
   "live_strong_strikeouts_weak_command": {
     "critic": {
       "checks": [

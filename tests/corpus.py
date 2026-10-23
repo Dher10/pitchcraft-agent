@@ -91,11 +91,12 @@ def payload_of(matchup: dict[str, Any]) -> dict[str, Any]:
     if wrapped["data_confidence"]["level"] == "fetched_snapshot":
         wrapped["data_confidence"] = dict(
             wrapped["data_confidence"],
-            notes=[generator_catalog()("generator.confidence.live_note", date=GAME_DAY, matchup_id=wrapped["id"])],
+            notes=[generator_catalog()("generator.confidence.live_note", date=wrapped["date"], matchup_id=wrapped["id"])],
         )
     metadata = {"data_mode": "demo_cached"}
     if wrapped["data_confidence"]["level"] == "fetched_snapshot":
-        metadata["data_fetched_at"] = RUN_AT  # the live note says the day of the fetch (D39); the wrapper is not a published file
+        # the live note says the day of the fetch (D39), here the day of the game; the wrapper is not a published file
+        metadata["data_fetched_at"] = f"{wrapped['date']}T12:00:00+00:00"
     payload = {"metadata": metadata, "matchups": [wrapped]}
     attach_claims(payload)
     return payload

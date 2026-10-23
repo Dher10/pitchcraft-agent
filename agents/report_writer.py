@@ -40,7 +40,7 @@ def run(
             t("writer.watch_line", observation=_watch_observation(t, first_watch)),
         ],
         "sections": [
-            {"title": t("writer.section.summary"), "body": findings["matchup_summary"]},
+            {"title": t("writer.section.summary"), "body": _summary_body(t, findings)},
             {"title": away_title, "body": findings["away_vs_home_offense"]},
             {"title": home_title, "body": findings["home_vs_away_offense"]},
             {
@@ -181,6 +181,14 @@ def _watch_observation(t: Catalog, first_watch: str) -> str:
     if getattr(first_watch, "key", None) != "analyst.watch.question" or not {"name", "action"} <= set(args):
         raise ValueError(f"the first thing to watch is not a question about a starter: {str(first_watch)[:80]!r}")
     return t("writer.watch_whether", name=args["name"], action=args["action"])
+
+
+def _summary_body(t: Catalog, findings: dict[str, Any]) -> Any:
+    """The summary, followed by the series sentence when the analyst wrote one (a postseason game)."""
+
+    if "series_note" not in findings:
+        return findings["matchup_summary"]
+    return t.join(" ", [findings["matchup_summary"], findings["series_note"]])
 
 
 def _enforce_language_rules(t: Catalog, report: dict[str, Any]) -> None:

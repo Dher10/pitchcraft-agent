@@ -27,7 +27,7 @@ import pybaseball
 from pybaseball import statcast_pitcher
 from requests.adapters import HTTPAdapter
 
-from data_pipeline import labels  # noqa: E402
+from data_pipeline import labels, series  # noqa: E402
 from data_pipeline.fetchers import mlb_schemas  # noqa: E402
 from data_pipeline.fetchers.statcast_events import COMPLETED_EVENTS, STATCAST_EVENTS  # noqa: E402
 from data_pipeline.schema import SCHEMA_VERSION, game_status  # noqa: E402
@@ -178,7 +178,7 @@ def game_label(game: dict[str, Any]) -> str:
     home = labels.team_label(game["home_team_abbr"], game["home_team"])
     return f"{away} @ {home}"
 
-POSTSEASON_GAME_TYPES = ("F", "D", "L", "W")
+POSTSEASON_GAME_TYPES = series.POSTSEASON_GAME_TYPES
 
 # MLB's official game date is the New York date, whatever the runner's clock says (D29).
 MLB_TIMEZONE = ZoneInfo("America/New_York")
@@ -525,6 +525,12 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
                     "status": (game.get("status") or {}).get("abstractGameState"),
                     # A postponed or cancelled game is "Final" in the first; this says which (D40, F5).
                     "detailed_state": (game.get("status") or {}).get("detailedState"),
+                    # The series fields are kept as the schedule sent them and judged by `series.build`: they are not
+                    # in the strict schema, so a malformed one can never fail the whole day (rule 5).
+                    "game_type": game.get("gameType"),
+                    "series_description": game.get("seriesDescription"),
+                    "series_game_number": game.get("seriesGameNumber"),
+                    "games_in_series": game.get("gamesInSeries"),
                 }
             )
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")
@@ -1306,6 +1312,27 @@ def fetch_series_status(
         return {}
 
 
+def fetch_series_context(game: dict[str, Any], as_of: str | date | None = None) -> dict[str, Any] | None:
+    """
+    The `series` object of one scheduled game (schema 0.9.0, D43): `None` for a game that is not a postseason game or
+    whose series the schedule does not name in words the code knows; otherwise the name, the number and the length the
+    day's schedule gave and the standing before first pitch.
+
+    The standing costs two schedule requests (`fetch_series_status`, cached by the raw cache) and none for game 1. Its
+    text is published only if `series.standing` recognizes it and its numbers can be true; a failed request (recorded by
+    the fetcher), a refused state or a text that is not recognized leave `standing` null inside the object.
+    """
+
+    args = (game.get("game_type"), game.get("series_description"), game.get("series_game_number"), game.get("games_in_series"))
+    context = series.build(*args, None)
+    if context is None or context["game_number"] == 1 or game.get("game_pk") is None:
+        return context
+    status = fetch_series_status(game["game_pk"], as_of=as_of)
+    if status.get("game_number") != context["game_number"]:
+        return context  # no answer, or an answer about another game number: no standing
+    return series.build(*args, status.get("result"))
+
+
 def fetch_pitcher_statcast(
     pitcher_id: int,
     pitcher_name: str,
@@ -1852,6 +1879,7 @@ def build_live_snapshot(
 
         away_splits = fetch_team_splits(featured["away_team_id"], as_of=game_as_of)
         home_splits = fetch_team_splits(featured["home_team_id"], as_of=game_as_of)
+        series_context = fetch_series_context(featured, as_of=game_as_of)
         live_games.append(
             {
                 "featured_game": featured,
@@ -1864,8 +1892,8 @@ def build_live_snapshot(
                 },
                 "away_team_splits": away_splits,
                 "home_team_splits": home_splits,
-                # P1.5: the series context of a postseason game; null until the producer of row 7 (schema 0.9.0).
-                "series": None,
+                # P1.5: the series context of a postseason game, null for any other (schema 0.9.0, D43).
+                "series": series_context,
             }
         )
 

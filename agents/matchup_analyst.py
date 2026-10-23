@@ -84,7 +84,7 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
                 " ", [_live_pitcher_read(t, home_starter, home_sample), _offense_read(t, away_team, home_starter)]
             )
 
-    return {
+    findings = {
         "away_starter_strengths": away_strengths,
         "away_starter_risks": away_risks,
         "home_starter_strengths": home_strengths,
@@ -106,6 +106,28 @@ def run(matchup_packet: dict[str, Any], language: str = DEFAULT_LANGUAGE) -> dic
         "away_style": away_style,
         "home_style": home_style,
     }
+    series_note = _series_note(t, matchup_packet)
+    if series_note is not None:
+        findings["series_note"] = series_note  # only for a postseason game, so no other report changes
+    return findings
+
+
+def _series_note(t: Catalog, packet: dict[str, Any]) -> str | None:
+    """The sentence about the series the game belongs to (D43), or None: no series, or no standing after game 1."""
+
+    series = packet.get("series")
+    if not isinstance(series, dict):
+        return None
+    if series["game_number"] == 1:
+        return t("analyst.series.opening", series_name=series["series_name"])
+    if series["standing"] is None:
+        return None  # "Series standing not available" is the page's line; the report claims nothing
+    return t(
+        "analyst.series.standing",
+        n=series["game_number"],
+        series_name=series["series_name"],
+        result=series["standing"],
+    )
 
 
 def _subject_notes(t: Catalog, slot: str, starter: dict[str, Any], sample: dict[str, Any] | None) -> list[str]:

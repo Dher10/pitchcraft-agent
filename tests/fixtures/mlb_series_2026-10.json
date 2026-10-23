@@ -1,0 +1,1432 @@
+{
+ "_source": "One real request on 2026-10-22: https://statsapi.mlb.com/api/v1/schedule?sportId=1&gameType=F,D,L,W&startDate=2026-09-29&endDate=2026-10-28&hydrate=seriesStatus (D16), reduced to the fields the series code reads. Used to fix the vocabulary of series names and standings (P1.5-b).",
+ "dates": [
+  {
+   "date": "2026-09-29",
+   "games": [
+    {
+     "gamePk": 849845,
+     "gameType": "F",
+     "officialDate": "2026-09-29",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 3,
+     "seriesDescription": "NL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 143
+       }
+      },
+      "home": {
+       "team": {
+        "id": 144
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 3,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "ATL leads 1-0"
+     }
+    },
+    {
+     "gamePk": 849849,
+     "gameType": "F",
+     "officialDate": "2026-09-29",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 3,
+     "seriesDescription": "AL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 145
+       }
+      },
+      "home": {
+       "team": {
+        "id": 117
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 3,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "CWS leads 1-0"
+     }
+    },
+    {
+     "gamePk": 849851,
+     "gameType": "F",
+     "officialDate": "2026-09-29",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 3,
+     "seriesDescription": "AL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 111
+       }
+      },
+      "home": {
+       "team": {
+        "id": 147
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 3,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "NYY leads 1-0"
+     }
+    },
+    {
+     "gamePk": 849843,
+     "gameType": "F",
+     "officialDate": "2026-09-29",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 3,
+     "seriesDescription": "NL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 112
+       }
+      },
+      "home": {
+       "team": {
+        "id": 135
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 3,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "SD leads 1-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-09-30",
+   "games": [
+    {
+     "gamePk": 849841,
+     "gameType": "F",
+     "officialDate": "2026-09-30",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 3,
+     "seriesDescription": "NL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 143
+       }
+      },
+      "home": {
+       "team": {
+        "id": 144
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 3,
+      "isOver": false,
+      "wins": 1,
+      "losses": 1,
+      "result": "Series tied 1-1"
+     }
+    },
+    {
+     "gamePk": 849846,
+     "gameType": "F",
+     "officialDate": "2026-09-30",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 3,
+     "seriesDescription": "AL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 145
+       }
+      },
+      "home": {
+       "team": {
+        "id": 117
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 3,
+      "isOver": true,
+      "wins": 2,
+      "losses": 0,
+      "result": "CWS wins 2-0"
+     }
+    },
+    {
+     "gamePk": 849848,
+     "gameType": "F",
+     "officialDate": "2026-09-30",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 3,
+     "seriesDescription": "AL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 111
+       }
+      },
+      "home": {
+       "team": {
+        "id": 147
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 3,
+      "isOver": true,
+      "wins": 2,
+      "losses": 0,
+      "result": "NYY wins 2-0"
+     }
+    },
+    {
+     "gamePk": 849842,
+     "gameType": "F",
+     "officialDate": "2026-09-30",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 3,
+     "seriesDescription": "NL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 112
+       }
+      },
+      "home": {
+       "team": {
+        "id": 135
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 3,
+      "isOver": true,
+      "wins": 2,
+      "losses": 0,
+      "result": "SD wins 2-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-01",
+   "games": [
+    {
+     "gamePk": 849844,
+     "gameType": "F",
+     "officialDate": "2026-10-01",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 3,
+     "seriesDescription": "NL Wild Card Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 143
+       }
+      },
+      "home": {
+       "team": {
+        "id": 144
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 3,
+      "isOver": true,
+      "wins": 2,
+      "losses": 1,
+      "result": "ATL wins 2-1"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "games": [
+    {
+     "gamePk": 849829,
+     "gameType": "D",
+     "officialDate": "2026-10-03",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 145
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "CWS leads 1-0"
+     }
+    },
+    {
+     "gamePk": 849828,
+     "gameType": "D",
+     "officialDate": "2026-10-03",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 144
+       }
+      },
+      "home": {
+       "team": {
+        "id": 119
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "LAD leads 1-0"
+     }
+    },
+    {
+     "gamePk": 849835,
+     "gameType": "D",
+     "officialDate": "2026-10-03",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 147
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "TB leads 1-0"
+     }
+    },
+    {
+     "gamePk": 849830,
+     "gameType": "D",
+     "officialDate": "2026-10-03",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 135
+       }
+      },
+      "home": {
+       "team": {
+        "id": 158
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "MIL leads 1-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "games": [
+    {
+     "gamePk": 849825,
+     "gameType": "D",
+     "officialDate": "2026-10-04",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 135
+       }
+      },
+      "home": {
+       "team": {
+        "id": 158
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 0,
+      "result": "MIL leads 2-0"
+     }
+    },
+    {
+     "gamePk": 849823,
+     "gameType": "D",
+     "officialDate": "2026-10-04",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 144
+       }
+      },
+      "home": {
+       "team": {
+        "id": 119
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 1,
+      "losses": 1,
+      "result": "Series tied 1-1"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "games": [
+    {
+     "gamePk": 849834,
+     "gameType": "D",
+     "officialDate": "2026-10-05",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 145
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 0,
+      "result": "CWS leads 2-0"
+     }
+    },
+    {
+     "gamePk": 849839,
+     "gameType": "D",
+     "officialDate": "2026-10-05",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 147
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 0,
+      "result": "TB leads 2-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-06",
+   "games": [
+    {
+     "gamePk": 849819,
+     "gameType": "D",
+     "officialDate": "2026-10-06",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 119
+       }
+      },
+      "home": {
+       "team": {
+        "id": 144
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 1,
+      "result": "LAD leads 2-1"
+     }
+    },
+    {
+     "gamePk": 849826,
+     "gameType": "D",
+     "officialDate": "2026-10-06",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 135
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 1,
+      "result": "MIL leads 2-1"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-07",
+   "games": [
+    {
+     "gamePk": 849833,
+     "gameType": "D",
+     "officialDate": "2026-10-07",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 114
+       }
+      },
+      "home": {
+       "team": {
+        "id": 145
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 1,
+      "result": "CWS leads 2-1"
+     }
+    },
+    {
+     "gamePk": 849822,
+     "gameType": "D",
+     "officialDate": "2026-10-07",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 119
+       }
+      },
+      "home": {
+       "team": {
+        "id": 144
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 4,
+      "totalGames": 5,
+      "isOver": true,
+      "wins": 3,
+      "losses": 1,
+      "result": "LAD wins 3-1"
+     }
+    },
+    {
+     "gamePk": 849838,
+     "gameType": "D",
+     "officialDate": "2026-10-07",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 147
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 5,
+      "isOver": true,
+      "wins": 3,
+      "losses": 0,
+      "result": "TB wins 3-0"
+     }
+    },
+    {
+     "gamePk": 849827,
+     "gameType": "D",
+     "officialDate": "2026-10-07",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 5,
+     "seriesDescription": "NL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 135
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 4,
+      "totalGames": 5,
+      "isOver": true,
+      "wins": 3,
+      "losses": 1,
+      "result": "MIL wins 3-1"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-08",
+   "games": [
+    {
+     "gamePk": 849832,
+     "gameType": "D",
+     "officialDate": "2026-10-08",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 114
+       }
+      },
+      "home": {
+       "team": {
+        "id": 145
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 4,
+      "totalGames": 5,
+      "isOver": false,
+      "wins": 2,
+      "losses": 2,
+      "result": "Series tied 2-2"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-10",
+   "games": [
+    {
+     "gamePk": 849831,
+     "gameType": "D",
+     "officialDate": "2026-10-10",
+     "seriesGameNumber": 5,
+     "gamesInSeries": 5,
+     "seriesDescription": "AL Division Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 145
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 5,
+      "totalGames": 5,
+      "isOver": true,
+      "wins": 3,
+      "losses": 2,
+      "result": "CLE wins 3-2"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "games": [
+    {
+     "gamePk": 849809,
+     "gameType": "L",
+     "officialDate": "2026-10-11",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 7,
+     "seriesDescription": "NL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 119
+       }
+      },
+      "home": {
+       "team": {
+        "id": 158
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "MIL leads 1-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-12",
+   "games": [
+    {
+     "gamePk": 849812,
+     "gameType": "L",
+     "officialDate": "2026-10-12",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 7,
+     "seriesDescription": "NL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 119
+       }
+      },
+      "home": {
+       "team": {
+        "id": 158
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 2,
+      "losses": 0,
+      "result": "MIL leads 2-0"
+     }
+    },
+    {
+     "gamePk": 849820,
+     "gameType": "L",
+     "officialDate": "2026-10-12",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 114
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 1,
+      "losses": 0,
+      "result": "CLE leads 1-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-13",
+   "games": [
+    {
+     "gamePk": 849813,
+     "gameType": "L",
+     "officialDate": "2026-10-13",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 114
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 1,
+      "losses": 1,
+      "result": "Series tied 1-1"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-14",
+   "games": [
+    {
+     "gamePk": 849811,
+     "gameType": "L",
+     "officialDate": "2026-10-14",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 7,
+     "seriesDescription": "NL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 119
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 3,
+      "losses": 0,
+      "result": "MIL leads 3-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-15",
+   "games": [
+    {
+     "gamePk": 849818,
+     "gameType": "L",
+     "officialDate": "2026-10-15",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 2,
+      "losses": 1,
+      "result": "CLE leads 2-1"
+     }
+    },
+    {
+     "gamePk": 849810,
+     "gameType": "L",
+     "officialDate": "2026-10-15",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 7,
+     "seriesDescription": "NL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 119
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 4,
+      "totalGames": 7,
+      "isOver": true,
+      "wins": 4,
+      "losses": 0,
+      "result": "MIL wins 4-0"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-16",
+   "games": [
+    {
+     "gamePk": 849817,
+     "gameType": "L",
+     "officialDate": "2026-10-18",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Postponed"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 5,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 3,
+      "losses": 2,
+      "result": "TB leads 3-2"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "games": [
+    {
+     "gamePk": 849816,
+     "gameType": "L",
+     "officialDate": "2026-10-17",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 4,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 2,
+      "losses": 2,
+      "result": "Series tied 2-2"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "games": [
+    {
+     "gamePk": 849817,
+     "gameType": "L",
+     "officialDate": "2026-10-18",
+     "seriesGameNumber": 5,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 114
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 5,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 3,
+      "losses": 2,
+      "result": "TB leads 3-2"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "games": [
+    {
+     "gamePk": 849815,
+     "gameType": "L",
+     "officialDate": "2026-10-19",
+     "seriesGameNumber": 6,
+     "gamesInSeries": 7,
+     "seriesDescription": "AL Championship Series",
+     "status": {
+      "abstractGameState": "Final",
+      "detailedState": "Final"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 114
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 6,
+      "totalGames": 7,
+      "isOver": true,
+      "wins": 4,
+      "losses": 2,
+      "result": "TB wins 4-2"
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-23",
+   "games": [
+    {
+     "gamePk": 849805,
+     "gameType": "W",
+     "officialDate": "2026-10-23",
+     "seriesGameNumber": 1,
+     "gamesInSeries": 7,
+     "seriesDescription": "World Series",
+     "status": {
+      "abstractGameState": "Preview",
+      "detailedState": "Scheduled"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 158
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 1,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 0,
+      "losses": 0
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-24",
+   "games": [
+    {
+     "gamePk": 849802,
+     "gameType": "W",
+     "officialDate": "2026-10-24",
+     "seriesGameNumber": 2,
+     "gamesInSeries": 7,
+     "seriesDescription": "World Series",
+     "status": {
+      "abstractGameState": "Preview",
+      "detailedState": "Scheduled"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 139
+       }
+      },
+      "home": {
+       "team": {
+        "id": 158
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 2,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 0,
+      "losses": 0
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-26",
+   "games": [
+    {
+     "gamePk": 849804,
+     "gameType": "W",
+     "officialDate": "2026-10-26",
+     "seriesGameNumber": 3,
+     "gamesInSeries": 7,
+     "seriesDescription": "World Series",
+     "status": {
+      "abstractGameState": "Preview",
+      "detailedState": "Scheduled"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 3,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 0,
+      "losses": 0
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-27",
+   "games": [
+    {
+     "gamePk": 849803,
+     "gameType": "W",
+     "officialDate": "2026-10-27",
+     "seriesGameNumber": 4,
+     "gamesInSeries": 7,
+     "seriesDescription": "World Series",
+     "status": {
+      "abstractGameState": "Preview",
+      "detailedState": "Scheduled"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 4,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 0,
+      "losses": 0
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-10-28",
+   "games": [
+    {
+     "gamePk": 849799,
+     "gameType": "W",
+     "officialDate": "2026-10-28",
+     "seriesGameNumber": 5,
+     "gamesInSeries": 7,
+     "seriesDescription": "World Series",
+     "status": {
+      "abstractGameState": "Preview",
+      "detailedState": "Scheduled"
+     },
+     "teams": {
+      "away": {
+       "team": {
+        "id": 158
+       }
+      },
+      "home": {
+       "team": {
+        "id": 139
+       }
+      }
+     },
+     "seriesStatus": {
+      "gameNumber": 5,
+      "totalGames": 7,
+      "isOver": false,
+      "wins": 0,
+      "losses": 0
+     }
+    }
+   ]
+  }
+ ]
+}

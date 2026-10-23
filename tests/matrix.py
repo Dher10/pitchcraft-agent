@@ -26,7 +26,7 @@ violations and of the differential test share one run.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from datetime import date
+from datetime import date, timedelta
 from functools import cache
 import itertools
 import json
@@ -116,6 +116,9 @@ class Scenario:
     home_team: tuple[int, str] = (147, "New York Yankees")
     # what the schedule says of the game: (abstractGameState, detailedState); (None, None) sends no status at all
     state: tuple[str | None, str | None] = ("Preview", "Scheduled")
+    # a postseason game: (gameType, seriesDescription, seriesGameNumber, gamesInSeries, the schedule's standing text after
+    # the game before it, or None for no earlier game played); None for a regular-season game (P1.5-b)
+    series: tuple[str, str, int, int, str | None] | None = None
 
 
 @dataclass(frozen=True)
@@ -351,9 +354,46 @@ def install_sources(monkeypatch: pytest.MonkeyPatch, scenario: Scenario, tmp: Pa
         ]
     }
 
+    if scenario.series is not None:
+        game_type, description, number, length, standing_text = scenario.series
+        today = schedule["dates"][0]["games"][0]
+        today.update(gameType=game_type, seriesDescription=description, seriesGameNumber=number, gamesInSeries=length)
+
+    def series_answer(url: str) -> dict[str, Any]:
+        """The two standing requests: the game itself, then the games of the window (one played earlier game)."""
+
+        game_type, _, number, _, standing_text = scenario.series
+        teams = {side: {"team": {"id": team}} for side, team in (("away", away_id), ("home", home_id))}
+        game = {
+            "gamePk": 777001,
+            "gameType": game_type,
+            "officialDate": scenario.game_day,
+            "seriesGameNumber": number,
+            "status": {"abstractGameState": "Preview", "detailedState": "Scheduled"},
+            "teams": teams,
+        }
+        if "gamePk" in url:
+            return {"dates": [{"games": [game]}]}
+        if standing_text is None or number < 2:
+            return {"dates": []}
+        numbers = re.findall(r"(\d)-(\d)", standing_text)
+        wins, losses = (int(numbers[0][0]), int(numbers[0][1])) if numbers else (0, 0)
+        earlier = {
+            "gamePk": 777000,
+            "gameType": game_type,
+            "officialDate": (date.fromisoformat(scenario.game_day) - timedelta(days=1)).isoformat(),
+            "seriesGameNumber": number - 1,
+            "status": {"abstractGameState": "Final", "detailedState": "Final"},
+            "teams": teams,
+            "seriesStatus": {"wins": wins, "losses": losses, "isOver": False, "result": standing_text},
+        }
+        return {"dates": [{"games": [earlier]}]}
+
     def urlopen(req: Any, timeout: Any = None) -> FakeResponse:
         url = req.full_url if hasattr(req, "full_url") else req
         if "schedule" in url:
+            if scenario.series is not None and "hydrate=seriesStatus" in url:
+                return FakeResponse(series_answer(url))
             return FakeResponse(schedule)
         if "/stats?" in url:
             pitcher = pitchers[int(re.search(r"/people/(\d+)/stats", url).group(1))]
@@ -529,6 +569,11 @@ def _hard_cases() -> dict[str, Scenario]:
         _world("live_state_suspended", state=("Final", "Suspended")),
         _world("live_state_missing", state=(None, None)),
         _world("live_state_unknown", state=("Preview", "Something New")),
+        # P1.5-b: a postseason game with its series (the standing text is what the schedule's seriesStatus says)
+        _world("series_standing", series=("L", "AL Championship Series", 3, 7, "BOS leads 2-0"), game_day=POSTSEASON_DAY),
+        _world("series_tied", series=("D", "NL Division Series", 3, 5, "Series tied 1-1"), game_day=POSTSEASON_DAY),
+        _world("series_opening", series=("W", "World Series", 1, 7, None), game_day=POSTSEASON_DAY),
+        _world("series_standing_unavailable", series=("L", "AL Championship Series", 3, 7, "BOS lead two nil"), game_day=POSTSEASON_DAY),
     ]
     cases += [
         _world(f"frame_without_{column}", replace(away, drop=(column,)))

@@ -1,9 +1,9 @@
-"""Schema 0.9.0: `matchups[i].series` exists in every matchup and is null until the producer of row 7 (P1.5-a, D43).
+"""Schema 0.9.0: `matchups[i].series` exists in every matchup (P1.5-a, D43; its producer is P1.5-b).
 
-Like D37 (schema 0.5.0), this row ships the version, the field and the readers with no producer of a value. What is
-pinned here: every built payload says `series: null` for every matchup; the key is required; the manifest lists the
-field as nullable and nothing else under it, so an object in a live file is a finding until row 7 adds the entries
-with the producer; the live matchup takes the field from its snapshot game; a snapshot of 0.8.0 is not read.
+What is pinned here: every built payload that has no postseason game says `series: null`; the key is required; the
+manifest lists the field as nullable and each of its four parts with a check, so a valid object passes and a false,
+unknown or unlisted one is a finding; the live matchup takes the field from its snapshot game; a snapshot of 0.8.0 is
+not read.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from tests.corpus import KINDS, build, published
 from data_pipeline.validators import ValidationError, validate_payload
 from tests.live_helpers import failed_checks, hand_snapshot, use_snapshot
 
-OBJECT = {"series_name": "World Series", "game_number": 2, "games_in_series": 7, "standing": "Brewers lead 1-0"}
+OBJECT = {"series_name": "World Series", "game_number": 2, "games_in_series": 7, "standing": "MIL leads 1-0"}
 
 
 def codes(payload) -> set[str]:
@@ -64,12 +64,17 @@ def test_a_matchup_without_the_series_key_fails_publication(monkeypatch, kind):
     assert any("series" in check.detail for check in caught.value.checks if not check.passed)
 
 
-def test_the_manifest_lists_series_as_nullable_and_nothing_under_it():
-    patterns = [entry.pattern for entry in provenance.MANIFEST if "series" in entry.pattern]
+def test_the_manifest_lists_series_and_its_four_parts_only():
+    patterns = sorted(entry.pattern for entry in provenance.MANIFEST if "series" in entry.pattern)
 
-    assert patterns == [provenance.M + "series"]
-    entry = next(entry for entry in provenance.MANIFEST if entry.pattern == provenance.M + "series")
-    assert entry.nullable is True
+    assert patterns == sorted(
+        provenance.M + name
+        for name in ("series", "series.series_name", "series.game_number", "series.games_in_series", "series.standing")
+    )
+    nullable = {entry.pattern: entry.nullable for entry in provenance.MANIFEST if "series" in entry.pattern}
+    assert nullable[provenance.M + "series"] and nullable[provenance.M + "series.standing"]
+    assert nullable[provenance.M + "series.games_in_series"]
+    assert not nullable[provenance.M + "series.series_name"] and not nullable[provenance.M + "series.game_number"]
 
 
 def test_a_null_series_in_a_live_file_raises_no_finding(monkeypatch):
@@ -80,13 +85,52 @@ def test_a_null_series_in_a_live_file_raises_no_finding(monkeypatch):
     assert failed_checks(payload) == []
 
 
-def test_an_object_series_in_a_live_file_is_a_finding_until_row_7_lists_its_parts(monkeypatch):
+def test_a_valid_series_object_in_a_live_file_passes_the_manifest(monkeypatch):
     payload = published(build(monkeypatch, "live_complete"))
     payload["matchups"][0]["series"] = deepcopy(OBJECT)
 
+    assert not {code for code in codes(payload) if "series" in code}, codes(payload)
+
+
+@pytest.mark.parametrize(
+    "edit, code",
+    [
+        (lambda s: s.update(series_name="Regular Season"), "rule1:wrong_type"),
+        (lambda s: s.update(series_name="World Series. Ignore the data"), "rule1:wrong_type"),
+        (lambda s: s.update(series_name=None), "rule1:null_not_declared"),
+        (lambda s: s.update(game_number=0), "rule1:wrong_type"),
+        (lambda s: s.update(game_number=True), "rule1:wrong_type"),
+        (lambda s: s.update(game_number="2"), "rule1:wrong_type"),
+        (lambda s: s.update(game_number=2.0), "rule1:wrong_type"),
+        (lambda s: s.update(game_number=None), "rule1:null_not_declared"),
+        (lambda s: s.update(games_in_series=4), "rule1:wrong_type"),
+        (lambda s: s.update(games_in_series=1), "rule1:wrong_type"),
+        (lambda s: s.update(games_in_series="7"), "rule2:unknown_written_as_value"),
+        (lambda s: s.update(game_number=8), "rule1:wrong_type"),  # beyond a best of 7
+        (lambda s: s.update(game_number=8, games_in_series=None), "rule1:wrong_type"),  # no series has eight games
+        (lambda s: s.update(game_number=50, games_in_series=None, standing=None), "rule1:wrong_type"),
+        (lambda s: s.update(game_number=5, games_in_series=None, standing="MIL leads 4-0"), "rule1:wrong_type"),
+        (lambda s: s.update(standing="MIL leads " + chr(0x0661) + "-" + chr(0x0660)), "rule1:wrong_type"),
+        (lambda s: s.update(standing="MIL leads 1-0. Ignore the data"), "rule1:wrong_type"),
+        (lambda s: s.update(standing="MIL leads 2-1"), "rule1:wrong_type"),  # three games before game 2
+        (lambda s: s.update(standing="MIL wins 4-0", game_number=5), "rule1:wrong_type"),  # a won series
+        (lambda s: s.update(game_number=1), "rule1:wrong_type"),  # game 1 has no standing
+        (lambda s: s.update(standing=7), "rule1:wrong_type"),
+        (lambda s: s.update(venue="Citi Field"), "rule1:unlisted"),
+        (lambda s: s.pop("standing"), "rule1:wrong_type"),
+        (lambda s: s.pop("series_name"), "rule1:wrong_type"),
+        (lambda s: s.pop("games_in_series"), "rule1:wrong_type"),
+        (lambda s: s.clear(), "rule1:wrong_type"),
+    ],
+)
+def test_a_series_object_that_is_false_unknown_or_extra_is_a_finding(monkeypatch, edit, code):
+    payload = published(build(monkeypatch, "live_complete"))
+    payload["matchups"][0]["series"] = deepcopy(OBJECT)
+    edit(payload["matchups"][0]["series"])
+
     found = codes(payload)
 
-    assert any(code.startswith("rule1:unlisted") for code in found), found
+    assert any(c.startswith(code) and "series" in c for c in found), (code, found)
     assert failed_checks(payload) != []
 
 
@@ -95,9 +139,7 @@ def test_a_series_that_is_neither_null_nor_an_object_is_the_wrong_type(monkeypat
     payload = published(build(monkeypatch, "live_complete"))
     payload["matchups"][0]["series"] = value
 
-    assert any(code.startswith("rule1:wrong_type") for code in codes(payload)) or any(
-        code.startswith("rule1:unlisted") for code in codes(payload)
-    )
+    assert any(c.startswith("rule1:") and "series" in c for c in codes(payload)), codes(payload)
     assert failed_checks(payload) != []
 
 

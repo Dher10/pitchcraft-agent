@@ -24,7 +24,7 @@ const SERIES: Series = {
   series_name: "World Series",
   game_number: 2,
   games_in_series: 7,
-  standing: "Brewers lead 1-0",
+  standing: "MIL leads 1-0",
 };
 
 function row(overrides: Partial<ArchiveItem> = {}): ArchiveItem {
@@ -125,17 +125,42 @@ describe("an archive row with no result", () => {
 });
 
 describe("a matchup with a series", () => {
-  it("is accepted by the page and draws nothing about the series yet (the series line is row 7)", () => {
-    const without = render(<PitchCraftApp data={file({ matchups: [{ ...makeMatchup({}), series: null }] })} />);
-    const withSeries = render(<PitchCraftApp data={file({ matchups: [{ ...makeMatchup({}), series: SERIES }] })} />);
+  const view = (series: Series | null) => render(<PitchCraftApp data={file({ matchups: [{ ...makeMatchup({}), series }] })} />);
 
-    expect(withSeries.container.textContent).toBe(without.container.textContent);
-    expect(withSeries.container.textContent).not.toContain("World Series");
+  it("draws the series line under the headline", () => {
+    const { container } = view(SERIES);
+
+    expect(container.textContent).toContain("World Series · Game 2 · MIL leads 1-0");
   });
 
-  it("accepts a series whose standing and length are unknown", () => {
-    const unknown: Series = { series_name: "World Series", game_number: 1, games_in_series: null, standing: null };
+  it("draws nothing about a series for a game that has none", () => {
+    const { container } = view(null);
 
-    expect(() => render(<PitchCraftApp data={file({ matchups: [{ ...makeMatchup({}), series: unknown }] })} />)).not.toThrow();
+    expect(container.textContent).not.toContain("World Series");
+    expect(container.textContent).not.toMatch(/Game \d/);
+    expect(container.textContent).not.toContain("Series standing not available");
+  });
+
+  it("says the standing is not available for a later game without one", () => {
+    const { container } = view({ series_name: "World Series", game_number: 2, games_in_series: 7, standing: null });
+
+    expect(container.textContent).toContain("World Series · Game 2 · Series standing not available");
+  });
+
+  it("shows game 1 without a standing and without the not-available words", () => {
+    const { container } = view({ series_name: "World Series", game_number: 1, games_in_series: 7, standing: null });
+
+    expect(container.textContent).toContain("World Series · Game 1");
+    expect(container.textContent).not.toContain("Series standing not available");
+  });
+
+  it("does not disturb the venue and time line of the header", () => {
+    const { container } = view(SERIES);
+
+    expect(container.textContent).toContain("Test Park");
+  });
+
+  it("accepts a series whose length is unknown", () => {
+    expect(() => view({ series_name: "World Series", game_number: 1, games_in_series: null, standing: null })).not.toThrow();
   });
 });

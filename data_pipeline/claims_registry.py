@@ -24,6 +24,7 @@ from typing import Any
 
 from agents.language import SUBJECT_SLOTS, Catalog
 from data_pipeline import labels
+from data_pipeline import series as series_vocab
 from data_pipeline import report_facts as facts
 from data_pipeline.claims import render_text
 from data_pipeline.schema import STATE_OF_STATUS, new_york_day
@@ -621,6 +622,41 @@ def _scope_part(c: Ctx) -> None:
         c.require(all(scopes[g]["label"] == c.text("label") for g in groups if g in scopes), "label", "the label is not the scope of the figures")
 
 
+def _series_sentence(c: Ctx) -> None:
+    """`analyst.series.standing` and `.opening`: the matchup has this series, and the numbers are the matchup's own."""
+
+    series = (c.matchup or {}).get("series")
+    if not c.require(isinstance(series, Mapping), "series", "the matchup has no series"):
+        return
+    c.require(
+        c.args["series_name"] == series["series_name"] and series_vocab.series_name(series["series_name"]) is not None,
+        "name",
+        "the series name is not the matchup's, or is not one the code knows",
+    )
+    number = series["game_number"]
+    length = series["games_in_series"]
+    c.require(
+        isinstance(number, int)
+        and not isinstance(number, bool)
+        and 1 <= number <= series_vocab.MAX_GAMES
+        and (length is None or number <= length),
+        "game_number",
+        "no series has a game with this number",
+    )
+    if c.key.endswith(".opening"):
+        c.require(number == 1, "game_number", "the sentence says the series has not started, but this is not game 1")
+        return
+    c.require(c.args["n"] == number and number >= 2, "game_number", "the game number is not the matchup's, or is the first")
+    standing = series["standing"]
+    c.require(
+        standing is not None
+        and c.args["result"] == standing
+        and series_vocab.standing(standing, number, series["games_in_series"]) == standing,
+        "standing",
+        "the standing is not the matchup's, or cannot be true before this game",
+    )
+
+
 def _scope_offense(c: Ctx) -> None:
     label = c.text("label")
     teams = [
@@ -1191,6 +1227,8 @@ RULES: dict[str, Rule] = {
     "analyst.scope.same": _scope_same,
     "analyst.scope.none": _scope_none,
     "analyst.scope.offense": _scope_offense,
+    "analyst.series.standing": _series_sentence,
+    "analyst.series.opening": _series_sentence,
     "analyst.watch.action.land": _watch_land,
     "writer.strength": _writer_strength,
     "writer.strength_none": _writer_strength_none,

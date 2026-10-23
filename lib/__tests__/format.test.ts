@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatFigure, formatStartTime, todayInNewYork } from "@/lib/format";
-import type { Game } from "@/lib/types";
+import { formatFigure, formatSeriesLine, formatStartTime, todayInNewYork } from "@/lib/format";
+import type { Game, Series } from "@/lib/types";
 
 const LIVE: Game = {
   title: "Test game",
@@ -102,5 +102,40 @@ describe("todayInNewYork", () => {
 
   it("control: a time in the middle of the day is the same day in both zones", () => {
     expect(todayInNewYork(new Date("2026-07-05T16:00:00Z"))).toBe("2026-07-05");
+  });
+});
+
+// P1.5-b (D43, docs/plans/P1.md section 10): the series line is made of the series object and nothing else.
+describe("formatSeriesLine", () => {
+  const series = (changes: Partial<Series> = {}): Series => ({
+    series_name: "World Series",
+    game_number: 3,
+    games_in_series: 7,
+    standing: "MIL leads 2-0",
+    ...changes,
+  });
+
+  it("names the series, the game and the standing", () => {
+    expect(formatSeriesLine(series())).toBe("World Series · Game 3 · MIL leads 2-0");
+  });
+
+  it("shows only the series and the game for game 1, which has no standing", () => {
+    expect(formatSeriesLine(series({ game_number: 1, standing: null }))).toBe("World Series · Game 1");
+  });
+
+  it("says the standing is not available for a later game without one", () => {
+    expect(formatSeriesLine(series({ standing: null }))).toBe("World Series · Game 3 · Series standing not available");
+  });
+
+  it("does not use the standing of game 1 even if one is given", () => {
+    expect(formatSeriesLine(series({ game_number: 1, standing: "MIL leads 1-0" }))).toBe("World Series · Game 1");
+  });
+
+  it("does not need the length of the series", () => {
+    expect(formatSeriesLine(series({ games_in_series: null }))).toBe("World Series · Game 3 · MIL leads 2-0");
+  });
+
+  it("is nothing for a game with no series", () => {
+    expect(formatSeriesLine(null)).toBeNull();
   });
 });
