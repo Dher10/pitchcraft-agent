@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata as NextMetadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
@@ -30,6 +31,8 @@ export default function RootLayout({
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body className="min-h-screen bg-neutral-100 font-sans text-neutral-900 antialiased">
         {children}
+        {/* Vercel Web Analytics (D26): page views only, no custom event. */}
+        <Analytics />
       </body>
     </html>
   );

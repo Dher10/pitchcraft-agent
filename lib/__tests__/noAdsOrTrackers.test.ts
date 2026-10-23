@@ -74,7 +74,7 @@ describe("the site's own source", () => {
   it("imports the analytics package only in the root layout", () => {
     const importers = FILES.filter((file) => /@vercel\/analytics/.test(read(file))).map(rel);
 
-    expect(importers.every((file) => file === "app/layout.tsx")).toBe(true);
+    expect(importers).toEqual(["app/layout.tsx"]);
   });
 });
 
@@ -93,10 +93,10 @@ describe("the dependencies", () => {
     expect(suspicious.filter((name) => name !== "@vercel/analytics")).toEqual([]);
   });
 
-  it("pin @vercel/analytics to an exact version when it is installed", () => {
+  it("pin @vercel/analytics to an exact version", () => {
     const version = { ...manifest.dependencies }["@vercel/analytics"];
 
-    if (version !== undefined) expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });
 
