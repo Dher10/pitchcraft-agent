@@ -23,7 +23,7 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
-from data_pipeline import labels, provenance
+from data_pipeline import config, labels, provenance
 from data_pipeline.claims import catalogs_of, verify_claims
 from data_pipeline.claims_registry import LIVE_LEVEL, ClaimIndex, Ctx, classify, run_rule
 from data_pipeline.schema import new_york_day
@@ -277,7 +277,9 @@ def _rule6(payload: Mapping[str, Any]) -> list[Violation]:
     metadata = payload.get("metadata") or {}
     for name, texts in (("metadata.data_sources", metadata.get("data_sources")), ("disclaimers", payload.get("disclaimers"))):
         for position, text in enumerate(texts if isinstance(texts, list) else []):
-            if isinstance(text, str) and _CACHED.search(text):
+            # The live caching note ("Requests to the data sources are cached ...", P1.9) is the one text that may say it.
+            exempt = name == "disclaimers" and text == config.CACHING_NOTE
+            if isinstance(text, str) and _CACHED.search(text) and not exempt:
                 found.append(Violation("rule6:cached_wording", f"{name}[{position}]", f"a live file says {text[:60]!r}"))
     if not _is_instant(metadata.get("data_fetched_at")):
         found.append(Violation("rule6:data_fetched_at", "metadata.data_fetched_at", "a live file has no time of fetch"))

@@ -15,6 +15,7 @@ import pytest
 
 from data_pipeline import claims_registry as registry
 from data_pipeline import contract_checks
+from data_pipeline import config
 from data_pipeline.contract_checks import (
     RUN_ERROR_CODES,
     RUN_SOURCES,
@@ -502,7 +503,7 @@ def clean_live(payload: dict[str, Any]) -> dict[str, Any]:
     ids = {m["id"] for m in copy["matchups"]}
     copy["archive"] = [row for row in copy["archive"] if row["id"] in ids]
     copy["metadata"]["data_sources"] = [s for s in copy["metadata"]["data_sources"] if "ached" not in s]
-    copy["disclaimers"] = [d for d in copy["disclaimers"] if "ached" not in d]
+    copy["disclaimers"] = [d for d in copy["disclaimers"] if "ached" not in d or d == config.CACHING_NOTE]
     copy["metadata"]["data_fetched_at"] = "2026-07-04T12:00:00Z"
     return copy
 

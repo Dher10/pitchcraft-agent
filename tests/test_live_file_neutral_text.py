@@ -23,8 +23,12 @@ DEMO_WORDS = re.compile(r"cached|capstone|demo|judging", re.IGNORECASE)
 
 LIVE_DISCLAIMERS = [
     "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
+    "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
+    "Requests to the data sources are cached and the data is not downloaded in bulk.",
     "For information only: no predictions and no betting advice.",
 ]
+# The caching note says requests are cached; it is not the demo wording this test looks for (P1.9, rule 6 exempts it).
+CACHING_NOTE = "Requests to the data sources are cached and the data is not downloaded in bulk."
 
 
 @pytest.mark.parametrize("kind", LIVE_KINDS)
@@ -46,7 +50,8 @@ def test_a_live_file_lists_the_sources_it_uses_and_no_demo_source(monkeypatch, k
 @pytest.mark.parametrize("kind", LIVE_KINDS)
 def test_nothing_a_live_file_says_about_its_data_is_a_demo_wording(monkeypatch, kind):
     payload = published(build(monkeypatch, kind))
-    text = json.dumps([payload["disclaimers"], payload["metadata"]["data_sources"], payload["agent_workflow"]])
+    notes = [note for note in payload["disclaimers"] if note != CACHING_NOTE]
+    text = json.dumps([notes, payload["metadata"]["data_sources"], payload["agent_workflow"]])
 
     assert not DEMO_WORDS.search(text), DEMO_WORDS.search(text)
 

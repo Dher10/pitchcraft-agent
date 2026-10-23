@@ -963,6 +963,7 @@ AGENT_WORKFLOW: Any = {
 
 DISCLAIMERS: Any = [
   "PitchCraft is a capstone demo and not a betting or gambling tool.",
+  "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
   "The analysis explains matchup fit and what to watch, not guaranteed outcomes.",
   "Cached demo data may be used to ensure stable public evaluation.",
   "Any internal Stuff or Strength signals are PitchCraft-specific and are not official Stuff+ metrics."
