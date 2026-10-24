@@ -2,7 +2,15 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
-### 2026-10-23 - P1-R2-c: heartbeat (in progress)
+### 2026-10-23 - P1-R2-d: build robustness (in progress)
+
+- Owner's temporary autonomy decision for d–g is recorded in STATUS; no DECISIONS edit. c is pushed as `0e4347e`, reviewer round 1 PASS; its CI is checked before d's commit.
+- Red: both build-input tests failed (Google import and Vitest 5.0.2); focused post-change run passed 11 tests. Next.js bundled local-font guide read before implementation. Both full font licenses read; OFL permits redistribution with notices retained. Exact 5.3.0 archive hashes match npm metadata; six WOFF2 files remain unmodified.
+- Vitest and mocker are exact 5.0.3, the patched non-major release named by both maintainer advisories. Only the related subtree changed. No lifecycle scripts ran at installation. Full npm audit: QA1-07 gone, two unrelated dev-only high findings in undici/zod remain; production audit 0. Recorded instead of broadening the dependency update.
+- Self-review areas 1–10: approved robustness scope; no source data/cutoff change; fixed weights/subset retained; local font files remove the failing network boundary; licenses retained/no secret or workflow change; no MLB/Savant calls; both new regressions seen red; layout variables and existing Analytics behavior preserved; records updated; protected paths untouched. Contract rules 1–8: no JSON field, unknown value, scope, fan claim, publication failure, mode, attribution or error code changed. Schema/skip/xfail/tolerance counts unchanged.
+- Sequential final-tree verification in the default terminal, no PATH/locale change: pytest 4601 passed, 2 skipped, 2 existing warnings (475.74 s); npm test 267 passed; tsc, lint and build exit 0. Clean-context reviewer round 1 PASS. Reviewer round 1 PASS; optional additional Mono-license assertion deferred: both notices were manually read and retained, the current test guards the Sans notice, and no correctness finding remains. No QA run.
+
+### 2026-10-23 - P1-R2-c: heartbeat
 
 - b is pushed as `be2ca40`; tests CI 40040803188 and final D42 rehearsal 40040803106 passed. Rehearsal requests: MLB schedule 1, season dates 1, pitcher stats 2; all Savant counters 0. Publication rehearsal passed the allowlist and pushed nothing. STATUS carries the complete observed record with c; no separate bookkeeping commit.
 - c red evidence: 12 failed / 9 passed in the focused selection; recent, exactly-30-day, missing-bot and existing data rollback controls passed. An added shallow dry-run regression then failed once before its upstream-history fix. The first publisher sweep passed 127 tests; it overlapped the final shallow-test edit, so final-tree evidence comes from the subsequent full verification, not that sweep.

@@ -9,10 +9,7 @@ import path from "node:path";
 // step R5; nothing here sends anything. The real <Analytics /> injects a script in a browser, so it is replaced by a marker.
 
 vi.mock("@vercel/analytics/next", () => ({ Analytics: () => <span data-testid="analytics" /> }));
-vi.mock("next/font/google", () => {
-  const font = () => ({ variable: "font-test" });
-  return { IBM_Plex_Mono: font, IBM_Plex_Sans: font };
-});
+vi.mock("next/font/local", () => ({ default: () => ({ variable: "font-test" }) }));
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const layoutSource = readFileSync(path.join(ROOT, "app", "layout.tsx"), "utf-8");

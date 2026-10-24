@@ -168,7 +168,7 @@ Feature: Phase 0 data integrity
   - [x] a Save the plan, this entry and the deferred feedback backlog.
   - [x] b Row 9 / P1.6: empty live day, earlier-live-only archive carry-forward, no-games notice, daily exit 3 and automated Gherkin.
   - [x] c Row 10 / P1.8: bot heartbeat after more than 30 days, current GitHub inactivity rule quoted in the commit.
-  - [ ] d Self-host the existing font families with licenses; patched non-major Vitest and mocker (QA1-07).
+  - [x] d Self-host the existing font families with licenses; patched non-major Vitest and mocker (QA1-07).
   - [ ] e UI feedback F6, F8, F10, F12 and accessible tooltips F9 with the exact approved texts.
   - [ ] f Year-aware scope labels F3, live attribution F11 and singular/plural loaded-matchup text; golden and contract registry updated.
   - [ ] g STATUS summary, Pending Notion sync and owner release steps; `git diff --name-only 3831e6b..v2 -- public/data evals/live` prints nothing; hand off to Gemini QA and stop.
