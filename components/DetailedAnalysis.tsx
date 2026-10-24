@@ -4,6 +4,7 @@ import { useState } from "react";
 import PitchTrajectoryCard from "@/components/PitchTrajectoryCard";
 import StrengthProfile from "@/components/StrengthProfile";
 import TeamBadge from "@/components/TeamBadge";
+import Tooltip, { STAT_TOOLTIPS } from "@/components/Tooltip";
 import ZoneDiagram, { getPitchColor } from "@/components/ZoneDiagram";
 import { throwingHand } from "@/lib/format";
 import { describePitchMovement } from "@/lib/pitchDescriptions";
@@ -14,19 +15,20 @@ type StarterSide = "away_starter" | "home_starter";
 
 interface DetailedAnalysisProps {
   matchup: Matchup;
+  live?: boolean;
 }
 
-export default function DetailedAnalysis({ matchup }: DetailedAnalysisProps) {
+export default function DetailedAnalysis({ matchup, live = matchup.data_confidence.level === "fetched_snapshot" }: DetailedAnalysisProps) {
   return (
     <section className="space-y-4 rounded-xl border border-neutral-200 bg-white p-4">
       <h2 className="text-xl font-bold text-neutral-900">Detailed Analysis</h2>
-      <PitcherAttack matchup={matchup} side="away_starter" locations={matchup.pitch_locations.away_starter} />
-      <PitcherAttack matchup={matchup} side="home_starter" locations={matchup.pitch_locations.home_starter} />
-      <StrengthProfile
+      <PitcherAttack key={`${matchup.id}-away`} matchup={matchup} side="away_starter" locations={matchup.pitch_locations.away_starter} />
+      <PitcherAttack key={`${matchup.id}-home`} matchup={matchup} side="home_starter" locations={matchup.pitch_locations.home_starter} />
+      {!live ? <StrengthProfile
         data={matchup.charts.strength_profile}
         awayStarterName={matchup.starters.away_starter.name}
         homeStarterName={matchup.starters.home_starter.name}
-      />
+      /> : null}
     </section>
   );
 }
@@ -45,7 +47,11 @@ function PitcherAttack({
   const starter = matchup.starters[side];
   const velocityKey = side === "away_starter" ? "away_starter_velocity" : "home_starter_velocity";
   // The combined chart lists the pitches of both starters; this panel shows only his own.
-  const arsenal = matchup.charts.pitch_mix.filter((row) => wasThrown(row[side]));
+  // The owner's F8 amendment ranks published side shares. Rounded zeros stay when the overall count is positive.
+  const arsenal = matchup.charts.pitch_mix.filter((row) => wasThrown(row[side])).sort((a, b) =>
+    (b[side][hand] ?? -Infinity) - (a[side][hand] ?? -Infinity) ||
+    (b[side].count ?? 0) - (a[side].count ?? 0) ||
+    (a.pitch < b.pitch ? -1 : a.pitch > b.pitch ? 1 : 0));
   const arsenalLimited = Boolean(starter.sample?.limited.arsenal);
   const selectedRow = arsenal.find((row) => row.pitch === selectedPitch) ?? arsenal[0];
   const velocityOf = (pitch: string) =>
@@ -68,17 +74,18 @@ function PitcherAttack({
         </div>
         <div className="flex w-fit rounded-lg border border-neutral-200 bg-white p-1">
           {(["vs_lhh", "vs_rhh"] as BatterHand[]).map((option) => (
-            <button
+            <Tooltip
               key={option}
-              type="button"
-              onClick={() => setHand(option)}
-              className={`rounded-md px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wide ${
+              text={STAT_TOOLTIPS[option === "vs_lhh" ? "LHH" : "RHH"]}
+              buttonProps={{ type: "button", onClick: () => {
+                if (option !== hand) setSelectedPitch(null);
+                setHand(option);
+              }, className: `rounded-md px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wide ${
                 hand === option ? "bg-blue-700 text-white" : "text-neutral-500"
-              }`}
-              title={option === "vs_lhh" ? "Versus left-handed hitters." : "Versus right-handed hitters."}
+              }` }}
             >
               {option === "vs_lhh" ? "vs LHH" : "vs RHH"}
-            </button>
+            </Tooltip>
           ))}
         </div>
       </div>

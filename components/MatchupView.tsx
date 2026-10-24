@@ -15,17 +15,18 @@ import type { Matchup, ReportSection } from "@/lib/types";
 
 interface MatchupViewProps {
   matchup: Matchup;
+  live?: boolean;
 }
 
-export default function MatchupView({ matchup }: MatchupViewProps) {
+export default function MatchupView({ matchup, live }: MatchupViewProps) {
   if (matchup.status === "final" && matchup.postgame) {
     return <PostgameMode matchup={matchup} />;
   }
 
-  return <PregameMode matchup={matchup} />;
+  return <PregameMode matchup={matchup} live={live} />;
 }
 
-function PregameMode({ matchup }: { matchup: Matchup }) {
+function PregameMode({ matchup, live }: MatchupViewProps) {
   const [showDetails, setShowDetails] = useState(false);
   const awaySection = findStarterSection(matchup.report.sections, "Pitcher A", matchup.starters.away_starter.name);
   const homeSection = findStarterSection(matchup.report.sections, "Pitcher B", matchup.starters.home_starter.name);
@@ -40,12 +41,12 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
         </p>
         <h2 className="mt-2 text-2xl font-bold leading-tight tracking-tight text-neutral-900">{matchup.report.headline}</h2>
         {seriesLine ? <p className="mt-1 font-mono text-[11px] text-neutral-500">{seriesLine}</p> : null}
-        {matchup.report.short_summary[0] ? (
-          <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5">
+        {matchup.report.short_summary.slice(0, 2).map((line, index) => line ? (
+          <div key={index} className="mt-3 flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-1.5">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
-            <p className="text-[13px] font-medium leading-5 text-blue-800">{matchup.report.short_summary[0]}</p>
+            <p className="text-[13px] font-medium leading-5 text-blue-800">{line}</p>
           </div>
-        ) : null}
+        ) : null)}
       </header>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -100,7 +101,7 @@ function PregameMode({ matchup }: { matchup: Matchup }) {
         <span className="font-mono text-[11px]">{showDetails ? "▲" : "▼"}</span>
       </button>
 
-      {showDetails ? <DetailedAnalysis matchup={matchup} /> : null}
+      {showDetails ? <DetailedAnalysis matchup={matchup} live={live} /> : null}
       <CriticReviewPanel criticReview={matchup.critic_review} />
     </section>
   );

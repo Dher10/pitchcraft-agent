@@ -1,4 +1,5 @@
 import TeamBadge from "@/components/TeamBadge";
+import Tooltip, { STAT_TOOLTIPS } from "@/components/Tooltip";
 import { getPitchColor } from "@/components/ZoneDiagram";
 import { getTeamColor } from "@/lib/teamColors";
 import type { PitchFamily } from "@/lib/types";
@@ -111,7 +112,7 @@ function Meter({ label, value, percent, color }: { label: string; value: string;
   return (
     <div>
       <div className="flex items-center justify-between font-mono text-[9px] font-semibold uppercase tracking-wide text-neutral-400">
-        <span>{label}</span>
+        {label === "Break" ? <Tooltip text={STAT_TOOLTIPS.Break}>{label}</Tooltip> : <span>{label}</span>}
         <span className="text-neutral-700" style={{ fontVariantNumeric: "tabular-nums" }}>{value}</span>
       </div>
       <div className="mt-1 h-[5px] rounded-full bg-neutral-200">

@@ -262,6 +262,14 @@ Texts of the generator that are not keys: `metadata.data_sources` and `disclaime
 
 | Text | Asserts | Condition |
 |---|---|---|
+| LHH tooltip "Left-handed hitters"; RHH tooltip "Right-handed hitters" | Defines the selected batter-side abbreviation. | Associated hand button, visible on keyboard focus or pointer hover; Escape or blur/leave dismisses. |
+| ERA tooltip "Earned run average: earned runs allowed per nine innings. Lower is better." | Defines ERA. | ERA label; accessible focus/hover tooltip with aria description. |
+| WHIP tooltip "Walks plus hits per inning pitched. Lower is better." | Defines WHIP. | WHIP label; accessible focus/hover tooltip with aria description. |
+| K tooltip "Strikeouts." | Defines K. | Pregame or postgame K label; accessible focus/hover tooltip with aria description. |
+| OPS tooltip "On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup." | Defines OPS. | Lineup OPS label; accessible focus/hover tooltip with aria description. |
+| K% tooltip "Share of plate appearances that end in a strikeout." | Defines K%. | Lineup K% label; accessible focus/hover tooltip with aria description. |
+| BB% tooltip "Share of plate appearances that end in a walk." | Defines BB%. | Lineup BB% label; accessible focus/hover tooltip with aria description. |
+| Break tooltip "Total movement of the pitch, sideways and up or down, compared with a pitch thrown without spin." | Defines the existing break magnitude and reference. | Break meter label, only when measured movement is shown; accessible focus/hover tooltip with aria description. |
 | Mode line "Live data · fetched {date}" | The page shows live data. | `data_mode == fetched_snapshot`; `{date}` is the day of `metadata.data_fetched_at` in America/New_York (since P0.15-D2.4c; never `generated_at`, the build time) |
 | Mode line "Demo data: live data unavailable" | The page shows demo data. | `data_mode` is `demo_fallback` or `demo_cached` (one text for both, owner's decision, 2026-10-16); any other mode is shown as demo, never as live |
 | Mode line "Live data · fetch time not available" | A live file has no usable fetch time. | `data_mode == fetched_snapshot` and the instant is missing or not a UTC-offset instant; unreachable in a validated live file (the manifest requires the instant), shown instead of an invented date (P0.15-D2.4b, not in the owner's list of texts: reported in the commit) |

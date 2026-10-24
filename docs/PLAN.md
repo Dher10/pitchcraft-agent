@@ -169,7 +169,7 @@ Feature: Phase 0 data integrity
   - [x] b Row 9 / P1.6: empty live day, earlier-live-only archive carry-forward, no-games notice, daily exit 3 and automated Gherkin.
   - [x] c Row 10 / P1.8: bot heartbeat after more than 30 days, current GitHub inactivity rule quoted in the commit.
   - [x] d Self-host the existing font families with licenses; patched non-major Vitest and mocker (QA1-07).
-  - [ ] e UI feedback F6, F8, F10, F12 and accessible tooltips F9 with the exact approved texts.
+  - [x] e UI feedback F6, F8, F10, F12 and accessible tooltips F9 with the exact approved texts.
   - [ ] f Year-aware scope labels F3, live attribution F11 and singular/plural loaded-matchup text; golden and contract registry updated.
   - [ ] g STATUS summary, Pending Notion sync and owner release steps; `git diff --name-only 3831e6b..v2 -- public/data evals/live` prints nothing; hand off to Gemini QA and stop.
 
@@ -196,6 +196,7 @@ Feature: Phase 0 data integrity
 
 ## Backlog after v2 (not scheduled)
 
+- [ ] Hide pitches by selected-side usage only after retaining raw per-side counts and totals (schema change in a later release). P1-R2 F8 orders published side shares, then overall raw count, then name; it hides only overall count 0 and retains rounded per-side zeros (owner amendment, 2026-10-23).
 - [ ] Ground-ball rate as the replacement for the contact-risk label (D24 leaves contact risk as a count), next season (owner, P1-R2). It stabilizes at about 70 balls in play (FanGraphs Sample Size); Statcast supplies batted-ball type. Needs its own threshold decision.
 - [ ] Starter bio and recent form from the MLB Stats API people and game logs (owner, P1-R2); not built in release 2.
 - [ ] Visible K% next season (owner, P1-R2); not built in release 2.

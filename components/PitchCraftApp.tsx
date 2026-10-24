@@ -34,7 +34,7 @@ export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftApp
             selectedId={selected.id}
             onSelect={setSelectedId}
           />
-          <MatchupView matchup={selected} />
+          <MatchupView matchup={selected} live={data.metadata.data_mode === "fetched_snapshot"} />
         </>
       ) : null}
       <AgentPipeline workflow={data.agent_workflow} />
