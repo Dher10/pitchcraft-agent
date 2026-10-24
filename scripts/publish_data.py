@@ -8,7 +8,8 @@ This script does not judge its contents; it only publishes them, and only safely
 - the work tree of `--repo` must be clean before anything is copied;
 - the candidate is copied to `public/data/pitchcraft-demo.json`, and every path `git status` then reports must be under
   `public/data/` or `evals/live/` (D15), else the copy is undone and nothing is committed;
-- a candidate that differs from the committed file only in its three timestamps is not committed;
+- timestamp-only candidate changes are not committed; after more than 30 days since the last bot commit a UTC-date
+  heartbeat is committed under `evals/live/`, including when the data is unchanged;
 - the commit is the owner's, Daniel Herdenez, with the subject `data: daily update YYYY-MM-DD` (D42), the day being the
   `target_date` of the run;
 - the push is `HEAD:refs/heads/main`, never forced, from the branch `main` only, over SSH with the deploy key in
@@ -28,7 +29,7 @@ Exit codes: 0 published, unchanged or dry run done; 1 failed; 2 usage error.
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
@@ -41,6 +42,7 @@ import tempfile
 from typing import Any, Iterable, Sequence
 
 TARGET = "public/data/pitchcraft-demo.json"
+HEARTBEAT = "evals/live/heartbeat.txt"
 ALLOWED_PREFIXES = ("public/data/", "evals/live/")
 BRANCH = "main"
 IDENTITY_NAME = "Daniel Herdenez"
@@ -233,15 +235,59 @@ def _remove_tree(path: Path) -> None:
 # --- the publication ----------------------------------------------------------------------------------------------
 
 
-def _work_in(repo: Path, candidate_bytes: bytes, subject: str) -> bool:
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def heartbeat_due(repo: Path, now: datetime, history_remote: str = "origin") -> bool:
+    """Identify D42 bot commits by both identities and the exact dated subject, independent of human activity.
+
+    Actions checks out shallow history. If no bot is visible, complete that history before deciding it is absent.
+    A failed history read is a failure, not permission to guess an age. Dry runs call this only inside their clone.
+    """
+    def last_bot() -> datetime | None:
+        rows = _git_ok(repo, "log", "--first-parent", "--format=%ct%x00%an%x00%ae%x00%cn%x00%ce%x00%s")
+        for row in rows.splitlines():
+            stamp, author, email, committer, committer_email, subject = row.split("\0", 5)
+            if (author, email, committer, committer_email) != (
+                IDENTITY_NAME, IDENTITY_EMAIL, IDENTITY_NAME, IDENTITY_EMAIL
+            ) or not subject.startswith("data: daily update "):
+                continue
+            day = subject.removeprefix("data: daily update ")
+            try:
+                if date.fromisoformat(day).isoformat() != day:
+                    continue
+                return datetime.fromtimestamp(int(stamp), timezone.utc)
+            except (ValueError, OverflowError, OSError):
+                continue
+        return None
+
+    previous = last_bot()
+    if previous is None and _git_ok(repo, "rev-parse", "--is-shallow-repository").strip() == "true":
+        _git_ok(repo, "fetch", "--no-tags", "--unshallow", history_remote, BRANCH)
+        if _git_ok(repo, "rev-parse", "--is-shallow-repository").strip() != "false":
+            raise Failure("git_failed")
+        previous = last_bot()
+    return previous is not None and now - previous > timedelta(days=30)
+
+
+def _work_in(repo: Path, candidate_bytes: bytes, subject: str, history_remote: str = "origin") -> bool:
     """Copy, check and commit in `repo`. Returns whether a commit was made. Raises `Failure`."""
 
     old_bytes: bytes | None = None
     target = repo / TARGET
+    data_changed = True
     if target.exists():
         old_bytes = target.read_bytes()
         if same_apart_from_timestamps(old_bytes.decode("utf-8", errors="replace"), candidate_bytes.decode("utf-8")):
-            return False
+            data_changed = False
+    now = utc_now()
+    heartbeat = repo / HEARTBEAT
+    heartbeat_bytes = heartbeat.read_bytes() if heartbeat.exists() else None
+    new_heartbeat = (now.astimezone(timezone.utc).date().isoformat() + "\n").encode("utf-8")
+    write_heartbeat = heartbeat_due(repo, now, history_remote) and heartbeat_bytes != new_heartbeat
+    if not data_changed and not write_heartbeat:
+        return False
 
     def roll_back() -> None:
         """Put the work tree and the index back as they were; whatever fails here must not hide the failure that led to it."""
@@ -250,19 +296,24 @@ def _work_in(repo: Path, candidate_bytes: bytes, subject: str) -> bool:
             _git(repo, "reset", "-q")
         except (OSError, subprocess.SubprocessError, UnicodeError):
             pass
-        try:
-            if old_bytes is None:
-                target.unlink(missing_ok=True)
-            else:
-                target.write_bytes(old_bytes)
-        except (OSError, UnicodeError):
-            pass
+        for path, original in ((target, old_bytes), (heartbeat, heartbeat_bytes)):
+            try:
+                if original is None:
+                    path.unlink(missing_ok=True)
+                else:
+                    path.write_bytes(original)
+            except (OSError, UnicodeError):
+                pass
 
     # One rollback for every step after the copy (copy, status, allowlist, add, commit), for a refusal and for a process
     # that cannot be started alike (QA1-06).
     try:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(candidate_bytes)
+        if data_changed:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(candidate_bytes)
+        if write_heartbeat:
+            heartbeat.parent.mkdir(parents=True, exist_ok=True)
+            heartbeat.write_bytes(new_heartbeat)
         paths = changed_paths(repo)
         outside = outside_allowlist(paths)
         if outside or not paths:
@@ -342,7 +393,12 @@ def publish(candidate: Path, repo: Path, remote: str, key_file: Path | None, dry
             if result.returncode != 0:
                 raise Failure("git_failed")
             work = clone / "repo"
-        committed = _work_in(work, candidate_bytes, subject)
+        history_remote = "origin"
+        if dry_run and _git_ok(work, "rev-parse", "--is-shallow-repository").strip() == "true":
+            # A clone of a shallow checkout cannot recover missing history from that checkout itself.
+            # Read its upstream in the temporary clone; never fetch into the owner's source checkout.
+            history_remote = _git_ok(repo, "remote", "get-url", "origin").strip()
+        committed = _work_in(work, candidate_bytes, subject, history_remote)
         if not committed:
             say("unchanged: the file differs from the committed one only in its timestamps")
             return

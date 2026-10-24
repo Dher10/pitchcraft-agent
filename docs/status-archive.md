@@ -2,6 +2,15 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-23 - P1-R2-c: heartbeat (in progress)
+
+- b is pushed as `be2ca40`; tests CI 40040803188 and final D42 rehearsal 40040803106 passed. Rehearsal requests: MLB schedule 1, season dates 1, pitcher stats 2; all Savant counters 0. Publication rehearsal passed the allowlist and pushed nothing. STATUS carries the complete observed record with c; no separate bookkeeping commit.
+- c red evidence: 12 failed / 9 passed in the focused selection; recent, exactly-30-day, missing-bot and existing data rollback controls passed. An added shallow dry-run regression then failed once before its upstream-history fix. The first publisher sweep passed 127 tests; it overlapped the final shallow-test edit, so final-tree evidence comes from the subsequent full verification, not that sweep.
+- One mechanism covers unchanged, timestamp-only and changed candidates. Both bot identities and its exact valid dated subject select the commit; UTC elapsed time must exceed 30 days. Missing bot in full history is a control. Shallow history is completed before absence is accepted; dry runs fetch only inside the temporary clone. Existing allowlist, owner identity, branch, SSH and push protections stay in place. Both copied files are rolled back on pre-commit failure.
+- Self-review areas 1–10: approved P1.8 behavior; no data or cutoff changes; strict raw elapsed-time boundary; history failures stop publication; no secret or workflow change; no MLB/Savant request path added; real local repositories exercise success and failure; no frontend change; records track b and c; protected paths untouched and no staging/commit without owner yes. No QA run.
+- Contract rules: 1 no public JSON field changed; 2 no unknown figure changed; 3 scopes unchanged; 4 no fan text changed; 5 existing publication failure labels retained; 6 data mode unchanged; 7 attribution unchanged; 8 no public error-code change. No schema version, tolerance table, skip or xfail changed.
+- Final-tree verification, sequential default terminal with no PATH/locale change: pytest 4601 passed, 2 skipped, 2 existing warnings (542.50 s); npm test 265 passed; tsc, lint and production build exit 0. Clean-context reviewer round 1 PASS, no findings. Owner commit approval pending. Commit c is not staged, committed or pushed.
+
 ### 2026-10-23 - P1-R2-b: no-games live state and archive
 
 - Owner amendment: `.github/workflows/daily.yml` accepts daily exit 3 as success; retain the existing `v2` push trigger and its `paths: daily.yml`. The approved push of b is dry run 3/3, the last allowed by D42. No manual workflow dispatch. Actual run/counts are pending push; `daily: requests` will provide the evidence. Every commit still needs the owner's yes.

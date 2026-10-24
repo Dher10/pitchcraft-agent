@@ -161,13 +161,13 @@ Feature: Phase 0 data integrity
 - [ ] P1.5 Postseason layer: series context + draft + debut + birthplace as cited claims (D7). Handle international signings with no draft record. **D41: series context only for v2.0-a; draft, debut and birthplace wait for after the release.**
 - [x] P1.6 (live before Oct 31, D41) Offseason state on the site. Acceptance criterion (D28): on a date with no MLB games, with a `no_games` run record, the site shows the season archive, not demo content.
 - [ ] P1.7 (after the release, D41) Daily append-only log under `evals/live/` even while only the rules writer runs (monitoring starts here).
-- [ ] P1.8 (live before Oct 31, D41) Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
+- [x] P1.8 (live before Oct 31, D41) Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
 - [x] P1.9 Data attribution and disclaimer on the site (MLB / Baseball Savant), no monetization of any kind, cached fetches and no bulk downloads (D16).
 - [x] P1.10 [auto] Web Analytics (D26): install `@vercel/analytics`, add `<Analytics />` to the root layout (`app/layout.tsx`) and create the `/quality` route (its content is P3.2). Page views only. Read the Next.js docs in `node_modules/next/dist/docs/` first. Clicking Enable in the Vercel dashboard is the owner's step at the merge of v2.0-a into `main`, not before.
 - [ ] P1-R2 [gated] Release 2 of v2.0-a (D41), approved by the owner by sending `docs/plans/P1-R2.md` (2026-10-23). D35 Codex fallback: show every commit's files/message and get an explicit yes before commit/push to `v2`. Red tests first; full verification one suite at a time; zero MLB/Savant requests in tests; no workflow dispatch. No `v2` commit touches `public/data/` or `evals/live/`; schema stays 0.9.0, no new error code. Only the plan's approved fan-visible texts. Release 2 QA is Gemini's; the writer stops after g.
   - [x] a Save the plan, this entry and the deferred feedback backlog.
   - [x] b Row 9 / P1.6: empty live day, earlier-live-only archive carry-forward, no-games notice, daily exit 3 and automated Gherkin.
-  - [ ] c Row 10 / P1.8: bot heartbeat after more than 30 days, current GitHub inactivity rule quoted in the commit.
+  - [x] c Row 10 / P1.8: bot heartbeat after more than 30 days, current GitHub inactivity rule quoted in the commit.
   - [ ] d Self-host the existing font families with licenses; patched non-major Vitest and mocker (QA1-07).
   - [ ] e UI feedback F6, F8, F10, F12 and accessible tooltips F9 with the exact approved texts.
   - [ ] f Year-aware scope labels F3, live attribution F11 and singular/plural loaded-matchup text; golden and contract registry updated.
