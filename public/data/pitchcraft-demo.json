@@ -3,9 +3,9 @@
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.9.0",
     "data_mode": "fetched_snapshot",
-    "generated_at": "2026-10-23T22:05:38+00:00",
-    "data_fetched_at": "2026-10-23T22:05:37+00:00",
-    "last_updated_label": "Live data fetched 2026-10-23",
+    "generated_at": "2026-10-24T18:00:00+00:00",
+    "data_fetched_at": "2026-10-24T17:59:50+00:00",
+    "last_updated_label": "Live data fetched 2026-10-24",
     "data_sources": [
       "MLB Stats API (schedule, probable pitchers, season statistics)",
       "Baseball Savant / Statcast (pitch data, team batting splits)"
@@ -15,18 +15,13 @@
       "reason": null,
       "live_run": {
         "status": "ok",
-        "run_at": "2026-10-23T22:05:37+00:00",
-        "target_date": "2026-10-23",
-        "as_of": "2026-10-22",
+        "run_at": "2026-10-24T17:59:50+00:00",
+        "target_date": "2026-10-24",
+        "as_of": "2026-10-23",
         "games_scheduled": 1,
         "games_live": 1,
         "errors": [],
-        "warnings": [
-          {
-            "source": "statcast_pitcher",
-            "code": "unmapped_pitch_type"
-          }
-        ]
+        "warnings": []
       }
     },
     "language": "en"
@@ -35,19 +30,19 @@
   "matchups": [
     {
       "id": "matchup_001",
-      "date": "2026-10-23",
+      "date": "2026-10-24",
       "status": "upcoming",
       "is_featured": true,
       "series": {
         "series_name": "World Series",
-        "game_number": 1,
+        "game_number": 2,
         "games_in_series": 7,
-        "standing": null
+        "standing": "MIL leads 1-0"
       },
       "game": {
         "title": "Tampa Bay Rays vs Milwaukee Brewers",
         "venue": "American Family Field",
-        "start_time_utc": "2026-10-24T00:00:00Z",
+        "start_time_utc": "2026-10-25T00:00:00Z",
         "start_time_local": null,
         "timezone": "America/Chicago",
         "broadcast_note": null,
@@ -69,8 +64,8 @@
             "recent_form": "Season split",
             "scope": {
               "kind": "regular_season",
-              "through": "2026-10-22",
-              "label": "regular season through 2026-10-22"
+              "through": "2026-10-23",
+              "label": "2026 regular season"
             }
           }
         },
@@ -88,67 +83,67 @@
             "recent_form": "Season split",
             "scope": {
               "kind": "regular_season",
-              "through": "2026-10-22",
-              "label": "regular season through 2026-10-22"
+              "through": "2026-10-23",
+              "label": "2026 regular season"
             }
           }
         }
       },
       "starters": {
         "away_starter": {
-          "id": "607259",
-          "name": "Nick Martinez",
+          "id": "656876",
+          "name": "Drew Rasmussen",
           "team": "TB",
           "throws": "R",
           "bio": null,
           "season_summary": {
-            "era": "3.10",
-            "whip": "1.09",
-            "innings": "180.0",
-            "strikeouts": 109,
-            "walks": 26,
-            "home_runs_allowed": 22,
+            "era": "2.67",
+            "whip": "0.91",
+            "innings": "172.0",
+            "strikeouts": 174,
+            "walks": 32,
+            "home_runs_allowed": 14,
             "scopes": {
               "season_rates": {
                 "kind": "regular_season",
-                "through": "2026-10-22",
-                "label": "regular season through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season"
               },
               "counts": {
                 "kind": "regular_season",
-                "through": "2026-10-22",
-                "label": "regular season through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season"
               }
             }
           },
           "pitching_profile": {
-            "style_label": "Sinker-Changeup starter",
-            "primary_pitch": "Sinker",
-            "putaway_pitch": "Changeup",
+            "style_label": "Cutter-Four-seam starter",
+            "primary_pitch": "Cutter",
+            "putaway_pitch": "Four-seam",
             "command_label": "Solid command",
-            "swing_miss_label": "Below-average swing-and-miss ability",
+            "swing_miss_label": "Above-average swing-and-miss ability",
             "contact_risk_label": null
           },
           "recent_form": null,
           "sample": {
             "arsenal": {
-              "pitches": 2666,
+              "pitches": 2947,
               "scope": {
                 "kind": "regular_and_postseason",
-                "through": "2026-10-22",
-                "label": "regular season and postseason through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season and postseason through Oct 23"
               }
             },
             "rates": {
-              "batters_faced": 722,
-              "strikeouts": 109,
-              "walks": 26,
-              "home_runs": 22,
+              "batters_faced": 669,
+              "strikeouts": 174,
+              "walks": 32,
+              "home_runs": 14,
               "source": "mlb_api",
               "scope": {
                 "kind": "regular_season",
-                "through": "2026-10-22",
-                "label": "regular season through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season"
               }
             },
             "limited": {
@@ -164,35 +159,35 @@
           }
         },
         "home_starter": {
-          "id": "694819",
-          "name": "Jacob Misiorowski",
+          "id": "701656",
+          "name": "Logan Henderson",
           "team": "MIL",
           "throws": "R",
           "bio": null,
           "season_summary": {
-            "era": "1.80",
-            "whip": "0.80",
-            "innings": "174.2",
-            "strikeouts": 252,
-            "walks": 44,
+            "era": "2.47",
+            "whip": "0.84",
+            "innings": "98.1",
+            "strikeouts": 110,
+            "walks": 19,
             "home_runs_allowed": 14,
             "scopes": {
               "season_rates": {
                 "kind": "regular_season",
-                "through": "2026-10-22",
-                "label": "regular season through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season"
               },
               "counts": {
                 "kind": "regular_season",
-                "through": "2026-10-22",
-                "label": "regular season through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season"
               }
             }
           },
           "pitching_profile": {
-            "style_label": "Four-seam starter",
+            "style_label": "Four-seam-Changeup starter",
             "primary_pitch": "Four-seam",
-            "putaway_pitch": "Not available",
+            "putaway_pitch": "Changeup",
             "command_label": "Solid command",
             "swing_miss_label": "Above-average swing-and-miss ability",
             "contact_risk_label": null
@@ -200,23 +195,23 @@
           "recent_form": null,
           "sample": {
             "arsenal": {
-              "pitches": 2829,
+              "pitches": 1641,
               "scope": {
                 "kind": "regular_and_postseason",
-                "through": "2026-10-22",
-                "label": "regular season and postseason through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season and postseason through Oct 23"
               }
             },
             "rates": {
-              "batters_faced": 665,
-              "strikeouts": 252,
-              "walks": 44,
+              "batters_faced": 371,
+              "strikeouts": 110,
+              "walks": 19,
               "home_runs": 14,
               "source": "mlb_api",
               "scope": {
                 "kind": "regular_season",
-                "through": "2026-10-22",
-                "label": "regular season through 2026-10-22"
+                "through": "2026-10-23",
+                "label": "2026 regular season"
               }
             },
             "limited": {
@@ -235,204 +230,194 @@
       "charts": {
         "pitch_mix": [
           {
-            "pitch": "Sinker",
-            "away_starter": {
-              "overall": 30.8,
-              "vs_lhh": 25.0,
-              "vs_rhh": 39.4,
-              "count": 820,
-              "total": 2666
-            },
-            "home_starter": {
-              "overall": 0.1,
-              "vs_lhh": 0.1,
-              "vs_rhh": 0.2,
-              "count": 3,
-              "total": 2829
-            }
-          },
-          {
-            "pitch": "Changeup",
-            "away_starter": {
-              "overall": 26.0,
-              "vs_lhh": 29.1,
-              "vs_rhh": 21.3,
-              "count": 693,
-              "total": 2666
-            },
-            "home_starter": {
-              "overall": 1.0,
-              "vs_lhh": 1.6,
-              "vs_rhh": 0.2,
-              "count": 28,
-              "total": 2829
-            }
-          },
-          {
             "pitch": "Cutter",
             "away_starter": {
-              "overall": 22.3,
-              "vs_lhh": 22.5,
-              "vs_rhh": 22.0,
-              "count": 595,
-              "total": 2666
+              "overall": 29.0,
+              "vs_lhh": 27.6,
+              "vs_rhh": 31.5,
+              "count": 856,
+              "total": 2947
             },
             "home_starter": {
-              "overall": 13.7,
-              "vs_lhh": 14.5,
-              "vs_rhh": 12.6,
-              "count": 387,
-              "total": 2829
+              "overall": 14.9,
+              "vs_lhh": 11.1,
+              "vs_rhh": 22.0,
+              "count": 244,
+              "total": 1641
             }
           },
           {
             "pitch": "Four-seam",
             "away_starter": {
-              "overall": 12.9,
-              "vs_lhh": 14.3,
-              "vs_rhh": 10.7,
-              "count": 343,
-              "total": 2666
+              "overall": 27.9,
+              "vs_lhh": 31.6,
+              "vs_rhh": 21.6,
+              "count": 822,
+              "total": 2947
             },
             "home_starter": {
-              "overall": 63.6,
-              "vs_lhh": 63.9,
-              "vs_rhh": 63.2,
-              "count": 1799,
-              "total": 2829
+              "overall": 46.7,
+              "vs_lhh": 47.9,
+              "vs_rhh": 44.5,
+              "count": 766,
+              "total": 1641
             }
           },
           {
-            "pitch": "Slider",
+            "pitch": "Sinker",
             "away_starter": {
-              "overall": 4.1,
-              "vs_lhh": 4.8,
-              "vs_rhh": 3.2,
-              "count": 110,
-              "total": 2666
+              "overall": 23.2,
+              "vs_lhh": 16.8,
+              "vs_rhh": 34.1,
+              "count": 685,
+              "total": 2947
             },
             "home_starter": {
-              "overall": 11.0,
-              "vs_lhh": 6.2,
-              "vs_rhh": 17.1,
-              "count": 311,
-              "total": 2829
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0,
+              "count": 0,
+              "total": 1641
+            }
+          },
+          {
+            "pitch": "Changeup",
+            "away_starter": {
+              "overall": 14.3,
+              "vs_lhh": 18.8,
+              "vs_rhh": 6.6,
+              "count": 421,
+              "total": 2947
+            },
+            "home_starter": {
+              "overall": 35.2,
+              "vs_lhh": 39.7,
+              "vs_rhh": 26.5,
+              "count": 577,
+              "total": 1641
             }
           },
           {
             "pitch": "Curveball",
             "away_starter": {
-              "overall": 3.9,
-              "vs_lhh": 4.1,
-              "vs_rhh": 3.5,
-              "count": 103,
-              "total": 2666
+              "overall": 3.2,
+              "vs_lhh": 5.0,
+              "vs_rhh": 0.2,
+              "count": 95,
+              "total": 2947
             },
             "home_starter": {
-              "overall": 10.6,
-              "vs_lhh": 13.6,
-              "vs_rhh": 6.8,
-              "count": 301,
-              "total": 2829
+              "overall": 0,
+              "vs_lhh": 0,
+              "vs_rhh": 0,
+              "count": 0,
+              "total": 1641
+            }
+          },
+          {
+            "pitch": "Sweeper",
+            "away_starter": {
+              "overall": 2.3,
+              "vs_lhh": 0.1,
+              "vs_rhh": 6.0,
+              "count": 68,
+              "total": 2947
+            },
+            "home_starter": {
+              "overall": 3.3,
+              "vs_lhh": 1.3,
+              "vs_rhh": 7.0,
+              "count": 54,
+              "total": 1641
             }
           }
         ],
         "velocity_by_pitch": [
           {
             "pitch": "Changeup",
-            "away_starter_velocity": 78.2,
-            "home_starter_velocity": 92.5
+            "away_starter_velocity": 89.5,
+            "home_starter_velocity": 83.0
           },
           {
             "pitch": "Curveball",
-            "away_starter_velocity": 80.0,
-            "home_starter_velocity": 88.0
+            "away_starter_velocity": 80.2,
+            "home_starter_velocity": null
           },
           {
             "pitch": "Cutter",
-            "away_starter_velocity": 89.2,
-            "home_starter_velocity": 95.8
+            "away_starter_velocity": 89.9,
+            "home_starter_velocity": 87.9
           },
           {
             "pitch": "Four-seam",
-            "away_starter_velocity": 92.8,
-            "home_starter_velocity": 100.6
+            "away_starter_velocity": 95.8,
+            "home_starter_velocity": 93.2
           },
           {
             "pitch": "Sinker",
-            "away_starter_velocity": 92.4,
-            "home_starter_velocity": 100.6
+            "away_starter_velocity": 95.2,
+            "home_starter_velocity": null
           },
           {
-            "pitch": "Slider",
-            "away_starter_velocity": 85.1,
-            "home_starter_velocity": 91.8
+            "pitch": "Sweeper",
+            "away_starter_velocity": 84.5,
+            "home_starter_velocity": 81.1
           }
         ],
         "strength_profile": [],
         "pitch_movement": {
           "away_starter": {
-            "Sinker": {
-              "h_break": -15.2,
-              "v_break": 12.5,
-              "family": "Fastball"
-            },
-            "Changeup": {
-              "h_break": -12.2,
-              "v_break": 2.9,
-              "family": "Offspeed"
-            },
             "Cutter": {
-              "h_break": 1.1,
-              "v_break": 11.3,
+              "h_break": 4.4,
+              "v_break": 4.3,
               "family": "Fastball"
             },
             "Four-seam": {
-              "h_break": -6.1,
-              "v_break": 16.9,
+              "h_break": -4.4,
+              "v_break": 18.1,
               "family": "Fastball"
             },
-            "Slider": {
-              "h_break": 1.1,
-              "v_break": 2.8,
-              "family": "Breaking"
+            "Sinker": {
+              "h_break": -16.6,
+              "v_break": 12.4,
+              "family": "Fastball"
+            },
+            "Changeup": {
+              "h_break": -11.5,
+              "v_break": 2.3,
+              "family": "Offspeed"
             },
             "Curveball": {
-              "h_break": 0.8,
-              "v_break": -15.0,
+              "h_break": 4.4,
+              "v_break": -13.0,
+              "family": "Breaking"
+            },
+            "Sweeper": {
+              "h_break": 11.5,
+              "v_break": -0.7,
               "family": "Breaking"
             }
           },
           "home_starter": {
             "Four-seam": {
-              "h_break": -11.4,
-              "v_break": 15.4,
+              "h_break": -11.5,
+              "v_break": 16.8,
               "family": "Fastball"
-            },
-            "Cutter": {
-              "h_break": 1.6,
-              "v_break": 7.2,
-              "family": "Fastball"
-            },
-            "Slider": {
-              "h_break": 3.5,
-              "v_break": 1.0,
-              "family": "Breaking"
-            },
-            "Curveball": {
-              "h_break": 5.5,
-              "v_break": -7.9,
-              "family": "Breaking"
             },
             "Changeup": {
-              "h_break": -16.3,
-              "v_break": 4.9,
+              "h_break": -19.2,
+              "v_break": 6.6,
               "family": "Offspeed"
             },
-            "Sinker": {
-              "h_break": -14.3,
-              "v_break": 11.6,
+            "Cutter": {
+              "h_break": 0.1,
+              "v_break": 12.5,
               "family": "Fastball"
+            },
+            "Sweeper": {
+              "h_break": 15.3,
+              "v_break": -3.8,
+              "family": "Breaking"
             }
           }
         }
@@ -442,66 +427,56 @@
         "away_starter": {
           "vs_lhh": [
             {
-              "pitch": "Sinker",
-              "x": 0.614,
-              "y": 0.511
-            },
-            {
-              "pitch": "Changeup",
-              "x": 0.332,
-              "y": 0.7
-            },
-            {
               "pitch": "Cutter",
-              "x": 0.618,
-              "y": 0.534
+              "x": 0.655,
+              "y": 0.664
             },
             {
               "pitch": "Four-seam",
-              "x": 0.454,
-              "y": 0.472
+              "x": 0.489,
+              "y": 0.442
             },
             {
-              "pitch": "Slider",
-              "x": 0.393,
-              "y": 0.714
+              "pitch": "Sinker",
+              "x": 0.588,
+              "y": 0.522
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.399,
+              "y": 0.732
             },
             {
               "pitch": "Curveball",
-              "x": 0.407,
-              "y": 0.629
+              "x": 0.422,
+              "y": 0.611
             }
           ],
           "vs_rhh": [
             {
-              "pitch": "Sinker",
-              "x": 0.406,
-              "y": 0.58
-            },
-            {
-              "pitch": "Changeup",
-              "x": 0.433,
-              "y": 0.801
-            },
-            {
               "pitch": "Cutter",
-              "x": 0.64,
-              "y": 0.633
+              "x": 0.696,
+              "y": 0.698
             },
             {
               "pitch": "Four-seam",
-              "x": 0.55,
-              "y": 0.396
+              "x": 0.599,
+              "y": 0.452
             },
             {
-              "pitch": "Slider",
-              "x": 0.67,
-              "y": 0.797
+              "pitch": "Sinker",
+              "x": 0.427,
+              "y": 0.608
             },
             {
-              "pitch": "Curveball",
-              "x": 0.455,
-              "y": 0.633
+              "pitch": "Changeup",
+              "x": 0.542,
+              "y": 0.849
+            },
+            {
+              "pitch": "Sweeper",
+              "x": 0.614,
+              "y": 0.655
             }
           ]
         },
@@ -509,50 +484,45 @@
           "vs_lhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.469,
-              "y": 0.461
-            },
-            {
-              "pitch": "Cutter",
-              "x": 0.647,
-              "y": 0.611
-            },
-            {
-              "pitch": "Slider",
-              "x": 0.538,
-              "y": 0.663
-            },
-            {
-              "pitch": "Curveball",
-              "x": 0.522,
-              "y": 0.726
+              "x": 0.457,
+              "y": 0.505
             },
             {
               "pitch": "Changeup",
-              "x": 0.417,
-              "y": 0.745
+              "x": 0.369,
+              "y": 0.684
+            },
+            {
+              "pitch": "Cutter",
+              "x": 0.513,
+              "y": 0.542
+            },
+            {
+              "pitch": "Sweeper",
+              "x": 0.459,
+              "y": 0.577
             }
           ],
           "vs_rhh": [
             {
               "pitch": "Four-seam",
-              "x": 0.574,
-              "y": 0.492
+              "x": 0.517,
+              "y": 0.515
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.498,
+              "y": 0.721
             },
             {
               "pitch": "Cutter",
-              "x": 0.659,
-              "y": 0.638
+              "x": 0.662,
+              "y": 0.583
             },
             {
-              "pitch": "Slider",
-              "x": 0.667,
-              "y": 0.661
-            },
-            {
-              "pitch": "Curveball",
-              "x": 0.621,
-              "y": 0.766
+              "pitch": "Sweeper",
+              "x": 0.574,
+              "y": 0.715
             }
           ]
         }
@@ -563,44 +533,44 @@
         "lineup_status": "probable_pitchers",
         "pitch_data_status": "fetched_snapshot",
         "notes": [
-          "Live snapshot fetched 2026-10-23 for matchup_001."
+          "Live snapshot fetched 2026-10-24 for matchup_001."
         ]
       },
       "report": {
-        "headline": "Sinker-Changeup starter against Four-seam starter",
+        "headline": "Cutter-Four-seam starter against Four-seam-Changeup starter",
         "short_summary": [
-          "Nick Martinez brings this strength: Solid command supports strike-zone control.",
-          "Jacob Misiorowski brings this strength: Above-average swing-and-miss ability.",
-          "The early what to watch is whether Nick Martinez can land the changeup early in counts."
+          "Drew Rasmussen brings this strength: Above-average swing-and-miss ability.",
+          "Logan Henderson brings this strength: Above-average swing-and-miss ability.",
+          "The early what to watch is whether Drew Rasmussen can land the four-seam early in counts."
         ],
         "sections": [
           {
             "title": "Matchup Summary",
-            "body": "This matchup features Sinker-Changeup starter against Four-seam starter. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 1 of the World Series; the series has not started."
+            "body": "This matchup features Cutter-Four-seam starter against Four-seam-Changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 2 of the World Series. Before first pitch, MIL leads 1-0."
           },
           {
-            "title": "Nick Martinez vs Milwaukee Brewers",
-            "body": "Nick Martinez works off a sinker-changeup combination. He shows below-average swing-and-miss ability (regular-season rates). He shows solid command (regular-season rates). Nick Martinez has allowed 22 home runs over 722 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.759 OPS), so Nick Martinez cannot live over the middle. They draw walks at an above-average rate, so Nick Martinez needs efficient strikes."
+            "title": "Drew Rasmussen vs Milwaukee Brewers",
+            "body": "Drew Rasmussen works off a cutter-four-seam combination. He shows above-average swing-and-miss ability (regular-season rates). He shows solid command (regular-season rates). Drew Rasmussen has allowed 14 home runs over 669 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.759 OPS), so Drew Rasmussen cannot live over the middle. They draw walks at an above-average rate, so Drew Rasmussen needs efficient strikes."
           },
           {
-            "title": "Jacob Misiorowski vs Tampa Bay Rays",
-            "body": "Jacob Misiorowski works mainly off a four-seam. He shows above-average swing-and-miss ability (regular-season rates). He shows solid command (regular-season rates). Jacob Misiorowski has allowed 14 home runs over 665 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.751 OPS), so Jacob Misiorowski cannot live over the middle."
+            "title": "Logan Henderson vs Tampa Bay Rays",
+            "body": "Logan Henderson works off a four-seam-changeup combination. He shows above-average swing-and-miss ability (regular-season rates). He shows solid command (regular-season rates). Logan Henderson has allowed 14 home runs over 371 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.751 OPS), so Logan Henderson cannot live over the middle."
           },
           {
             "title": "Arsenal Scout",
-            "body": "The main contrast is Sinker to set up, Changeup to finish versus Four-seam as the main pitch. The primary pitch contrast is Sinker against Four-seam, a scouting note for matchup fit and each pressure point."
+            "body": "The main contrast is Cutter to set up, Four-seam to finish versus Four-seam to set up, Changeup to finish. The primary pitch contrast is Cutter against Four-seam, a scouting note for matchup fit and each pressure point."
           },
           {
             "title": "Three Things to Watch",
             "bullets": [
-              "Can Nick Martinez land the changeup early in counts?",
-              "Can Jacob Misiorowski keep the ball in the zone?",
+              "Can Drew Rasmussen land the four-seam early in counts?",
+              "Can Logan Henderson keep the ball in the zone?",
               "Which lineup forces more deep counts by the third inning?"
             ]
           },
           {
             "title": "Data Confidence Note",
-            "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Nick Martinez and Jacob Misiorowski: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the regular season through 2026-10-22; the pitch mix, velocity and movement cover the regular season and postseason through 2026-10-22. They are different samples. Team offense splits cover the regular season through 2026-10-22."
+            "body": "This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Drew Rasmussen and Logan Henderson: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the 2026 regular season; the pitch mix, velocity and movement cover the 2026 regular season and postseason through Oct 23. They are different samples. Team offense splits cover the 2026 regular season."
           }
         ],
         "claims": [
@@ -608,8 +578,8 @@
             "id": "c1",
             "key": "analyst.label.against",
             "args": {
-              "away": "Sinker-Changeup starter",
-              "home": "Four-seam starter"
+              "away": "Cutter-Four-seam starter",
+              "home": "Four-seam-Changeup starter"
             },
             "subject": null,
             "location": "report.headline"
@@ -618,7 +588,7 @@
             "id": "c2",
             "key": "writer.strength",
             "args": {
-              "name": "Nick Martinez",
+              "name": "Drew Rasmussen",
               "strength": {
                 "claim": "c3"
               }
@@ -628,10 +598,8 @@
           },
           {
             "id": "c3",
-            "key": "analyst.strength.command",
-            "args": {
-              "label": "Solid command"
-            },
+            "key": "analyst.strength.swing_miss",
+            "args": {},
             "subject": "away_starter",
             "location": null
           },
@@ -639,7 +607,7 @@
             "id": "c4",
             "key": "writer.strength",
             "args": {
-              "name": "Jacob Misiorowski",
+              "name": "Logan Henderson",
               "strength": {
                 "claim": "c5"
               }
@@ -669,7 +637,7 @@
             "id": "c7",
             "key": "writer.watch_whether",
             "args": {
-              "name": "Nick Martinez",
+              "name": "Drew Rasmussen",
               "action": {
                 "claim": "c8"
               }
@@ -681,7 +649,7 @@
             "id": "c8",
             "key": "analyst.watch.action.land",
             "args": {
-              "putaway": "changeup"
+              "putaway": "four-seam"
             },
             "subject": "away_starter",
             "location": null
@@ -697,7 +665,7 @@
             "id": "c10",
             "key": "writer.section.vs_team",
             "args": {
-              "pitcher": "Nick Martinez",
+              "pitcher": "Drew Rasmussen",
               "team": "Milwaukee Brewers"
             },
             "subject": "away_starter",
@@ -707,7 +675,7 @@
             "id": "c11",
             "key": "writer.section.vs_team",
             "args": {
-              "pitcher": "Jacob Misiorowski",
+              "pitcher": "Logan Henderson",
               "team": "Tampa Bay Rays"
             },
             "subject": "home_starter",
@@ -766,17 +734,19 @@
             "id": "c17",
             "key": "analyst.label.against",
             "args": {
-              "away": "Sinker-Changeup starter",
-              "home": "Four-seam starter"
+              "away": "Cutter-Four-seam starter",
+              "home": "Four-seam-Changeup starter"
             },
             "subject": null,
             "location": null
           },
           {
             "id": "c18",
-            "key": "analyst.series.opening",
+            "key": "analyst.series.standing",
             "args": {
-              "series_name": "World Series"
+              "n": 2,
+              "series_name": "World Series",
+              "result": "MIL leads 1-0"
             },
             "subject": null,
             "location": null
@@ -825,9 +795,9 @@
             "id": "c21",
             "key": "analyst.read.combination",
             "args": {
-              "name": "Nick Martinez",
-              "primary": "sinker",
-              "putaway": "changeup"
+              "name": "Drew Rasmussen",
+              "primary": "cutter",
+              "putaway": "four-seam"
             },
             "subject": "away_starter",
             "location": null
@@ -839,7 +809,7 @@
               "subject": {
                 "claim": "c23"
               },
-              "label": "below-average swing-and-miss ability",
+              "label": "above-average swing-and-miss ability",
               "qualifier": {
                 "claim": "c24"
               }
@@ -887,11 +857,11 @@
             "id": "c27",
             "key": "analyst.data.contact",
             "args": {
-              "name": "Nick Martinez",
+              "name": "Drew Rasmussen",
               "home_runs": {
                 "claim": "c28"
               },
-              "batters": 722
+              "batters": 669
             },
             "subject": "away_starter",
             "location": null
@@ -900,7 +870,7 @@
             "id": "c28",
             "key": "count.home_run.other",
             "args": {
-              "count": 22
+              "count": 14
             },
             "subject": "away_starter",
             "location": null
@@ -925,7 +895,7 @@
             "args": {
               "hand": "RHP",
               "ops": ".759",
-              "name": "Nick Martinez"
+              "name": "Drew Rasmussen"
             },
             "subject": "away_starter",
             "location": null
@@ -948,7 +918,7 @@
             "id": "c32",
             "key": "analyst.offense.note_walks",
             "args": {
-              "name": "Nick Martinez"
+              "name": "Drew Rasmussen"
             },
             "subject": "away_starter",
             "location": null
@@ -995,10 +965,11 @@
           },
           {
             "id": "c35",
-            "key": "analyst.read.mainly",
+            "key": "analyst.read.combination",
             "args": {
-              "name": "Jacob Misiorowski",
-              "primary": "four-seam"
+              "name": "Logan Henderson",
+              "primary": "four-seam",
+              "putaway": "changeup"
             },
             "subject": "home_starter",
             "location": null
@@ -1058,11 +1029,11 @@
             "id": "c41",
             "key": "analyst.data.contact",
             "args": {
-              "name": "Jacob Misiorowski",
+              "name": "Logan Henderson",
               "home_runs": {
                 "claim": "c42"
               },
-              "batters": 665
+              "batters": 371
             },
             "subject": "home_starter",
             "location": null
@@ -1082,7 +1053,7 @@
             "args": {
               "hand": "RHP",
               "ops": ".751",
-              "name": "Jacob Misiorowski"
+              "name": "Logan Henderson"
             },
             "subject": "home_starter",
             "location": null
@@ -1097,7 +1068,7 @@
               "home_style": {
                 "claim": "c46"
               },
-              "away_primary": "Sinker",
+              "away_primary": "Cutter",
               "home_primary": "Four-seam"
             },
             "subject": null,
@@ -1107,17 +1078,18 @@
             "id": "c45",
             "key": "analyst.style.pair",
             "args": {
-              "primary": "Sinker",
-              "putaway": "Changeup"
+              "primary": "Cutter",
+              "putaway": "Four-seam"
             },
             "subject": "away_starter",
             "location": null
           },
           {
             "id": "c46",
-            "key": "analyst.style.single",
+            "key": "analyst.style.pair",
             "args": {
-              "primary": "Four-seam"
+              "primary": "Four-seam",
+              "putaway": "Changeup"
             },
             "subject": "home_starter",
             "location": null
@@ -1225,7 +1197,7 @@
               "season": {
                 "claim": "c57"
               },
-              "arsenal": "regular season and postseason through 2026-10-22"
+              "arsenal": "2026 regular season and postseason through Oct 23"
             },
             "subject": null,
             "location": null
@@ -1234,8 +1206,8 @@
             "id": "c56",
             "key": "analyst.list_and",
             "args": {
-              "first": "Nick Martinez",
-              "second": "Jacob Misiorowski"
+              "first": "Drew Rasmussen",
+              "second": "Logan Henderson"
             },
             "subject": null,
             "location": null
@@ -1247,7 +1219,7 @@
               "figures": {
                 "claim": "c58"
               },
-              "label": "regular season through 2026-10-22"
+              "label": "2026 regular season"
             },
             "subject": null,
             "location": null
@@ -1318,7 +1290,7 @@
             "id": "c64",
             "key": "analyst.scope.offense",
             "args": {
-              "label": "regular season through 2026-10-22"
+              "label": "2026 regular season"
             },
             "subject": null,
             "location": null
@@ -1327,7 +1299,7 @@
             "id": "c65",
             "key": "analyst.watch.question",
             "args": {
-              "name": "Nick Martinez",
+              "name": "Drew Rasmussen",
               "action": {
                 "claim": "c8"
               }
@@ -1339,7 +1311,7 @@
             "id": "c66",
             "key": "analyst.watch.question",
             "args": {
-              "name": "Jacob Misiorowski",
+              "name": "Logan Henderson",
               "action": {
                 "claim": "c67"
               }
@@ -1374,9 +1346,10 @@
           },
           {
             "id": "c70",
-            "key": "critic.summary.supported",
+            "key": "critic.summary.warnings",
             "args": {
-              "checked": 7
+              "checked": 8,
+              "warnings": 1
             },
             "subject": null,
             "location": "critic_review.summary"
@@ -1385,11 +1358,11 @@
             "id": "c71",
             "key": "critic.pitch.claim",
             "args": {
-              "name": "Nick Martinez",
+              "name": "Drew Rasmussen",
               "role": {
                 "claim": "c72"
               },
-              "pitch": "Sinker"
+              "pitch": "Cutter"
             },
             "subject": "away_starter",
             "location": "critic_review.checks[0].claim"
@@ -1405,11 +1378,11 @@
             "id": "c73",
             "key": "critic.pitch.claim",
             "args": {
-              "name": "Nick Martinez",
+              "name": "Drew Rasmussen",
               "role": {
                 "claim": "c74"
               },
-              "pitch": "Changeup"
+              "pitch": "Four-seam"
             },
             "subject": "away_starter",
             "location": "critic_review.checks[1].claim"
@@ -1425,7 +1398,7 @@
             "id": "c75",
             "key": "critic.pitch.claim",
             "args": {
-              "name": "Jacob Misiorowski",
+              "name": "Logan Henderson",
               "role": {
                 "claim": "c76"
               },
@@ -1443,125 +1416,179 @@
           },
           {
             "id": "c77",
-            "key": "critic.names.claim",
-            "args": {},
-            "subject": null,
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Logan Henderson",
+              "role": {
+                "claim": "c78"
+              },
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
             "location": "critic_review.checks[3].claim"
           },
           {
             "id": "c78",
-            "key": "critic.command.label_claim",
-            "args": {
-              "name": "Nick Martinez"
-            },
-            "subject": "away_starter",
-            "location": "critic_review.checks[4].claim"
+            "key": "critic.role.putaway",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
           },
           {
             "id": "c79",
-            "key": "critic.scope.claim",
+            "key": "critic.names.claim",
             "args": {},
             "subject": null,
-            "location": "critic_review.checks[5].claim"
+            "location": "critic_review.checks[4].claim"
           },
           {
             "id": "c80",
-            "key": "critic.betting.claim",
+            "key": "critic.command.label_claim",
+            "args": {
+              "name": "Drew Rasmussen"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[5].claim"
+          },
+          {
+            "id": "c81",
+            "key": "critic.scope.claim",
             "args": {},
             "subject": null,
             "location": "critic_review.checks[6].claim"
           },
           {
-            "id": "c81",
-            "key": "critic.pitch.supported_primary",
+            "id": "c82",
+            "key": "critic.betting.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[7].claim"
+          },
+          {
+            "id": "c83",
+            "key": "critic.pitch.low_counts",
             "args": {
-              "usage": "30.8",
-              "pitch": "Sinker"
+              "pitch": "Cutter",
+              "count": "856",
+              "total": "2,947",
+              "usage": "29.05",
+              "name": "Drew Rasmussen",
+              "minimum": 30,
+              "role": {
+                "claim": "c72"
+              }
             },
             "subject": "away_starter",
             "location": "critic_review.checks[0].evidence"
           },
           {
-            "id": "c82",
+            "id": "c84",
             "key": "critic.pitch.supported_putaway",
             "args": {
-              "usage": "26",
-              "pitch": "Changeup"
+              "usage": "27.9",
+              "pitch": "Four-seam"
             },
             "subject": "away_starter",
             "location": "critic_review.checks[1].evidence"
           },
           {
-            "id": "c83",
+            "id": "c85",
             "key": "critic.pitch.supported_primary",
             "args": {
-              "usage": "63.6",
+              "usage": "46.7",
               "pitch": "Four-seam"
             },
             "subject": "home_starter",
             "location": "critic_review.checks[2].evidence"
           },
           {
-            "id": "c84",
-            "key": "critic.names.supported",
-            "args": {},
-            "subject": null,
+            "id": "c86",
+            "key": "critic.pitch.supported_putaway",
+            "args": {
+              "usage": "35.2",
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
             "location": "critic_review.checks[3].evidence"
           },
           {
-            "id": "c85",
-            "key": "critic.command.walks",
-            "args": {
-              "walks": 26,
-              "batters": 722,
-              "scope": "regular season through 2026-10-22"
-            },
-            "subject": "away_starter",
+            "id": "c87",
+            "key": "critic.names.supported",
+            "args": {},
+            "subject": null,
             "location": "critic_review.checks[4].evidence"
           },
           {
-            "id": "c86",
-            "key": "critic.scope.supported",
+            "id": "c88",
+            "key": "critic.command.walks",
             "args": {
-              "who": {
-                "claim": "c87"
-              }
+              "walks": 32,
+              "batters": 669,
+              "scope": "2026 regular season"
             },
-            "subject": null,
+            "subject": "away_starter",
             "location": "critic_review.checks[5].evidence"
           },
           {
-            "id": "c87",
+            "id": "c89",
+            "key": "critic.scope.supported",
+            "args": {
+              "who": {
+                "claim": "c90"
+              }
+            },
+            "subject": null,
+            "location": "critic_review.checks[6].evidence"
+          },
+          {
+            "id": "c90",
             "key": "@join",
             "args": {
               "sep": ", ",
               "parts": [
-                "Nick Martinez",
-                "Jacob Misiorowski"
+                "Drew Rasmussen",
+                "Logan Henderson"
               ]
             },
             "subject": null,
             "location": null
           },
           {
-            "id": "c88",
+            "id": "c91",
             "key": "critic.betting.absent",
             "args": {},
             "subject": null,
-            "location": "critic_review.checks[6].evidence"
+            "location": "critic_review.checks[7].evidence"
           },
           {
-            "id": "c89",
-            "key": "critic.note.no_betting",
-            "args": {},
-            "subject": null,
+            "id": "c92",
+            "key": "critic.pitch.low_counts",
+            "args": {
+              "pitch": "Cutter",
+              "count": "856",
+              "total": "2,947",
+              "usage": "29.05",
+              "name": "Drew Rasmussen",
+              "minimum": 30,
+              "role": {
+                "claim": "c72"
+              }
+            },
+            "subject": "away_starter",
             "location": "critic_review.revision_notes[0]"
           },
           {
-            "id": "c90",
+            "id": "c93",
+            "key": "critic.note.no_betting",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.revision_notes[1]"
+          },
+          {
+            "id": "c94",
             "key": "generator.confidence.live_note",
             "args": {
-              "date": "2026-10-23",
+              "date": "2026-10-24",
               "matchup_id": "matchup_001"
             },
             "subject": null,
@@ -1571,22 +1598,27 @@
       },
       "critic_review": {
         "status": "reviewed",
-        "summary": "The critic checked 7 claims and found them supported by the data.",
+        "summary": "The critic checked 8 claims: none unsupported, 1 with a warning.",
         "checks": [
           {
-            "claim": "Nick Martinez's primary pitch is Sinker.",
-            "status": "supported",
-            "evidence": "Pitch mix shows 30.8% Sinker usage."
+            "claim": "Drew Rasmussen's primary pitch is Cutter.",
+            "status": "warning",
+            "evidence": "Cutter is 856 of 2,947 pitches (29.05%) in Drew Rasmussen's pitch mix, below the 30% the report treats as a primary pitch."
           },
           {
-            "claim": "Nick Martinez's put-away pitch is Changeup.",
+            "claim": "Drew Rasmussen's put-away pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Put-away pitch usage at 26% supports this claim."
+            "evidence": "Put-away pitch usage at 27.9% supports this claim."
           },
           {
-            "claim": "Jacob Misiorowski's primary pitch is Four-seam.",
+            "claim": "Logan Henderson's primary pitch is Four-seam.",
             "status": "supported",
-            "evidence": "Pitch mix shows 63.6% Four-seam usage."
+            "evidence": "Pitch mix shows 46.7% Four-seam usage."
+          },
+          {
+            "claim": "Logan Henderson's put-away pitch is Changeup.",
+            "status": "supported",
+            "evidence": "Put-away pitch usage at 35.2% supports this claim."
           },
           {
             "claim": "The report names only pitches that appear in the pitch mix.",
@@ -1594,14 +1626,14 @@
             "evidence": "Every pitch named in the report was thrown by the starter it is credited to."
           },
           {
-            "claim": "Nick Martinez's command label is supported.",
+            "claim": "Drew Rasmussen's command label is supported.",
             "status": "supported",
-            "evidence": "26 walks in 722 batters faced (regular season through 2026-10-22)."
+            "evidence": "32 walks in 669 batters faced (2026 regular season)."
           },
           {
             "claim": "Pitch data and season figures are not presented as one sample.",
             "status": "supported",
-            "evidence": "The report says the figures for Nick Martinez, Jacob Misiorowski cover different samples."
+            "evidence": "The report says the figures for Drew Rasmussen, Logan Henderson cover different samples."
           },
           {
             "claim": "The report predicts the winner.",
@@ -1610,19 +1642,31 @@
           }
         ],
         "revision_notes": [
+          "Cutter is 856 of 2,947 pitches (29.05%) in Drew Rasmussen's pitch mix, below the 30% the report treats as a primary pitch.",
           "No betting or outcome-prediction language found."
         ]
       }
     }
   ],
-  "archive": [],
+  "archive": [
+    {
+      "id": "2026-10-23:matchup_001",
+      "date": "2026-10-23",
+      "title": "Tampa Bay Rays vs Milwaukee Brewers",
+      "status": "upcoming",
+      "featured": true,
+      "starter_summary": "Nick Martinez vs Jacob Misiorowski",
+      "result_label": null,
+      "grade_label": null
+    }
+  ],
   "agent_workflow": {
     "description": "PitchCraft uses a multi-agent workflow to convert matchup data into a fan-facing scouting report.",
     "steps": [
       {
         "agent": "Data Scout Agent",
         "status": "completed",
-        "output": "Loaded data for 1 matchups."
+        "output": "Loaded data for 1 matchup."
       },
       {
         "agent": "Matchup Analyst Agent",
@@ -1637,7 +1681,7 @@
       {
         "agent": "Critic / Fact-check Agent",
         "status": "completed",
-        "output": "Checked every claim against the data: none unsupported, 0 warning(s) across all matchups."
+        "output": "Checked every claim against the data: none unsupported, 1 warning(s) across all matchups."
       },
       {
         "agent": "Postgame Grader Agent",
@@ -1647,7 +1691,7 @@
     ]
   },
   "disclaimers": [
-    "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
+    "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. PitchCraft is an independent fan project and is not affiliated with MLB.",
     "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
     "Requests to the data sources are cached and the data is not downloaded in bulk.",
     "For information only: no predictions and no betting advice."
@@ -1657,7 +1701,7 @@
       "id": "c1",
       "key": "generator.metadata.last_updated.live",
       "args": {
-        "date": "2026-10-23"
+        "date": "2026-10-24"
       },
       "subject": null,
       "location": "metadata.last_updated_label"
@@ -1671,7 +1715,7 @@
     },
     {
       "id": "c3",
-      "key": "generator.workflow.loaded",
+      "key": "generator.workflow.loaded.one",
       "args": {
         "count": 1
       },
@@ -1696,7 +1740,7 @@
       "id": "c6",
       "key": "generator.workflow.checked",
       "args": {
-        "warnings": 0
+        "warnings": 1
       },
       "subject": null,
       "location": "agent_workflow.steps[3].output"
