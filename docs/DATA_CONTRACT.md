@@ -112,6 +112,17 @@ Examples:
 
 *Every sentence that asserts a fact (agent text, UI text or workflow text) declares the fields that make it true and is emitted only when they do. This applies to JSON nobody renders.*
 
+**Approved extension, not yet implemented (D44, 2026-10-24).** The future
+LLM prose path will use sentence-to-input-evidence mapping under an explicit,
+separately owner-approved schema/version and independent validation. The
+catalog path below remains the implemented requirement for schema 0.9.0;
+rules/fixed text keep it after the extension. D44 permits no raw-string
+bypass and does not waive sentence coverage, correct subject, values,
+limited flags, scopes/time or the final fail-closed integrity check. If the
+new boundary is not proven by November 2, rules stay live and the experiment
+is reported offline. The exact new representation and its registry/checks
+are documented with the approved implementation, not invented in this note.
+
 - Each emitted phrase is recorded as a claim `{id, key, args, subject, location}`. The sentences of a matchup (report, critic review, data confidence notes, postgame) are in `matchups[i].report.claims[]`, with locations relative to the matchup (`report.sections[1].body`); the sentences the generator writes (workflow, data label) are in `claims[]` at the root, with locations from the root. `subject` is the starter the sentence is about (`away_starter`, `home_starter`) or `null`; `location` is `null` for a part of another sentence. `metadata.language` says which catalog the keys belong to.
 - `args` are values copied from the payload (a name, a number, a label, a scope) or `{"claim": id}`, a reference to a claim that is part of the sentence (a plural such as "3 home runs" inside a longer sentence). Never an internal (a path, an exception, a function name, an object). Two pseudo keys build sentences out of sentences: `@join` (args `sep` and `parts`) and `@capitalize` (arg `of`); they assert nothing themselves.
 - The text of a report is exactly the join of its registered phrases. The validator renders each claim again from its key and args and requires the text of the field to be exactly that; a text field with no claim, a claim for a field that does not exist, a part that no sentence uses, or a sentence edited after the fact fails. Which fields are text is a list in `data_pipeline/claims.py` (`MATCHUP_TEXT_PATHS`, `ROOT_TEXT_PATHS`); the static content of the demo (archive rows, bios) is not agent or generator text. The sources and disclaimers became mode-dependent in P0.15-D2.4b; they are labels of a closed set per mode judged by the manifest (section 6.1), not sentences of the generator, and stay out of the list.

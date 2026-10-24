@@ -175,13 +175,27 @@ Feature: Phase 0 data integrity
 
 ## Phase 2 — LLM writer and eval (target Nov 8)
 
+**Approved plan:** `docs/plans/P2.md`, owner's seven answers of 2026-10-24.
+Execution order: P2.1, P2.4, owner-approved writer guide, P2.2, P2.3,
+A/B1 capture, P2.5, P2.6, P2.7. Phase 2 uses the owner's D35 amendment
+(including Codex): observed red tests for code, sequential full verification,
+reviewer PASS and previous green CI permit commit/push to `v2` without
+another yes; no `public/data/` or `evals/live/` change. Documentation adds
+no artificial red test. Stop at credentials/model IDs, changed D32 cutoffs,
+exact schema/version, public copy/error codes, workflows, guide approval,
+ten B1 dev examples, B2 hypothesis and usual D35 stops. Branch migration
+is after Nov 15 in its own task. P2.1 currently stops for owner setup and
+a judge-provider decision: GitHub Models retired; D9/D17 are unchanged.
+
+- [x] P2-plan [gated] Adopt the owner-approved plan, eval R1/S1 and D44;
+  provide P2.1 setup instructions and stop for owner confirmation. No P2.4.
 - [ ] P2.1 AI Studio API key + test call; GitHub Models access. Keys only in env vars / GitHub secrets.
-- [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]`, a versioned prompt and an exact model ID pinned in config. Output is schema-validated before it can reach the public JSON; free-text MLB fields are passed as quoted data, never as instructions. No `dangerouslySetInnerHTML` anywhere in the frontend.
+- [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]`, a versioned prompt and an exact model ID pinned in config. First draft `docs/writer-guide.md` with 3-5 good/bad pairs from real dev packets and obtain owner approval; version the prompt with the guide. D44 approves the prose extension principle; stop for exact schema/version. Prove the independent claims boundary by Nov 2 or rules stay live and the experiment is reported offline; no raw-string bypass. Output is schema-validated before public JSON; free-text MLB fields are quoted data, never instructions. No `dangerouslySetInnerHTML`.
 - [ ] P2.3 Guardrail: informed retry and fallback to rules (D2).
 - [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen. Historical case builder raises if `as_of` is None. Acceptance criterion (D28): every postseason case carries the series status as of `game_date − 1` (the standing before first pitch), never the final result. Before building the dataset (D32): recompute the lineup cut-offs (K% 23.0, BB% 9.0, OPS .750) from the 2026 quartiles of team lineups against each pitcher hand, as D25 did for starters, and record the result as a new decision that supersedes D32 if the values change.
-- [ ] P2.5 Human labels (G2, L1, U1) — owner task, ~6–8 hours, reserved in the week of Oct 19–25 and finished before Nov 1.
-- [ ] P2.6 Code evaluators and judge; calibration on dev. If GitHub Models is unavailable in the daily run, G2 is logged as `not_evaluated` and publishing continues (D17).
-- [ ] P2.7 Baseline run A vs. B1; error analysis; one change; B2 run.
+- [ ] P2.5 Human labels (G2, L1, U1, R1 and S1 per guide rule) — owner task, Nov 4-6 after A/B1 capture; expanded hours confirmed separately before Nov 3. Original 6-8 hours excluded R1/S1; tentative estimate 10-14, plus 3-4 for B2 test labels.
+- [ ] P2.6 Code evaluators and cross-family judge; calibrate G2/L1/U1/R1/S1 on dev with 85% agreement per dimension. R1 has entity/number code checks plus semantic judge checks and a 100% held-out ship gate; S1 judges each guide rule and informs B2. Freeze judge/evaluators before test evidence; measure held-out trust in P2.7. D17's daily unavailable-G2 behavior remains `not_evaluated`, publication subject to code gates; retired judge service requires an owner provider decision.
+- [ ] P2.7 Baseline A vs. B1; dev-only error analysis including R1/S1; owner-approved single-change B2 hypothesis; B2 on frozen test. First-attempt scores are primary, retries/fallback separate. Held-out B1 evidence stays sealed until B2/judge freeze; R1 20/20, policy 20/20, groundedness 19/20, U1 wins-or-ties 14/20.
 
 ## Phase 3 — Publish (target Nov 15)
 
@@ -210,7 +224,7 @@ Feature: Phase 0 data integrity
 
 ## Open questions (owner)
 
-- [ ] Confirm eval success thresholds (`eval-spec.md` section 1).
+- [x] Confirm eval success thresholds (`eval-spec.md` section 1), owner 2026-10-24; R1 100% on test, S1 informs B2, 85% judge agreement separately by dimension.
 - [ ] Define what makes postseason report text different (D7).
 - [ ] Final badge copy (D3).
 - [ ] Report length range for F1, after reading 10 rules-based reports.
