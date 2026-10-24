@@ -12,7 +12,7 @@ import { makeMatchup } from "./fixtures";
 // owner's; the live file's four notes and the demo file's notes are written by the generator (tests/test_attribution.py
 // checks the files), so these tests give the page those notes and check what it draws.
 
-const ATTRIBUTION = "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.";
+const ATTRIBUTION = "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. PitchCraft is an independent fan project and is not affiliated with MLB.";
 const NON_COMMERCIAL = "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.";
 const CACHING = "Requests to the data sources are cached and the data is not downloaded in bulk.";
 const INFORMATION_ONLY = "For information only: no predictions and no betting advice.";

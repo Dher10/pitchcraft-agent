@@ -114,8 +114,8 @@ def test_the_qa_probe_partial_api_counts_with_postseason_pitches(monkeypatch):
     text = report_text(payload)
     assert "all pitcher figures" not in text
     assert "different samples" in text
-    assert "regular season through 2026-10-08" in text
-    assert "regular season and postseason through 2026-10-08" in text
+    assert "2026 regular season" in text
+    assert "2026 regular season and postseason through Oct 8" in text
     assert failed_checks(payload) == []
 
 
@@ -165,7 +165,7 @@ def test_without_the_api_every_group_is_statcast_and_nothing_needs_qualifying(mo
     text = report_text(payload).lower()
 
     assert "shows" in text and "rates)" not in text
-    assert "all pitcher figures cover the regular season and postseason through 2026-10-08" in text
+    assert "all pitcher figures cover the 2026 regular season and postseason through oct 8" in text
 
 
 @pytest.mark.parametrize("api", ["missing_home_runs", "only_rates"])
@@ -269,7 +269,7 @@ def test_a_report_that_says_all_figures_for_a_starter_whose_groups_differ_is_uns
     matchup = probe_payload["matchups"][0]
     report = deepcopy(matchup["report"])
     report["sections"][-1]["body"] = (
-        "Alpha Livearm: all pitcher figures cover the regular season and postseason through 2026-10-08."
+        "Alpha Livearm: all pitcher figures cover the 2026 regular season and postseason through Oct 8."
     )
 
     check = scope_check(report, matchup)
@@ -373,7 +373,7 @@ def test_a_debut_next_to_a_starter_with_figures_each_get_their_own_note(monkeypa
 
     note = confidence_note(payload)
     assert "Bravo Liveleft: no season figures are available." in note
-    assert "Alpha Livearm: all pitcher figures cover the regular season through 2026-07-03." in note
+    assert "Alpha Livearm: all pitcher figures cover the 2026 regular season through Jul 3." in note
     assert "Bravo Liveleft: all pitcher figures" not in note
     assert failed_checks(payload) == []
 

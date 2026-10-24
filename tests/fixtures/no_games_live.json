@@ -51,7 +51,7 @@
     ]
   },
   "disclaimers": [
-    "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
+    "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. PitchCraft is an independent fan project and is not affiliated with MLB.",
     "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
     "Requests to the data sources are cached and the data is not downloaded in bulk.",
     "For information only: no predictions and no betting advice."

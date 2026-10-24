@@ -288,7 +288,7 @@ def test_every_group_of_figures_in_the_packet_carries_its_scope(monkeypatch):
 
     for slot in ("away_starter", "home_starter"):
         starter = matchup["starters"][slot]
-        assert starter["season_summary"]["scopes"]["counts"]["label"].startswith("regular season")
+        assert starter["season_summary"]["scopes"]["counts"]["label"].startswith("2026 regular season")
         assert starter["sample"]["arsenal"]["scope"]["through"] == "2026-07-04"
         assert starter["sample"]["rates"]["scope"]["kind"] in ("regular_season", "regular_and_postseason")
     for side in ("home", "away"):
@@ -306,8 +306,8 @@ def test_different_scopes_are_called_different_samples_in_the_report(monkeypatch
 
     assert "different samples" in note
     assert f"{away}: ERA, WHIP" in note
-    assert "regular season through 2026-07-04" in note
-    assert "regular season and postseason through 2026-07-04" in note
+    assert "2026 regular season through Jul 4" in note
+    assert "2026 regular season and postseason through Jul 4" in note
     scope_check = next(c for c in review["checks"] if "one sample" in c["claim"])
     assert scope_check["status"] == "supported"
 
@@ -328,7 +328,7 @@ def test_same_scopes_are_stated_once_without_the_warning(monkeypatch):
     note = next(s for s in report["sections"] if s["title"] == "Data Confidence Note")["body"]
 
     assert "different samples" not in note
-    assert "all pitcher figures cover the regular season through 2026-07-04" in note
+    assert "all pitcher figures cover the 2026 regular season through Jul 4" in note
     scope_check = next(c for c in review["checks"] if "one sample" in c["claim"])
     assert scope_check["status"] == "not_present"
 

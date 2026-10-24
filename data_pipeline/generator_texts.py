@@ -17,6 +17,7 @@ GENERATOR_MESSAGES: dict[str, Any] = {
         "PitchCraft uses a multi-agent workflow to convert matchup data into a fan-facing scouting report."
     ),
     "generator.workflow.loaded": "Loaded data for {count} matchups.",
+    "generator.workflow.loaded.one": "Loaded data for {count} matchup.",
     "generator.workflow.identified": "Identified pitcher strengths, risks, and lineup pressure points.",
     "generator.workflow.generated": "Generated fan-friendly scouting report.",
     "generator.workflow.checked": (

@@ -242,7 +242,7 @@ def test_season_summary_carries_the_scope_of_the_api_figures(monkeypatch):
     regular = {
         "kind": "regular_season",
         "through": "2026-07-14",
-        "label": "regular season through 2026-07-14",
+        "label": "2026 regular season through Jul 14",
     }
     assert result["season_summary"]["scopes"] == {"season_rates": regular, "counts": regular}
 

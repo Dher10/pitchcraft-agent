@@ -1132,6 +1132,8 @@ def _counted(c: Ctx) -> list[Mapping[str, Any]]:
 
 def _wf_loaded(c: Ctx) -> None:
     c.require(c.args["count"] == len(_counted(c)), "count", "the count is not the number of matchups the file counts")
+    c.require((c.args["count"] == 1) == (c.claim["key"] == "generator.workflow.loaded.one"),
+              "count", "the grammatical number is not the number of matchups")
     text = c.index.text(c.claim["id"]) or ""
     c.require(not _live_file(c) or "cached" not in text.lower(), "cached", "a live file says it loaded cached data")
 
@@ -1302,6 +1304,7 @@ RULES: dict[str, Rule] = {
     "analyst.contact_note.*": _demo_starter,
     # 3.2 generator text
     "generator.workflow.loaded": _wf_loaded,
+    "generator.workflow.loaded.one": _wf_loaded,
     "generator.workflow.identified": _wf_done,
     "generator.workflow.generated": _wf_done,
     "generator.workflow.checked": _wf_checked,

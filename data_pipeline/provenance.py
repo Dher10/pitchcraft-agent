@@ -216,7 +216,7 @@ def team_abbreviation(c: Ctx) -> Problem | None:
 
 
 def scope_part(c: Ctx) -> Problem | None:
-    """`kind`, `through` and `label` of a scope: the label is made from the other two."""
+    """Scope label from kind/cutoff and the same saved MLB calendar as generation (P1-R2-f)."""
 
     scope = c.around(1)
     kind, through = scope.get("kind"), scope.get("through")

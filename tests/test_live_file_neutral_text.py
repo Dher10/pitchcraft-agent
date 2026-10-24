@@ -22,7 +22,8 @@ DEMO_KINDS = ("demo", "fallback")
 DEMO_WORDS = re.compile(r"cached|capstone|demo|judging", re.IGNORECASE)
 
 LIVE_DISCLAIMERS = [
-    "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
+    "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. "
+    "PitchCraft is an independent fan project and is not affiliated with MLB.",
     "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features.",
     "Requests to the data sources are cached and the data is not downloaded in bulk.",
     "For information only: no predictions and no betting advice.",
@@ -69,7 +70,10 @@ def test_control_a_demo_file_keeps_its_demo_wording(monkeypatch, kind):
 def test_the_first_step_of_the_workflow_says_it_loaded_data_not_cached_data(monkeypatch, kind):
     payload = published(build(monkeypatch, kind))
 
-    assert payload["agent_workflow"]["steps"][0]["output"] == f"Loaded data for {len(payload['matchups'])} matchups."
+    count = len(payload["matchups"])
+    assert payload["agent_workflow"]["steps"][0]["output"] == (
+        "Loaded data for 1 matchup." if count == 1 else f"Loaded data for {count} matchups."
+    )
 
 
 @pytest.mark.parametrize("kind", LIVE_KINDS)

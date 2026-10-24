@@ -161,9 +161,9 @@ def test_scope_carries_kind_date_and_a_readable_label():
     assert REG == {
         "kind": "regular_season",
         "through": "2026-07-14",
-        "label": "regular season through 2026-07-14",
+        "label": "2026 regular season through Jul 14",
     }
-    assert REG_POST["label"] == "regular season and postseason through 2026-07-14"
+    assert REG_POST["label"] == "2026 regular season and postseason through Jul 14"
 
 
 def test_every_figure_group_in_the_sample_carries_its_scope():

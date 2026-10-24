@@ -22,7 +22,7 @@ from data_pipeline.contract_checks import check_contract
 from tests.corpus import build, published
 
 AWAY, HOME = "away_starter", "home_starter"
-POST = {"kind": "regular_and_postseason", "through": "2026-07-03", "label": "regular season and postseason through 2026-07-03"}
+POST = {"kind": "regular_and_postseason", "through": "2026-07-03", "label": "2026 regular season and postseason through Jul 3"}
 
 
 def codes(payload: dict[str, Any]) -> set[str]:
@@ -196,7 +196,7 @@ def test_command_a_label_claim_needs_a_plus_or_solid_label(live):
         live,
         index,
         ("critic.command.label_claim", {"name": "Bravo Liveleft"}),
-        ("critic.command.walks", {"walks": 38, "batters": 380, "scope": "regular season through 2026-07-03"}),
+        ("critic.command.walks", {"walks": 38, "batters": 380, "scope": "2026 regular season through Jul 3"}),
         subject=HOME,
     )
 

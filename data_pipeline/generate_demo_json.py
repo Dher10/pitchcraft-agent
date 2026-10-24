@@ -626,7 +626,7 @@ def _build_agent_workflow(matchup_ids: list[str], run: AgentRun) -> dict[str, An
             {
                 "agent": scout,
                 "status": _step_status(scout, matchup_ids, run),
-                "output": text("generator.workflow.loaded", count=len(matchup_ids)),
+                "output": text("generator.workflow.loaded.one" if len(matchup_ids) == 1 else "generator.workflow.loaded", count=len(matchup_ids)),
             },
             {
                 "agent": analyst,
