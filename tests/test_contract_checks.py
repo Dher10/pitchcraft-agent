@@ -109,7 +109,7 @@ def test_rule_3_a_group_that_is_unavailable_has_no_scope_in_any_field_that_carri
     assert "rule3:counts#scope_without_figures" not in codes(debuts)
 
     def scoped(m):
-        starter(m)["sample"]["rates"]["scope"] = {"kind": "regular_season", "through": "2026-07-03", "label": "regular season through 2026-07-03"}
+        starter(m)["sample"]["rates"]["scope"] = {"kind": "regular_season", "through": "2026-07-03", "label": "2026 regular season through Jul 3"}
 
     assert "rule3:counts#scope_without_figures" in added(debuts, scoped)
 
@@ -130,7 +130,7 @@ def test_rule_3_an_offense_scope_with_no_offense_figure_is_found(debuts):
 
     def scoped(m):
         m["teams"]["home"]["offense_profile"]["scope"] = {
-            "kind": "regular_season", "through": "2026-07-03", "label": "regular season through 2026-07-03"
+            "kind": "regular_season", "through": "2026-07-03", "label": "2026 regular season through Jul 3"
         }
 
     assert "rule3:offense#scope_without_figures" in added(debuts, scoped)
@@ -156,7 +156,7 @@ def test_rule_3_a_figure_with_no_scope_is_found(live):
 
 
 def test_rule_3_a_scope_that_disagrees_with_its_source_is_found(live):
-    post = {"kind": "regular_and_postseason", "through": "2026-07-03", "label": "regular season and postseason through 2026-07-03"}
+    post = {"kind": "regular_and_postseason", "through": "2026-07-03", "label": "2026 regular season and postseason through Jul 3"}
 
     def offense(m):
         m["teams"]["home"]["offense_profile"]["scope"] = post
@@ -251,7 +251,7 @@ def test_rule_4_an_offense_sentence_in_the_wrong_band_is_found(live):
 
 
 def test_rule_4_a_scope_note_for_groups_that_now_differ_is_found(live):
-    post = {"kind": "regular_and_postseason", "through": "2026-07-03", "label": "regular season and postseason through 2026-07-03"}
+    post = {"kind": "regular_and_postseason", "through": "2026-07-03", "label": "2026 regular season and postseason through Jul 3"}
 
     def edit(m):
         starter(m)["season_summary"]["scopes"]["counts"] = post
@@ -459,8 +459,7 @@ def test_rule_4_the_workflow_must_count_what_the_file_counts(demo):
 def test_rule_4_the_workflow_of_a_live_file_counts_only_live_matchups_and_says_nothing_of_a_cache(live):
     """F4 (closed in D2.4a) and F3 (closed in D2.4b): the count is right and the sentence is neutral."""
 
-    assert "rule4:generator.workflow.loaded#count" not in codes(live)
-    assert "rule4:generator.workflow.loaded#cached" not in codes(live)
+    assert not any(code.startswith("rule4:generator.workflow.loaded") for code in codes(live))
 
 
 def test_rule_4_a_live_workflow_that_says_it_loaded_cached_data_is_found(monkeypatch):
@@ -468,10 +467,11 @@ def test_rule_4_a_live_workflow_that_says_it_loaded_cached_data_is_found(monkeyp
 
     from data_pipeline import generator_texts
 
-    monkeypatch.setitem(generator_texts.GENERATOR_MESSAGES, "generator.workflow.loaded", "Loaded cached data for {count} matchups.")
+    monkeypatch.setitem(generator_texts.GENERATOR_MESSAGES, "generator.workflow.loaded.one", "Loaded cached data for {count} matchup.")
     payload = published(build(monkeypatch, "live_complete"))
 
-    assert "rule4:generator.workflow.loaded#cached" in codes(payload)
+    assert payload["agent_workflow"]["steps"][0]["output"] == "Loaded cached data for 1 matchup."
+    assert "rule4:generator.workflow.loaded.one#cached" in codes(payload)
 
 
 def test_rule_4_the_label_of_a_live_file_needs_the_time_of_the_fetch(live):

@@ -2,7 +2,7 @@ import type { Matchup, PitchLocation, PitchMixRow, PitchMovement, Sample, Starte
 
 /** Self-contained matchups for component tests: they do not read public/data, which the bot rewrites. */
 
-const SCOPE = { kind: "regular_season", through: "2026-07-14", label: "regular season through 2026-07-14" } as const;
+const SCOPE = { kind: "regular_season", through: "2026-07-14", label: "2026 regular season through Jul 14" } as const;
 
 export function makeSample(pitches: number | null, limitedArsenal = pitches === null || pitches < 100): Sample {
   const limited = pitches === 0;

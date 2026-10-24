@@ -318,7 +318,7 @@ def test_a_failed_run_with_no_error_on_record_is_unexpected(isolated):  # noqa: 
 def test_a_day_without_games(isolated):  # noqa: F811
     _, status = status_of(run=run_with(status="no_games", games_scheduled=0, games_live=0))
 
-    assert reason(status) == {"source": "mlb_schedule", "code": "no_games"}
+    assert status["mode"] == "fetched_snapshot" and reason(status) is None
 
 
 def test_games_but_none_usable(isolated):  # noqa: F811

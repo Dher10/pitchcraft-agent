@@ -13,6 +13,7 @@ in a temporary clone and pushes nothing.
 from __future__ import annotations
 
 import base64
+from datetime import datetime, timedelta, timezone
 import hashlib
 import importlib.util
 import json
@@ -877,3 +878,220 @@ def test_every_failure_the_script_raises_is_one_of_the_closed_codes():
     codes = set(re.findall(r'Failure\("([a-z_]+)"\)', SCRIPT.read_text(encoding="utf-8")))
 
     assert codes and codes <= set(CLOSED_CODES), codes
+
+
+# --- P1.8: heartbeat; every repository and push here is local -----------------------------------------------
+
+HEARTBEAT = "evals/live/heartbeat.txt"
+HEARTBEAT_NOW = datetime(2026, 11, 30, 15, tzinfo=timezone.utc)
+
+
+@pytest.fixture
+def heartbeat_clock(publish, monkeypatch):
+    monkeypatch.setattr(publish, "utc_now", lambda: HEARTBEAT_NOW, raising=False)
+    monkeypatch.setenv("GIT_AUTHOR_DATE", HEARTBEAT_NOW.isoformat())
+    monkeypatch.setenv("GIT_COMMITTER_DATE", HEARTBEAT_NOW.isoformat())
+
+
+def dated_commit(world, monkeypatch, when, subject="data: daily update 2026-10-30", owner=OWNER):
+    """An actual historical commit; the author is the owner because the deployed bot uses D42's identity."""
+    with monkeypatch.context() as clock:
+        clock.setenv("GIT_AUTHOR_DATE", when.isoformat())
+        clock.setenv("GIT_COMMITTER_DATE", when.isoformat())
+        clock.setenv("GIT_AUTHOR_NAME", owner[0])
+        clock.setenv("GIT_AUTHOR_EMAIL", owner[1])
+        clock.setenv("GIT_COMMITTER_NAME", owner[0])
+        clock.setenv("GIT_COMMITTER_EMAIL", owner[1])
+        git(world.work, "add", "-A")
+        git(world.work, "commit", "--allow-empty", "-q", "-m", subject)
+    git(world.work, "push", "-q", "origin", "main")
+    return world.remote_head()
+
+
+def same_candidate_as_committed(world):
+    world.candidate.write_bytes((world.work / TARGET).read_bytes())
+
+
+@pytest.mark.parametrize("seconds", [1, 24 * 60 * 60])
+def test_old_bot_commit_gets_one_utc_heartbeat_even_without_a_data_change(
+    publish, world, monkeypatch, heartbeat_clock, seconds
+):
+    before = dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=30, seconds=seconds))
+    same_candidate_as_committed(world)
+    old_data = (world.work / TARGET).read_bytes()
+
+    assert publish.main(world.argv()) == 0
+
+    assert world.remote_head() != before
+    assert git(world.remote, "show", "main:" + HEARTBEAT) == "2026-11-30"
+    assert (world.work / HEARTBEAT).read_bytes() == b"2026-11-30\n"
+    assert git(world.remote, "show", "--name-only", "--format=", "main").split() == [HEARTBEAT]
+    assert (world.work / TARGET).read_bytes() == old_data
+    first = world.remote_head()
+    assert publish.main(world.argv()) == 0
+    assert world.remote_head() == first
+
+
+@pytest.mark.parametrize("age", [timedelta(days=1), timedelta(days=30), timedelta(days=30, seconds=-1)])
+def test_recent_and_exactly_thirty_day_bot_commits_are_controls(
+    publish, world, monkeypatch, heartbeat_clock, age
+):
+    before = dated_commit(world, monkeypatch, HEARTBEAT_NOW - age)
+    same_candidate_as_committed(world)
+
+    assert publish.main(world.argv()) == 0
+
+    assert world.remote_head() == before
+    assert not (world.work / HEARTBEAT).exists()
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_a_recent_human_commit_cannot_hide_an_old_bot_commit(
+    publish, world, monkeypatch, heartbeat_clock, changed
+):
+    dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    before = dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(hours=1), subject="docs: update notes")
+    if not changed:
+        same_candidate_as_committed(world)
+
+    assert publish.main(world.argv()) == 0
+
+    assert world.remote_head() != before
+    assert git(world.remote, "show", "main:" + HEARTBEAT) == "2026-11-30"
+    paths = git(world.remote, "show", "--name-only", "--format=", "main").split()
+    assert set(paths) == ({TARGET, HEARTBEAT} if changed else {HEARTBEAT})
+    fields = git(world.remote, "log", "-1", "--format=%an|%ae|%cn|%ce|%s", "main").split("|")
+    expected_date = "2026-07-15" if changed else "2026-07-14"
+    assert fields == [*OWNER, *OWNER, f"data: daily update {expected_date}"]
+
+
+def test_timestamp_only_data_is_preserved_when_only_the_heartbeat_is_due(
+    publish, world, monkeypatch, heartbeat_clock
+):
+    dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    old_data = (world.work / TARGET).read_bytes()
+    world.write_candidate(payload("2026-07-14", "2026-11-30T15:00:00+00:00", "OLD"))
+
+    assert publish.main(world.argv()) == 0
+
+    assert git(world.remote, "show", "--name-only", "--format=", "main").split() == [HEARTBEAT]
+    assert (world.work / TARGET).read_bytes() == old_data
+
+
+@pytest.mark.parametrize(
+    "owner, subject",
+    [(OWNER, "docs: revise the plan"), (("Other", "other@example.com"), "data: daily update 2026-11-29"),
+     (OWNER, "data: daily update invalid"), (OWNER, "data: daily update 2026-02-30")],
+)
+def test_only_the_bot_identity_and_exact_valid_daily_subject_reset_its_clock(
+    publish, world, monkeypatch, heartbeat_clock, owner, subject
+):
+    dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(hours=1), subject=subject, owner=owner)
+    same_candidate_as_committed(world)
+
+    assert publish.main(world.argv()) == 0
+
+    assert git(world.remote, "show", "main:" + HEARTBEAT) == "2026-11-30"
+
+
+@pytest.mark.parametrize("old_heartbeat", [None, b"2026-10-30\n"])
+@pytest.mark.parametrize("step", ["add", "commit"])
+def test_failed_heartbeat_commit_restores_both_files_and_the_index(
+    publish, world, monkeypatch, heartbeat_clock, old_heartbeat, step, capsys
+):
+    if old_heartbeat is not None:
+        target = world.work / HEARTBEAT
+        target.parent.mkdir(parents=True)
+        target.write_bytes(old_heartbeat)
+    before = dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    old_data = (world.work / TARGET).read_bytes()
+    seen = fail_at(publish, monkeypatch, step, OSError("synthetic heartbeat failure"))
+
+    assert publish.main(world.argv()) == 1
+
+    assert seen["raised"] == 1
+    assert world.remote_head() == before
+    assert (world.work / TARGET).read_bytes() == old_data
+    heartbeat = world.work / HEARTBEAT
+    assert (heartbeat.read_bytes() if heartbeat.exists() else None) == old_heartbeat
+    assert git(world.work, "status", "--porcelain") == ""
+    assert "publish: failed git_failed" in capsys.readouterr().out
+
+
+def test_heartbeat_write_failure_is_rolled_back_too(publish, world, monkeypatch, heartbeat_clock):
+    before = dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    old_data = (world.work / TARGET).read_bytes()
+    real_write = Path.write_bytes
+    failed = []
+
+    def write_then_fail(path, data):
+        result = real_write(path, data)
+        if path.as_posix().endswith(HEARTBEAT) and not failed:
+            failed.append(True)
+            raise OSError("disk full")
+        return result
+
+    monkeypatch.setattr(Path, "write_bytes", write_then_fail)
+
+    assert publish.main(world.argv()) == 1
+
+    assert failed == [True]
+    assert (world.work / TARGET).read_bytes() == old_data
+    assert not (world.work / HEARTBEAT).exists()
+    assert git(world.work, "status", "--porcelain") == ""
+    assert world.remote_head() == before
+
+
+def test_heartbeat_dry_run_uses_only_the_temporary_clone(
+    publish, world, monkeypatch, heartbeat_clock, capsys, tmp_path
+):
+    before = dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    same_candidate_as_committed(world)
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    monkeypatch.setattr(tempfile, "tempdir", str(scratch))
+
+    assert publish.main(world.argv("--dry-run")) == 0
+
+    shown = capsys.readouterr().out
+    assert "publish: file " + HEARTBEAT in shown
+    assert "publish: allowlist ok" in shown and "nothing pushed" in shown
+    assert not (world.work / HEARTBEAT).exists()
+    assert world.remote_head() == before == git(world.work, "rev-parse", "HEAD")
+    assert git(world.work, "status", "--porcelain") == ""
+    assert list(scratch.iterdir()) == []
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_shallow_history_finds_the_bot_behind_a_human_commit(
+    publish, world, monkeypatch, heartbeat_clock, tmp_path, dry_run, capsys
+):
+    dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(days=31))
+    dated_commit(world, monkeypatch, HEARTBEAT_NOW - timedelta(hours=1), subject="docs: update notes")
+    shallow = tmp_path / "shallow"
+    subprocess.run(["git", "clone", "-q", "--depth=1", world.remote.as_uri(), str(shallow)], check=True)
+    World.configure(shallow)
+    world.work = shallow
+    same_candidate_as_committed(world)
+    assert git(shallow, "rev-parse", "--is-shallow-repository") == "true"
+
+    before = world.remote_head()
+    assert publish.main(world.argv(*(["--dry-run"] if dry_run else []))) == 0
+
+    if dry_run:
+        assert "publish: file " + HEARTBEAT in capsys.readouterr().out
+        assert git(shallow, "rev-parse", "--is-shallow-repository") == "true"
+        assert world.remote_head() == before
+        assert not (shallow / HEARTBEAT).exists()
+    else:
+        assert git(world.remote, "show", "main:" + HEARTBEAT) == "2026-11-30"
+
+
+def test_missing_bot_in_complete_history_is_a_control(publish, world, heartbeat_clock):
+    same_candidate_as_committed(world)
+
+    assert publish.main(world.argv()) == 0
+
+    assert world.remote_head() == world.seed
+    assert not (world.work / HEARTBEAT).exists()

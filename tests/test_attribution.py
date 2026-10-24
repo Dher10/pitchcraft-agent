@@ -20,7 +20,10 @@ from data_pipeline import config, demo_inputs
 from data_pipeline.contract_checks import check_contract
 from tests.corpus import build, published
 
-ATTRIBUTION = "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB."
+ATTRIBUTION = (
+    "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. "
+    "PitchCraft is an independent fan project and is not affiliated with MLB."
+)
 NON_COMMERCIAL = "PitchCraft is free and non-commercial: no ads, no sponsorships and no paid features."
 CACHING = "Requests to the data sources are cached and the data is not downloaded in bulk."
 INFORMATION_ONLY = "For information only: no predictions and no betting advice."

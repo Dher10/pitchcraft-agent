@@ -174,16 +174,18 @@ def test_every_payload_number_is_checked_even_outside_known_numeric_fields(monke
 
 
 @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")], ids=["nan", "inf", "negative-inf"])
-def test_strict_serialization_keeps_the_previous_file_if_validation_misses_a_nonfinite_number(monkeypatch, tmp_path, value):
+def test_strict_serialization_keeps_the_previous_file_if_validation_misses_a_nonfinite_number(monkeypatch, tmp_path, value, capsys):
     use_snapshot(monkeypatch, hand_snapshot(True))
     payload = deepcopy(gdj.build_payload())
-    payload["metadata"]["future_field"] = value
     output = tmp_path / "published.json"
-    output.write_text("previous file", encoding="utf-8")
+    output.write_text(json.dumps(payload), encoding="utf-8")
+    before = output.read_bytes()
+    payload["metadata"]["future_field"] = value
     monkeypatch.setattr(gdj, "OUTPUT_PATH", output)
-    monkeypatch.setattr(gdj, "build_payload", lambda: payload)
+    monkeypatch.setattr(gdj, "build_payload", lambda **kwargs: payload)
     # Exercise the independent final guard, assuming a future validation hole.
     monkeypatch.setattr(gdj, "validate_payload", lambda payload: [])
 
     assert gdj.main() == 1
-    assert output.read_text(encoding="utf-8") == "previous file"
+    assert output.read_bytes() == before
+    assert "JSON serialization failed" in capsys.readouterr().err

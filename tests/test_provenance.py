@@ -54,15 +54,17 @@ def test_every_leaf_of_every_live_payload_has_an_entry():
     assert unlisted == set()
 
 
-def test_every_entry_of_the_manifest_is_used_by_some_payload():
+def test_every_entry_of_the_manifest_is_used_by_some_payload(monkeypatch, tmp_path):
     """A dead entry is a field that no longer exists (or never did): it is deleted, not kept."""
 
     used = set()
-    for outcome in outcomes().values():
-        if not outcome.payload or not outcome.live:
-            continue
-        for path, _ in provenance._leaves(outcome.payload):
-            if provenance._in_scope(outcome.payload, path):
+    from tests.test_no_games_archive import example_payload
+
+    payloads = [outcome.payload for outcome in outcomes().values() if outcome.payload and outcome.live]
+    payloads.append(example_payload(monkeypatch, tmp_path))
+    for payload in payloads:
+        for path, _ in provenance._leaves(payload):
+            if provenance._in_scope(payload, path):
                 entry = provenance.entry_for(provenance.normalize(path))
                 if entry:
                     used.add(entry.pattern)
@@ -113,7 +115,7 @@ def test_rule_1_a_null_where_the_entry_does_not_allow_one_is_not_declared(live):
 
 
 def test_rule_1_an_archive_row_in_a_live_file_is_found(live):
-    """F4 (D2.4a): the live archive is empty; a row has no entry in the manifest (unlisted) as well as being rule 6's finding."""
+    """D43 lists live rows; a demo row still fails the historical live-row checks."""
 
     from data_pipeline import demo_inputs
 
@@ -123,7 +125,7 @@ def test_rule_1_an_archive_row_in_a_live_file_is_found(live):
     row["id"] = matchup(live)["id"]  # a row of a live matchup is walked; one of a demo matchup is rule 6's finding
     payload["archive"] = [row]
 
-    assert "rule1:unlisted#archive[].id" in codes(payload)
+    assert "rule1:derivation_mismatch#archive[].id" in codes(payload)
 
 
 def test_rule_1_a_value_of_the_wrong_type_is_found(live):

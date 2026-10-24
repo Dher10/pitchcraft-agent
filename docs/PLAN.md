@@ -116,7 +116,8 @@ Feature: Phase 0 data integrity
     When the live pipeline runs
     Then it exits successfully without errors
     And the run is recorded as no games
-    # "the site shows the season archive" is an acceptance criterion of P1.6 (D28)
+    # P1.6 (D28): tests/test_no_games_archive.py::test_no_games_scheduled_gherkin_publishes_valid_live_archive
+    # and NoGamesShape.test.tsx render the same pipeline-produced fixture as the season archive, without a demo game.
 
   Scenario: Data source failure is explicit
     Given Statcast does not respond
@@ -158,11 +159,19 @@ Feature: Phase 0 data integrity
 - [ ] P1.3 (after the release, D41) Several real games per day. (The part "no demo rows mixed into live mode" moved to P0.15-D2.4.) Review D29's open-month budget (10 requests per run, sized for 5 candidate games) for days of up to 15 games.
 - [ ] P1.4 (after the release, D41) Origin and limited-data badges in the frontend (D3). Includes component tests for the explicit "not available", "—", empty and limited states (the component test runner arrives earlier, in P0.12-C; this task adds the tests for those states).
 - [ ] P1.5 Postseason layer: series context + draft + debut + birthplace as cited claims (D7). Handle international signings with no draft record. **D41: series context only for v2.0-a; draft, debut and birthplace wait for after the release.**
-- [ ] P1.6 (live before Oct 31, D41) Offseason state on the site. Acceptance criterion (D28): on a date with no MLB games, with a `no_games` run record, the site shows the season archive, not demo content.
+- [x] P1.6 (live before Oct 31, D41) Offseason state on the site. Acceptance criterion (D28): on a date with no MLB games, with a `no_games` run record, the site shows the season archive, not demo content.
 - [ ] P1.7 (after the release, D41) Daily append-only log under `evals/live/` even while only the rules writer runs (monitoring starts here).
-- [ ] P1.8 (live before Oct 31, D41) Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
+- [x] P1.8 (live before Oct 31, D41) Keep-alive: verify GitHub's inactivity rule for scheduled workflows and add a heartbeat (e.g. a monthly commit to `evals/live/heartbeat.txt`) so the daily job survives the offseason.
 - [x] P1.9 Data attribution and disclaimer on the site (MLB / Baseball Savant), no monetization of any kind, cached fetches and no bulk downloads (D16).
 - [x] P1.10 [auto] Web Analytics (D26): install `@vercel/analytics`, add `<Analytics />` to the root layout (`app/layout.tsx`) and create the `/quality` route (its content is P3.2). Page views only. Read the Next.js docs in `node_modules/next/dist/docs/` first. Clicking Enable in the Vercel dashboard is the owner's step at the merge of v2.0-a into `main`, not before.
+- [x] P1-R2 [gated] Release 2 of v2.0-a (D41), approved by the owner by sending `docs/plans/P1-R2.md` (2026-10-23). The owner's 2026-10-23 amendment permits d-g commit/push to `v2` after the D35 gates recorded in STATUS; other git safety rules remain. Red tests first; full verification one suite at a time; zero MLB/Savant requests in tests; no workflow dispatch. No `v2` commit touches `public/data/` or `evals/live/`; schema stays 0.9.0, no new error code. Only the plan's approved fan-visible texts. Release 2 QA is Gemini's; the writer stops after g.
+  - [x] a Save the plan, this entry and the deferred feedback backlog.
+  - [x] b Row 9 / P1.6: empty live day, earlier-live-only archive carry-forward, no-games notice, daily exit 3 and automated Gherkin.
+  - [x] c Row 10 / P1.8: bot heartbeat after more than 30 days, current GitHub inactivity rule quoted in the commit.
+  - [x] d Self-host the existing font families with licenses; patched non-major Vitest and mocker (QA1-07).
+  - [x] e UI feedback F6, F8, F10, F12 and accessible tooltips F9 with the exact approved texts.
+  - [x] f Year-aware scope labels F3, live attribution F11 and singular/plural loaded-matchup text; golden and contract registry updated. `eb01ad9`; reviewer round 1 PASS, CI 40090438330 green.
+  - [x] g STATUS summary, Pending Notion sync and owner release steps; `git diff --name-only 3831e6b..v2 -- public/data evals/live` prints nothing; hand off to Gemini QA and stop.
 
 ## Phase 2 — LLM writer and eval (target Nov 8)
 
@@ -187,7 +196,14 @@ Feature: Phase 0 data integrity
 
 ## Backlog after v2 (not scheduled)
 
-- [ ] Ground-ball rate as the replacement for the contact-risk label (D24 leaves contact risk as a count). It stabilizes at about 70 balls in play (FanGraphs Sample Size); Statcast supplies batted-ball type. Needs its own threshold decision.
+- [ ] Refresh the MLB season-calendar reference once per season before opening day, using one seasons-endpoint request with source URL/SHA-256 retained; keep prior years. Missing seasons keep through-date labels and never use a guessed end date (owner amendment, P1-R2-f).
+- [ ] Hide pitches by selected-side usage only after retaining raw per-side counts and totals (schema change in a later release). P1-R2 F8 orders published side shares, then overall raw count, then name; it hides only overall count 0 and retains rounded per-side zeros (owner amendment, 2026-10-23).
+- [ ] Ground-ball rate as the replacement for the contact-risk label (D24 leaves contact risk as a count), next season (owner, P1-R2). It stabilizes at about 70 balls in play (FanGraphs Sample Size); Statcast supplies batted-ball type. Needs its own threshold decision.
+- [ ] Starter bio and recent form from the MLB Stats API people and game logs (owner, P1-R2); not built in release 2.
+- [ ] Visible K% next season (owner, P1-R2); not built in release 2.
+- [ ] Venue city and state (owner, P1-R2); requires a schema change, not built in release 2.
+- [ ] Fan-friendly prose and movement explanations with the Phase 2 LLM writer (owner, P1-R2); not built in release 2.
+- [ ] Credit other data sites only if their data is ever used (owner, P1-R2).
 - [ ] Carry-over of the previous season for April. D24 uses current-season data only, so early in the season most starters are flagged (April: 26% of starts flagged on arsenal, 58% on strikeout, 100% on control). Needs a decision on how to weight the previous season.
 - [ ] Automatic monthly summary of visits per route: the Hobby reporting window is one month (D26), so the numbers should be saved each month (for example into `evals/live/`) before they age out.
 - [ ] Per-game routes (for example `/game/<id>`), so that views per game can be measured with page views alone (D26).

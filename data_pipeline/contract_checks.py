@@ -23,10 +23,10 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
-from data_pipeline import config, labels, provenance
+from data_pipeline import archive, config, labels, provenance
 from data_pipeline.claims import catalogs_of, verify_claims
 from data_pipeline.claims_registry import LIVE_LEVEL, ClaimIndex, Ctx, classify, run_rule
-from data_pipeline.schema import new_york_day
+from data_pipeline.schema import is_no_games_file, new_york_day
 
 LIVE_MODE = "fetched_snapshot"
 
@@ -267,14 +267,18 @@ def _is_instant(value: Any) -> bool:
 def _rule6(payload: Mapping[str, Any]) -> list[Violation]:
     found: list[Violation] = []
     matchups = [m for m in payload.get("matchups") or [] if isinstance(m, Mapping)]
-    live_ids = {m.get("id") for m in matchups if _is_live(m)}
     for matchup in matchups:
         if not _is_live(matchup):
             found.append(Violation("rule6:matchup_not_live", str(matchup.get("id")), "a demo matchup is in a live file"))
-    for row in payload.get("archive") or []:
-        if isinstance(row, Mapping) and row.get("id") not in live_ids:
-            found.append(Violation("rule6:archive_not_live", str(row.get("id")), "an archive row is not a live matchup of the file"))
     metadata = payload.get("metadata") or {}
+    status = metadata.get("data_status") or {}
+    run = status.get("live_run") or {}
+    if not archive.rows_valid(payload.get("archive"), run.get("target_date")):
+        found.append(Violation("rule6:archive_not_live", "archive", "archive rows must be earlier ungraded live reports, unique, newest first, at most 60"))
+    if (not matchups or run.get("status") == "no_games") and not is_no_games_file(payload):
+        found.append(Violation("rule6:no_games_state", "matchups", "an empty day needs a valid no-games run and no featured matchup"))
+    if status.get("reason") is not None:
+        found.append(Violation("rule6:live_reason", "metadata.data_status.reason", "a live file has no fallback reason"))
     for name, texts in (("metadata.data_sources", metadata.get("data_sources")), ("disclaimers", payload.get("disclaimers"))):
         for position, text in enumerate(texts if isinstance(texts, list) else []):
             # The live caching note ("Requests to the data sources are cached ...", P1.9) is the one text that may say it.

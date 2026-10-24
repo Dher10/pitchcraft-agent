@@ -17,7 +17,10 @@ Rules (D24):
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import date
 from typing import Any
+
+from data_pipeline.season_calendar import regular_season_end
 
 # D24: minimum sample per dimension.
 THRESHOLDS = {"arsenal": 100, "strikeout": 70, "control": 170}
@@ -67,7 +70,14 @@ def make_scope(kind: str, through: str) -> dict[str, str]:
 
     if kind not in _SCOPE_TEXT:
         raise ValueError(f"unknown scope kind {kind!r}")
-    return {"kind": kind, "through": through, "label": f"{_SCOPE_TEXT[kind]} through {through}"}
+    cutoff = date.fromisoformat(through)
+    label = f"{cutoff.year} {_SCOPE_TEXT[kind]}"
+    end = regular_season_end(cutoff.year) if kind == SCOPE_REGULAR else None
+    if end is None or cutoff < end:
+        # Explicit English abbreviations keep the approved label independent of the terminal locale.
+        month = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[cutoff.month - 1]
+        label += f" through {month} {cutoff.day}"
+    return {"kind": kind, "through": through, "label": label}
 
 
 def is_available(value: Any) -> bool:

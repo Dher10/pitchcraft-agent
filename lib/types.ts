@@ -340,7 +340,7 @@ export interface ArchiveItem {
   id: string;
   date: string;
   title: string;
-  status: MatchupStatus;
+  status: MatchupStatus | null;
   featured: boolean;
   starter_summary: string;
   /** `null` for a report that was published and never graded (schema 0.9.0, D43). */

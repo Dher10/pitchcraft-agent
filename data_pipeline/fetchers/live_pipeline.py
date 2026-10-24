@@ -12,6 +12,7 @@ import re
 import sys
 import time
 import urllib.request
+import urllib.parse
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -280,6 +281,7 @@ class SavantRequestFailed(OSError):
 _savant_run = {"requests": 0, "open_requests": 0}
 _pitcher_hand_run = {"requests": 0}
 _pitcher_statcast_run = {"requests": 0}
+_mlb_requests: dict[str, int] = {}  # local audit only; never copied to the public run summary
 
 # Failures of the current run, written to data_cache/processed/live_run.json by main().
 _run_errors: list[dict[str, Any]] = []
@@ -426,6 +428,17 @@ def _savant_get(url: str, open_month: bool = False) -> str:
 
 
 def _get_json(url: str, timeout: int = 8) -> dict[str, Any]:
+    parts = urllib.parse.urlsplit(url).path.split("/")
+    resource = parts[3] if len(parts) > 3 else "other"
+    if resource == "schedule":
+        resource = "series_schedule" if "hydrate=seriesStatus" in url else "schedule"
+    elif resource == "people":
+        resource = "pitcher_stats" if "/stats?" in url else "pitcher_hand"
+    elif resource == "teams":
+        resource = "team_splits"
+    elif resource == "seasons":
+        resource = "season_dates"
+    _mlb_requests[resource] = _mlb_requests.get(resource, 0) + 1
     req = urllib.request.Request(url, headers={"User-Agent": "PitchCraft-Capstone/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return json.loads(response.read())
@@ -488,13 +501,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
         f"?sportId=1&date={date_str}&hydrate=probablePitcher,venue(timezone)"
     )
     try:
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "PitchCraft-Capstone/1.0"},
-        )
-        with urllib.request.urlopen(req, timeout=8) as response:
-            data = json.loads(response.read())
-
+        data = _get_json(url)
         games = []
         for game in _schedule_games(data, mlb_schemas.SCHEDULE_DAY, "schedule response"):
             away = game["teams"]["away"]
@@ -630,12 +637,7 @@ def fetch_pitcher_season_stats(
         f"?{stats_query}&group=pitching&season={season}&sportId=1"
     )
     try:
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "PitchCraft-Capstone/1.0"},
-        )
-        with urllib.request.urlopen(req, timeout=8) as response:
-            data = json.loads(response.read())
+        data = _get_json(url)
         splits = _stat_splits(data, mlb_schemas.PITCHER_STATS, "season stats response")
         if not splits:
             return {}
@@ -716,12 +718,7 @@ def fetch_team_splits(
         f"?stats=statSplits&sitCodes=vl,vr&group=hitting&season={season}"
     )
     try:
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "PitchCraft-Capstone/1.0"},
-        )
-        with urllib.request.urlopen(req, timeout=8) as response:
-            data = json.loads(response.read())
+        data = _get_json(url)
         out = {}
         for split in _stat_splits(data, mlb_schemas.TEAM_SPLITS, "team splits response"):
             code = split["split"]["code"]
@@ -2053,6 +2050,7 @@ def run_live_pipeline(
     _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
     _pitcher_hand_run.update(requests=0)  # so is the pitcher-hand budget
     _pitcher_statcast_run.update(requests=0)  # and the Statcast pitcher budget (D42)
+    _mlb_requests.clear()
     info: dict[str, Any] = {}
     run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     target = target_date or today_eastern().isoformat()
@@ -2071,6 +2069,12 @@ def run_live_pipeline(
         "skipped_games": info.get("skipped_games", []),
         "errors": list(_run_errors),
         "warnings": list(_run_warnings),
+        "requests": {
+            "mlb_api": dict(_mlb_requests),
+            "statcast_pitcher": _pitcher_statcast_run["requests"],
+            "savant_closed_months": _savant_run["requests"],
+            "savant_open_months": _savant_run["open_requests"],
+        },
     }
     if snapshot is not None:
         snapshot["run_at"] = run_at

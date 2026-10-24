@@ -52,8 +52,8 @@ export default function ArchiveTable({ archive }: ArchiveTableProps) {
                   ) : null}
                 </td>
                 <td className="px-3 py-3">
-                  <span className={`w-fit rounded-md px-2 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide ${statusClasses[item.status]}`}>
-                    {item.status}
+                  <span className={`w-fit rounded-md px-2 py-1 font-mono text-[9px] font-semibold uppercase tracking-wide ${item.status === null ? statusClasses.upcoming : statusClasses[item.status]}`}>
+                    {item.status ?? UNAVAILABLE}
                   </span>
                 </td>
                 <td className="px-3 py-3 text-[12px] text-neutral-500">{item.starter_summary}</td>

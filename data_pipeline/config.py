@@ -25,7 +25,8 @@ NON_COMMERCIAL_NOTE = "PitchCraft is free and non-commercial: no ads, no sponsor
 # Says requests are cached: not the "cached demo" wording rule 6 forbids over live data, so rule 6 exempts this exact text.
 CACHING_NOTE = "Requests to the data sources are cached and the data is not downloaded in bulk."
 LIVE_DISCLAIMERS = (
-    "Data from the MLB Stats API and Baseball Savant (Statcast). Not affiliated with MLB.",
+    "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. "
+    "PitchCraft is an independent fan project and is not affiliated with MLB.",
     NON_COMMERCIAL_NOTE,
     CACHING_NOTE,
     "For information only: no predictions and no betting advice.",

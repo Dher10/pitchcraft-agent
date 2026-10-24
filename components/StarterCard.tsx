@@ -66,9 +66,9 @@ export default function StarterCard({
         {starter.pitching_profile.style_label}
       </p>
       <dl className="mt-4 grid grid-cols-3 gap-2">
-        <StatTile label="ERA" title="Earned Run Average. Lower is better." value={formatFigure(starter.season_summary.era)} />
-        <StatTile label="WHIP" title="Walks plus hits per inning pitched. Lower is better." value={formatFigure(starter.season_summary.whip)} />
-        <StatTile label="K" title="Strikeouts." value={formatFigure(starter.season_summary.strikeouts)} />
+        <StatTile label="ERA" value={formatFigure(starter.season_summary.era)} />
+        <StatTile label="WHIP" value={formatFigure(starter.season_summary.whip)} />
+        <StatTile label="K" value={formatFigure(starter.season_summary.strikeouts)} />
       </dl>
       {scopeCaptions(starter.season_summary).map((caption) => (
         <p key={caption} className="mt-1.5 font-mono text-[10px] text-neutral-400">
@@ -125,7 +125,7 @@ function PostgameStarter({
       <dl className="mt-4 grid grid-cols-4 gap-1.5">
         <StatTile label="IP" title="Innings pitched." value={starterLine.innings_pitched} align="center" />
         <StatTile label="ER" title="Earned runs allowed." value={starterLine.earned_runs} align="center" />
-        <StatTile label="K" title="Strikeouts." value={starterLine.strikeouts} align="center" />
+        <StatTile label="K" value={starterLine.strikeouts} align="center" />
         <StatTile label="BB" title="Walks allowed." value={starterLine.walks} align="center" />
       </dl>
       <p className="mt-3.5 text-[13px] leading-6 text-neutral-600">{starterLine.grade_explanation}</p>

@@ -11,7 +11,9 @@ this file too.
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import re
+import subprocess
 
 import pytest
 
@@ -176,6 +178,24 @@ def test_the_build_summary_carries_only_the_lines_the_scripts_print_for_it(doc):
     script = next(s for s in runs(jobs_of(doc)["build"]) if "data_pipeline.daily" in s)
 
     assert "GITHUB_STEP_SUMMARY" in script and "grep -h '^daily: '" in script
+
+
+@pytest.mark.parametrize("daily_exit,want", [(0, 0), (3, 0), (1, 1), (2, 2)])
+def test_build_step_accepts_only_valid_live_exit_codes(doc, tmp_path, daily_exit, want):
+    """Execute the actual shell step; the python function prevents every source request."""
+    from tests.test_commit_msg_hook import _find_sh
+
+    shell = Path(_find_sh()).with_name("bash.exe" if os.name == "nt" else "bash")
+    script = next(s for s in runs(jobs_of(doc)["build"]) if "data_pipeline.daily" in s)
+    stub = f"python() {{ return {daily_exit}; }}\ncat() {{ :; }}\ngrep() {{ :; }}\n"
+    path = tmp_path / "step.sh"
+    path.write_text(stub + script, encoding="utf-8", newline="\n")
+    result = subprocess.run(
+        [str(shell), "-e", str(path)], capture_output=True, text=True,
+        env={**os.environ, "RUNNER_TEMP": tmp_path.as_posix(),
+             "GITHUB_STEP_SUMMARY": (tmp_path / "summary").as_posix(), "INPUT_DATE": ""},
+    )
+    assert result.returncode == want, result.stderr
 
 
 def test_no_script_pipes_one_command_into_another_so_no_failure_is_hidden(doc):

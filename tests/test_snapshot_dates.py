@@ -55,7 +55,16 @@ def live_game(template, official="2026-07-15", as_of="2026-07-14", through=None)
         game[slot]["season_summary"]["strikeouts"] = game[slot]["sample"]["rates"]["strikeouts"]
     game["featured_game"]["official_date"] = official
     game["as_of"] = as_of
-    scope = labels.make_scope(labels.SCOPE_REGULAR, through or as_of)
+    scope_date = through or as_of
+    try:
+        date.fromisoformat(scope_date)
+    except ValueError:
+        # Build a sound scope first, then corrupt its date: these cases exercise the snapshot boundary,
+        # not the formatter's earlier rejection of a malformed date (P1-R2-f).
+        scope = labels.make_scope(labels.SCOPE_REGULAR, "2026-07-14")
+        scope["through"] = scope_date
+    else:
+        scope = labels.make_scope(labels.SCOPE_REGULAR, scope_date)
     for slot in SLOTS:
         game[slot]["sample"]["arsenal"]["scope"] = scope
         game[slot]["sample"]["rates"]["scope"] = scope

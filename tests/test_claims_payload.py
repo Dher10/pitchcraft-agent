@@ -123,7 +123,8 @@ def test_the_workflow_is_claims_of_the_root_with_the_numbers_of_the_file(built):
     [checked] = at(root, "agent_workflow.steps[3].output")
     [last] = at(root, "agent_workflow.steps[4].output")
 
-    assert (loaded["key"], loaded["args"]) == ("generator.workflow.loaded", {"count": len(matchups)})
+    loaded_key = "generator.workflow.loaded.one" if len(matchups) == 1 else "generator.workflow.loaded"
+    assert (loaded["key"], loaded["args"]) == (loaded_key, {"count": len(matchups)})
     assert (checked["key"], checked["args"]) == ("generator.workflow.checked", {"warnings": warnings})
     assert last["key"] == ("generator.workflow.graded" if graded else "generator.workflow.graded_none")
     assert last["args"] == ({"count": graded} if graded else {})
@@ -139,7 +140,7 @@ def test_the_text_of_the_generator_is_the_one_it_always_wrote(built):
     steps = [step["output"] for step in payload["agent_workflow"]["steps"]]
     count = len(payload["matchups"])
 
-    assert steps[0] == f"Loaded data for {count} matchups."
+    assert steps[0] == ("Loaded data for 1 matchup." if count == 1 else f"Loaded data for {count} matchups.")
     assert steps[1] == "Identified pitcher strengths, risks, and lineup pressure points."
     assert steps[2] == "Generated fan-friendly scouting report."
     assert steps[3].startswith("Checked every claim against the data: none unsupported, ")

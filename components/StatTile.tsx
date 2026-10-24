@@ -1,6 +1,8 @@
+import Tooltip, { STAT_TOOLTIPS } from "@/components/Tooltip";
+
 interface StatTileProps {
   label: string;
-  title: string;
+  title?: string;
   value: string | number;
   align?: "left" | "center";
 }
@@ -13,9 +15,9 @@ export default function StatTile({ label, title, value, align = "left" }: StatTi
       }`}
     >
       <dt className="font-mono text-[9px] font-semibold uppercase tracking-widest text-neutral-400">
-        <span title={title} className="cursor-help">
-          {label}
-        </span>
+        {STAT_TOOLTIPS[label] ? <Tooltip text={STAT_TOOLTIPS[label]}>{label}</Tooltip> : (
+          <span title={title} className="cursor-help">{label}</span>
+        )}
       </dt>
       <dd className="mt-1 font-mono text-base font-semibold text-neutral-900" style={{ fontVariantNumeric: "tabular-nums" }}>
         {value}

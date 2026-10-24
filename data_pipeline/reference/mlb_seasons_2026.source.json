@@ -1,0 +1,6 @@
+{
+  "source_url": "https://statsapi.mlb.com/api/v1/seasons/2026?sportId=1",
+  "retrieved_at": "2026-10-24T03:10:07.947238+00:00",
+  "sha256": "86b6a157a6ff38761eb2e4df0edb10ab9209689a430a92ec902c584a1eb2d510",
+  "requests": 1
+}
