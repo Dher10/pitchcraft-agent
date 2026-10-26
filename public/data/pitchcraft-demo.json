@@ -3,9 +3,9 @@
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.9.0",
     "data_mode": "fetched_snapshot",
-    "generated_at": "2026-10-25T18:16:30+00:00",
-    "data_fetched_at": "2026-10-25T18:16:29+00:00",
-    "last_updated_label": "Live data fetched 2026-10-25",
+    "generated_at": "2026-10-26T20:22:56+00:00",
+    "data_fetched_at": "2026-10-26T20:22:44+00:00",
+    "last_updated_label": "Live data fetched 2026-10-26",
     "data_sources": [
       "MLB Stats API (schedule, probable pitchers, season statistics)",
       "Baseball Savant / Statcast (pitch data, team batting splits)"
@@ -14,20 +14,1498 @@
       "mode": "fetched_snapshot",
       "reason": null,
       "live_run": {
-        "status": "no_games",
-        "run_at": "2026-10-25T18:16:29+00:00",
-        "target_date": "2026-10-25",
-        "as_of": "2026-10-24",
-        "games_scheduled": 0,
-        "games_live": 0,
-        "errors": [],
+        "status": "ok",
+        "run_at": "2026-10-26T20:22:44+00:00",
+        "target_date": "2026-10-26",
+        "as_of": "2026-10-25",
+        "games_scheduled": 1,
+        "games_live": 1,
+        "errors": [
+          {
+            "source": "statcast_pitcher",
+            "code": "incomplete_sample"
+          }
+        ],
         "warnings": []
       }
     },
     "language": "en"
   },
-  "featured_matchup_id": null,
-  "matchups": [],
+  "featured_matchup_id": "matchup_001",
+  "matchups": [
+    {
+      "id": "matchup_001",
+      "date": "2026-10-26",
+      "status": "upcoming",
+      "is_featured": true,
+      "series": {
+        "series_name": "World Series",
+        "game_number": 3,
+        "games_in_series": 7,
+        "standing": "MIL leads 2-0"
+      },
+      "game": {
+        "title": "Milwaukee Brewers vs Tampa Bay Rays",
+        "venue": "Tropicana Field",
+        "start_time_utc": "2026-10-27T00:00:00Z",
+        "start_time_local": null,
+        "timezone": "America/New_York",
+        "broadcast_note": null,
+        "home_team_id": "139",
+        "away_team_id": "158"
+      },
+      "teams": {
+        "home": {
+          "id": "139",
+          "name": "Tampa Bay Rays",
+          "abbreviation": "TB",
+          "record": null,
+          "offense_profile": {
+            "summary_label": "Real season split vs LHP",
+            "vs_pitcher_hand": "LHP",
+            "ops_vs_hand": ".678",
+            "k_rate_vs_hand": "18.1%",
+            "bb_rate_vs_hand": "7.9%",
+            "recent_form": "Season split",
+            "scope": {
+              "kind": "regular_season",
+              "through": "2026-10-25",
+              "label": "2026 regular season"
+            }
+          }
+        },
+        "away": {
+          "id": "158",
+          "name": "Milwaukee Brewers",
+          "abbreviation": "MIL",
+          "record": null,
+          "offense_profile": {
+            "summary_label": "Real season split vs RHP",
+            "vs_pitcher_hand": "RHP",
+            "ops_vs_hand": ".759",
+            "k_rate_vs_hand": "22.3%",
+            "bb_rate_vs_hand": "10.8%",
+            "recent_form": "Season split",
+            "scope": {
+              "kind": "regular_season",
+              "through": "2026-10-25",
+              "label": "2026 regular season"
+            }
+          }
+        }
+      },
+      "starters": {
+        "away_starter": {
+          "id": "688107",
+          "name": "Robert Gasser",
+          "team": "MIL",
+          "throws": "L",
+          "bio": null,
+          "season_summary": {
+            "era": "3.87",
+            "whip": "1.19",
+            "innings": "109.1",
+            "strikeouts": 103,
+            "walks": 35,
+            "home_runs_allowed": 15,
+            "scopes": {
+              "season_rates": {
+                "kind": "regular_season",
+                "through": "2026-10-25",
+                "label": "2026 regular season"
+              },
+              "counts": {
+                "kind": "regular_season",
+                "through": "2026-10-25",
+                "label": "2026 regular season"
+              }
+            }
+          },
+          "pitching_profile": {
+            "style_label": "Arsenal data limited",
+            "primary_pitch": "Not available",
+            "putaway_pitch": "Not available",
+            "command_label": "Average command",
+            "swing_miss_label": "Average swing-and-miss ability",
+            "contact_risk_label": null
+          },
+          "recent_form": null,
+          "sample": {
+            "arsenal": {
+              "pitches": null,
+              "scope": null
+            },
+            "rates": {
+              "batters_faced": 463,
+              "strikeouts": 103,
+              "walks": 35,
+              "home_runs": 15,
+              "source": "mlb_api",
+              "scope": {
+                "kind": "regular_season",
+                "through": "2026-10-25",
+                "label": "2026 regular season"
+              }
+            },
+            "limited": {
+              "arsenal": true,
+              "strikeout": false,
+              "control": false
+            },
+            "thresholds": {
+              "arsenal": 100,
+              "strikeout": 70,
+              "control": 170
+            }
+          }
+        },
+        "home_starter": {
+          "id": "642547",
+          "name": "Freddy Peralta",
+          "team": "TB",
+          "throws": "R",
+          "bio": null,
+          "season_summary": {
+            "era": "4.42",
+            "whip": "1.33",
+            "innings": "169.0",
+            "strikeouts": 156,
+            "walks": 63,
+            "home_runs_allowed": 23,
+            "scopes": {
+              "season_rates": {
+                "kind": "regular_season",
+                "through": "2026-10-25",
+                "label": "2026 regular season"
+              },
+              "counts": {
+                "kind": "regular_season",
+                "through": "2026-10-25",
+                "label": "2026 regular season"
+              }
+            }
+          },
+          "pitching_profile": {
+            "style_label": "Four-seam-Changeup starter",
+            "primary_pitch": "Four-seam",
+            "putaway_pitch": "Changeup",
+            "command_label": "Average command",
+            "swing_miss_label": "Average swing-and-miss ability",
+            "contact_risk_label": null
+          },
+          "recent_form": null,
+          "sample": {
+            "arsenal": {
+              "pitches": 3217,
+              "scope": {
+                "kind": "regular_and_postseason",
+                "through": "2026-10-25",
+                "label": "2026 regular season and postseason through Oct 25"
+              }
+            },
+            "rates": {
+              "batters_faced": 730,
+              "strikeouts": 156,
+              "walks": 63,
+              "home_runs": 23,
+              "source": "mlb_api",
+              "scope": {
+                "kind": "regular_season",
+                "through": "2026-10-25",
+                "label": "2026 regular season"
+              }
+            },
+            "limited": {
+              "arsenal": false,
+              "strikeout": false,
+              "control": false
+            },
+            "thresholds": {
+              "arsenal": 100,
+              "strikeout": 70,
+              "control": 170
+            }
+          }
+        }
+      },
+      "charts": {
+        "pitch_mix": [
+          {
+            "pitch": "Four-seam",
+            "away_starter": {
+              "overall": null,
+              "vs_lhh": null,
+              "vs_rhh": null,
+              "count": 0,
+              "total": 0
+            },
+            "home_starter": {
+              "overall": 54.1,
+              "vs_lhh": 52.8,
+              "vs_rhh": 56.6,
+              "count": 1741,
+              "total": 3217
+            }
+          },
+          {
+            "pitch": "Changeup",
+            "away_starter": {
+              "overall": null,
+              "vs_lhh": null,
+              "vs_rhh": null,
+              "count": 0,
+              "total": 0
+            },
+            "home_starter": {
+              "overall": 23.6,
+              "vs_lhh": 26.8,
+              "vs_rhh": 17.6,
+              "count": 759,
+              "total": 3217
+            }
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter": {
+              "overall": null,
+              "vs_lhh": null,
+              "vs_rhh": null,
+              "count": 0,
+              "total": 0
+            },
+            "home_starter": {
+              "overall": 13.4,
+              "vs_lhh": 16.7,
+              "vs_rhh": 7.1,
+              "count": 430,
+              "total": 3217
+            }
+          },
+          {
+            "pitch": "Sweeper",
+            "away_starter": {
+              "overall": null,
+              "vs_lhh": null,
+              "vs_rhh": null,
+              "count": 0,
+              "total": 0
+            },
+            "home_starter": {
+              "overall": 5.3,
+              "vs_lhh": 1.6,
+              "vs_rhh": 12.3,
+              "count": 169,
+              "total": 3217
+            }
+          },
+          {
+            "pitch": "Slider",
+            "away_starter": {
+              "overall": null,
+              "vs_lhh": null,
+              "vs_rhh": null,
+              "count": 0,
+              "total": 0
+            },
+            "home_starter": {
+              "overall": 3.7,
+              "vs_lhh": 2.2,
+              "vs_rhh": 6.5,
+              "count": 118,
+              "total": 3217
+            }
+          }
+        ],
+        "velocity_by_pitch": [
+          {
+            "pitch": "Changeup",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 87.5
+          },
+          {
+            "pitch": "Curveball",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 79.3
+          },
+          {
+            "pitch": "Four-seam",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 94.6
+          },
+          {
+            "pitch": "Slider",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 83.1
+          },
+          {
+            "pitch": "Sweeper",
+            "away_starter_velocity": null,
+            "home_starter_velocity": 82.4
+          }
+        ],
+        "strength_profile": [],
+        "pitch_movement": {
+          "away_starter": {},
+          "home_starter": {
+            "Four-seam": {
+              "h_break": -7.2,
+              "v_break": 16.9,
+              "family": "Fastball"
+            },
+            "Changeup": {
+              "h_break": -17.9,
+              "v_break": 3.7,
+              "family": "Offspeed"
+            },
+            "Curveball": {
+              "h_break": 4.6,
+              "v_break": -3.4,
+              "family": "Breaking"
+            },
+            "Sweeper": {
+              "h_break": 10.0,
+              "v_break": 5.9,
+              "family": "Breaking"
+            },
+            "Slider": {
+              "h_break": 3.1,
+              "v_break": 3.4,
+              "family": "Breaking"
+            }
+          }
+        }
+      },
+      "pitch_locations": {
+        "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward.",
+        "away_starter": {
+          "vs_lhh": [],
+          "vs_rhh": []
+        },
+        "home_starter": {
+          "vs_lhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.418,
+              "y": 0.448
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.302,
+              "y": 0.72
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.389,
+              "y": 0.719
+            },
+            {
+              "pitch": "Sweeper",
+              "x": 0.364,
+              "y": 0.65
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.466,
+              "y": 0.758
+            }
+          ],
+          "vs_rhh": [
+            {
+              "pitch": "Four-seam",
+              "x": 0.48,
+              "y": 0.511
+            },
+            {
+              "pitch": "Changeup",
+              "x": 0.454,
+              "y": 0.75
+            },
+            {
+              "pitch": "Curveball",
+              "x": 0.519,
+              "y": 0.682
+            },
+            {
+              "pitch": "Sweeper",
+              "x": 0.666,
+              "y": 0.681
+            },
+            {
+              "pitch": "Slider",
+              "x": 0.716,
+              "y": 0.866
+            }
+          ]
+        }
+      },
+      "postgame": null,
+      "data_confidence": {
+        "level": "fetched_snapshot",
+        "lineup_status": "probable_pitchers",
+        "pitch_data_status": "fetched_snapshot",
+        "notes": [
+          "Live snapshot fetched 2026-10-26 for matchup_001."
+        ]
+      },
+      "report": {
+        "headline": "Robert Gasser against Freddy Peralta",
+        "short_summary": [
+          "Robert Gasser has no claimed strength because the data is limited.",
+          "Freddy Peralta brings this strength: Four-seam to set up, Changeup to finish.",
+          "The early what to watch is whether Robert Gasser can stay ahead of hitters early in counts."
+        ],
+        "sections": [
+          {
+            "title": "Matchup Summary",
+            "body": "This matchup features Robert Gasser against Freddy Peralta. The scouting note is matchup fit, with each pressure point shaping what to watch. This is Game 3 of the World Series. Before first pitch, MIL leads 2-0."
+          },
+          {
+            "title": "Robert Gasser vs Tampa Bay Rays",
+            "body": "Robert Gasser shows average swing-and-miss ability. He shows average command. Robert Gasser's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Robert Gasser has allowed 15 home runs over 463 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.678 OPS), which gives Robert Gasser an edge if he gets ahead."
+          },
+          {
+            "title": "Freddy Peralta vs Milwaukee Brewers",
+            "body": "Freddy Peralta works off a four-seam-changeup combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Freddy Peralta has allowed 23 home runs over 730 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.759 OPS), so Freddy Peralta cannot live over the middle. They draw walks at an above-average rate, so Freddy Peralta needs efficient strikes."
+          },
+          {
+            "title": "Arsenal Scout",
+            "body": "Robert Gasser's arsenal data is limited (pitch count not available; 100 needed), so this report makes no arsenal claim for him. Freddy Peralta works off Four-seam to set up, Changeup to finish. No arsenal contrast is drawn because at least one arsenal has too little data."
+          },
+          {
+            "title": "Three Things to Watch",
+            "bullets": [
+              "Can Robert Gasser stay ahead of hitters early in counts?",
+              "Can Freddy Peralta keep the ball in the zone?",
+              "Which lineup forces more deep counts by the third inning?"
+            ]
+          },
+          {
+            "title": "Data Confidence Note",
+            "body": "This report uses a fetched live snapshot with probable pitchers and season offense splits. Statcast pitch data was available for Freddy Peralta but not for Robert Gasser, so the pitch read makes no arsenal claims about Robert Gasser. Lineups can still change before first pitch. Robert Gasser: all pitcher figures cover the 2026 regular season. Freddy Peralta: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the 2026 regular season; the pitch mix, velocity and movement cover the 2026 regular season and postseason through Oct 25. They are different samples. Team offense splits cover the 2026 regular season. Samples below the minimum are flagged as limited and no claim is made from them."
+          }
+        ],
+        "claims": [
+          {
+            "id": "c1",
+            "key": "analyst.label.against",
+            "args": {
+              "away": "Robert Gasser",
+              "home": "Freddy Peralta"
+            },
+            "subject": null,
+            "location": "report.headline"
+          },
+          {
+            "id": "c2",
+            "key": "writer.strength_none",
+            "args": {
+              "name": "Robert Gasser"
+            },
+            "subject": "away_starter",
+            "location": "report.short_summary[0]"
+          },
+          {
+            "id": "c3",
+            "key": "writer.strength",
+            "args": {
+              "name": "Freddy Peralta",
+              "strength": {
+                "claim": "c4"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.short_summary[1]"
+          },
+          {
+            "id": "c4",
+            "key": "analyst.style.pair",
+            "args": {
+              "primary": "Four-seam",
+              "putaway": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c5",
+            "key": "writer.watch_line",
+            "args": {
+              "observation": {
+                "claim": "c6"
+              }
+            },
+            "subject": null,
+            "location": "report.short_summary[2]"
+          },
+          {
+            "id": "c6",
+            "key": "writer.watch_whether",
+            "args": {
+              "name": "Robert Gasser",
+              "action": {
+                "claim": "c7"
+              }
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c7",
+            "key": "analyst.watch.action.ahead",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c8",
+            "key": "writer.section.summary",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[0].title"
+          },
+          {
+            "id": "c9",
+            "key": "writer.section.vs_team",
+            "args": {
+              "pitcher": "Robert Gasser",
+              "team": "Tampa Bay Rays"
+            },
+            "subject": "away_starter",
+            "location": "report.sections[1].title"
+          },
+          {
+            "id": "c10",
+            "key": "writer.section.vs_team",
+            "args": {
+              "pitcher": "Freddy Peralta",
+              "team": "Milwaukee Brewers"
+            },
+            "subject": "home_starter",
+            "location": "report.sections[2].title"
+          },
+          {
+            "id": "c11",
+            "key": "writer.section.arsenal",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[3].title"
+          },
+          {
+            "id": "c12",
+            "key": "writer.section.watch",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[4].title"
+          },
+          {
+            "id": "c13",
+            "key": "writer.section.confidence",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[5].title"
+          },
+          {
+            "id": "c14",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c15"
+                },
+                {
+                  "claim": "c17"
+                }
+              ]
+            },
+            "subject": null,
+            "location": "report.sections[0].body"
+          },
+          {
+            "id": "c15",
+            "key": "analyst.summary",
+            "args": {
+              "label": {
+                "claim": "c16"
+              }
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c16",
+            "key": "analyst.label.against",
+            "args": {
+              "away": "Robert Gasser",
+              "home": "Freddy Peralta"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c17",
+            "key": "analyst.series.standing",
+            "args": {
+              "n": 3,
+              "series_name": "World Series",
+              "result": "MIL leads 2-0"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c18",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c19"
+                },
+                {
+                  "claim": "c27"
+                }
+              ]
+            },
+            "subject": "away_starter",
+            "location": "report.sections[1].body"
+          },
+          {
+            "id": "c19",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c20"
+                },
+                {
+                  "claim": "c21"
+                },
+                {
+                  "claim": "c23"
+                },
+                {
+                  "claim": "c25"
+                }
+              ]
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c20",
+            "key": "analyst.read.shows",
+            "args": {
+              "subject": "Robert Gasser",
+              "label": "average swing-and-miss ability",
+              "qualifier": ""
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c21",
+            "key": "analyst.read.shows",
+            "args": {
+              "subject": {
+                "claim": "c22"
+              },
+              "label": "average command",
+              "qualifier": ""
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c22",
+            "key": "analyst.read.he",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c23",
+            "key": "analyst.data.arsenal",
+            "args": {
+              "name": "Robert Gasser",
+              "have": {
+                "claim": "c24"
+              },
+              "needed": 100
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c24",
+            "key": "analyst.have.pitches_unavailable",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c25",
+            "key": "analyst.data.contact",
+            "args": {
+              "name": "Robert Gasser",
+              "home_runs": {
+                "claim": "c26"
+              },
+              "batters": 463
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c26",
+            "key": "count.home_run.other",
+            "args": {
+              "count": 15
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c27",
+            "key": "analyst.offense.weak",
+            "args": {
+              "hand": "LHP",
+              "ops": ".678",
+              "name": "Robert Gasser"
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c28",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c29"
+                },
+                {
+                  "claim": "c38"
+                }
+              ]
+            },
+            "subject": "home_starter",
+            "location": "report.sections[2].body"
+          },
+          {
+            "id": "c29",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c30"
+                },
+                {
+                  "claim": "c31"
+                },
+                {
+                  "claim": "c34"
+                },
+                {
+                  "claim": "c36"
+                }
+              ]
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c30",
+            "key": "analyst.read.combination",
+            "args": {
+              "name": "Freddy Peralta",
+              "primary": "four-seam",
+              "putaway": "changeup"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c31",
+            "key": "analyst.read.shows",
+            "args": {
+              "subject": {
+                "claim": "c32"
+              },
+              "label": "average swing-and-miss ability",
+              "qualifier": {
+                "claim": "c33"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c32",
+            "key": "analyst.read.he",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c33",
+            "key": "analyst.read.qualifier",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c34",
+            "key": "analyst.read.shows",
+            "args": {
+              "subject": {
+                "claim": "c35"
+              },
+              "label": "average command",
+              "qualifier": {
+                "claim": "c33"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c35",
+            "key": "analyst.read.he",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c36",
+            "key": "analyst.data.contact",
+            "args": {
+              "name": "Freddy Peralta",
+              "home_runs": {
+                "claim": "c37"
+              },
+              "batters": 730
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c37",
+            "key": "count.home_run.other",
+            "args": {
+              "count": 23
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c38",
+            "key": "analyst.offense.with_notes",
+            "args": {
+              "read": {
+                "claim": "c39"
+              },
+              "notes": {
+                "claim": "c40"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c39",
+            "key": "analyst.offense.strong",
+            "args": {
+              "hand": "RHP",
+              "ops": ".759",
+              "name": "Freddy Peralta"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c40",
+            "key": "@join",
+            "args": {
+              "sep": "; ",
+              "parts": [
+                {
+                  "claim": "c41"
+                }
+              ]
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c41",
+            "key": "analyst.offense.note_walks",
+            "args": {
+              "name": "Freddy Peralta"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c42",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c43"
+                },
+                {
+                  "claim": "c45"
+                },
+                {
+                  "claim": "c47"
+                }
+              ]
+            },
+            "subject": null,
+            "location": "report.sections[3].body"
+          },
+          {
+            "id": "c43",
+            "key": "analyst.data.arsenal",
+            "args": {
+              "name": "Robert Gasser",
+              "have": {
+                "claim": "c44"
+              },
+              "needed": 100
+            },
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c44",
+            "key": "analyst.have.pitches_unavailable",
+            "args": {},
+            "subject": "away_starter",
+            "location": null
+          },
+          {
+            "id": "c45",
+            "key": "writer.arsenal.works_off",
+            "args": {
+              "name": "Freddy Peralta",
+              "style": {
+                "claim": "c46"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c46",
+            "key": "analyst.style.pair",
+            "args": {
+              "primary": "Four-seam",
+              "putaway": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c47",
+            "key": "writer.arsenal.no_contrast",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c48",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c49"
+                },
+                {
+                  "claim": "c56"
+                },
+                {
+                  "claim": "c57"
+                },
+                {
+                  "claim": "c65"
+                },
+                {
+                  "claim": "c66"
+                }
+              ]
+            },
+            "subject": null,
+            "location": "report.sections[5].body"
+          },
+          {
+            "id": "c49",
+            "key": "@join",
+            "args": {
+              "sep": " ",
+              "parts": [
+                {
+                  "claim": "c50"
+                },
+                {
+                  "claim": "c54"
+                },
+                {
+                  "claim": "c55"
+                }
+              ]
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c50",
+            "key": "writer.confidence.snapshot",
+            "args": {
+              "items": {
+                "claim": "c51"
+              }
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c51",
+            "key": "writer.confidence.list_two",
+            "args": {
+              "first": {
+                "claim": "c52"
+              },
+              "second": {
+                "claim": "c53"
+              }
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c52",
+            "key": "writer.confidence.item.pitchers",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c53",
+            "key": "writer.confidence.item.offense",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c54",
+            "key": "writer.confidence.pitch_data.one",
+            "args": {
+              "with_data": "Freddy Peralta",
+              "without_data": "Robert Gasser"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c55",
+            "key": "writer.confidence.lineups",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c56",
+            "key": "analyst.scope.same",
+            "args": {
+              "who": "Robert Gasser",
+              "label": "2026 regular season"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c57",
+            "key": "analyst.scope.differ",
+            "args": {
+              "who": "Freddy Peralta",
+              "season": {
+                "claim": "c58"
+              },
+              "arsenal": "2026 regular season and postseason through Oct 25"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c58",
+            "key": "analyst.scope.season_figures",
+            "args": {
+              "figures": {
+                "claim": "c59"
+              },
+              "label": "2026 regular season"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c59",
+            "key": "analyst.figure.list_and",
+            "args": {
+              "head": {
+                "claim": "c60"
+              },
+              "last": {
+                "claim": "c64"
+              }
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c60",
+            "key": "@join",
+            "args": {
+              "sep": ", ",
+              "parts": [
+                {
+                  "claim": "c61"
+                },
+                {
+                  "claim": "c62"
+                },
+                {
+                  "claim": "c63"
+                }
+              ]
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c61",
+            "key": "analyst.figure.era",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c62",
+            "key": "analyst.figure.whip",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c63",
+            "key": "analyst.figure.innings",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c64",
+            "key": "analyst.figure.counts",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c65",
+            "key": "analyst.scope.offense",
+            "args": {
+              "label": "2026 regular season"
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c66",
+            "key": "writer.confidence.limited",
+            "args": {},
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c67",
+            "key": "analyst.watch.question",
+            "args": {
+              "name": "Robert Gasser",
+              "action": {
+                "claim": "c7"
+              }
+            },
+            "subject": "away_starter",
+            "location": "report.sections[4].bullets[0]"
+          },
+          {
+            "id": "c68",
+            "key": "analyst.watch.question",
+            "args": {
+              "name": "Freddy Peralta",
+              "action": {
+                "claim": "c69"
+              }
+            },
+            "subject": "home_starter",
+            "location": "report.sections[4].bullets[1]"
+          },
+          {
+            "id": "c69",
+            "key": "analyst.watch.action.keep",
+            "args": {
+              "goal": {
+                "claim": "c70"
+              }
+            },
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c70",
+            "key": "analyst.goal.zone",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c71",
+            "key": "analyst.watch.deep",
+            "args": {},
+            "subject": null,
+            "location": "report.sections[4].bullets[2]"
+          },
+          {
+            "id": "c72",
+            "key": "critic.summary.supported",
+            "args": {
+              "checked": 7
+            },
+            "subject": null,
+            "location": "critic_review.summary"
+          },
+          {
+            "id": "c73",
+            "key": "critic.limited.claim",
+            "args": {
+              "name": "Robert Gasser"
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[0].claim"
+          },
+          {
+            "id": "c74",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Freddy Peralta",
+              "role": {
+                "claim": "c75"
+              },
+              "pitch": "Four-seam"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[1].claim"
+          },
+          {
+            "id": "c75",
+            "key": "critic.role.primary",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c76",
+            "key": "critic.pitch.claim",
+            "args": {
+              "name": "Freddy Peralta",
+              "role": {
+                "claim": "c77"
+              },
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[2].claim"
+          },
+          {
+            "id": "c77",
+            "key": "critic.role.putaway",
+            "args": {},
+            "subject": "home_starter",
+            "location": null
+          },
+          {
+            "id": "c78",
+            "key": "critic.names.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[3].claim"
+          },
+          {
+            "id": "c79",
+            "key": "critic.command.absent_claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[4].claim"
+          },
+          {
+            "id": "c80",
+            "key": "critic.scope.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[5].claim"
+          },
+          {
+            "id": "c81",
+            "key": "critic.betting.claim",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[6].claim"
+          },
+          {
+            "id": "c82",
+            "key": "critic.limited.supported_unavailable",
+            "args": {
+              "needed": 100
+            },
+            "subject": "away_starter",
+            "location": "critic_review.checks[0].evidence"
+          },
+          {
+            "id": "c83",
+            "key": "critic.pitch.supported_primary",
+            "args": {
+              "usage": "54.1",
+              "pitch": "Four-seam"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[1].evidence"
+          },
+          {
+            "id": "c84",
+            "key": "critic.pitch.supported_putaway",
+            "args": {
+              "usage": "23.6",
+              "pitch": "Changeup"
+            },
+            "subject": "home_starter",
+            "location": "critic_review.checks[2].evidence"
+          },
+          {
+            "id": "c85",
+            "key": "critic.names.supported",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[3].evidence"
+          },
+          {
+            "id": "c86",
+            "key": "critic.command.absent_evidence",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[4].evidence"
+          },
+          {
+            "id": "c87",
+            "key": "critic.scope.supported",
+            "args": {
+              "who": {
+                "claim": "c88"
+              }
+            },
+            "subject": null,
+            "location": "critic_review.checks[5].evidence"
+          },
+          {
+            "id": "c88",
+            "key": "@join",
+            "args": {
+              "sep": ", ",
+              "parts": [
+                "Freddy Peralta"
+              ]
+            },
+            "subject": null,
+            "location": null
+          },
+          {
+            "id": "c89",
+            "key": "critic.betting.absent",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.checks[6].evidence"
+          },
+          {
+            "id": "c90",
+            "key": "critic.note.no_betting",
+            "args": {},
+            "subject": null,
+            "location": "critic_review.revision_notes[0]"
+          },
+          {
+            "id": "c91",
+            "key": "generator.confidence.live_note",
+            "args": {
+              "date": "2026-10-26",
+              "matchup_id": "matchup_001"
+            },
+            "subject": null,
+            "location": "data_confidence.notes[0]"
+          }
+        ]
+      },
+      "critic_review": {
+        "status": "reviewed",
+        "summary": "The critic checked 7 claims and found them supported by the data.",
+        "checks": [
+          {
+            "claim": "Robert Gasser's arsenal is limited.",
+            "status": "supported",
+            "evidence": "Pitch count not available (the minimum is 100); the report makes no arsenal claim."
+          },
+          {
+            "claim": "Freddy Peralta's primary pitch is Four-seam.",
+            "status": "supported",
+            "evidence": "Pitch mix shows 54.1% Four-seam usage."
+          },
+          {
+            "claim": "Freddy Peralta's put-away pitch is Changeup.",
+            "status": "supported",
+            "evidence": "Put-away pitch usage at 23.6% supports this claim."
+          },
+          {
+            "claim": "The report names only pitches that appear in the pitch mix.",
+            "status": "supported",
+            "evidence": "Every pitch named in the report was thrown by the starter it is credited to."
+          },
+          {
+            "claim": "The report makes a command claim.",
+            "status": "not_present",
+            "evidence": "No command claim requiring correction was found."
+          },
+          {
+            "claim": "Pitch data and season figures are not presented as one sample.",
+            "status": "supported",
+            "evidence": "The report says the figures for Freddy Peralta cover different samples."
+          },
+          {
+            "claim": "The report predicts the winner.",
+            "status": "not_present",
+            "evidence": "No win prediction or betting language found."
+          }
+        ],
+        "revision_notes": [
+          "No betting or outcome-prediction language found."
+        ]
+      }
+    }
+  ],
   "archive": [
     {
       "id": "2026-10-24:matchup_001",
@@ -55,8 +1533,28 @@
     "steps": [
       {
         "agent": "Data Scout Agent",
-        "status": "pending",
-        "output": "Loaded data for 0 matchups."
+        "status": "completed",
+        "output": "Loaded data for 1 matchup."
+      },
+      {
+        "agent": "Matchup Analyst Agent",
+        "status": "completed",
+        "output": "Identified pitcher strengths, risks, and lineup pressure points."
+      },
+      {
+        "agent": "Report Writer Agent",
+        "status": "completed",
+        "output": "Generated fan-friendly scouting report."
+      },
+      {
+        "agent": "Critic / Fact-check Agent",
+        "status": "completed",
+        "output": "Checked every claim against the data: none unsupported, 0 warning(s) across all matchups."
+      },
+      {
+        "agent": "Postgame Grader Agent",
+        "status": "not_applicable",
+        "output": "Featured game has not been completed."
       }
     ]
   },
@@ -71,7 +1569,7 @@
       "id": "c1",
       "key": "generator.metadata.last_updated.live",
       "args": {
-        "date": "2026-10-25"
+        "date": "2026-10-26"
       },
       "subject": null,
       "location": "metadata.last_updated_label"
@@ -85,12 +1583,42 @@
     },
     {
       "id": "c3",
-      "key": "generator.workflow.loaded",
+      "key": "generator.workflow.loaded.one",
       "args": {
-        "count": 0
+        "count": 1
       },
       "subject": null,
       "location": "agent_workflow.steps[0].output"
+    },
+    {
+      "id": "c4",
+      "key": "generator.workflow.identified",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.steps[1].output"
+    },
+    {
+      "id": "c5",
+      "key": "generator.workflow.generated",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.steps[2].output"
+    },
+    {
+      "id": "c6",
+      "key": "generator.workflow.checked",
+      "args": {
+        "warnings": 0
+      },
+      "subject": null,
+      "location": "agent_workflow.steps[3].output"
+    },
+    {
+      "id": "c7",
+      "key": "generator.workflow.graded_none",
+      "args": {},
+      "subject": null,
+      "location": "agent_workflow.steps[4].output"
     }
   ]
 }
