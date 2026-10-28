@@ -173,6 +173,8 @@ Feature: Phase 0 data integrity
   - [x] f Year-aware scope labels F3, live attribution F11 and singular/plural loaded-matchup text; golden and contract registry updated. `eb01ad9`; reviewer round 1 PASS, CI 40090438330 green.
   - [x] g STATUS summary, Pending Notion sync and owner release steps; `git diff --name-only 3831e6b..v2 -- public/data evals/live` prints nothing; hand off to Gemini QA and stop.
 
+- [x] P1-R3 [gated] Archive and empty-day UI corrections (owner kickoff 2026-10-27, `docs/plans/P1-R3.md`): remove historical STATUS/FEATURED, suppress pipeline without matchups, put the existing dated no-games notice directly below hero, fit archive at desktop widths; component tests for all four. D35 kickoff amendment permits commit/push after its gates.
+
 ## Phase 2 — LLM writer and eval (target Nov 8)
 
 **Approved plan:** `docs/plans/P2.md`, owner's seven answers of 2026-10-24.
