@@ -175,29 +175,36 @@ Feature: Phase 0 data integrity
 
 - [x] P1-R3 [gated] Archive and empty-day UI corrections (owner kickoff 2026-10-27, `docs/plans/P1-R3.md`): remove historical STATUS/FEATURED, suppress pipeline without matchups, put the existing dated no-games notice directly below hero, fit archive at desktop widths; component tests for all four. D35 kickoff amendment permits commit/push after its gates.
 
-## Phase 2 — LLM writer and eval (target Nov 8)
+## Phase 2 - LLM writer and eval (target Nov 8)
 
-**Approved plan:** `docs/plans/P2.md`, owner's seven answers of 2026-10-24.
-Execution order: P2.1, P2.4, owner-approved writer guide, P2.2, P2.3,
-A/B1 capture, P2.5, P2.6, P2.7. Phase 2 uses the owner's D35 amendment
-(including Codex): observed red tests for code, sequential full verification,
-reviewer PASS and previous green CI permit commit/push to `v2` without
-another yes; no `public/data/` or `evals/live/` change. Documentation adds
-no artificial red test. Stop at credentials/model IDs, changed D32 cutoffs,
-exact schema/version, public copy/error codes, workflows, guide approval,
-ten B1 dev examples, B2 hypothesis and usual D35 stops. Branch migration
-is after Nov 15 in its own task. P2.1 currently stops for owner setup and
-a judge-provider decision: GitHub Models retired; D9/D17 are unchanged.
+**Revised plan:** `docs/plans/P2.md`, owner kickoff 2026-10-27. This plan
+and `docs/SECURITY.md` need owner confirmation before implementation.
+D45 reaffirms D44's plain-text sentence/evidence boundary and Nov 2 proof
+checkpoint; D46 selects recurring $0/no-card/no-trial provider routes,
+partially superseding D9. D17 stays unchanged. Current schema is 0.9.0.
 
-- [x] P2-plan [gated] Adopt the owner-approved plan, eval R1/S1 and D44;
-  provide P2.1 setup instructions and stop for owner confirmation. No P2.4.
-- [ ] P2.1 AI Studio API key + test call; GitHub Models access. Keys only in env vars / GitHub secrets.
-- [ ] P2.2 LLM writer behind the same interface as the rules writer, with `claims[]`, a versioned prompt and an exact model ID pinned in config. First draft `docs/writer-guide.md` with 3-5 good/bad pairs from real dev packets and obtain owner approval; version the prompt with the guide. D44 approves the prose extension principle; stop for exact schema/version. Prove the independent claims boundary by Nov 2 or rules stay live and the experiment is reported offline; no raw-string bypass. Output is schema-validated before public JSON; free-text MLB fields are quoted data, never instructions. No `dangerouslySetInnerHTML`.
-- [ ] P2.3 Guardrail: informed retry and fallback to rules (D2).
-- [ ] P2.4 40-case dataset with `as_of`, stratified; test split frozen. Historical case builder raises if `as_of` is None. Acceptance criterion (D28): every postseason case carries the series status as of `game_date − 1` (the standing before first pitch), never the final result. Before building the dataset (D32): recompute the lineup cut-offs (K% 23.0, BB% 9.0, OPS .750) from the 2026 quartiles of team lineups against each pitcher hand, as D25 did for starters, and record the result as a new decision that supersedes D32 if the values change.
-- [ ] P2.5 Human labels (G2, L1, U1, R1 and S1 per guide rule) — owner task, Nov 4-6 after A/B1 capture; expanded hours confirmed separately before Nov 3. Original 6-8 hours excluded R1/S1; tentative estimate 10-14, plus 3-4 for B2 test labels.
-- [ ] P2.6 Code evaluators and cross-family judge; calibrate G2/L1/U1/R1/S1 on dev with 85% agreement per dimension. R1 has entity/number code checks plus semantic judge checks and a 100% held-out ship gate; S1 judges each guide rule and informs B2. Freeze judge/evaluators before test evidence; measure held-out trust in P2.7. D17's daily unavailable-G2 behavior remains `not_evaluated`, publication subject to code gates; retired judge service requires an owner provider decision.
-- [ ] P2.7 Baseline A vs. B1; dev-only error analysis including R1/S1; owner-approved single-change B2 hypothesis; B2 on frozen test. First-attempt scores are primary, retries/fallback separate. Held-out B1 evidence stays sealed until B2/judge freeze; R1 20/20, policy 20/20, groundedness 19/20, U1 wins-or-ties 14/20.
+Order: P1-R3 -> P2-SEC -> P2.1 -> P2.4 -> owner-approved real-dev writer
+guide -> P2.2 -> P2.3 -> A/B1 capture -> P2.5 (Nov 4-6) -> P2.6 -> P2.7
+-> independent Phase 2 QA by Antigravity -> P3. Start judge requests with
+the first B1 reports; keep held-out outputs/labels/aggregates sealed until
+B2/judge freeze. Branch/PR migration is a separate task after Nov 15.
+
+Owner D35 autonomy includes Codex: observed red code tests, sequential
+five-suite verification, reviewer PASS, prior green CI and empty protected
+data/live-log diff permit commit/push to v2 without another yes. Stop on
+unapproved public text, schema/error codes, workflows, decisions/scope,
+two red CI runs or two review rounds without PASS. No Phase 2 code now.
+
+- [x] P2-plan [gated] Oct 24 plan adoption, eval R1/S1 and D44 (f37b543); historical setup instructions are superseded by the Oct 27 kickoff.
+- [x] P2-kickoff [gated] Oct 27 documentation only: consolidate P2/eval, record D45/D46, draft SECURITY/RUNBOOK, update handoff and stop for owner approval. P2-draft.md was already renamed; no new runtime/schema/workflow.
+- [ ] P2-SEC [gated] Implement approved SECURITY design: new main-only LLM environment (v2 recorded fixtures), validated/delimited prompt fields and no tools, fail-closed plain-text output checks, exact HF revision/SHA-256 cached safetensors NLI, safe logs/closed errors, API key restrictions/rotation/incident runbook, CSP/self+Vercel Analytics/nosniff/frame-ancestors none with tests, and every-field injection/judge-manipulation/output red-team regressions. Workflow edits need separate owner approval; no code until confirmation.
+- [ ] P2.1 Verify Gemini/AI Studio exact model ID, Mistral Free fallback, rules last; Groq Free openai/gpt-oss-120b for offline AND daily judge; Cloudflare @cf/zai-org/glm-4.7-flash only before freeze. All recurring $0/no card/no trial. Probes only in approved main-only job; keys only new main-restricted environment, never local/v2. Measure quotas/tokens and update the ledger/calendar.
+- [ ] P2.4 Forty stratified real cases, sealed 20/20 split, identical A/B1/B2 packets/findings and previous-day as_of. Historical builder rejects as_of=None; every postseason standing precedes first pitch (D28/D29). Recompute D32 lineup-vs-hand quartiles first; changed cutoffs require superseding decision. Preserve source request caps/caches. Debut/zero/null-pitch/shortened/postponed edges go to regression suite; neither set promises accuracy.
+- [ ] P2.2 Same writer interface/language, versioned guide/prompt/exact model, plain-text sentence/evidence extension with independent validation. Approve guide with 3-5 real-dev good/bad pairs before code, exact schema/version separately, ten B1 dev examples before freeze. Nov 2 proof or rules live/experiment offline; no raw-string bypass or HTML.
+- [ ] P2.3 Before publication: code G1 entity/number, R1/L1, policy, C1/F1, schema/contract, then CPU sentence-to-verified-catalog-facts NLI (never raw JSON), threshold calibrated on dev humans. One informed retry total across providers, then validated rules. Unconfigured/failed gate fails closed. Post-publication one Groq call/report logs G2 residue/L1/R1/S1/policy and never gates (D17); no-games calls neither model. Narrow logging/origin dependencies only; no v2 protected-data writes.
+- [ ] P2.5 Owner labels Nov 4-6 after A/B1 capture: G2/L1/R1, S1 rules, policy audit, U1 and dev NLI sentence/premise labels. Confirm expanded hours before Nov 3; earlier dev labels for Nov 2 proof need separate reservation. B2 labels budgeted separately.
+- [ ] P2.6 Shared code/NLI evaluators and bundled cross-family judge, calibrated on dev humans; separate verdicts/denominators, >=85% agreement per judged dimension, S1 applicable report-rule denominator with per-rule/report-summary breakdowns. Freeze before test evidence. Exact frozen judge stays the same for official A/B1/B2; no fallback rescue after freeze. Held-out trust is measured in P2.7, not this task.
+- [ ] P2.7 A/B1/B2: first attempts primary, retry/fallback separate; dev-only R1/S1 error analysis, owner-approved one-change B2 hypothesis, B2 on frozen test. Gates: groundedness 19/20, policy 20/20, R1 20/20, U1 wins-or-ties 14/20, >=85% trust separately per judged dimension. F1 length after ten A reports; missing evidence keeps rules. Independent Antigravity QA before P3.
 
 ## Phase 3 — Publish (target Nov 15)
 
@@ -211,6 +218,8 @@ a judge-provider decision: GitHub Models retired; D9/D17 are unchanged.
 - [ ] L10N.1 Finish D6 as scoped by D31. Separate a label's identifier from its visible text in `labels.py` (today the English text is also the value that code compares, and that is stored in the JSON); move the generator's texts (data mode and its reasons, confidence note, agent workflow, archive labels, offense split labels) and the frontend copy into catalogs; add the Spanish catalog of the five agents (`agents/messages_es.py`, same keys as `messages_en.py`); the writer and the eval take `language` end to end, and the eval checks Spanish reports (D6).
 
 ## Backlog after v2 (not scheduled)
+
+- [ ] Owner Oct 27 deferred scope: SIERA or any FanGraphs data, percentiles, deltas versus average, spin, park factors, Discord alerts and friendlier no-games copy. Starter bio/recent form, ground-ball rate and venue city/state remain in the existing backlog below. None enters Phase 2.
 
 - [ ] Refresh the MLB season-calendar reference once per season before opening day, using one seasons-endpoint request with source URL/SHA-256 retained; keep prior years. Missing seasons keep through-date labels and never use a guessed end date (owner amendment, P1-R2-f).
 - [ ] Hide pitches by selected-side usage only after retaining raw per-side counts and totals (schema change in a later release). P1-R2 F8 orders published side shares, then overall raw count, then name; it hides only overall count 0 and retains rounded per-side zeros (owner amendment, 2026-10-23).
