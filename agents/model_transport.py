@@ -6,8 +6,11 @@ Provider-specific schemas/quota pacing belong to P2.1; no live calls in tests.
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass, field
+from decimal import Decimal
 import re
 import ssl
+import urllib.error
 import urllib.request
 
 
@@ -19,6 +22,46 @@ class ProviderRejected(ValueError):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+RATE_FIELDS = frozenset(("retry-after", "x-ratelimit-limit-requests",
+    "x-ratelimit-limit-tokens", "x-ratelimit-remaining-requests",
+    "x-ratelimit-remaining-tokens", "x-ratelimit-reset-requests", "x-ratelimit-reset-tokens"))
+
+
+@dataclass(frozen=True)
+class ProviderResponse:
+    status: int
+    rate: dict
+    body: dict | None = field(repr=False)
+
+
+def _rates(headers):
+    result = {}
+    for name in RATE_FIELDS:
+        value = headers.get(name) if headers else None
+        if name.startswith("x-ratelimit-reset-"):
+            if type(value) is not str or not 1 <= len(value) <= 40:
+                continue
+            match = re.fullmatch(r"(?:(\d{1,6})h)?(?:(\d{1,6})m)?(?:(\d{1,6}(?:\.\d{1,3})?)s)?(?:(\d{1,6})ms)?", value)
+            if match and any(part is not None for part in match.groups()):
+                units = (3600000, 60000, 1000, 1)
+                milliseconds = sum(Decimal(part or "0") * unit for part, unit in zip(match.groups(), units))
+                if 0 <= milliseconds <= 999999999:
+                    result[name] = int(milliseconds)
+            continue
+        if type(value) is str and re.fullmatch(r"[0-9]{1,9}", value):
+            result[name] = int(value)
+    return result
+
+
+def _unique_pairs(items):
+    result = {}
+    for key, value in items:
+        if key in result:
+            raise ProviderRejected()
+        result[key] = value
+    return result
 
 
 _TOOLS = frozenset(("tools", "tool_choice", "functions", "function_call", "code_execution",
@@ -33,7 +76,7 @@ def _has_tools(value):
     return False
 
 
-def post_json(provider, model, body, *, api_key, timeout=30):
+def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False):
     try:
         if type(provider) is not str or provider not in ("gemini", "groq"):
             raise ProviderRejected()
@@ -62,16 +105,27 @@ def post_json(provider, model, body, *, api_key, timeout=30):
         headers["Content-Type"] = "application/json"
         request = urllib.request.Request(url, data=encoded, headers=headers, method="POST")
         opener = urllib.request.build_opener(NoRedirect(), urllib.request.HTTPSHandler(context=ssl.create_default_context()))
-        with opener.open(request, timeout=timeout) as response:
-            raw = response.read(131_073)
+        try:
+            with opener.open(request, timeout=timeout) as response:
+                status = getattr(response, "status", 200)
+                rate = _rates(getattr(response, "headers", None))
+                raw = response.read(131_073)
+        except urllib.error.HTTPError as error:
+            try:
+                if with_metadata and type(error.code) is int and 100 <= error.code <= 599:
+                    return ProviderResponse(error.code, _rates(error.headers), None)
+                raise ProviderRejected() from None
+            finally:
+                error.close()
         if len(raw) > 131_072:
             raise ProviderRejected()
         def invalid_constant(_):
             raise ProviderRejected()
-        value = json.loads(raw.decode("utf-8"), parse_constant=invalid_constant)
+        value = json.loads(raw.decode("utf-8"), parse_constant=invalid_constant,
+                           object_pairs_hook=_unique_pairs)
         if type(value) is not dict:
             raise ProviderRejected()
-        return value
+        return ProviderResponse(status, rate, value) if with_metadata else value
     except Exception:
         # Never export urllib exceptions, request repr, response bodies or headers.
         raise ProviderRejected() from None

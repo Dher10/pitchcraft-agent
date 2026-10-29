@@ -1,0 +1,14 @@
+{
+  "provenance": "Synthetic fixtures shaped from Gemini generateContent and Groq chat/completions official references; not recorded access evidence.",
+  "gemini": {
+    "candidates": [{"content": {"role": "model", "parts": [{"text": "{\"ok\":true}"}]}, "finishReason": "STOP", "index": 0}],
+    "usageMetadata": {"promptTokenCount": 25, "candidatesTokenCount": 5, "thoughtsTokenCount": 20, "totalTokenCount": 50},
+    "modelVersion": "gemini-3.8-flash"
+  },
+  "groq": {
+    "model": "openai/gpt-oss-120b",
+    "system_fingerprint": "fp_fixture",
+    "choices": [{"index": 0, "message": {"role": "assistant", "content": "{\"ok\":true}", "reasoning": "PRIVATE-REASONING-SENTINEL"}, "finish_reason": "stop"}],
+    "usage": {"prompt_tokens": 30, "completion_tokens": 40, "total_tokens": 70, "completion_tokens_details": {"reasoning_tokens": 35}}
+  }
+}

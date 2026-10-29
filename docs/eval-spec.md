@@ -9,7 +9,8 @@ post-publication-judge cascade. This specification describes the target,
 not implemented evaluators. Owner approved the plan/SECURITY on Oct 28
 with D47 adjustments, then approved nonce/dynamic/style-attribute scope and
 the separate local-key route. P2-SEC implements security primitives/headers;
-stop before P2.1 for owner key creation/storage. Generated prose is unwired. Schema stays
+owner confirmed local key creation/storage and accepted restriction settings
+Oct 28; P2.1 probes follow the runner commit's green CI. Generated prose is unwired. Schema stays
 0.9.0 until separate exact-schema approval. GitHub Models is retired.
 
 ## 1. Decision this eval informs

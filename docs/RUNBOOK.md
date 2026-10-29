@@ -3,7 +3,9 @@
 Security design approved 2026-10-28; D47 removes Mistral. Companion to
 `SECURITY.md` and `plans/P2.md`. Current production uses rules. Provider
 adapters, model gate, rules-only switch and monitoring integration remain
-unimplemented. The LOCAL route below was approved on Oct 28; STOP before P2.1 for owner key setup.
+unimplemented. The LOCAL route was approved Oct 28; owner confirmed key setup
+on Oct 28 and accepted the owner-reported restriction settings the same day
+(inventory below). The two bounded P2.1 probes follow the runner commit's green CI.
 No key values, account email or project identifiers belong in this inventory.
 
 ## Key and settings inventory (2026-10-28)
@@ -15,11 +17,23 @@ paid upgrade, trial or payment card to unblock access.
 
 | Key | Management / account context | Plan / expiry | Storage and boundary |
 |---|---|---|---|
-| Gemini **pitchcraft-writer** | [AI Studio API keys](https://aistudio.google.com/api-keys); owner's Google account, project shown there | Free tier, no billing; **never enable Configurar la facturación**; no expiry set | GitHub > Settings > Environments > **pitchcraft-llm-main** > **GEMINI_API_KEY**; main only |
+| Gemini **pitchcraft-writer** | [AI Studio API keys](https://aistudio.google.com/api-keys); owner's Google account; one Google Cloud project shared with the local key (identifier withheld per the rule above) | Free tier, no billing account; **never enable Configurar la facturación**; no expiry set; API restriction: Gemini API only; no application restriction | GitHub > Settings > Environments > **pitchcraft-llm-main** > **GEMINI_API_KEY**; main only |
 | Groq **pitchcraft-judge** | [Groq keys](https://console.groq.com/keys); Personal organization, Default Project | Free plan; **never Upgrade to Dev Plan**; expires **2026-11-27** | Same environment > **GROQ_API_KEY**; main only |
 | Bot **pitchcraft-data-bot** | GitHub > Settings > Deploy keys | Write deploy key; sole main-ruleset bypass per owner setup | Private half only as **DATA_DEPLOY_KEY** in **data-publish**; main only; never copy to LLM/local execution |
-| Local Gemini **pitchcraft-writer-local** | Same AI Studio management page; owner creates a separate key at the P2.1 setup stop | Free/no billing; record actual restrictions/expiry at creation | Windows USER **PITCHCRAFT_GEMINI_API_KEY_LOCAL**; explicit approved offline runner only; never production key reuse |
-| Local Groq **pitchcraft-judge-local** | Same Groq page; record organization/project at creation | Free; record chosen expiry (do not assume Nov 27) | Windows USER **PITCHCRAFT_GROQ_API_KEY_LOCAL**; explicit approved offline runner only |
+| Local Gemini **pitchcraft-writer-local** | Google AI Studio, same Cloud project as production **pitchcraft-writer**; owner created and confirmed Oct 28, then renamed it from the mislabeled "pitchcraft-judge-local" (same key, value unchanged) | Free tier, no billing account; no expiry set; API restriction: Gemini API only; no application restriction (dynamic residential IP) | Windows USER **PITCHCRAFT_GEMINI_API_KEY_LOCAL**, stored by owner using the hidden-input script below; no project file; explicit approved offline runner only |
+| Local Groq **pitchcraft-judge-local** | Groq Free, Personal / Default Project; owner created and confirmed Oct 28 | Free plan, no payment method; expires **2026-11-27**; Groq offers no provider-native per-key restriction (see compensating controls below) | Windows USER **PITCHCRAFT_GROQ_API_KEY_LOCAL**, stored by owner using the same hidden-input script; no project file; explicit approved offline runner only |
+
+Owner restriction review, accepted 2026-10-28 (owner-reported settings; the
+agent did not inspect either console). Both Gemini keys are in the same Google
+Cloud project (shared quota), API-restricted to the Gemini API only, with no billing
+account. Neither has an application restriction: the owner's residential IP
+is dynamic, so an IP allowlist would break local runs. For Groq
+**pitchcraft-judge-local**, Groq offers no provider-native per-key
+restriction. Compensating controls: 30-day expiry 2026-11-27, Free plan
+with no payment method, a separate key from production **pitchcraft-judge**,
+storage only as a Windows USER variable, and never logged. Residual risk:
+anyone holding the local Groq key can use the whole organization's Free quota
+until expiry or revocation; see `SECURITY.md`.
 
 Security controls: GitHub > Settings > **Advanced Security**: secret
 protection/secret scanning, push protection, Dependabot alerts and private
@@ -67,9 +81,12 @@ Previous v2 commit ae743e7: CI 40612968097 success (gh run list).
 
 ## Approved local keys: exact owner setup steps (before P2.1)
 
-The owner approved this route in `plans/P2.md`. The implementing session
-stops before P2.1 so the owner can create/store these keys. No P2.1 probe
-runs until the owner confirms setup and clears that stop. No production secret is exported.
+The owner approved this route in `plans/P2.md` and confirmed setup Oct 28:
+both entries were stored with this script and its presence check printed
+True for both. The agent repeated only the literal presence command below:
+both printed True. No key value was read into tool output or a file, and no
+production secret was exported. The remaining restriction/access/capacity
+checks are separate from this storage confirmation.
 
 1. At [AI Studio API keys](https://aistudio.google.com/api-keys), select the
    intended no-billing project and create **pitchcraft-writer-local**.
@@ -130,7 +147,7 @@ Remove-Variable localKeyName, localKeyPresent
 
 5. Do not restart a general-purpose IDE/test/build environment just to
    inherit keys. The approved offline runner will read these USER entries
-   explicitly; it does not yet exist. Existing processes need no restart
+   explicitly, only after an explicit offline invocation. Existing processes need no restart
    for that direct read. New processes after sign-in/restart may inherit
    the values: keep both variables out of frontend/build/test subprocess
    environments. Never dump the registry/environment, enable HTTP debug
@@ -274,3 +291,86 @@ The setup script creates exactly these Windows USER entries:
 **PITCHCRAFT_GEMINI_API_KEY_LOCAL** and **PITCHCRAFT_GROQ_API_KEY_LOCAL**.
 It has not been executed by the agent. No runner automatically reads them
 in P2-SEC. Do not paste values in chat; confirm setup by names/presence only.
+
+## P2.1 runner checkpoint (2026-10-28, probes not run)
+
+`evals/local_runner.py` is a synthetic-probe runner, not the writer or
+judge queue. Imports/tests/builds make no credential read or provider call.
+Only explicit owner-PC offline invocation may read the exact USER entries;
+there is no inherited/production-variable fallback or subprocess. The
+runner offers no arbitrary prompt, model, endpoint, output path or retry.
+The CLI requires a pinned commit and dirty-tree digest. These are operator
+inputs, not independently certified by a provider. Record the actual git
+HEAD/dirty digest immediately before invocation; do not invent them. The
+dirty digest is the SHA-256 of the bytes printed by `git diff HEAD --binary`.
+For a clean tree that output is empty, so the digest is
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. Run
+probes only from a clean tree: untracked files are not covered by that diff.
+Model-version mismatches and truncation are recorded with their usage and
+still spend the provider's single probe. Gemini runs at temperature 0 as the
+candidate setting, although Google recommends the default for Gemini 3.
+
+One synthetic request per provider, two total, with a 1,024 generated-token
+cap, 30-second transport timeout, fixed HTTPS/no redirect and no tools.
+Each request reserves 4,096 tokens before key load/network, even on failure
+or interruption: at most 8,192 tokens in this ledger. These conservative
+debits are not observed usage or evidence of spare shared-account quota.
+Requests are at least one minute apart. Rejected/unknown results never
+auto-retry; an identical complete accepted result can be reused. Changed
+identities cannot bypass the per-provider budget. Do not delete the ledger
+or its lock to repeat a request; investigate an interrupted run first.
+
+The fixed local evidence path is `.local/p2-1/`, ignored by git and never
+served. A protected Windows DACL grants owner/SYSTEM/administrators access;
+POSIX fixtures use 0700/0600. ACL failure, symlinks/reparse points, hardlinked
+files, unexpected files, a lock or a partial/corrupt ledger fail before key
+load. A single-writer, fsynced hash-chain ledger stores reservations and
+closed sanitized results, not request headers/prompts/raw errors or raw
+reasoning. Only the fixed boolean probe output's digest is retained. All
+usage/fingerprint fields absent from the provider remain unavailable.
+Fingerprint hashes identify observations without persisting arbitrary
+provider text; they do not establish an immutable backend version.
+
+Candidate synthetic IDs/settings: **gemini-3.8-flash**, temperature 0,
+thinking low, JSON schema; **openai/gpt-oss-120b**, temperature 0, reasoning
+effort low with `include_reasoning: false`, strict JSON schema. Groq does not
+support `reasoning_format` on gpt-oss models. Gemini may attach an opaque
+`thoughtSignature` to a text part; the parser accepts it and never stores it. These are not a frozen writer/judge protocol
+and no guide/prompt for baseball has been created. The complete probe body,
+protocol source, schema, input, placeholder guide/evaluator identity and
+commit/dirty digest determine cache identity. Future real-packet/report
+queues require their own validated adapters and complete identities.
+
+Current official sources checked Oct 28 (America/Bogota):
+
+- [Gemini key types/restrictions](https://ai.google.dev/gemini-api/docs/api-key):
+  new AI Studio keys default to auth keys restricted to Gemini. This is
+  documentation, not inspection of this key's actual settings.
+- [Gemini 3.8 model](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash)
+  and [pricing](https://ai.google.dev/gemini-api/docs/pricing) list the exact
+  model and Free input/output. [2.5 availability](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+  warns of legacy-project access limits; do not assume a new key gets 2.5.
+- [Gemini limits](https://ai.google.dev/gemini-api/docs/rate-limits):
+  project-shared; exact active limits require AI Studio evidence. No numeric
+  account quota has been established here.
+- [Groq model permissions](https://console.groq.com/docs/model-permissions):
+  organization/project controls; no per-key model scope is claimed. The owner
+  reviewed and accepted the missing per-key restriction on Oct 28 (inventory above).
+- [Groq limits/headers](https://console.groq.com/docs/rate-limits): Free
+  published defaults remain 30 RPM/1,000 RPD/8K TPM/200K TPD for this model,
+  organization-shared. Request headers refer to RPD, token headers to TPM;
+  they do not independently establish TPD. Exact account limits still pending.
+- [Groq API](https://console.groq.com/docs/api-reference) and
+  [reasoning](https://console.groq.com/docs/reasoning) document strict JSON
+  schema on gpt-oss-120b, low effort and `include_reasoning` (rechecked Oct 28;
+  `reasoning_format` is unsupported on gpt-oss). [Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking)
+  lists low for gemini-3.8-flash, says the output cap includes thought tokens
+  and that signatures can be attached to any part. Synthetic fixtures imitate
+  these wire shapes; they are not recordings of successful account access.
+
+The owner's restriction review was recorded Oct 28 (inventory above), which
+clears the P2.md gate for the two bounded probes once this runner is
+committed. Run Gemini first. If its probe returns 401 or 403, stop and report
+to the owner: do not try another variable, key or retry. Never request values
+or broaden billing/access. P2.1 remains unchecked; no real usage measurement,
+account entitlement, quota acceptance or dataset exists yet.

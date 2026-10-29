@@ -55,7 +55,12 @@ untrusted executable with credentials. The owner prefers frequent offline
 experiments on the PC without merging each change: `plans/P2.md` records the approved route using
 SEPARATE local Gemini/Groq keys, fixed hosts, explicit offline opt-in,
 redaction, bounded quotas, restricted caches and no inherited build/test
-credentials. The route is approved; key creation/storage is the next owner stop.
+credentials. The route is approved.
+Owner confirmed creation/storage of both separate local keys Oct 28 and
+accepted the owner-reported restriction settings the same day; RUNBOOK
+records their non-secret inventory. Probes follow the runner commit's green CI.
+P2.1's new runner is synthetic/offline only and not wired to publication;
+its fixture results never establish account access or full queue capacity.
 Windows USER storage persists in the registry, is not encrypted, is readable
 by same-user/admin processes and may be inherited; separate keys reduce
 revocation impact but not those risks or shared-quota usage.
@@ -150,6 +155,13 @@ smallest available scope/model/project permissions. Verify provider-native
 restrictions in P2.1; if a required restriction is unavailable, document the
 gap and stop for owner review rather than claiming it exists. Cloudflare
 backup credentials, if later provisioned before freeze, get the same isolation.
+Owner review Oct 28 (RUNBOOK inventory): both Gemini keys are API-restricted
+to the Gemini API with no billing account, but have no application
+restriction because the owner's IP is dynamic. Groq offers no per-key
+restriction; the local Groq key relies on a Nov 27 expiry, Free plan without
+payment method, separation from production and USER-only storage. Accepted
+residual risk: a leaked local key can spend the shared Free project/org quota
+(and, for Gemini, any Gemini API call) until expiry or revocation.
 
 Only safe closed error codes and validated bounded context reach public
 logs/artifacts; no raw provider errors, internal raw prompts, credentials,
