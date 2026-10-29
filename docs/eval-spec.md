@@ -1,13 +1,14 @@
-# PitchCraft Report Writer Eval — Spec v0.4
+# PitchCraft Report Writer Eval — Spec v0.5
 
-Owner: Daniel Herdenez · Updated: 2026-10-27
-Related: `PRD_v2.md`, `DECISIONS.md` (D2, D8, D17, D24, D44-D46),
+Owner: Daniel Herdenez · Updated: 2026-10-28
+Related: `PRD_v2.md`, `DECISIONS.md` (D2, D8, D17, D24, D44-D47),
 revised `plans/P2.md`; `writer-guide.md` is created/approved after real dev packets exist.
 
 The Oct 27 owner kickoff selects D46 providers and the code/local-NLI /
 post-publication-judge cascade. This specification describes the target,
-not implemented evaluators. The revised plan and SECURITY need owner
-confirmation before P2-SEC, P2.1 or any Phase 2 implementation. Schema stays
+not implemented evaluators. Owner approved the plan/SECURITY on Oct 28
+with D47 adjustments. P2-SEC is open at its rendering scope gate; local-key
+execution needs separate approval before P2.1. Schema stays
 0.9.0 until separate exact-schema approval. GitHub Models is retired.
 
 ## 1. Decision this eval informs
@@ -40,7 +41,7 @@ and fallback performance separately; a rules fallback is not an LLM success.
 
 All receive identical stored findings and matchup packet. Pin exact model
 IDs and temperature in config, and record prompt, guide, evaluator and
-packet versions/digests. No model substitution inside an experiment. Mistral/rules fallback attempts
+packet versions/digests. No model substitution inside an experiment. Rules fallback attempts
 are operational results, never counted as Gemini B1/B2 first-attempt success.
 
 ## 3. LLM writer contract
@@ -160,7 +161,10 @@ explicit, approved packet evidence to A and B alike before packet freeze.
   `not_evaluated`, not passes. Missing required evidence blocks shipping.
 - Judge model family differs from writer family. One bundled call per report
   returns separate G2, L1, R1, S1 rule and policy verdicts; U1 uses separate
-  pairwise calls with both presentation orders budgeted. Calibrate the
+  pairwise calls. Dev uses BOTH presentation orders and measures position
+  bias; test uses ONE randomized order per pair. Record seed, PRNG/version
+  and case/version-to-order manifest before calls; reuse it on resume, never
+  select order after seeing results. Calibrate the
   bundled protocol, not separate-dimension calls assumed equivalent.
 - Freeze provider/route, exact model/fingerprint and disclosed quantization,
   temperature/thinking, prompts/schema/guide/evaluator versions and canonical
@@ -185,8 +189,8 @@ frozen test set, preserving shared inputs/comparability; report A/B1/B2.
 
 - Before publication: schema/contract, G1 numbers/entities, code R1/L1,
   policy word list, C1/F1, then local CPU sentence-to-catalog-facts NLI.
-  Technical/content/NLI failure gets one informed retry total across
-  Gemini/Mistral, then validated rules. At most two writer calls. Unsafe
+  Technical/content/NLI failure gets one informed Gemini retry total,
+  then validated rules. At most two Gemini calls; no other writer provider. Unsafe
   fallback/final integrity failure keeps the previous file (D34/D42).
 - After publication: ONE Groq call per report covers G2 residue, L1, R1,
   S1 per rule and policy. U1 remains offline. Remote verdicts never gate or
@@ -203,32 +207,35 @@ frozen test set, preserving shared inputs/comparability; report A/B1/B2.
 
 ## 9. Infrastructure and capacity ($0, no card, no trial)
 
-D46: Gemini via AI Studio primary writer, Mistral Free fallback, rules last;
+D46/D47: Gemini via AI Studio is the sole model writer, then rules;
 exact writer IDs verified in P2.1. Groq Free openai/gpt-oss-120b for BOTH
 judge uses; Cloudflare @cf/zai-org/glm-4.7-flash only before judge freeze.
 GitHub Models is retired. Free entitlement/quotas remain to verify; no paid
 or trial substitute is authorized.
 
-LLM keys live only in a new main-restricted GitHub environment, separate
-from the deploy key. Authenticated probes/offline runs require an approved
-main-only job; v2/local/PR rehearsals use recorded fixtures. No local keys,
-new workflow or model call is authorized by this documentation update.
+Production keys remain in main-only pitchcraft-llm-main, separate from the
+deploy key. Separate local keys/Windows USER variables and an explicit
+owner-PC offline runner are proposed in plans/P2.md; approval is required
+before P2.1. No production key export, .env or workflow change. Tests replay
+fixtures and make no source/provider requests.
 
-`plans/P2.md` holds the exact bundled ledger: required official 100 reports
-+ 120 ordered U1 calls, plus three dev passes (240 calls) = 460; exact
-final-dev reuse reduces new calls to 380. At declared 5,500/report and
-6,000/ordered-pair token caps: 2.65M or 2.19M tokens, at least 14 or 11
-200K quota-days; reserving ten daily monitoring reports (55K tokens/day)
-raises these to 19 or 16. With 20% attempts allowance: 3.18M/2.628M, 16/14
-days without monitoring or 22/19 with it. Research's larger 40-case B2
-envelope is separate (520/440 calls), not required official evidence.
+`plans/P2.md` holds the revised ledger: official 100 report calls + 80 U1
+(40 dev two-order, 20 B1 test one-order, 20 B2 test one-order), plus three
+dev passes (240 calls) = 420; exact final-dev reuse reduces new calls to
+340. At assumed 5,500/report and 6,000/U1: 2.41M/1.95M tokens, at least
+13/10 quota-days at 200K; with 20% attempts 2.892M/2.34M, 15/12 days.
+Conservative B2-dev-inclusive envelope: 480/400 calls, 2.76M/2.30M tokens,
+14/12 days; with allowance 17/14. From Nov 1 monitoring reserves ZERO tokens:
+full 200K/day is available offline. Through Oct 31 debit actual monitoring
+reports (5,500 each); do not carry a permanent 55K reserve into offseason.
+Separate local/production keys may share quotas; never double the budget.
 
 These are planning caps/lower bounds, not measured usage or calendar
 promises. P2.1 establishes quota/usage measurement on synthetic probes;
-full packet/report measurements follow P2.4 and first B1, before the full
+full A measurements follow P2.4 and B1 measurements follow first B1, before the full
 judge queue, including reasoning, failures and probes. Cache by complete canonical request/model/settings/guide/prompt/
 schema/evaluator identity; only complete identical responses are reusable.
-Start judge runs with first B1 reports, calibrate only on dev labels, seal
+Judge A as soon as P2.4 exists, BEFORE B1; add B1 when available. Calibrate only on dev labels, seal
 test evidence, pace/resume across quota days. Do not cut gates or switch a
 frozen judge to meet a date. No source/provider requests in tests.
 
@@ -240,8 +247,13 @@ Postgame validation of "what to watch", multi-model comparison, latency or cost 
 
 - Oct 27 kickoff: P1-R3, then plan/decisions/security docs; stop for owner
   approval and key/main-only-environment setup. No Phase 2 implementation.
-- After confirmation: P2-SEC -> P2.1 -> P2.4 -> approved real-dev guide ->
-  P2.2 -> P2.3 -> A/B1 capture. Start judge runs with first B1 reports.
+- Oct 28: approval/D47/inventory recorded; stop at P2-SEC rendering scope
+  and local-route proposals in P2.md. P2-SEC is not complete; no P2.1 calls.
+- After P2-SEC and local-route approval: P2.1 -> P2.4 -> immediate A judging
+  -> approved real-dev guide -> P2.2 -> P2.3 -> B1 capture/judging.
+- From Nov 1: zero daily monitoring reserve, full shared 200K/day offline.
+  Required 10/13 quota-days starting Nov 1 end no earlier than Nov 10/13
+  without prior valid reuse; allowance/dependencies may extend past cutoff.
 - Nov 2: hard claims-boundary proof checkpoint; otherwise rules live,
   experiment offline. No uncalibrated NLI or raw-string bypass.
 - Before Nov 3: confirm expanded owner hours and A/B1 readiness.

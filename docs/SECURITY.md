@@ -1,9 +1,11 @@
 # Security design and threat model
 
-Draft for owner approval, 2026-10-27. Required by kickoff step 3 and P2-SEC
-in `docs/plans/P2.md`. This is a design, not a claim that its new controls
-exist. No credentials, environment, workflow, model loader or security
-headers are changed by this documentation task. Rules remain the live writer.
+Design approved by owner 2026-10-28 with D47 adjustments (Gemini -> rules;
+no Mistral). This remains a design, not evidence its runtime controls exist.
+P2-SEC is open: exact execution details and the rendering scope stop are
+in `plans/P2.md`. Production environment policy is verified read-only;
+secret contents are neither accessible nor requested. Local execution with
+SEPARATE keys remains a proposal pending approval before P2.1. Rules stay live.
 
 ## Assets and actors
 
@@ -27,13 +29,14 @@ dependency is in scope; provider internals are not under our control.
 2. Validated packet/catalog facts -> quoted and labelled data inside writer
    and judge requests. Versioned instructions are separate. External text
    never becomes an instruction, tool call, role, URL destination or code.
-3. v2/PR/local/preview execution -> **no LLM keys**. Rehearsals replay recorded
-   fixtures. A proposed new environment, `pitchcraft-llm-main`, is restricted
-   to main and holds Gemini/Groq/Mistral keys. It is separate from the current
-   publication deploy-key environment. Merely naming an environment is not a
-   branch check: GitHub deployment-branch restrictions and job conditions
-   must both be proved before wiring it. No secrets in repository/global
-   variables, local .env, NEXT_PUBLIC variables or browser bundles.
+3. v2/PR/preview/frontend execution -> **no production LLM keys**.
+   `pitchcraft-llm-main` contains production Gemini/Groq secrets per owner;
+   its main-only deployment policy and absence of reviewers are verified.
+   It is separate from `data-publish`. Rehearsals/tests use recorded fixtures.
+   No repository secrets, .env, NEXT_PUBLIC or browser credentials. A proposed
+   owner-PC exception uses separately revocable local keys read explicitly
+   from Windows USER variables only by an approved offline runner; no local
+   provisioning or credentialed run until the owner approves that route.
 4. Provider output -> bounded parse/schema -> plain-text and code checks ->
    sentence/evidence integrity -> local NLI -> retry/rules fallback -> final
    independent publication validation. No writer/judge tools or retrieval.
@@ -44,15 +47,20 @@ dependency is in scope; provider internals are not under our control.
    Judge verdicts cannot gate/undo publication (D17). Offline evaluation uses
    the same frozen judge, with test results sealed from tuning.
 
-Credentialed probes and offline model runs must execute in a separately
-approved main-only job using the new environment; "offline" does not mean
-local key storage. That job checks out the trusted main commit, never a
-user-supplied ref or PR/v2 code; do not use privileged pull_request_target
-execution or execute downloaded/untrusted artifacts with credentials.
-No workflow patch is approved in this document. Before
-any later patch, account for daily.yml's v2 push trigger and all three spent
-D42 rehearsals: no accidental fourth fetch/run. Existing server protections
-and the deploy key are not modified here.
+Production credentialed jobs, if later approved, use main and its restricted
+environment, never a user-supplied ref, pull_request_target or downloaded
+untrusted executable with credentials. The owner prefers frequent offline
+experiments on the PC without merging each change: `plans/P2.md` proposes
+SEPARATE local Gemini/Groq keys, fixed hosts, explicit offline opt-in,
+redaction, bounded quotas, restricted caches and no inherited build/test
+credentials. Approval of this design is not approval of that exception.
+Windows USER storage persists in the registry, is not encrypted, is readable
+by same-user/admin processes and may be inherited; separate keys reduce
+revocation impact but not those risks or shared-quota usage.
+
+No workflow patch is approved. Before any later patch, account for daily.yml's
+v2 trigger and the three spent D42 rehearsals; no accidental fourth run.
+Existing server protections/deploy-key bypass remain unchanged.
 
 ## STRIDE threats
 
@@ -108,7 +116,7 @@ oversize inputs rather than truncating evidence. Calibrate threshold on dev
 human entailment labels with wrong-subject, quantity, causal and unsupported
 semantic negatives. A score is not an accuracy/confidence guarantee.
 
-One informed retry total, optionally using Mistral after Gemini, then the
+One informed Gemini retry total, then the
 independently validated rules writer. Failed rules/final integrity validation
 retains the prior public file. No-games days invoke neither writer nor judge.
 Post-publication Groq covers G2 residue, L1, R1, S1 and policy only as
@@ -133,8 +141,9 @@ weights, response caches, keys or raw private label material in public artifacts
 
 ## Credentials, logs and site headers
 
-Owner creates recurring Free keys without card/trial and stores them only
-in the new main-restricted environment. Restrict each key to its API and
+Production Free keys without card/trial are owner-reported in the
+main-restricted environment; inventory/evidence limits are in RUNBOOK.
+Proposed separate local keys are not yet approved or created by the agent. Restrict each key to its API and
 smallest available scope/model/project permissions. Verify provider-native
 restrictions in P2.1; if a required restriction is unavailable, document the
 gap and stop for owner review rather than claiming it exists. Cloudflare
@@ -159,13 +168,17 @@ with reviewed nonce/hash handling or scoped code changes, not a broken page
 or an unreviewed CSP relaxation. Exact header policy and compatibility must
 be proved against real responses for /, /quality and public assets, plus
 legitimate rendering/analytics and blocked external script/frame probes.
-Any wider rendering redesign requires scope approval.
+Any wider rendering redesign requires scope approval. Read-only exploration
+found that per-request nonce CSP makes /quality dynamic rather than static
+and requires an explicit style-attribute policy for current React/chart
+styles. The concrete dynamic-rendering/style-src-attr proposal in P2.md is
+pending that approval; no header or rendering code is changed at this stop.
 
 Rotation/revocation and incident response: `docs/RUNBOOK.md`.
 
 ## Required evidence and limits
 
-Before P2-SEC is complete: show v2/PR secret absence and main restriction;
+Before P2-SEC is complete: evidence v2/PR production-secret absence and main restriction;
 every text-field injection/judge-manipulation payload rejected or neutralized;
 HTML/markdown/URL/email/Unicode/derogatory output rejection; valid controls;
 NLI hash/format/offline/timeout negative tests; safe log/artifact sentinel

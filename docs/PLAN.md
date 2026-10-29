@@ -178,30 +178,31 @@ Feature: Phase 0 data integrity
 ## Phase 2 - LLM writer and eval (target Nov 8)
 
 **Revised plan:** `docs/plans/P2.md`, owner kickoff 2026-10-27. This plan
-and `docs/SECURITY.md` need owner confirmation before implementation.
+and `docs/SECURITY.md` were approved Oct 28 with D47 adjustments.
 D45 reaffirms D44's plain-text sentence/evidence boundary and Nov 2 proof
-checkpoint; D46 selects recurring $0/no-card/no-trial provider routes,
+checkpoint; D46/D47 select recurring $0/no-card/no-trial provider routes,
 partially superseding D9. D17 stays unchanged. Current schema is 0.9.0.
 
 Order: P1-R3 -> P2-SEC -> P2.1 -> P2.4 -> owner-approved real-dev writer
 guide -> P2.2 -> P2.3 -> A/B1 capture -> P2.5 (Nov 4-6) -> P2.6 -> P2.7
--> independent Phase 2 QA by Antigravity -> P3. Start judge requests with
-the first B1 reports; keep held-out outputs/labels/aggregates sealed until
+-> independent Phase 2 QA by Antigravity -> P3. Judge A immediately after
+P2.4, before B1; keep held-out outputs/labels/aggregates sealed until
 B2/judge freeze. Branch/PR migration is a separate task after Nov 15.
 
 Owner D35 autonomy includes Codex: observed red code tests, sequential
 five-suite verification, reviewer PASS, prior green CI and empty protected
 data/live-log diff permit commit/push to v2 without another yes. Stop on
 unapproved public text, schema/error codes, workflows, decisions/scope,
-two red CI runs or two review rounds without PASS. No Phase 2 code now.
+two red CI runs or two review rounds without PASS. P2-SEC is open at the rendering-scope approval stop; local execution is proposed, not approved.
 
 - [x] P2-plan [gated] Oct 24 plan adoption, eval R1/S1 and D44 (f37b543); historical setup instructions are superseded by the Oct 27 kickoff.
 - [x] P2-kickoff [gated] Oct 27 documentation only: consolidate P2/eval, record D45/D46, draft SECURITY/RUNBOOK, update handoff and stop for owner approval. P2-draft.md was already renamed; no new runtime/schema/workflow.
-- [ ] P2-SEC [gated] Implement approved SECURITY design: new main-only LLM environment (v2 recorded fixtures), validated/delimited prompt fields and no tools, fail-closed plain-text output checks, exact HF revision/SHA-256 cached safetensors NLI, safe logs/closed errors, API key restrictions/rotation/incident runbook, CSP/self+Vercel Analytics/nosniff/frame-ancestors none with tests, and every-field injection/judge-manipulation/output red-team regressions. Workflow edits need separate owner approval; no code until confirmation.
-- [ ] P2.1 Verify Gemini/AI Studio exact model ID, Mistral Free fallback, rules last; Groq Free openai/gpt-oss-120b for offline AND daily judge; Cloudflare @cf/zai-org/glm-4.7-flash only before freeze. All recurring $0/no card/no trial. Probes only in approved main-only job; keys only new main-restricted environment, never local/v2. Measure quotas/tokens and update the ledger/calendar.
+- [ ] P2-SEC [gated] Implement approved SECURITY design: new main-only LLM environment (v2 recorded fixtures), validated/delimited prompt fields and no tools, fail-closed plain-text output checks, exact HF revision/SHA-256 cached safetensors NLI, safe logs/closed errors, API key restrictions/rotation/incident runbook, CSP/self+Vercel Analytics/nosniff/frame-ancestors none with tests, and every-field injection/judge-manipulation/output red-team regressions. Workflow edits need separate owner approval. Oct 28 design approval recorded; exact CSP rendering/style scope is proposed in P2.md and awaits approval; P2-SEC remains open.
+- [x] P2-Oct28 [gated] Record owner approval/D47 adjustments, revised seeded one-order test U1 ledger/calendar, read-only GitHub evidence with gaps, production-key/settings/renewal inventory, and concrete local-route/rendering proposals. Documentation only; P2-SEC stays open, no provider call or local key provisioning. D35 review/verification/CI evidence is in STATUS/archive.
+- [ ] P2.1 Verify Gemini/AI Studio exact model ID, then rules only; Groq Free openai/gpt-oss-120b offline AND daily; Cloudflare @cf/zai-org/glm-4.7-flash before freeze only. Recurring $0/no card/no trial. Before calls: complete P2-SEC and obtain approval of the SEPARATE local-key/Windows USER variable/offline-runner proposal in P2.md. Production keys remain main-only, never exported. Measure shared quotas/tokens; zero monitoring reserve from Nov 1; update ledger/calendar.
 - [ ] P2.4 Forty stratified real cases, sealed 20/20 split, identical A/B1/B2 packets/findings and previous-day as_of. Historical builder rejects as_of=None; every postseason standing precedes first pitch (D28/D29). Recompute D32 lineup-vs-hand quartiles first; changed cutoffs require superseding decision. Preserve source request caps/caches. Debut/zero/null-pitch/shortened/postponed edges go to regression suite; neither set promises accuracy.
 - [ ] P2.2 Same writer interface/language, versioned guide/prompt/exact model, plain-text sentence/evidence extension with independent validation. Approve guide with 3-5 real-dev good/bad pairs before code, exact schema/version separately, ten B1 dev examples before freeze. Nov 2 proof or rules live/experiment offline; no raw-string bypass or HTML.
-- [ ] P2.3 Before publication: code G1 entity/number, R1/L1, policy, C1/F1, schema/contract, then CPU sentence-to-verified-catalog-facts NLI (never raw JSON), threshold calibrated on dev humans. One informed retry total across providers, then validated rules. Unconfigured/failed gate fails closed. Post-publication one Groq call/report logs G2 residue/L1/R1/S1/policy and never gates (D17); no-games calls neither model. Narrow logging/origin dependencies only; no v2 protected-data writes.
+- [ ] P2.3 Before publication: code G1 entity/number, R1/L1, policy, C1/F1, schema/contract, then CPU sentence-to-verified-catalog-facts NLI (never raw JSON), threshold calibrated on dev humans. One informed Gemini retry total, then validated rules; no other model writer. Unconfigured/failed gate fails closed. Post-publication one Groq call/report logs G2 residue/L1/R1/S1/policy and never gates (D17); no-games calls neither model. Narrow logging/origin dependencies only; no v2 protected-data writes.
 - [ ] P2.5 Owner labels Nov 4-6 after A/B1 capture: G2/L1/R1, S1 rules, policy audit, U1 and dev NLI sentence/premise labels. Confirm expanded hours before Nov 3; earlier dev labels for Nov 2 proof need separate reservation. B2 labels budgeted separately.
 - [ ] P2.6 Shared code/NLI evaluators and bundled cross-family judge, calibrated on dev humans; separate verdicts/denominators, >=85% agreement per judged dimension, S1 applicable report-rule denominator with per-rule/report-summary breakdowns. Freeze before test evidence. Exact frozen judge stays the same for official A/B1/B2; no fallback rescue after freeze. Held-out trust is measured in P2.7, not this task.
 - [ ] P2.7 A/B1/B2: first attempts primary, retry/fallback separate; dev-only R1/S1 error analysis, owner-approved one-change B2 hypothesis, B2 on frozen test. Gates: groundedness 19/20, policy 20/20, R1 20/20, U1 wins-or-ties 14/20, >=85% trust separately per judged dimension. F1 length after ten A reports; missing evidence keeps rules. Independent Antigravity QA before P3.
