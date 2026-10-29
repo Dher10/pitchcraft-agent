@@ -7,8 +7,9 @@ revised `plans/P2.md`; `writer-guide.md` is created/approved after real dev pack
 The Oct 27 owner kickoff selects D46 providers and the code/local-NLI /
 post-publication-judge cascade. This specification describes the target,
 not implemented evaluators. Owner approved the plan/SECURITY on Oct 28
-with D47 adjustments. P2-SEC is open at its rendering scope gate; local-key
-execution needs separate approval before P2.1. Schema stays
+with D47 adjustments, then approved nonce/dynamic/style-attribute scope and
+the separate local-key route. P2-SEC implements security primitives/headers;
+stop before P2.1 for owner key creation/storage. Generated prose is unwired. Schema stays
 0.9.0 until separate exact-schema approval. GitHub Models is retired.
 
 ## 1. Decision this eval informs
@@ -215,8 +216,8 @@ or trial substitute is authorized.
 
 Production keys remain in main-only pitchcraft-llm-main, separate from the
 deploy key. Separate local keys/Windows USER variables and an explicit
-owner-PC offline runner are proposed in plans/P2.md; approval is required
-before P2.1. No production key export, .env or workflow change. Tests replay
+owner-PC offline runner are approved in plans/P2.md; owner key setup and
+confirmation are required before P2.1. No production key export, .env or workflow change. Tests replay
 fixtures and make no source/provider requests.
 
 `plans/P2.md` holds the revised ledger: official 100 report calls + 80 U1
@@ -248,8 +249,9 @@ Postgame validation of "what to watch", multi-model comparison, latency or cost 
 - Oct 27 kickoff: P1-R3, then plan/decisions/security docs; stop for owner
   approval and key/main-only-environment setup. No Phase 2 implementation.
 - Oct 28: approval/D47/inventory recorded; stop at P2-SEC rendering scope
-  and local-route proposals in P2.md. P2-SEC is not complete; no P2.1 calls.
-- After P2-SEC and local-route approval: P2.1 -> P2.4 -> immediate A judging
+  and local-route proposals approved; implement P2-SEC, then STOP before
+  P2.1 for owner key setup. No P2.1 calls in P2-SEC.
+- After P2-SEC and owner key-setup confirmation: P2.1 -> P2.4 -> immediate A judging
   -> approved real-dev guide -> P2.2 -> P2.3 -> B1 capture/judging.
 - From Nov 1: zero daily monitoring reserve, full shared 200K/day offline.
   Required 10/13 quota-days starting Nov 1 end no earlier than Nov 10/13

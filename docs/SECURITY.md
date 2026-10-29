@@ -2,10 +2,12 @@
 
 Design approved by owner 2026-10-28 with D47 adjustments (Gemini -> rules;
 no Mistral). This remains a design, not evidence its runtime controls exist.
-P2-SEC is open: exact execution details and the rendering scope stop are
-in `plans/P2.md`. Production environment policy is verified read-only;
-secret contents are neither accessible nor requested. Local execution with
-SEPARATE keys remains a proposal pending approval before P2.1. Rules stay live.
+P2-SEC implements the internal request/output/cache/log boundaries and site
+headers; it does not admit generated prose into schema 0.9.0. The owner also
+approved nonce-based CSP, dynamic /quality and style-src-attr on Oct 28,
+and the separate local-key route. STOP before P2.1 for owner key setup.
+Production environment restrictions are verified read-only; secret storage
+remains owner-attested where metadata access returned 403. Rules stay live.
 
 ## Assets and actors
 
@@ -33,10 +35,10 @@ dependency is in scope; provider internals are not under our control.
    `pitchcraft-llm-main` contains production Gemini/Groq secrets per owner;
    its main-only deployment policy and absence of reviewers are verified.
    It is separate from `data-publish`. Rehearsals/tests use recorded fixtures.
-   No repository secrets, .env, NEXT_PUBLIC or browser credentials. A proposed
+   No repository secrets, .env, NEXT_PUBLIC or browser credentials. The approved
    owner-PC exception uses separately revocable local keys read explicitly
    from Windows USER variables only by an approved offline runner; no local
-   provisioning or credentialed run until the owner approves that route.
+   credentialed run until owner key setup and the P2.1 stop are cleared.
 4. Provider output -> bounded parse/schema -> plain-text and code checks ->
    sentence/evidence integrity -> local NLI -> retry/rules fallback -> final
    independent publication validation. No writer/judge tools or retrieval.
@@ -50,10 +52,10 @@ dependency is in scope; provider internals are not under our control.
 Production credentialed jobs, if later approved, use main and its restricted
 environment, never a user-supplied ref, pull_request_target or downloaded
 untrusted executable with credentials. The owner prefers frequent offline
-experiments on the PC without merging each change: `plans/P2.md` proposes
+experiments on the PC without merging each change: `plans/P2.md` records the approved route using
 SEPARATE local Gemini/Groq keys, fixed hosts, explicit offline opt-in,
 redaction, bounded quotas, restricted caches and no inherited build/test
-credentials. Approval of this design is not approval of that exception.
+credentials. The route is approved; key creation/storage is the next owner stop.
 Windows USER storage persists in the registry, is not encrypted, is readable
 by same-user/admin processes and may be inherited; separate keys reduce
 revocation impact but not those risks or shared-quota usage.
@@ -143,7 +145,7 @@ weights, response caches, keys or raw private label material in public artifacts
 
 Production Free keys without card/trial are owner-reported in the
 main-restricted environment; inventory/evidence limits are in RUNBOOK.
-Proposed separate local keys are not yet approved or created by the agent. Restrict each key to its API and
+Separate local keys are approved but not created/read by the agent. Restrict each key to its API and
 smallest available scope/model/project permissions. Verify provider-native
 restrictions in P2.1; if a required restriction is unavailable, document the
 gap and stop for owner review rather than claiming it exists. Cloudflare
@@ -168,11 +170,20 @@ with reviewed nonce/hash handling or scoped code changes, not a broken page
 or an unreviewed CSP relaxation. Exact header policy and compatibility must
 be proved against real responses for /, /quality and public assets, plus
 legitimate rendering/analytics and blocked external script/frame probes.
-Any wider rendering redesign requires scope approval. Read-only exploration
-found that per-request nonce CSP makes /quality dynamic rather than static
-and requires an explicit style-attribute policy for current React/chart
-styles. The concrete dynamic-rendering/style-src-attr proposal in P2.md is
-pending that approval; no header or rendering code is changed at this stop.
+Any wider rendering redesign requires scope approval. The owner approved
+nonce/dynamic rendering and explicit style-src-attr on Oct 28. `proxy.ts`
+generates 192-bit random nonces, overwrites incoming nonce/CSP, sends the
+same policy to Next and the browser, and sets private/no-store on documents.
+`app/layout.tsx` reads request headers, so /quality and the home page render
+dynamically. Script-src is self plus nonce, never unsafe-inline/unsafe-eval,
+including development (React development eval features may be blocked).
+Style elements use self/nonce; style-src-attr permits existing React/chart
+attributes. That exception permits inline style attributes; it grants no
+script capability and is not a defense against arbitrary style injection.
+`next.config.ts` supplies nosniff/DENY globally and restrictive CSP for data,
+static bundles and favicon. No new external origin is permitted. The local
+browser check stubs the same-origin Vercel intake, not a real deployment;
+production Vercel collection still needs the owner's release smoke check.
 
 Rotation/revocation and incident response: `docs/RUNBOOK.md`.
 
@@ -191,3 +202,80 @@ independent Antigravity QA and owner release decision. Neither a small
 regression suite, 40-case dataset, NLI score, nor a remote judge is a claim
 of perfect safety or accuracy. Free-tier drift, lexical evasions, NLI false
 entailment and compromised trusted infrastructure remain residual risks.
+
+## P2-SEC implementation and evidence boundary
+
+- `agents/prompt_boundary.py` delegates to `data_pipeline/prompt_boundary.py`
+  (boundary validation, not a display agent). Language-keyed model security
+  instructions live in versioned `agents/security_instructions.json`.
+  `prepare_request` is the required future
+  provider entry point. It independently validates the whole existing
+  public payload, then extracts a fresh closed projection and exact complete
+  catalog fact keys, with subject, raw sample counts, flags and scopes.
+  No whole scout/findings dictionary, bios/recent form, raw errors, critic
+  verdicts, titles or standalone formatting fragments reach a request.
+  This initial fact projection does not express every raw measurement;
+  P2.2 extensions must update the closed schema/injection inventory.
+  `SCHEMA` drives `TEXT_FIELDS` and the every-field tests. Lower-level
+  `make_messages` validates shape/encoding, not truth; adapters must not
+  accept arbitrary caller-constructed facts instead of `prepare_request`.
+  Names are at most 100 code points (letters/marks and approved punctuation),
+  abbreviations 2-4 ASCII uppercase, counts 0..1M or null (never bool),
+  series 1..7 plus existing standing constraints. The dedicated JSON data
+  message cannot change fixed roles/instructions; no tool field is emitted.
+  A pattern-valid instruction remains untrusted data, not a proven guarantee
+  that a future model will ignore it. Independent publication gates remain.
+- `agents/security_policy.py` version p2-sec-1: 300-code-point candidate cap,
+  2400-code-point internal fact cap; reject markup/URLs/emails/controls/
+  invisibles, encoded forms and versioned policy patterns, without changing
+  evidence text. Unicode/confusable/leet views broaden lexical matching,
+  not an exhaustive semantic policy detector. Offline judge candidates may
+  contain rejected policy text as quoted data; publication admission still
+  rejects that text. S1/guide, semantic/NLI and humans retain distinct roles.
+- `agents/model_transport.py`: fixed Gemini/Groq HTTPS hosts/routes, verified
+  TLS, no redirects or tools, no arbitrary endpoint environment variable,
+  64K request/128KiB response caps and 60s maximum timeout. Receives a key
+  explicitly, reads none. Auth/quota/model IDs/settings/usage pacing still
+  require P2.1; tests fake all HTTP, never call a provider.
+- `agents/safe_model_log.py`: exact internal event/route fields, existing
+  closed error codes, bounded counts and canonical digests only. No raw
+  exception/message/prompt/header/context parameter. Sentinels are rejected
+  without stdout/stderr/logger leakage. No new public error code or actual
+  live-log schema is introduced. Existing source/cache/generator raw local
+  diagnostics were inventoried and are unchanged; this is NOT a claim that
+  those legacy console paths are globally sanitized. Provider/NLI adapters
+  must not route failures into those raw diagnostics.
+- `agents/nli_cache.py` and `nli_manifest.json`: exact revision/file set,
+  regular files only (no symlinks/reparse points), sizes/SHA-256s, known
+  DeBERTa config/labels and bounded safetensors headers before loading.
+  No pickle/remote code/download fallback. A disposable isolated worker
+  receives no key-bearing environment, checks pinned runtime versions,
+  loads explicit built-in classes locally with safetensors, CPU float32,
+  one thread, no silent token truncation (512 including specials), at most
+  32 bounded pairs and a hard subprocess timeout. Missing/invalid runtime,
+  cache/calibration/identity, worker failures or invalid scores reject.
+  `entails` is internal and UNWIRED: a fixture threshold is not admission.
+
+NLI metadata provenance (public reads only, Oct 28):
+[immutable model card](https://huggingface.co/cross-encoder/nli-deberta-v3-small/blob/fa2804872c3b4bd748f38c0185cc85775361e735/README.md),
+[config](https://huggingface.co/cross-encoder/nli-deberta-v3-small/blob/fa2804872c3b4bd748f38c0185cc85775361e735/config.json).
+Revision fa2804872c3b4bd748f38c0185cc85775361e735, Apache-2.0, English NLI;
+contradiction 0 / entailment 1 / neutral 2. Small tokenizer/config files were
+hashed in memory; the 567,605,820-byte weights SHA is from HF LFS metadata,
+NOT a downloaded/local hash. No weights were downloaded/executed here.
+
+`requirements-nli-windows.txt` is an OPTIONAL isolated Windows AMD64 CPython
+3.14 lock (not 3.14.1, excluded by NetworkX), not installed by normal CI or
+the site. Torch CPU wheel is pinned by official SHA, all transitive pins
+were checked against versioned PyPI metadata; this is metadata compatibility,
+not executed runtime proof. Sources: [official CPU index](https://download.pytorch.org/whl/cpu/torch/),
+[Transformers metadata](https://pypi.org/pypi/transformers/5.21.0/json).
+Default terminal is Python 3.14.6. Linux production runtime is not verified
+by this Windows lock. Before any admission: provision/hash the actual cache,
+record a real CPU smoke (and the production platform lock), supply dev HUMAN
+calibration bound to model/runtime/fact-renderer identity, and complete
+P2.3/P2.6/guide/schema/eval/release gates. Missing any keeps rules; P2-SEC
+fixture/metadata evidence never proves the Nov 2 publication boundary.
+
+Verification results, observed red counts, controls, real-response/browser
+checks and clean-context review are recorded in STATUS/status-archive.

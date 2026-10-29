@@ -3,7 +3,7 @@
 Security design approved 2026-10-28; D47 removes Mistral. Companion to
 `SECURITY.md` and `plans/P2.md`. Current production uses rules. Provider
 adapters, model gate, rules-only switch and monitoring integration remain
-unimplemented. The LOCAL route below is a proposal awaiting owner approval.
+unimplemented. The LOCAL route below was approved on Oct 28; STOP before P2.1 for owner key setup.
 No key values, account email or project identifiers belong in this inventory.
 
 ## Key and settings inventory (2026-10-28)
@@ -18,8 +18,8 @@ paid upgrade, trial or payment card to unblock access.
 | Gemini **pitchcraft-writer** | [AI Studio API keys](https://aistudio.google.com/api-keys); owner's Google account, project shown there | Free tier, no billing; **never enable Configurar la facturación**; no expiry set | GitHub > Settings > Environments > **pitchcraft-llm-main** > **GEMINI_API_KEY**; main only |
 | Groq **pitchcraft-judge** | [Groq keys](https://console.groq.com/keys); Personal organization, Default Project | Free plan; **never Upgrade to Dev Plan**; expires **2026-11-27** | Same environment > **GROQ_API_KEY**; main only |
 | Bot **pitchcraft-data-bot** | GitHub > Settings > Deploy keys | Write deploy key; sole main-ruleset bypass per owner setup | Private half only as **DATA_DEPLOY_KEY** in **data-publish**; main only; never copy to LLM/local execution |
-| Proposed Gemini **pitchcraft-writer-local** | Same AI Studio management page; create a separate key after approval | Free/no billing; record actual restrictions/expiry at creation | Windows USER **PITCHCRAFT_GEMINI_API_KEY_LOCAL**; explicit approved offline runner only; never production key reuse |
-| Proposed Groq **pitchcraft-judge-local** | Same Groq page; record organization/project at creation | Free; record chosen expiry (do not assume Nov 27) | Windows USER **PITCHCRAFT_GROQ_API_KEY_LOCAL**; explicit approved offline runner only |
+| Local Gemini **pitchcraft-writer-local** | Same AI Studio management page; owner creates a separate key at the P2.1 setup stop | Free/no billing; record actual restrictions/expiry at creation | Windows USER **PITCHCRAFT_GEMINI_API_KEY_LOCAL**; explicit approved offline runner only; never production key reuse |
+| Local Groq **pitchcraft-judge-local** | Same Groq page; record organization/project at creation | Free; record chosen expiry (do not assume Nov 27) | Windows USER **PITCHCRAFT_GROQ_API_KEY_LOCAL**; explicit approved offline runner only |
 
 Security controls: GitHub > Settings > **Advanced Security**: secret
 protection/secret scanning, push protection, Dependabot alerts and private
@@ -65,10 +65,11 @@ response is not a disabled setting. No secrets/permissions need widening
 for this task; owner UI evidence can close metadata gaps later.
 Previous v2 commit ae743e7: CI 40612968097 success (gh run list).
 
-## Proposed local keys: exact owner steps (ONLY after approval)
+## Approved local keys: exact owner setup steps (before P2.1)
 
-This implements the preference proposed in `plans/P2.md`; it is **not yet
-authorization to create keys or run P2.1**. No production secret is exported.
+The owner approved this route in `plans/P2.md`. The implementing session
+stops before P2.1 so the owner can create/store these keys. No P2.1 probe
+runs until the owner confirms setup and clears that stop. No production secret is exported.
 
 1. At [AI Studio API keys](https://aistudio.google.com/api-keys), select the
    intended no-billing project and create **pitchcraft-writer-local**.
@@ -242,3 +243,34 @@ Owner executes containment; record timestamps and deployment/run IDs only.
 P2-SEC/P2.3 must demonstrate these procedures with fixtures and safe test
 records before calling the controls operational. Actual public data and
 live logs remain the deployed bot's responsibility, never a v2 regeneration.
+
+## P2-SEC operator evidence and safe rehearsal
+
+The default pipeline still uses the existing independently validated rules
+writer and requires no model keys. Model primitives are not wired into
+publication yet. Never assume removing keys alone substitutes for a safe
+publication boundary. The runbook's incident actions remain owner actions:
+rollback in Vercel, disable the daily workflow, revoke provider key, restore
+validated rules. No actual workflow disable/rollback/key revocation was run.
+
+Fixture rehearsals exercise revoked/auth-failure responses, rejection of
+raw-error/key sentinels, unavailable NLI/cache/timeouts, and validated rules
+operation with no transport calls. They do not prove a provider key was
+revoked or a Vercel rollback succeeded. Record real incident operation IDs
+and timestamps privately when those actions are actually needed.
+
+To repeat local production header/browser proof (no provider/source calls):
+run `npm run build`, start `npm run start -- --hostname 127.0.0.1 --port 3082`,
+then in another terminal `node scripts/check_security_headers.mjs http://127.0.0.1:3082`.
+Pinned Playwright uses installed Chrome in a new temporary profile. The
+script accepts loopback only, aborts external requests, and stubs the
+same-origin Vercel script/intake because next start does not host it. It
+checks real / and /quality/asset headers, unique nonced bootstrap, hydration,
+pitch-control interaction, styles, and blocked script/eval/frame probes.
+The eval probe runs from a page script: CDP evaluation itself may bypass CSP.
+No production Vercel ingestion claim is made by the local stub.
+
+The setup script creates exactly these Windows USER entries:
+**PITCHCRAFT_GEMINI_API_KEY_LOCAL** and **PITCHCRAFT_GROQ_API_KEY_LOCAL**.
+It has not been executed by the agent. No runner automatically reads them
+in P2-SEC. Do not paste values in chat; confirm setup by names/presence only.
