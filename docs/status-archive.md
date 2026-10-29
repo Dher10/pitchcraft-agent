@@ -2,6 +2,12 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-29 - P2.4 gate 2 offline code
+
+- Scope: owner-approved plan with five amendments; request ledger, D32 recompute, dataset builder, seal. No network, no `labels.py`/golden/public data change.
+- Red/controls: 5 new test files failed at import (modules absent); controls named in-tests (untouched ledger loads, real series answer passes, exactly-200 PA stays). Nine hand mutants (opener `<=`, as_of relaxed, leak `>`, series guard off, ceiling off-by-one, PA `>`, banker's rounding, seal bypass, split overwrite) all killed.
+- Reviewer round 1: BLOCK on stale STATUS/PLAN/archive only; code sound. Fixed; optional items applied (finish() validates the reservation, unreadable innings skipped not zero); season end 2026-09-27 to be confirmed against the saved calendar at gate 3.
+
 ### 2026-10-29 - P2.1 Groq user-agent, D48 and generation 3
 
 - Groq probe (generation 2, commit cdb5bb2): HTTP 403. Keyless diagnosis (no key read): `api.groq.com` answers the default `Python-urllib` agent with 403 and body `error code: 1010` (server `cloudflare`), and a custom agent with 401 `invalid_api_key`. A Cloudflare browser-signature block, not an account problem. Gemini's keyless POST got 403 in 1.6 s with the same default agent, so Gemini's earlier no-status failure is a different problem (timeout was the likely class).
