@@ -252,7 +252,10 @@ entailment and compromised trusted infrastructure remain residual risks.
   failure before any HTTP status raises `ConnectionFailed`, which the P2.1
   runner records as the owner-approved local code `connection_failed`. A
   rejected or missing USER entry is `key_unavailable` and sends nothing. The
-  closed probe code list is in RUNBOOK; no public error code changed.
+  closed probe code list is in RUNBOOK; no public error code changed. The
+  transport sends a fixed `pitchcraft-agent/1.0` user-agent, sets no other
+  header from model data, and a timeout is recorded as
+  `connection_failed_timeout`.
 - `agents/safe_model_log.py`: exact internal event/route fields, existing
   closed error codes, bounded counts and canonical digests only. No raw
   exception/message/prompt/header/context parameter. Sentinels are rejected

@@ -145,18 +145,39 @@ def test_rejected_or_missing_key_is_key_unavailable_and_sends_nothing(tmp_path, 
     assert len(keys) == 1
 
 
-def test_transport_failure_before_status_is_connection_failed(tmp_path, monkeypatch):
-    from agents.model_transport import ConnectionFailed
+@pytest.mark.parametrize("error,code", (("ConnectionTimeout", "connection_failed_timeout"),
+                                        ("ConnectionFailed", "connection_failed_other")))
+def test_transport_failure_before_status_keeps_its_closed_sub_code(error, code, tmp_path, monkeypatch):
+    import agents.model_transport as transport
     module, calls, keys = wiring(monkeypatch)
     def fail(*a, **k):
-        raise ConnectionFailed()
+        raise getattr(transport, error)()
     monkeypatch.setattr(module, "post_json", fail)
     result = run(module, tmp_path / "private")
-    assert result["code"] == "connection_failed" and result["http_status"] is None
+    assert result["code"] == code and result["http_status"] is None
     assert len(keys) == 1
 
 
-@pytest.mark.parametrize("code", ("key_unavailable", "connection_failed"))
+def test_probe_uses_the_transports_maximum_timeout(tmp_path, monkeypatch):
+    module, calls, keys = wiring(monkeypatch)
+    timeouts = []
+    original = module.post_json
+    def post(provider, model, body, **kwargs):
+        timeouts.append(kwargs["timeout"])
+        return original(provider, model, body, **kwargs)
+    monkeypatch.setattr(module, "post_json", post)
+    run(module, tmp_path / "private")
+    assert timeouts == [60]
+
+
+def test_pre_existing_connection_failed_rows_stay_readable():
+    store = importlib.import_module("evals.local_store")
+    result = runner().parse_probe("groq", ProviderResponse(503, {}, None))
+    result.update(code="connection_failed", http_status=None)
+    store.validate_result(result)
+
+
+@pytest.mark.parametrize("code", ("key_unavailable", "connection_failed", "connection_failed_timeout", "connection_failed_other"))
 def test_no_status_codes_cannot_carry_an_http_status(code):
     store = importlib.import_module("evals.local_store")
     result = runner().parse_probe("groq", ProviderResponse(503, {}, None))
@@ -171,18 +192,22 @@ def test_ledger_generations_are_fixed_and_closed_generations_take_no_probe(monke
     module = runner()
     # Generation 1 is closed: it spent its Gemini probe and must take no Groq probe,
     # so across generations each provider still gets the owner-authorized count.
+    # Generations 1 and 2 spent their authorized probes (Gemini twice, Groq once)
+    # and stay closed; generation 3 is the owner's one further Gemini probe.
     assert module.LEDGERS == {"1": (".local/p2-1", frozenset()),
-                              "2": (".local/p2-1-gen2", frozenset({"gemini", "groq"}))}
+                              "2": (".local/p2-1-gen2", frozenset()),
+                              "3": (".local/p2-1-gen3", frozenset({"gemini"}))}
     seen = []
     monkeypatch.setattr(module, "verify_checkout", lambda *a: None)
     monkeypatch.setattr(module, "run_probe", lambda provider, directory, *a, **k: seen.append((provider, directory)) or {"event": "accepted"})
     base = ["--owner-pc-offline", "--commit", COMMIT, "--dirty-digest", DIRTY]
-    for provider in ("gemini", "groq"):
-        assert module.main(base + ["--provider", provider, "--ledger-generation", "1"]) == 1
+    refused = [("1", "gemini"), ("1", "groq"), ("2", "gemini"), ("2", "groq"), ("3", "groq")]
+    for generation, provider in refused:
+        assert module.main(base + ["--provider", provider, "--ledger-generation", generation]) == 1
         assert '"budget_spent"' in capsys.readouterr().out
     assert seen == []
-    module.main(base + ["--provider", "groq", "--ledger-generation", "2"])
-    assert seen == [("groq", module.ROOT / ".local/p2-1-gen2")]
+    module.main(base + ["--provider", "gemini", "--ledger-generation", "3"])
+    assert seen == [("gemini", module.ROOT / ".local/p2-1-gen3")]
     for extra in ([], ["--ledger-generation", "../elsewhere"]):
         with pytest.raises(SystemExit):
             module.main(base + ["--provider", "groq"] + extra)

@@ -11,18 +11,21 @@ from pathlib import Path
 import re
 import time
 
-from agents.model_transport import ConnectionFailed, post_json, ProviderResponse
+from agents.model_transport import ConnectionFailed, ConnectionTimeout, post_json, ProviderResponse
 from evals.local_store import append, locked, read_ledger
 from evals.provider_protocol import canonical, MODELS, parse_probe, probe_request, request_identity
 
 KEY_NAMES = {"gemini": "PITCHCRAFT_GEMINI_API_KEY_LOCAL", "groq": "PITCHCRAFT_GROQ_API_KEY_LOCAL"}
 ROOT = Path(__file__).resolve().parents[1]
-# Fixed ledger generations and the providers each may still reserve. The owner
-# authorized generation 2 on Oct 29 after generation 1 spent its Gemini probe;
-# generation 1 is closed so no provider is probed more often than authorized.
+PROBE_TIMEOUT = 60  # the transport's maximum
+# Fixed ledger generations and the providers each may still reserve. Generation 1
+# spent one Gemini probe (Oct 28); generation 2 spent one Gemini and one Groq
+# probe (Oct 29). Both are closed so no provider is probed more often than
+# authorized. Generation 3 is the owner's single further Gemini probe (Oct 29).
 # A new generation or provider needs owner approval.
 LEDGERS = {"1": (".local/p2-1", frozenset()),
-           "2": (".local/p2-1-gen2", frozenset({"gemini", "groq"}))}
+           "2": (".local/p2-1-gen2", frozenset()),
+           "3": (".local/p2-1-gen3", frozenset({"gemini"}))}
 
 
 def verify_checkout(root, commit):
@@ -96,9 +99,11 @@ def run_probe(provider, directory, commit, dirty_digest, *, offline=False):
                 try:
                     model, body = probe_request(provider)
                     result = parse_probe(provider, post_json(provider, model, body, api_key=key,
-                                                             timeout=30, with_metadata=True))
+                                                             timeout=PROBE_TIMEOUT, with_metadata=True))
+                except ConnectionTimeout:
+                    result = _no_status(provider, "connection_failed_timeout")
                 except ConnectionFailed:
-                    result = _no_status(provider, "connection_failed")
+                    result = _no_status(provider, "connection_failed_other")
                 except Exception:
                     result = _no_status(provider, "request_failed")
                 finally:

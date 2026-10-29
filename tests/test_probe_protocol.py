@@ -105,6 +105,21 @@ def test_groq_gpt_oss_hides_reasoning_with_supported_parameter():
     assert body["include_reasoning"] is False and body["reasoning_effort"] == "low"
 
 
+def test_gemini_3_uses_default_temperature_and_lowest_supported_thinking_level():
+    # Google: for all Gemini 3 models keep temperature at its default; lowering it
+    # may cause looping. gemini-3.8-flash supports low/medium/high, so LOW is the
+    # lowest (MINIMAL is unsupported). API enum names are uppercase.
+    _, body = protocol().probe_request("gemini")
+    config = body["generationConfig"]
+    assert "temperature" not in config
+    assert config["thinkingConfig"] == {"thinkingLevel": "LOW"}
+    assert config["maxOutputTokens"] == 1024
+
+
+def test_groq_keeps_its_own_temperature_zero_control():
+    assert protocol().probe_request("groq")[1]["temperature"] == 0
+
+
 def test_gemini_thought_signature_on_text_part_is_accepted_and_discarded():
     body = copy.deepcopy(FIXTURES["gemini"])
     body["candidates"][0]["content"]["parts"][0]["thoughtSignature"] = "SECRET-SENTINEL-SIGNATURE"

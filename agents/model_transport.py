@@ -23,6 +23,19 @@ class ConnectionFailed(ProviderRejected):
     """The request was built and handed to the network, but no HTTP status came back."""
 
 
+class ConnectionTimeout(ConnectionFailed):
+    """No HTTP status arrived before the transport timeout."""
+
+
+# Fixed product agent. Cloudflare in front of api.groq.com answers the default
+# "Python-urllib/x" agent with 403 (error 1010) before authentication.
+USER_AGENT = "pitchcraft-agent/1.0"
+
+
+def _is_timeout(error):
+    return isinstance(error, TimeoutError) or isinstance(getattr(error, "reason", None), TimeoutError)
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
@@ -107,6 +120,7 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
         if len(encoded) > 64_000:
             raise ProviderRejected()
         headers["Content-Type"] = "application/json"
+        headers["User-Agent"] = USER_AGENT
         request = urllib.request.Request(url, data=encoded, headers=headers, method="POST")
         opener = urllib.request.build_opener(NoRedirect(), urllib.request.HTTPSHandler(context=ssl.create_default_context()))
         try:
@@ -118,8 +132,8 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
                 raise ProviderRejected() from None
             finally:
                 error.close()
-        except Exception:
-            raise ConnectionFailed() from None
+        except Exception as error:
+            raise (ConnectionTimeout if _is_timeout(error) else ConnectionFailed)() from None
         with response:
             status = getattr(response, "status", 200)
             rate = _rates(getattr(response, "headers", None))
@@ -133,8 +147,8 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
         if type(value) is not dict:
             raise ProviderRejected()
         return ProviderResponse(status, rate, value) if with_metadata else value
-    except ConnectionFailed:
-        raise ConnectionFailed() from None
+    except ConnectionFailed as error:
+        raise type(error)() from None
     except Exception:
         # Never export urllib exceptions, request repr, response bodies or headers.
         raise ProviderRejected() from None

@@ -15,6 +15,10 @@ from agents.model_transport import RATE_FIELDS
 from evals.provider_protocol import MODELS, RESERVATION, canonical, digest, _pairs
 
 
+# "connection_failed" is kept so generation 2's recorded row stays readable.
+NO_STATUS_CODES = ("key_unavailable", "connection_failed", "connection_failed_timeout", "connection_failed_other")
+
+
 def reject():
     raise ValueError("request_failed") from None
 
@@ -60,10 +64,10 @@ def validate_result(value):
     expected = {"event", "code", "http_status", "input_tokens", "output_tokens", "reasoning_tokens", "total_tokens", "fingerprint_digest", "output_digest", "rate"}
     if type(value) is not dict or set(value) != expected:
         reject()
-    if value["event"] not in ("accepted", "rejected") or value["code"] not in (None, "request_failed", "malformed_response", "budget_spent", "key_unavailable", "connection_failed"):
+    if value["event"] not in ("accepted", "rejected") or value["code"] not in (None, "request_failed", "malformed_response", "budget_spent") + NO_STATUS_CODES:
         reject()
-    # Neither code can have an HTTP status: nothing was sent, or nothing came back.
-    if value["code"] in ("key_unavailable", "connection_failed") and value["http_status"] is not None:
+    # These codes cannot have an HTTP status: nothing was sent, or nothing came back.
+    if value["code"] in NO_STATUS_CODES and value["http_status"] is not None:
         reject()
     for key in ("input_tokens", "output_tokens", "reasoning_tokens", "total_tokens"):
         if value[key] is not None and (type(value[key]) is not int or not 0 <= value[key] <= RESERVATION):

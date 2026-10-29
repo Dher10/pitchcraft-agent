@@ -42,7 +42,9 @@ and fallback performance separately; a rules fallback is not an LLM success.
 - **B2:** LLM writer v2, one change chosen from error analysis on B1.
 
 All receive identical stored findings and matchup packet. Pin exact model
-IDs and temperature in config, and record prompt, guide, evaluator and
+IDs and sampling settings in config (Gemini 3 uses its default temperature and
+lowest supported thinking level, D48; its outputs are not deterministic, so
+reproducibility rests on cached responses), and record prompt, guide, evaluator and
 packet versions/digests. No model substitution inside an experiment. Rules fallback attempts
 are operational results, never counted as Gemini B1/B2 first-attempt success.
 

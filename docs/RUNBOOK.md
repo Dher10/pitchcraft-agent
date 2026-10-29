@@ -308,28 +308,44 @@ For a clean tree that output is empty, so the digest is
 probes only from a clean tree: untracked files are not covered by that diff.
 Closed probe codes (local ledger and CLI output only; never published):
 `key_unavailable` (the USER entry is missing or the loader rejected it; no
-request was sent), `connection_failed` (the request was handed to the network
-but no HTTP status came back, e.g. timeout, reset, TLS or DNS),
+request was sent), `connection_failed_timeout` and `connection_failed_other`
+(the request was handed to the network but no HTTP status came back: the first
+is a timeout, the second a reset, TLS, DNS or any other transport error),
 `request_failed` (any other failure, including a non-429 HTTP status, which is
 recorded in `http_status`), `budget_spent` (HTTP 429, or the ledger's
 per-provider budget is used up) and `malformed_response` (a 200 whose body
-fails validation). The first two never carry an HTTP status.
+fails validation). The first three never carry an HTTP status. Plain
+`connection_failed` is the Oct 29 code of generation 2's recorded Gemini row,
+kept readable but no longer produced.
 
 Ledger generations are fixed in code; `--ledger-generation` is required and
 has no default. Each generation lists the providers it may still reserve.
-Generation 1 (`.local/p2-1/`) is closed: it spent its Gemini probe with
-`http_status` null, takes no new probe, and stays untouched. Generation 2
-(`.local/p2-1-gen2/`) was authorized by the owner on Oct 29 for exactly one
-more Gemini probe and then the single Groq probe. Across both generations that
-is at most three requests (Gemini 2, Groq 1) and 12,288 reserved tokens. Any
-further generation needs owner approval and a code change.
+Generation 1 (`.local/p2-1/`) spent one Gemini probe (`request_failed`,
+`http_status` null). Generation 2 (`.local/p2-1-gen2/`) spent one Gemini probe
+(`connection_failed`, no status within 30 s) and one Groq probe (HTTP 403).
+Both are closed and stay untouched. Generation 3 (`.local/p2-1-gen3/`) was
+authorized by the owner on Oct 29 for exactly one further Gemini probe. Across
+all generations that is at most Gemini 3 and Groq 1 requests and 16,384
+reserved tokens. Any further generation, or any further Groq probe, needs
+owner approval and a code change.
 
 Model-version mismatches and truncation are recorded with their usage and
-still spend the provider's single probe. Gemini runs at temperature 0 as the
-candidate setting, although Google recommends the default for Gemini 3.
+still spend the provider's single probe. Per D48 Gemini runs at its default
+temperature (the field is omitted; Google warns that lowering it can make
+Gemini 3 loop) with thinking at LOW, the lowest level gemini-3.8-flash
+supports (MINIMAL is unsupported on it). The API field is
+`generationConfig.thinkingConfig.thinkingLevel`, with uppercase enum values
+(read from the public API discovery document, not only the guides).
+
+The Groq 403 of Oct 29 was not an access or key problem: Cloudflare in front
+of `api.groq.com` rejects Python's default `Python-urllib` agent with error
+1010 before authentication, while a custom agent reaches the API (HTTP 401 to
+a keyless request). The transport now always sends the fixed agent
+`pitchcraft-agent/1.0`. A Groq probe has not yet succeeded; one more needs
+owner approval.
 
 Per ledger generation: one synthetic request per provider, two total, with a 1,024 generated-token
-cap, 30-second transport timeout, fixed HTTPS/no redirect and no tools.
+cap, 60-second transport timeout (the transport maximum), fixed HTTPS/no redirect and no tools.
 Each request reserves 4,096 tokens before key load/network, even on failure
 or interruption: at most 8,192 tokens in this ledger. These conservative
 debits are not observed usage or evidence of spare shared-account quota.
@@ -349,8 +365,8 @@ usage/fingerprint fields absent from the provider remain unavailable.
 Fingerprint hashes identify observations without persisting arbitrary
 provider text; they do not establish an immutable backend version.
 
-Candidate synthetic IDs/settings: **gemini-3.8-flash**, temperature 0,
-thinking low, JSON schema; **openai/gpt-oss-120b**, temperature 0, reasoning
+Candidate synthetic IDs/settings: **gemini-3.8-flash**, default temperature,
+thinking LOW (D48), JSON schema; **openai/gpt-oss-120b**, temperature 0, reasoning
 effort low with `include_reasoning: false`, strict JSON schema. Groq does not
 support `reasoning_format` on gpt-oss models. Gemini may attach an opaque
 `thoughtSignature` to a text part; the parser accepts it and never stores it. These are not a frozen writer/judge protocol

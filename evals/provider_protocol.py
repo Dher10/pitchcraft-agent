@@ -32,8 +32,10 @@ def probe_request(provider):
     model = MODELS[provider]
     if provider == "gemini":
         body = {"contents": [{"role": "user", "parts": [{"text": PROMPT}]}],
-                "generationConfig": {"temperature": 0, "maxOutputTokens": OUTPUT_CAP,
-                    "thinkingConfig": {"thinkingLevel": "low"}, "responseMimeType": "application/json",
+                # No temperature: Google keeps Gemini 3 at its default (lower may loop).
+                # gemini-3.8-flash supports LOW/MEDIUM/HIGH, so LOW is the lowest level.
+                "generationConfig": {"maxOutputTokens": OUTPUT_CAP,
+                    "thinkingConfig": {"thinkingLevel": "LOW"}, "responseMimeType": "application/json",
                     "responseJsonSchema": SCHEMA}}
     else:
         body = {"model": model, "messages": [{"role": "user", "content": PROMPT}],

@@ -61,15 +61,34 @@ def test_new_key_shape_goes_only_in_header_never_in_url(monkeypatch):
     assert NEW_SHAPE_KEY not in seen[0].full_url and "key=" not in seen[0].full_url
 
 
-@pytest.mark.parametrize("error", (urllib.error.URLError("SECRET-SENTINEL"), TimeoutError("SECRET-SENTINEL"),
-                                   ConnectionResetError("SECRET-SENTINEL")))
-def test_failure_before_any_http_status_is_connection_failed(error, monkeypatch):
+def test_default_python_user_agent_is_never_sent(monkeypatch):
+    # Cloudflare in front of api.groq.com rejects "Python-urllib/x" with a 403 (error 1010)
+    # before authentication; a fixed product user-agent reaches the API.
+    seen = []
+    def capture(opener, request, timeout=None):
+        seen.append(request)
+        return Response(b'{}')
+    monkeypatch.setattr(transport.urllib.request.OpenerDirector, "open", capture)
+    for provider in ("gemini", "groq"):
+        transport.post_json(provider, "m", {}, api_key="sentinel", with_metadata=True)
+    agents = {r.get_header("User-agent") for r in seen}
+    assert agents == {transport.USER_AGENT} and transport.USER_AGENT.startswith("pitchcraft-agent/")
+    assert "python" not in transport.USER_AGENT.lower()
+
+
+@pytest.mark.parametrize("error,kind", (
+    (urllib.error.URLError("SECRET-SENTINEL"), "other"),
+    (urllib.error.URLError(TimeoutError("SECRET-SENTINEL")), "timeout"),
+    (TimeoutError("SECRET-SENTINEL"), "timeout"),
+    (ConnectionResetError("SECRET-SENTINEL"), "other")))
+def test_failure_before_any_http_status_is_connection_failed_with_a_kind(error, kind, monkeypatch):
     def fail(*a, **k):
         raise error
     monkeypatch.setattr(transport.urllib.request.OpenerDirector, "open", fail)
     with pytest.raises(transport.ConnectionFailed) as raised:
         transport.post_json("groq", "m", {}, api_key="sentinel", with_metadata=True)
     assert isinstance(raised.value, transport.ProviderRejected)
+    assert isinstance(raised.value, transport.ConnectionTimeout) == (kind == "timeout")
     assert raised.value.__cause__ is None and "SENTINEL" not in repr(raised.value)
 
 
