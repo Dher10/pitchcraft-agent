@@ -415,4 +415,4 @@ account entitlement, quota acceptance or dataset exists yet.
 
 Owner manual tests showed free-tier latency from 4 s to 89 s and 503s, with models.list fine, so earlier probe timeouts were capacity, not the key or Python.
 Writer policy (`agents/writer_policy.py`): 120 s timeout; 503, 429 or timeout gets one retry after 3 s, then the fallback model with the same policy, then rules; other 4xx go to rules.
-Per call the path and the closed code of each failed attempt are recorded; summaries report LLM coverage and fallback rate. Generation 5 (`.local/p2-1-gen5`) allows exactly one Gemini probe on the primary at 120 s; generation 4 never ran and is closed; no Groq probe is authorized.
+Per call the path and the closed code of each failed attempt are recorded; summaries report LLM coverage and fallback rate. Generation 5 (`.local/p2-1-gen5`) allows exactly one Gemini probe on the primary at 120 s; generation 4 never ran and is closed; generation 5 was accepted (HTTP 200, 4.7 s). Generation 6 (`.local/p2-1-gen6`, owner Oct 29) allows exactly one Groq probe with the user-agent fix; P2.1 closes only after a Groq success.

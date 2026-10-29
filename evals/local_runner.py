@@ -20,14 +20,15 @@ ROOT = Path(__file__).resolve().parents[1]
 PROBE_TIMEOUT = 120  # D49 writer timeout
 # Fixed ledger generations and the providers each may still reserve. Generation 1
 # spent one Gemini probe (Oct 28); generation 2 spent one Gemini and one Groq
-# probe (Oct 29). Both are closed so no provider is probed more often than
-# authorized. Generation 3 is the owner's single further Gemini probe (Oct 29).
+# probe (Oct 29). Generations 3-5 spent their single probes (Gemini). All are
+# closed so no provider is probed more often than authorized. Generation 6 is the owner's single Groq probe (Oct 29).
 # A new generation or provider needs owner approval.
 LEDGERS = {"1": (".local/p2-1", frozenset()),
            "2": (".local/p2-1-gen2", frozenset()),
            "3": (".local/p2-1-gen3", frozenset()),
            "4": (".local/p2-1-gen4", frozenset()),
-           "5": (".local/p2-1-gen5", frozenset({"gemini"}))}
+           "5": (".local/p2-1-gen5", frozenset()),
+           "6": (".local/p2-1-gen6", frozenset({"groq"}))}
 
 
 def verify_checkout(root, commit):
