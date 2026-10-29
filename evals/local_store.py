@@ -60,7 +60,10 @@ def validate_result(value):
     expected = {"event", "code", "http_status", "input_tokens", "output_tokens", "reasoning_tokens", "total_tokens", "fingerprint_digest", "output_digest", "rate"}
     if type(value) is not dict or set(value) != expected:
         reject()
-    if value["event"] not in ("accepted", "rejected") or value["code"] not in (None, "request_failed", "malformed_response", "budget_spent"):
+    if value["event"] not in ("accepted", "rejected") or value["code"] not in (None, "request_failed", "malformed_response", "budget_spent", "key_unavailable", "connection_failed"):
+        reject()
+    # Neither code can have an HTTP status: nothing was sent, or nothing came back.
+    if value["code"] in ("key_unavailable", "connection_failed") and value["http_status"] is not None:
         reject()
     for key in ("input_tokens", "output_tokens", "reasoning_tokens", "total_tokens"):
         if value[key] is not None and (type(value[key]) is not int or not 0 <= value[key] <= RESERVATION):

@@ -131,6 +131,77 @@ def test_transport_exception_is_closed_and_conservatively_debited(tmp_path, monk
         run(module, tmp_path / "private")
 
 
+def test_rejected_or_missing_key_is_key_unavailable_and_sends_nothing(tmp_path, monkeypatch):
+    module, calls, keys = wiring(monkeypatch)
+    def missing(name):
+        keys.append(name)
+        raise ValueError("request_failed")
+    monkeypatch.setattr(module, "_local_key", missing)
+    result = run(module, tmp_path / "private")
+    assert result["event"] == "rejected" and result["code"] == "key_unavailable"
+    assert result["http_status"] is None and calls == []
+    with pytest.raises(ValueError, match="request_failed"):
+        run(module, tmp_path / "private")
+    assert len(keys) == 1
+
+
+def test_transport_failure_before_status_is_connection_failed(tmp_path, monkeypatch):
+    from agents.model_transport import ConnectionFailed
+    module, calls, keys = wiring(monkeypatch)
+    def fail(*a, **k):
+        raise ConnectionFailed()
+    monkeypatch.setattr(module, "post_json", fail)
+    result = run(module, tmp_path / "private")
+    assert result["code"] == "connection_failed" and result["http_status"] is None
+    assert len(keys) == 1
+
+
+@pytest.mark.parametrize("code", ("key_unavailable", "connection_failed"))
+def test_no_status_codes_cannot_carry_an_http_status(code):
+    store = importlib.import_module("evals.local_store")
+    result = runner().parse_probe("groq", ProviderResponse(503, {}, None))
+    result["code"] = code
+    with pytest.raises(ValueError):
+        store.validate_result(result)
+    result["http_status"] = None
+    store.validate_result(result)
+
+
+def test_ledger_generations_are_fixed_and_closed_generations_take_no_probe(monkeypatch, capsys):
+    module = runner()
+    # Generation 1 is closed: it spent its Gemini probe and must take no Groq probe,
+    # so across generations each provider still gets the owner-authorized count.
+    assert module.LEDGERS == {"1": (".local/p2-1", frozenset()),
+                              "2": (".local/p2-1-gen2", frozenset({"gemini", "groq"}))}
+    seen = []
+    monkeypatch.setattr(module, "verify_checkout", lambda *a: None)
+    monkeypatch.setattr(module, "run_probe", lambda provider, directory, *a, **k: seen.append((provider, directory)) or {"event": "accepted"})
+    base = ["--owner-pc-offline", "--commit", COMMIT, "--dirty-digest", DIRTY]
+    for provider in ("gemini", "groq"):
+        assert module.main(base + ["--provider", provider, "--ledger-generation", "1"]) == 1
+        assert '"budget_spent"' in capsys.readouterr().out
+    assert seen == []
+    module.main(base + ["--provider", "groq", "--ledger-generation", "2"])
+    assert seen == [("groq", module.ROOT / ".local/p2-1-gen2")]
+    for extra in ([], ["--ledger-generation", "../elsewhere"]):
+        with pytest.raises(SystemExit):
+            module.main(base + ["--provider", "groq"] + extra)
+
+
+def test_registry_loader_accepts_new_key_shape(monkeypatch):
+    module = runner()
+    value = "AQ.Ab8RN6" + "x" * 44
+    class Handle:
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+    registry = types.SimpleNamespace(HKEY_CURRENT_USER=1, KEY_READ=2, REG_SZ=3)
+    registry.OpenKey = lambda *a: Handle()
+    registry.QueryValueEx = lambda handle, name: (value, registry.REG_SZ)
+    monkeypatch.setitem(sys.modules, "winreg", registry)
+    monkeypatch.setattr(module.os, "name", "nt")
+    assert module._local_key("PITCHCRAFT_GEMINI_API_KEY_LOCAL") == value
+
+
 def test_import_and_key_loader_never_fall_back_to_process_or_production_env(monkeypatch):
     module = runner()
     for name in ("GEMINI_API_KEY", "GROQ_API_KEY", "PITCHCRAFT_GROQ_API_KEY_LOCAL"):

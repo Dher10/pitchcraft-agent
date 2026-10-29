@@ -19,6 +19,10 @@ class ProviderRejected(ValueError):
         super().__init__("request_failed")
 
 
+class ConnectionFailed(ProviderRejected):
+    """The request was built and handed to the network, but no HTTP status came back."""
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
@@ -106,10 +110,7 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
         request = urllib.request.Request(url, data=encoded, headers=headers, method="POST")
         opener = urllib.request.build_opener(NoRedirect(), urllib.request.HTTPSHandler(context=ssl.create_default_context()))
         try:
-            with opener.open(request, timeout=timeout) as response:
-                status = getattr(response, "status", 200)
-                rate = _rates(getattr(response, "headers", None))
-                raw = response.read(131_073)
+            response = opener.open(request, timeout=timeout)
         except urllib.error.HTTPError as error:
             try:
                 if with_metadata and type(error.code) is int and 100 <= error.code <= 599:
@@ -117,6 +118,12 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
                 raise ProviderRejected() from None
             finally:
                 error.close()
+        except Exception:
+            raise ConnectionFailed() from None
+        with response:
+            status = getattr(response, "status", 200)
+            rate = _rates(getattr(response, "headers", None))
+            raw = response.read(131_073)
         if len(raw) > 131_072:
             raise ProviderRejected()
         def invalid_constant(_):
@@ -126,6 +133,8 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
         if type(value) is not dict:
             raise ProviderRejected()
         return ProviderResponse(status, rate, value) if with_metadata else value
+    except ConnectionFailed:
+        raise ConnectionFailed() from None
     except Exception:
         # Never export urllib exceptions, request repr, response bodies or headers.
         raise ProviderRejected() from None

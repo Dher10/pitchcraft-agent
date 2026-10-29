@@ -11,12 +11,18 @@ from pathlib import Path
 import re
 import time
 
-from agents.model_transport import post_json, ProviderResponse
+from agents.model_transport import ConnectionFailed, post_json, ProviderResponse
 from evals.local_store import append, locked, read_ledger
 from evals.provider_protocol import canonical, MODELS, parse_probe, probe_request, request_identity
 
 KEY_NAMES = {"gemini": "PITCHCRAFT_GEMINI_API_KEY_LOCAL", "groq": "PITCHCRAFT_GROQ_API_KEY_LOCAL"}
 ROOT = Path(__file__).resolve().parents[1]
+# Fixed ledger generations and the providers each may still reserve. The owner
+# authorized generation 2 on Oct 29 after generation 1 spent its Gemini probe;
+# generation 1 is closed so no provider is probed more often than authorized.
+# A new generation or provider needs owner approval.
+LEDGERS = {"1": (".local/p2-1", frozenset()),
+           "2": (".local/p2-1-gen2", frozenset({"gemini", "groq"}))}
 
 
 def verify_checkout(root, commit):
@@ -52,6 +58,12 @@ def _local_key(name):
         raise ValueError("request_failed") from None
 
 
+def _no_status(provider, code):
+    result = parse_probe(provider, ProviderResponse(503, {}, None))
+    result.update(http_status=None, code=code)
+    return result
+
+
 def run_probe(provider, directory, commit, dirty_digest, *, offline=False):
     """One call/provider for this P2.1 ledger, 4096 reserved tokens each.
 
@@ -78,15 +90,19 @@ def run_probe(provider, directory, commit, dirty_digest, *, offline=False):
             append(ledger, rows, "reserve", identity, now)
             try:
                 key = _local_key(KEY_NAMES[provider])
-                model, body = probe_request(provider)
+            except Exception:
+                result = _no_status(provider, "key_unavailable")
+            else:
                 try:
-                    response = post_json(provider, model, body, api_key=key, timeout=30, with_metadata=True)
+                    model, body = probe_request(provider)
+                    result = parse_probe(provider, post_json(provider, model, body, api_key=key,
+                                                             timeout=30, with_metadata=True))
+                except ConnectionFailed:
+                    result = _no_status(provider, "connection_failed")
+                except Exception:
+                    result = _no_status(provider, "request_failed")
                 finally:
                     del key
-                result = parse_probe(provider, response)
-            except Exception:
-                result = parse_probe(provider, ProviderResponse(503, {}, None))
-                result["http_status"] = None
             append(ledger, rows, "result", identity, time.time(), result)
             return result
     except Exception as error:
@@ -100,10 +116,14 @@ def main(argv=None):
     parser.add_argument("--provider", choices=tuple(MODELS), required=True)
     parser.add_argument("--commit", required=True)
     parser.add_argument("--dirty-digest", required=True)
+    parser.add_argument("--ledger-generation", choices=tuple(LEDGERS), required=True)
     args = parser.parse_args(argv)
     try:
+        path, open_providers = LEDGERS[args.ledger_generation]
+        if args.provider not in open_providers:
+            raise ValueError("budget_spent")
         verify_checkout(ROOT, args.commit)
-        result = run_probe(args.provider, ROOT / ".local/p2-1", args.commit, args.dirty_digest, offline=args.owner_pc_offline)
+        result = run_probe(args.provider, ROOT / path, args.commit, args.dirty_digest, offline=args.owner_pc_offline)
     except Exception as error:
         code = "budget_spent" if type(error) is ValueError and error.args == ("budget_spent",) else "request_failed"
         print(canonical({"event": "rejected", "code": code}))

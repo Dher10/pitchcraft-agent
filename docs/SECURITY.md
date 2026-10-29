@@ -248,7 +248,11 @@ entailment and compromised trusted infrastructure remain residual risks.
   TLS, no redirects or tools, no arbitrary endpoint environment variable,
   64K request/128KiB response caps and 60s maximum timeout. Receives a key
   explicitly, reads none. Auth/quota/model IDs/settings/usage pacing still
-  require P2.1; tests fake all HTTP, never call a provider.
+  require P2.1; tests fake all HTTP, never call a provider. Oct 29: a
+  failure before any HTTP status raises `ConnectionFailed`, which the P2.1
+  runner records as the owner-approved local code `connection_failed`. A
+  rejected or missing USER entry is `key_unavailable` and sends nothing. The
+  closed probe code list is in RUNBOOK; no public error code changed.
 - `agents/safe_model_log.py`: exact internal event/route fields, existing
   closed error codes, bounded counts and canonical digests only. No raw
   exception/message/prompt/header/context parameter. Sentinels are rejected

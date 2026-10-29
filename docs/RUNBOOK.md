@@ -292,7 +292,7 @@ The setup script creates exactly these Windows USER entries:
 It has not been executed by the agent. No runner automatically reads them
 in P2-SEC. Do not paste values in chat; confirm setup by names/presence only.
 
-## P2.1 runner checkpoint (2026-10-28, probes not run)
+## P2.1 runner checkpoint (2026-10-28; first Gemini probe run, see STATUS)
 
 `evals/local_runner.py` is a synthetic-probe runner, not the writer or
 judge queue. Imports/tests/builds make no credential read or provider call.
@@ -306,11 +306,29 @@ dirty digest is the SHA-256 of the bytes printed by `git diff HEAD --binary`.
 For a clean tree that output is empty, so the digest is
 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. Run
 probes only from a clean tree: untracked files are not covered by that diff.
+Closed probe codes (local ledger and CLI output only; never published):
+`key_unavailable` (the USER entry is missing or the loader rejected it; no
+request was sent), `connection_failed` (the request was handed to the network
+but no HTTP status came back, e.g. timeout, reset, TLS or DNS),
+`request_failed` (any other failure, including a non-429 HTTP status, which is
+recorded in `http_status`), `budget_spent` (HTTP 429, or the ledger's
+per-provider budget is used up) and `malformed_response` (a 200 whose body
+fails validation). The first two never carry an HTTP status.
+
+Ledger generations are fixed in code; `--ledger-generation` is required and
+has no default. Each generation lists the providers it may still reserve.
+Generation 1 (`.local/p2-1/`) is closed: it spent its Gemini probe with
+`http_status` null, takes no new probe, and stays untouched. Generation 2
+(`.local/p2-1-gen2/`) was authorized by the owner on Oct 29 for exactly one
+more Gemini probe and then the single Groq probe. Across both generations that
+is at most three requests (Gemini 2, Groq 1) and 12,288 reserved tokens. Any
+further generation needs owner approval and a code change.
+
 Model-version mismatches and truncation are recorded with their usage and
 still spend the provider's single probe. Gemini runs at temperature 0 as the
 candidate setting, although Google recommends the default for Gemini 3.
 
-One synthetic request per provider, two total, with a 1,024 generated-token
+Per ledger generation: one synthetic request per provider, two total, with a 1,024 generated-token
 cap, 30-second transport timeout, fixed HTTPS/no redirect and no tools.
 Each request reserves 4,096 tokens before key load/network, even on failure
 or interruption: at most 8,192 tokens in this ledger. These conservative
@@ -320,7 +338,7 @@ auto-retry; an identical complete accepted result can be reused. Changed
 identities cannot bypass the per-provider budget. Do not delete the ledger
 or its lock to repeat a request; investigate an interrupted run first.
 
-The fixed local evidence path is `.local/p2-1/`, ignored by git and never
+The fixed local evidence paths are the generation directories under `.local/`, ignored by git and never
 served. A protected Windows DACL grants owner/SYSTEM/administrators access;
 POSIX fixtures use 0700/0600. ACL failure, symlinks/reparse points, hardlinked
 files, unexpected files, a lock or a partial/corrupt ledger fail before key
