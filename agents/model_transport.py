@@ -102,7 +102,7 @@ def post_json(provider, model, body, *, api_key, timeout=30, with_metadata=False
             raise ProviderRejected()
         if type(api_key) is not str or not 1 <= len(api_key) <= 512 or any(ord(c)<33 or ord(c)>126 for c in api_key):
             raise ProviderRejected()
-        if type(timeout) not in (int,float) or not 0 < timeout <= 60:
+        if type(timeout) not in (int,float) or not 0 < timeout <= 120:
             raise ProviderRejected()
         if type(body) is not dict or _has_tools(body):
             raise ProviderRejected()

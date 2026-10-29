@@ -120,3 +120,16 @@ def test_reset_headers_are_normalized_milliseconds_or_discarded(value, expected,
     monkeypatch.setattr(transport.urllib.request.OpenerDirector, "open", lambda *a, **k: response)
     result = transport.post_json("groq", "m", {}, api_key="sentinel", with_metadata=True)
     assert result.rate.get("x-ratelimit-reset-tokens") == expected
+
+
+@pytest.mark.parametrize("timeout,ok", ((120, True), (60, True), (120.5, False), (0, False)))
+def test_timeout_bound_is_120_seconds(monkeypatch, timeout, ok):
+    seen = []
+
+    def capture(opener, request, timeout=None):
+        seen.append(timeout)
+        raise OSError()
+    monkeypatch.setattr(transport.urllib.request.OpenerDirector, "open", capture)
+    with pytest.raises(transport.ProviderRejected) as raised:
+        transport.post_json("gemini", "gemini-3.5-flash", {}, api_key=NEW_SHAPE_KEY, timeout=timeout)
+    assert (seen == [timeout]) == ok and isinstance(raised.value, transport.ConnectionFailed) == ok

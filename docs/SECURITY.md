@@ -246,7 +246,7 @@ entailment and compromised trusted infrastructure remain residual risks.
   rejects that text. S1/guide, semantic/NLI and humans retain distinct roles.
 - `agents/model_transport.py`: fixed Gemini/Groq HTTPS hosts/routes, verified
   TLS, no redirects or tools, no arbitrary endpoint environment variable,
-  64K request/128KiB response caps and 60s maximum timeout. Receives a key
+  64K request/128KiB response caps and 120s maximum timeout (D49). Receives a key
   explicitly, reads none. Auth/quota/model IDs/settings/usage pacing still
   require P2.1; tests fake all HTTP, never call a provider. Oct 29: a
   failure before any HTTP status raises `ConnectionFailed`, which the P2.1

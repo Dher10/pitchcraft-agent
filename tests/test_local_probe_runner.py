@@ -158,7 +158,7 @@ def test_transport_failure_before_status_keeps_its_closed_sub_code(error, code, 
     assert len(keys) == 1
 
 
-def test_probe_uses_the_transports_maximum_timeout(tmp_path, monkeypatch):
+def test_probe_uses_the_d49_writer_timeout(tmp_path, monkeypatch):
     module, calls, keys = wiring(monkeypatch)
     timeouts = []
     original = module.post_json
@@ -167,7 +167,7 @@ def test_probe_uses_the_transports_maximum_timeout(tmp_path, monkeypatch):
         return original(provider, model, body, **kwargs)
     monkeypatch.setattr(module, "post_json", post)
     run(module, tmp_path / "private")
-    assert timeouts == [60]
+    assert timeouts == [120]
 
 
 def test_pre_existing_connection_failed_rows_stay_readable():
@@ -193,21 +193,25 @@ def test_ledger_generations_are_fixed_and_closed_generations_take_no_probe(monke
     # Generation 1 is closed: it spent its Gemini probe and must take no Groq probe,
     # so across generations each provider still gets the owner-authorized count.
     # Generations 1 and 2 spent their authorized probes (Gemini twice, Groq once)
-    # and stay closed; generation 3 is the owner's one further Gemini probe.
+    # and stay closed; generation 3 spent its Gemini probe; generation 4 (a Groq re-probe) never ran
+    # and is closed; generation 5 is the owner's one Gemini probe against the D49 primary.
     assert module.LEDGERS == {"1": (".local/p2-1", frozenset()),
                               "2": (".local/p2-1-gen2", frozenset()),
-                              "3": (".local/p2-1-gen3", frozenset({"gemini"}))}
+                              "3": (".local/p2-1-gen3", frozenset()),
+                              "4": (".local/p2-1-gen4", frozenset()),
+                              "5": (".local/p2-1-gen5", frozenset({"gemini"}))}
     seen = []
     monkeypatch.setattr(module, "verify_checkout", lambda *a: None)
     monkeypatch.setattr(module, "run_probe", lambda provider, directory, *a, **k: seen.append((provider, directory)) or {"event": "accepted"})
     base = ["--owner-pc-offline", "--commit", COMMIT, "--dirty-digest", DIRTY]
-    refused = [("1", "gemini"), ("1", "groq"), ("2", "gemini"), ("2", "groq"), ("3", "groq")]
+    refused = [("1", "gemini"), ("1", "groq"), ("2", "gemini"), ("2", "groq"), ("3", "gemini"), ("3", "groq"),
+               ("4", "gemini"), ("4", "groq"), ("5", "groq")]
     for generation, provider in refused:
         assert module.main(base + ["--provider", provider, "--ledger-generation", generation]) == 1
         assert '"budget_spent"' in capsys.readouterr().out
     assert seen == []
-    module.main(base + ["--provider", "gemini", "--ledger-generation", "3"])
-    assert seen == [("gemini", module.ROOT / ".local/p2-1-gen3")]
+    module.main(base + ["--provider", "gemini", "--ledger-generation", "5"])
+    assert seen == [("gemini", module.ROOT / ".local/p2-1-gen5")]
     for extra in ([], ["--ledger-generation", "../elsewhere"]):
         with pytest.raises(SystemExit):
             module.main(base + ["--provider", "groq"] + extra)

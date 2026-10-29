@@ -332,8 +332,8 @@ owner approval and a code change.
 Model-version mismatches and truncation are recorded with their usage and
 still spend the provider's single probe. Per D48 Gemini runs at its default
 temperature (the field is omitted; Google warns that lowering it can make
-Gemini 3 loop) with thinking at LOW, the lowest level gemini-3.8-flash
-supports (MINIMAL is unsupported on it). The API field is
+Gemini 3 loop) with thinking at LOW, the lowest level the chosen model is
+known to support (MINIMAL was unsupported on gemini-3.8-flash; D49 now uses gemini-3.5-flash). The API field is
 `generationConfig.thinkingConfig.thinkingLevel`, with uppercase enum values
 (read from the public API discovery document, not only the guides).
 
@@ -345,7 +345,7 @@ a keyless request). The transport now always sends the fixed agent
 owner approval.
 
 Per ledger generation: one synthetic request per provider, two total, with a 1,024 generated-token
-cap, 60-second transport timeout (the transport maximum), fixed HTTPS/no redirect and no tools.
+cap, 120-second transport timeout (D49; the transport maximum), fixed HTTPS/no redirect and no tools.
 Each request reserves 4,096 tokens before key load/network, even on failure
 or interruption: at most 8,192 tokens in this ledger. These conservative
 debits are not observed usage or evidence of spare shared-account quota.
@@ -365,7 +365,7 @@ usage/fingerprint fields absent from the provider remain unavailable.
 Fingerprint hashes identify observations without persisting arbitrary
 provider text; they do not establish an immutable backend version.
 
-Candidate synthetic IDs/settings: **gemini-3.8-flash**, default temperature,
+Candidate synthetic IDs/settings: **gemini-3.5-flash** (D49 primary; fallback gemini-3.1-flash-lite, not probed), default temperature,
 thinking LOW (D48), JSON schema; **openai/gpt-oss-120b**, temperature 0, reasoning
 effort low with `include_reasoning: false`, strict JSON schema. Groq does not
 support `reasoning_format` on gpt-oss models. Gemini may attach an opaque
@@ -380,9 +380,11 @@ Current official sources checked Oct 28 (America/Bogota):
 - [Gemini key types/restrictions](https://ai.google.dev/gemini-api/docs/api-key):
   new AI Studio keys default to auth keys restricted to Gemini. This is
   documentation, not inspection of this key's actual settings.
-- [Gemini 3.8 model](https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash)
-  and [pricing](https://ai.google.dev/gemini-api/docs/pricing) list the exact
-  model and Free input/output. [2.5 availability](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
+- [Gemini deprecations](https://ai.google.dev/gemini-api/docs/deprecations)
+  (checked Oct 29): `gemini-3.5-flash` is not shutting down and routes to
+  `gemini-3.6-flash`; `gemini-3.1-flash-lite` shuts down May 7, 2027.
+  [Pricing](https://ai.google.dev/gemini-api/docs/pricing) lists Free input/output
+  for 3.6 Flash and 3.1 Flash-Lite. [2.5 availability](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash)
   warns of legacy-project access limits; do not assume a new key gets 2.5.
 - [Gemini limits](https://ai.google.dev/gemini-api/docs/rate-limits):
   project-shared; exact active limits require AI Studio evidence. No numeric
@@ -398,7 +400,7 @@ Current official sources checked Oct 28 (America/Bogota):
   [reasoning](https://console.groq.com/docs/reasoning) document strict JSON
   schema on gpt-oss-120b, low effort and `include_reasoning` (rechecked Oct 28;
   `reasoning_format` is unsupported on gpt-oss). [Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking)
-  lists low for gemini-3.8-flash, says the output cap includes thought tokens
+  lists levels per model (none for the D49 names), says the output cap includes thought tokens
   and that signatures can be attached to any part. Synthetic fixtures imitate
   these wire shapes; they are not recordings of successful account access.
 
@@ -408,3 +410,9 @@ committed. Run Gemini first. If its probe returns 401 or 403, stop and report
 to the owner: do not try another variable, key or retry. Never request values
 or broaden billing/access. P2.1 remains unchecked; no real usage measurement,
 account entitlement, quota acceptance or dataset exists yet.
+
+## D49 writer call policy (Oct 29)
+
+Owner manual tests showed free-tier latency from 4 s to 89 s and 503s, with models.list fine, so earlier probe timeouts were capacity, not the key or Python.
+Writer policy (`agents/writer_policy.py`): 120 s timeout; 503, 429 or timeout gets one retry after 3 s, then the fallback model with the same policy, then rules; other 4xx go to rules.
+Per call the path and the closed code of each failed attempt are recorded; summaries report LLM coverage and fallback rate. Generation 5 (`.local/p2-1-gen5`) allows exactly one Gemini probe on the primary at 120 s; generation 4 never ran and is closed; no Groq probe is authorized.

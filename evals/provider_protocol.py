@@ -12,7 +12,10 @@ import re
 
 from agents.model_transport import ProviderResponse, RATE_FIELDS
 
-MODELS = {"gemini": "gemini-3.8-flash", "groq": "openai/gpt-oss-120b"}
+MODELS = {"gemini": "gemini-3.5-flash", "groq": "openai/gpt-oss-120b"}
+# Google routes the gemini-3.5-flash alias to gemini-3.6-flash (deprecations page), so both
+# names are the expected modelVersion of an authentic response.
+ROUTED = {"gemini-3.5-flash": ("gemini-3.6-flash",)}
 OUTPUT_CAP = 1024
 RESERVATION = 4096
 SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}},
@@ -33,7 +36,7 @@ def probe_request(provider):
     if provider == "gemini":
         body = {"contents": [{"role": "user", "parts": [{"text": PROMPT}]}],
                 # No temperature: Google keeps Gemini 3 at its default (lower may loop).
-                # gemini-3.8-flash supports LOW/MEDIUM/HIGH, so LOW is the lowest level.
+                # D49: gemini-3.5-flash is an alias that Google routes to gemini-3.6-flash; LOW is set explicitly.
                 "generationConfig": {"maxOutputTokens": OUTPUT_CAP,
                     "thinkingConfig": {"thinkingLevel": "LOW"}, "responseMimeType": "application/json",
                     "responseJsonSchema": SCHEMA}}
@@ -110,7 +113,7 @@ def parse_probe(provider, response: ProviderResponse):
         result.update(_usage(provider, body))
         if provider == "gemini":
             version = body["modelVersion"]
-            if type(version) is not str or re.fullmatch(re.escape(MODELS[provider]) + r"(?:-[0-9]{3,14})?", version) is None:
+            if type(version) is not str or re.fullmatch("(?:" + "|".join(re.escape(m) for m in (MODELS[provider], *ROUTED.get(MODELS[provider], ()))) + r")(?:-[0-9]{3,14})?", version) is None:
                 return result
             choices = body["candidates"]
             if type(choices) is not list or len(choices) != 1 or body.get("promptFeedback", {}).get("blockReason"):

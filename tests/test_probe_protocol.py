@@ -116,6 +116,10 @@ def test_gemini_3_uses_default_temperature_and_lowest_supported_thinking_level()
     assert config["maxOutputTokens"] == 1024
 
 
+def test_probe_model_is_the_d49_primary():
+    assert protocol().MODELS["gemini"] == "gemini-3.5-flash"
+
+
 def test_groq_keeps_its_own_temperature_zero_control():
     assert protocol().probe_request("groq")[1]["temperature"] == 0
 
@@ -141,10 +145,21 @@ def test_gemini_part_keys_beyond_text_and_signature_stay_rejected(part):
 def test_request_is_fixed_bounded_json_no_tools_and_identity_covers_all_bytes(provider):
     module = protocol()
     model, body = module.probe_request(provider)
-    assert model in ("gemini-3.8-flash", "openai/gpt-oss-120b")
+    assert model in ("gemini-3.5-flash", "openai/gpt-oss-120b")
     assert len(json.dumps(body).encode()) < 2000
     assert not any(k in json.dumps(body) for k in ('"tools"', '"google_search"', '"web_search"'))
     first = module.request_identity(provider, "a" * 40, "b" * 64)
     assert first != module.request_identity(provider, "c" * 40, "b" * 64)
     assert first != module.request_identity(provider, "a" * 40, "c" * 64)
     assert set(first) == {"request_digest", "commit", "dirty_digest", "provider", "model", "body_digest", "protocol_digest", "guide_digest", "prompt_digest", "schema_digest", "evaluator_digest", "input_digest"}
+
+
+@pytest.mark.parametrize("version,accepted", (("gemini-3.5-flash", True), ("gemini-3.6-flash", True),
+                                              ("gemini-3.6-flash-001", True), ("gemini-3.8-flash", False),
+                                              ("gemini-3.1-flash-lite", False)))
+def test_gemini_alias_routed_model_version_is_accepted_and_others_rejected(version, accepted):
+    # Google: gemini-3.5-flash is not shut down and automatically routes to gemini-3.6-flash.
+    body = copy.deepcopy(FIXTURES["gemini"])
+    body["modelVersion"] = version
+    event = protocol().parse_probe("gemini", ProviderResponse(200, {}, body))["event"]
+    assert event == ("accepted" if accepted else "rejected")

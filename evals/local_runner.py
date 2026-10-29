@@ -17,7 +17,7 @@ from evals.provider_protocol import canonical, MODELS, parse_probe, probe_reques
 
 KEY_NAMES = {"gemini": "PITCHCRAFT_GEMINI_API_KEY_LOCAL", "groq": "PITCHCRAFT_GROQ_API_KEY_LOCAL"}
 ROOT = Path(__file__).resolve().parents[1]
-PROBE_TIMEOUT = 60  # the transport's maximum
+PROBE_TIMEOUT = 120  # D49 writer timeout
 # Fixed ledger generations and the providers each may still reserve. Generation 1
 # spent one Gemini probe (Oct 28); generation 2 spent one Gemini and one Groq
 # probe (Oct 29). Both are closed so no provider is probed more often than
@@ -25,7 +25,9 @@ PROBE_TIMEOUT = 60  # the transport's maximum
 # A new generation or provider needs owner approval.
 LEDGERS = {"1": (".local/p2-1", frozenset()),
            "2": (".local/p2-1-gen2", frozenset()),
-           "3": (".local/p2-1-gen3", frozenset({"gemini"}))}
+           "3": (".local/p2-1-gen3", frozenset()),
+           "4": (".local/p2-1-gen4", frozenset()),
+           "5": (".local/p2-1-gen5", frozenset({"gemini"}))}
 
 
 def verify_checkout(root, commit):

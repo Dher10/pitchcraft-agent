@@ -194,7 +194,8 @@ frozen test set, preserving shared inputs/comparability; report A/B1/B2.
 - Before publication: schema/contract, G1 numbers/entities, code R1/L1,
   policy word list, C1/F1, then local CPU sentence-to-catalog-facts NLI.
   Technical/content/NLI failure gets one informed Gemini retry total,
-  then validated rules. At most two Gemini calls; no other writer provider. Unsafe
+  then validated rules. At most two content attempts (D2); D49 transport retries and one fallback
+  Gemini model are operational and counted in the quota ledger. Unsafe
   fallback/final integrity failure keeps the previous file (D34/D42).
 - After publication: ONE Groq call per report covers G2 residue, L1, R1,
   S1 per rule and policy. U1 remains offline. Remote verdicts never gate or
@@ -211,7 +212,7 @@ frozen test set, preserving shared inputs/comparability; report A/B1/B2.
 
 ## 9. Infrastructure and capacity ($0, no card, no trial)
 
-D46/D47: Gemini via AI Studio is the sole model writer, then rules;
+D46/D47/D49: Gemini via AI Studio (primary gemini-3.5-flash, fallback gemini-3.1-flash-lite) is the only model writer, then rules;
 exact writer IDs verified in P2.1. Groq Free openai/gpt-oss-120b for BOTH
 judge uses; Cloudflare @cf/zai-org/glm-4.7-flash only before judge freeze.
 GitHub Models is retired. Free entitlement/quotas remain to verify; no paid

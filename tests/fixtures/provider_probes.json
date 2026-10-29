@@ -3,7 +3,7 @@
   "gemini": {
     "candidates": [{"content": {"role": "model", "parts": [{"text": "{\"ok\":true}"}]}, "finishReason": "STOP", "index": 0}],
     "usageMetadata": {"promptTokenCount": 25, "candidatesTokenCount": 5, "thoughtsTokenCount": 20, "totalTokenCount": 50},
-    "modelVersion": "gemini-3.8-flash"
+    "modelVersion": "gemini-3.5-flash"
   },
   "groq": {
     "model": "openai/gpt-oss-120b",
