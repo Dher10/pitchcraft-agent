@@ -1,0 +1,2723 @@
+{
+ "cases": [
+  {
+   "as_of": "2026-10-03",
+   "case_id": "postseason-849823",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 678061,
+     "previous_innings": [
+      3.0
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": null,
+      "control": 66,
+      "strikeout": 66
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 605483,
+     "previous_innings": [
+      3.0,
+      6.0,
+      6.0,
+      6.0,
+      5.0,
+      6.0,
+      5.666666666666667,
+      1.0,
+      4.0
+     ],
+     "prior_seasons": 10,
+     "samples": {
+      "arsenal": 173,
+      "control": 173,
+      "strikeout": 173
+     }
+    }
+   ],
+   "game_pk": 849823,
+   "official_date": "2026-10-04",
+   "pitcher_ids": [
+    678061,
+    605483
+   ],
+   "series": {
+    "game_number": 2,
+    "games_played": 1,
+    "is_over": false,
+    "result": "LAD leads 1-0"
+   },
+   "sha256": "dbf79880c3aaefc9c3e951055f3a9ac3ffbc5086928723cce2191c0e55bc8941",
+   "stratum": "postseason",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 678061
+    },
+    "postseason": {
+     "game_type": "D"
+    }
+   }
+  },
+  {
+   "as_of": "2026-10-02",
+   "case_id": "postseason-849830",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 592662,
+     "previous_innings": [
+      5.333333333333333,
+      5.333333333333333,
+      6.666666666666667,
+      5.0,
+      6.0,
+      5.0,
+      6.333333333333333,
+      6.0,
+      4.666666666666667,
+      4.333333333333333,
+      4.0,
+      4.0,
+      5.0,
+      5.666666666666667,
+      8.0,
+      8.0,
+      6.0,
+      5.0,
+      4.0,
+      6.0,
+      6.0,
+      5.0,
+      4.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      2.3333333333333335,
+      5.0,
+      6.0,
+      3.3333333333333335
+     ],
+     "prior_seasons": 12,
+     "samples": {
+      "arsenal": 702,
+      "control": 702,
+      "strikeout": 702
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 694819,
+     "previous_innings": [
+      5.0,
+      6.0,
+      5.333333333333333,
+      5.333333333333333,
+      5.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      7.0,
+      6.0,
+      7.0,
+      7.0,
+      7.0,
+      9.0,
+      6.0,
+      6.0,
+      5.0,
+      7.0,
+      4.0,
+      5.0,
+      7.0,
+      6.0,
+      6.0,
+      6.0,
+      6.0,
+      4.0,
+      6.333333333333333,
+      5.0,
+      3.0,
+      5.333333333333333
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 665,
+      "control": 665,
+      "strikeout": 665
+     }
+    }
+   ],
+   "game_pk": 849830,
+   "official_date": "2026-10-03",
+   "pitcher_ids": [
+    592662,
+    694819
+   ],
+   "series": {
+    "game_number": 1,
+    "games_played": 0,
+    "is_over": false,
+    "result": null
+   },
+   "sha256": "1ed2d1faf38514d0c11050ce27d171fa9909af9160917d4ae13a89fd184f00d4",
+   "stratum": "postseason",
+   "traits": {
+    "postseason": {
+     "game_type": "D"
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-28",
+   "case_id": "postseason-849851",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 801139,
+     "previous_innings": [
+      6.0,
+      4.666666666666667,
+      7.0,
+      5.0,
+      8.0,
+      6.0,
+      4.666666666666667,
+      6.0,
+      6.0,
+      5.0,
+      6.0,
+      7.0,
+      3.0,
+      6.0,
+      3.6666666666666665,
+      5.666666666666667,
+      5.333333333333333,
+      6.0,
+      6.0,
+      8.0,
+      5.0,
+      5.333333333333333,
+      5.666666666666667,
+      6.0,
+      6.0,
+      5.666666666666667
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 603,
+      "control": 603,
+      "strikeout": 603
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 693645,
+     "previous_innings": [
+      5.333333333333333,
+      6.333333333333333,
+      5.0,
+      5.0,
+      6.0,
+      8.0,
+      6.0,
+      5.666666666666667,
+      6.0,
+      6.666666666666667,
+      6.0,
+      6.0,
+      4.333333333333333,
+      5.666666666666667,
+      7.0,
+      6.0,
+      5.0,
+      4.0,
+      8.0,
+      6.666666666666667,
+      4.333333333333333,
+      7.333333333333333,
+      6.333333333333333,
+      3.0,
+      7.0,
+      5.333333333333333,
+      6.0,
+      5.666666666666667,
+      8.0,
+      7.0,
+      6.0,
+      6.0,
+      3.0
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 761,
+      "control": 761,
+      "strikeout": 761
+     }
+    }
+   ],
+   "game_pk": 849851,
+   "official_date": "2026-09-29",
+   "pitcher_ids": [
+    801139,
+    693645
+   ],
+   "series": {
+    "game_number": 1,
+    "games_played": 0,
+    "is_over": false,
+    "result": null
+   },
+   "sha256": "1c0a9f83b788080e2479ada759c6b053fba3ecc9537709cebd72b740bb235eda",
+   "stratum": "postseason",
+   "traits": {
+    "postseason": {
+     "game_type": "F"
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-29",
+   "case_id": "postseason-849842",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 592332,
+     "previous_innings": [
+      6.0,
+      6.0,
+      5.333333333333333,
+      5.0,
+      6.0,
+      6.666666666666667,
+      5.666666666666667,
+      6.0,
+      4.666666666666667,
+      6.0,
+      6.666666666666667,
+      5.0,
+      6.0,
+      5.0,
+      7.0,
+      2.0,
+      6.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      3.3333333333333335,
+      6.0,
+      5.666666666666667,
+      7.0,
+      4.666666666666667,
+      4.333333333333333,
+      7.0,
+      5.0,
+      7.0,
+      4.0,
+      5.666666666666667,
+      5.666666666666667
+     ],
+     "prior_seasons": 13,
+     "samples": {
+      "arsenal": 750,
+      "control": 750,
+      "strikeout": 750
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 601713,
+     "previous_innings": [
+      3.0,
+      5.0,
+      5.0,
+      3.0,
+      5.0,
+      4.0,
+      5.0,
+      4.666666666666667
+     ],
+     "prior_seasons": 9,
+     "samples": {
+      "arsenal": 140,
+      "control": 140,
+      "strikeout": 140
+     }
+    }
+   ],
+   "game_pk": 849842,
+   "official_date": "2026-09-30",
+   "pitcher_ids": [
+    592332,
+    601713
+   ],
+   "series": {
+    "game_number": 2,
+    "games_played": 1,
+    "is_over": false,
+    "result": "SD leads 1-0"
+   },
+   "sha256": "31d09dbe76cd361d7f4b8f40e1e17fc3c0b71b1c07e6709a113e0e53a4b422e2",
+   "stratum": "postseason",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 601713
+    },
+    "postseason": {
+     "game_type": "F"
+    }
+   }
+  },
+  {
+   "as_of": "2026-10-06",
+   "case_id": "postseason-849833",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 682982,
+     "previous_innings": [
+      2.0,
+      1.0,
+      1.0
+     ],
+     "prior_seasons": 0,
+     "samples": {
+      "arsenal": null,
+      "control": 65,
+      "strikeout": 65
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 656794,
+     "previous_innings": [
+      3.0,
+      1.3333333333333333,
+      2.0,
+      2.0,
+      1.3333333333333333,
+      1.0
+     ],
+     "prior_seasons": 9,
+     "samples": {
+      "arsenal": 372,
+      "control": 372,
+      "strikeout": 372
+     }
+    }
+   ],
+   "game_pk": 849833,
+   "official_date": "2026-10-07",
+   "pitcher_ids": [
+    682982,
+    656794
+   ],
+   "series": {
+    "game_number": 3,
+    "games_played": 2,
+    "is_over": false,
+    "result": "CWS leads 2-0"
+   },
+   "sha256": "fadd83812df154a651f96ca5698ea2c5735fe30b0e8ab6f484a5d503e9ef9a1c",
+   "stratum": "postseason",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 682982
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.3333333333333333,
+      "starts": 3
+     },
+     "pitcher_id": 682982
+    },
+    "postseason": {
+     "game_type": "D"
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-28",
+   "case_id": "postseason-849849",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 696146,
+     "previous_innings": [
+      2.0
+     ],
+     "prior_seasons": 0,
+     "samples": {
+      "arsenal": 110,
+      "control": 110,
+      "strikeout": 110
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 805123,
+     "previous_innings": [],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 401,
+      "control": 401,
+      "strikeout": 401
+     }
+    }
+   ],
+   "game_pk": 849849,
+   "official_date": "2026-09-29",
+   "pitcher_ids": [
+    696146,
+    805123
+   ],
+   "series": {
+    "game_number": 1,
+    "games_played": 0,
+    "is_over": false,
+    "result": null
+   },
+   "sha256": "2885a6d2a853f82604a803f0ccab9b40ad4404fb7a32e14a3cebd40513155a0f",
+   "stratum": "postseason",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 696146
+    },
+    "postseason": {
+     "game_type": "F"
+    }
+   }
+  },
+  {
+   "as_of": "2026-10-09",
+   "case_id": "postseason-849831",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 680732,
+     "previous_innings": [
+      4.0,
+      5.0,
+      5.333333333333333,
+      6.0,
+      6.0,
+      4.333333333333333,
+      4.333333333333333,
+      4.666666666666667,
+      7.0,
+      5.333333333333333,
+      4.0,
+      6.333333333333333,
+      5.333333333333333,
+      6.0,
+      7.0,
+      6.666666666666667,
+      6.0,
+      6.0,
+      4.333333333333333,
+      7.0,
+      4.333333333333333,
+      6.0,
+      3.0,
+      5.666666666666667,
+      1.3333333333333333,
+      6.0,
+      5.333333333333333
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 716,
+      "control": 716,
+      "strikeout": 716
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 668909,
+     "previous_innings": [
+      5.0,
+      7.0,
+      5.666666666666667,
+      5.0,
+      7.0,
+      6.0,
+      7.666666666666667,
+      6.0,
+      6.0,
+      6.0,
+      8.0,
+      7.0,
+      5.333333333333333,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      4.666666666666667,
+      7.0,
+      6.0,
+      7.0,
+      7.0,
+      5.666666666666667,
+      5.666666666666667,
+      4.333333333333333,
+      5.666666666666667,
+      1.3333333333333333,
+      7.0,
+      6.0,
+      5.0,
+      7.0,
+      3.3333333333333335
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": 746,
+      "control": 746,
+      "strikeout": 746
+     }
+    }
+   ],
+   "game_pk": 849831,
+   "official_date": "2026-10-10",
+   "pitcher_ids": [
+    680732,
+    668909
+   ],
+   "series": {
+    "game_number": 5,
+    "games_played": 4,
+    "is_over": false,
+    "result": "Series tied 2-2"
+   },
+   "sha256": "418140df253156e74a737b11c339da478871c629a025382981d0a8917bc05dc5",
+   "stratum": "postseason",
+   "traits": {
+    "postseason": {
+     "game_type": "D"
+    }
+   }
+  },
+  {
+   "as_of": "2026-10-06",
+   "case_id": "postseason-849827",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 688107,
+     "previous_innings": [
+      4.0,
+      4.333333333333333,
+      5.0,
+      5.0,
+      5.666666666666667,
+      6.0,
+      5.666666666666667,
+      7.666666666666667,
+      3.0,
+      5.0,
+      6.0,
+      5.0,
+      4.666666666666667,
+      6.333333333333333,
+      3.6666666666666665,
+      4.333333333333333,
+      4.666666666666667,
+      5.0,
+      7.0,
+      6.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 463,
+      "control": 463,
+      "strikeout": 463
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 621111,
+     "previous_innings": [
+      4.0,
+      2.6666666666666665,
+      6.0,
+      5.0,
+      2.6666666666666665,
+      4.666666666666667,
+      5.333333333333333,
+      6.0,
+      5.0,
+      5.0,
+      5.333333333333333,
+      6.0,
+      4.666666666666667,
+      5.0,
+      5.333333333333333,
+      5.333333333333333,
+      4.0,
+      5.0,
+      2.0,
+      5.666666666666667,
+      5.333333333333333,
+      4.333333333333333,
+      4.0,
+      6.0,
+      6.0,
+      6.0,
+      5.0,
+      5.0,
+      2.3333333333333335,
+      4.666666666666667,
+      6.666666666666667,
+      3.6666666666666665
+     ],
+     "prior_seasons": 8,
+     "samples": {
+      "arsenal": 651,
+      "control": 651,
+      "strikeout": 651
+     }
+    }
+   ],
+   "game_pk": 849827,
+   "official_date": "2026-10-07",
+   "pitcher_ids": [
+    688107,
+    621111
+   ],
+   "series": {
+    "game_number": 4,
+    "games_played": 3,
+    "is_over": false,
+    "result": "MIL leads 2-1"
+   },
+   "sha256": "4e4df4e0b77cf64edd97eab6d92a0592ae3c296f4ee8169c734a535976bcd0a2",
+   "stratum": "postseason",
+   "traits": {
+    "postseason": {
+     "game_type": "D"
+    }
+   }
+  },
+  {
+   "as_of": "2026-10-26",
+   "case_id": "postseason-849803",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669160,
+     "previous_innings": [
+      4.0,
+      3.3333333333333335,
+      6.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      6.0,
+      6.0,
+      6.0,
+      5.333333333333333,
+      7.0,
+      5.666666666666667,
+      6.0,
+      9.0,
+      2.0,
+      0.6666666666666666,
+      4.666666666666667,
+      4.0,
+      5.0,
+      6.0,
+      5.0,
+      6.0,
+      7.0,
+      2.0,
+      0.3333333333333333,
+      4.333333333333333,
+      3.6666666666666665,
+      6.0,
+      2.3333333333333335,
+      2.0,
+      3.0
+     ],
+     "prior_seasons": 6,
+     "samples": {
+      "arsenal": 621,
+      "control": 621,
+      "strikeout": 621
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 643377,
+     "previous_innings": [
+      2.3333333333333335,
+      2.6666666666666665,
+      4.0,
+      5.0,
+      5.0,
+      2.0,
+      4.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      6.0,
+      5.0,
+      5.0,
+      5.0,
+      6.0,
+      5.666666666666667,
+      5.0,
+      2.6666666666666665,
+      5.0,
+      5.0,
+      5.0,
+      3.0
+     ],
+     "prior_seasons": 5,
+     "samples": {
+      "arsenal": 459,
+      "control": 459,
+      "strikeout": 459
+     }
+    }
+   ],
+   "game_pk": 849803,
+   "official_date": "2026-10-27",
+   "pitcher_ids": [
+    669160,
+    643377
+   ],
+   "series": {
+    "game_number": 4,
+    "games_played": 3,
+    "is_over": false,
+    "result": "MIL leads 3-0"
+   },
+   "sha256": "0ad7cabe99aabbf5b1ecbd8adbabe721cc9efd4b5ab8b893076a17762275680d",
+   "stratum": "postseason",
+   "traits": {
+    "postseason": {
+     "game_type": "W"
+    },
+    "veteran": {
+     "pitcher_ids": [
+      669160,
+      643377
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-29",
+   "case_id": "postseason-849841",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 650911,
+     "previous_innings": [
+      6.0,
+      5.333333333333333,
+      5.0,
+      6.0,
+      6.0,
+      5.333333333333333,
+      6.666666666666667,
+      8.0,
+      7.0,
+      9.0,
+      8.0,
+      7.0,
+      7.0,
+      7.0,
+      5.666666666666667,
+      6.0,
+      5.0,
+      7.0,
+      3.3333333333333335,
+      7.0,
+      5.333333333333333,
+      6.0,
+      6.0,
+      5.0,
+      6.0,
+      6.0,
+      6.666666666666667,
+      7.0,
+      6.0,
+      6.0,
+      6.333333333333333,
+      6.333333333333333,
+      7.0
+     ],
+     "prior_seasons": 5,
+     "samples": {
+      "arsenal": 857,
+      "control": 857,
+      "strikeout": 857
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 641816,
+     "previous_innings": [
+      4.0,
+      5.0,
+      5.666666666666667,
+      4.0,
+      7.0,
+      5.0,
+      5.333333333333333,
+      5.666666666666667,
+      5.0,
+      5.0,
+      5.0,
+      5.666666666666667,
+      4.333333333333333,
+      4.333333333333333,
+      7.0,
+      5.0,
+      6.0,
+      5.666666666666667,
+      6.0,
+      6.0,
+      6.666666666666667,
+      5.0,
+      6.666666666666667,
+      6.0,
+      7.0,
+      6.0,
+      5.0
+     ],
+     "prior_seasons": 9,
+     "samples": {
+      "arsenal": 614,
+      "control": 614,
+      "strikeout": 614
+     }
+    }
+   ],
+   "game_pk": 849841,
+   "official_date": "2026-09-30",
+   "pitcher_ids": [
+    650911,
+    641816
+   ],
+   "series": {
+    "game_number": 2,
+    "games_played": 1,
+    "is_over": false,
+    "result": "ATL leads 1-0"
+   },
+   "sha256": "a31518b9be641f0e57129d3afc364db2044ee43c0e48f670a01c629f8d1f6cb3",
+   "stratum": "postseason",
+   "traits": {
+    "postseason": {
+     "game_type": "F"
+    },
+    "veteran": {
+     "pitcher_ids": [
+      650911,
+      641816
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-14",
+   "case_id": "opener-824280",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 702056,
+     "previous_innings": [
+      5.333333333333333,
+      4.0,
+      4.0
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": null,
+      "control": 57,
+      "strikeout": 57
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669724,
+     "previous_innings": [
+      0.6666666666666666
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": null,
+      "control": 33,
+      "strikeout": 33
+     }
+    }
+   ],
+   "game_pk": 824280,
+   "official_date": "2026-05-15",
+   "pitcher_ids": [
+    702056,
+    669724
+   ],
+   "series": null,
+   "sha256": "4a422883b39a494cd9575049a611ade269f5f6a81ed52bdd37ebf95fd08a029c",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 702056
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 0.6666666666666666,
+      "starts": 1
+     },
+     "pitcher_id": 669724
+    }
+   }
+  },
+  {
+   "as_of": "2026-04-20",
+   "case_id": "opener-824369",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 681190,
+     "previous_innings": [
+      6.0,
+      6.0,
+      5.666666666666667,
+      4.0
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": null,
+      "control": 90,
+      "strikeout": 90
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 623474,
+     "previous_innings": [
+      1.0,
+      1.0
+     ],
+     "prior_seasons": 7,
+     "samples": {
+      "arsenal": null,
+      "control": 43,
+      "strikeout": 43
+     }
+    }
+   ],
+   "game_pk": 824369,
+   "official_date": "2026-04-21",
+   "pitcher_ids": [
+    681190,
+    623474
+   ],
+   "series": null,
+   "sha256": "04ee5c467cea6640f7b0eaa1a7c420839898b41fefd6d4b4c22a53da76a4c6eb",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 681190
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.0,
+      "starts": 2
+     },
+     "pitcher_id": 623474
+    }
+   }
+  },
+  {
+   "as_of": "2026-07-08",
+   "case_id": "opener-822954",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 621112,
+     "previous_innings": [
+      1.0
+     ],
+     "prior_seasons": 9,
+     "samples": {
+      "arsenal": 179,
+      "control": 179,
+      "strikeout": 179
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 656876,
+     "previous_innings": [
+      5.0,
+      5.0,
+      6.0,
+      3.6666666666666665,
+      6.0,
+      5.0,
+      6.0,
+      6.0,
+      5.333333333333333,
+      7.0,
+      4.0,
+      7.0,
+      7.0,
+      7.0,
+      6.0,
+      6.0,
+      5.0
+     ],
+     "prior_seasons": 6,
+     "samples": {
+      "arsenal": 378,
+      "control": 378,
+      "strikeout": 378
+     }
+    }
+   ],
+   "game_pk": 822954,
+   "official_date": "2026-07-09",
+   "pitcher_ids": [
+    621112,
+    656876
+   ],
+   "series": null,
+   "sha256": "dc12100adf413af0cfa1e196838a8ec24504c7d41caa8a1362806a5629296a6f",
+   "stratum": "opener",
+   "traits": {
+    "opener": {
+     "evidence": {
+      "average_innings": 1.0,
+      "starts": 1
+     },
+     "pitcher_id": 621112
+    },
+    "veteran": {
+     "pitcher_ids": [
+      621112,
+      656876
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-06-27",
+   "case_id": "opener-823769",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669020,
+     "previous_innings": [
+      1.3333333333333333
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 114,
+      "control": 114,
+      "strikeout": 114
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 605540,
+     "previous_innings": [
+      5.0,
+      5.666666666666667,
+      6.0,
+      7.0,
+      5.0,
+      1.3333333333333333,
+      6.0
+     ],
+     "prior_seasons": 8,
+     "samples": {
+      "arsenal": 140,
+      "control": 140,
+      "strikeout": 140
+     }
+    }
+   ],
+   "game_pk": 823769,
+   "official_date": "2026-06-28",
+   "pitcher_ids": [
+    669020,
+    605540
+   ],
+   "series": null,
+   "sha256": "1dc75e5659892f29498d11986d7a0903444316dd8ef891755fa0233aa80d92f5",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 669020
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.3333333333333333,
+      "starts": 1
+     },
+     "pitcher_id": 669020
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-01",
+   "case_id": "opener-824365",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 519242,
+     "previous_innings": [
+      6.0,
+      6.0,
+      4.0,
+      6.0,
+      7.0,
+      6.0
+     ],
+     "prior_seasons": 15,
+     "samples": {
+      "arsenal": 137,
+      "control": 137,
+      "strikeout": 137
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 657514,
+     "previous_innings": [
+      0.6666666666666666
+     ],
+     "prior_seasons": 4,
+     "samples": {
+      "arsenal": null,
+      "control": 49,
+      "strikeout": 49
+     }
+    }
+   ],
+   "game_pk": 824365,
+   "official_date": "2026-05-02",
+   "pitcher_ids": [
+    519242,
+    657514
+   ],
+   "series": null,
+   "sha256": "98976e9e1393d0a32d7a9b4dbc64d16ae0634560211e57d135d89a5a12cde456",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 519242
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 0.6666666666666666,
+      "starts": 1
+     },
+     "pitcher_id": 657514
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-14",
+   "case_id": "opener-824384",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669684,
+     "previous_innings": [
+      1.3333333333333333,
+      0.6666666666666666
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 140,
+      "control": 140,
+      "strikeout": 140
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 656492,
+     "previous_innings": [
+      5.0,
+      5.0,
+      5.333333333333333,
+      5.333333333333333,
+      6.0,
+      7.0,
+      6.0,
+      7.0,
+      4.333333333333333,
+      5.0,
+      6.0,
+      5.0,
+      5.0,
+      6.0,
+      6.0,
+      7.333333333333333,
+      7.0,
+      5.0,
+      7.0,
+      7.0,
+      6.666666666666667,
+      5.333333333333333,
+      4.0,
+      5.0,
+      6.0,
+      5.0,
+      5.0,
+      6.0,
+      2.3333333333333335
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 674,
+      "control": 674,
+      "strikeout": 674
+     }
+    }
+   ],
+   "game_pk": 824384,
+   "official_date": "2026-09-15",
+   "pitcher_ids": [
+    669684,
+    656492
+   ],
+   "series": null,
+   "sha256": "48a950423ccba10bb0a1234369bb0a527b9e2aeada4c5c6e0fdb490681233a1b",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 669684
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.0,
+      "starts": 2
+     },
+     "pitcher_id": 669684
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-21",
+   "case_id": "opener-824842",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 656427,
+     "previous_innings": [
+      4.333333333333333,
+      4.0,
+      5.666666666666667,
+      6.0,
+      3.3333333333333335,
+      2.0,
+      3.6666666666666665,
+      5.0,
+      3.6666666666666665,
+      6.0
+     ],
+     "prior_seasons": 9,
+     "samples": {
+      "arsenal": 206,
+      "control": 206,
+      "strikeout": 206
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669211,
+     "previous_innings": [
+      1.0
+     ],
+     "prior_seasons": 6,
+     "samples": {
+      "arsenal": null,
+      "control": 43,
+      "strikeout": 43
+     }
+    }
+   ],
+   "game_pk": 824842,
+   "official_date": "2026-05-22",
+   "pitcher_ids": [
+    656427,
+    669211
+   ],
+   "series": null,
+   "sha256": "9f45d0d26b0d4a7bdccffa3deac2515791d68d05c4ee80af36ce3763e32f2670",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 669211
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.0,
+      "starts": 1
+     },
+     "pitcher_id": 669211
+    }
+   }
+  },
+  {
+   "as_of": "2026-07-07",
+   "case_id": "opener-823605",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 674444,
+     "previous_innings": [
+      1.3333333333333333
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": 124,
+      "control": 124,
+      "strikeout": 124
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 681035,
+     "previous_innings": [
+      1.3333333333333333,
+      5.0,
+      4.666666666666667,
+      4.666666666666667,
+      4.0,
+      5.666666666666667,
+      5.0,
+      5.666666666666667,
+      4.666666666666667,
+      4.333333333333333,
+      4.0
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 214,
+      "control": 214,
+      "strikeout": 214
+     }
+    }
+   ],
+   "game_pk": 823605,
+   "official_date": "2026-07-08",
+   "pitcher_ids": [
+    674444,
+    681035
+   ],
+   "series": null,
+   "sha256": "40c8e45fc220bec13993d636a50f07a72f8bbf7a07ec64b1a51107787b6fee19",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 674444
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.3333333333333333,
+      "starts": 1
+     },
+     "pitcher_id": 674444
+    }
+   }
+  },
+  {
+   "as_of": "2026-08-29",
+   "case_id": "opener-823662",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 663855,
+     "previous_innings": [
+      1.0
+     ],
+     "prior_seasons": 7,
+     "samples": {
+      "arsenal": 179,
+      "control": 179,
+      "strikeout": 179
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 805673,
+     "previous_innings": [
+      7.0,
+      6.0,
+      6.0,
+      4.333333333333333,
+      7.0,
+      6.0,
+      7.0,
+      6.0,
+      7.0,
+      4.666666666666667,
+      6.0,
+      3.0,
+      6.0,
+      5.0,
+      5.0,
+      5.0,
+      5.666666666666667,
+      7.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 437,
+      "control": 437,
+      "strikeout": 437
+     }
+    }
+   ],
+   "game_pk": 823662,
+   "official_date": "2026-08-30",
+   "pitcher_ids": [
+    663855,
+    805673
+   ],
+   "series": null,
+   "sha256": "a2bea50167cbf8338bd0a19380198e805a4034aeeddc1d4f28d8fe97d0eeb6ac",
+   "stratum": "opener",
+   "traits": {
+    "opener": {
+     "evidence": {
+      "average_innings": 1.0,
+      "starts": 1
+     },
+     "pitcher_id": 663855
+    }
+   }
+  },
+  {
+   "as_of": "2026-08-06",
+   "case_id": "limited-823836",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 691946,
+     "previous_innings": [
+      2.6666666666666665,
+      2.0
+     ],
+     "prior_seasons": 0,
+     "samples": {
+      "arsenal": null,
+      "control": 32,
+      "strikeout": 32
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 663969,
+     "previous_innings": [
+      3.6666666666666665,
+      5.0,
+      5.0,
+      4.0,
+      6.0,
+      7.333333333333333,
+      3.3333333333333335,
+      5.0,
+      1.0,
+      4.333333333333333,
+      5.0,
+      5.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 383,
+      "control": 383,
+      "strikeout": 383
+     }
+    }
+   ],
+   "game_pk": 823836,
+   "official_date": "2026-08-07",
+   "pitcher_ids": [
+    691946,
+    663969
+   ],
+   "series": null,
+   "sha256": "457f8f71de3631e838a0975645219d8f4f1ecff593ebc5b5bb54664cd5fca621",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 691946
+    }
+   }
+  },
+  {
+   "as_of": "2026-06-20",
+   "case_id": "limited-823531",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 695505,
+     "previous_innings": [
+      5.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      5.666666666666667,
+      6.0,
+      7.0,
+      6.0,
+      6.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      5.333333333333333,
+      5.0
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 319,
+      "control": 319,
+      "strikeout": 319
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 695684,
+     "previous_innings": [
+      4.0,
+      4.666666666666667,
+      4.333333333333333
+     ],
+     "prior_seasons": 0,
+     "samples": {
+      "arsenal": null,
+      "control": 64,
+      "strikeout": 64
+     }
+    }
+   ],
+   "game_pk": 823531,
+   "official_date": "2026-06-21",
+   "pitcher_ids": [
+    695505,
+    695684
+   ],
+   "series": null,
+   "sha256": "5783339f49f0b478e6fab45ccd046dac1a7641744b08a8d1561642258ac3a489",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 695684
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-10",
+   "case_id": "limited-823953",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 686790,
+     "previous_innings": [
+      7.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": null,
+      "control": 24,
+      "strikeout": 24
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 808963,
+     "previous_innings": [
+      4.0,
+      5.0,
+      4.0,
+      4.666666666666667,
+      5.0,
+      6.0
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 134,
+      "control": 134,
+      "strikeout": 134
+     }
+    }
+   ],
+   "game_pk": 823953,
+   "official_date": "2026-05-11",
+   "pitcher_ids": [
+    686790,
+    808963
+   ],
+   "series": null,
+   "sha256": "d1e076bf503ffededcac59fc62691acdc09424704329ab7399aa8f1ade275e90",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 686790
+    }
+   }
+  },
+  {
+   "as_of": "2026-04-03",
+   "case_id": "limited-825104",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 693821,
+     "previous_innings": [
+      6.0
+     ],
+     "prior_seasons": 4,
+     "samples": {
+      "arsenal": null,
+      "control": 23,
+      "strikeout": 23
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 647336,
+     "previous_innings": [
+      5.0
+     ],
+     "prior_seasons": 6,
+     "samples": {
+      "arsenal": null,
+      "control": 20,
+      "strikeout": 20
+     }
+    }
+   ],
+   "game_pk": 825104,
+   "official_date": "2026-04-04",
+   "pitcher_ids": [
+    693821,
+    647336
+   ],
+   "series": null,
+   "sha256": "98bf974d516f31ef0722e88abc5af9e38bf81e2c25854d3ec64002171955383a",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 693821
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-21",
+   "case_id": "limited-823863",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 668964,
+     "previous_innings": [
+      2.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 115,
+      "control": 115,
+      "strikeout": 115
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 691587,
+     "previous_innings": [
+      7.0,
+      4.0,
+      5.0,
+      4.0,
+      6.0,
+      5.333333333333333,
+      5.0,
+      5.0,
+      6.0,
+      5.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 230,
+      "control": 230,
+      "strikeout": 230
+     }
+    }
+   ],
+   "game_pk": 823863,
+   "official_date": "2026-05-22",
+   "pitcher_ids": [
+    668964,
+    691587
+   ],
+   "series": null,
+   "sha256": "291f45d30c89d454d6fb4f2aee5f259ae61a0335619926db5939837d567d2eb5",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 668964
+    }
+   }
+  },
+  {
+   "as_of": "2026-07-03",
+   "case_id": "limited-824012",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 543243,
+     "previous_innings": [
+      4.0,
+      6.0,
+      6.333333333333333,
+      4.0,
+      2.6666666666666665,
+      5.0,
+      6.0,
+      6.0,
+      4.0,
+      6.0,
+      6.333333333333333,
+      6.0,
+      7.0,
+      7.0,
+      7.333333333333333
+     ],
+     "prior_seasons": 13,
+     "samples": {
+      "arsenal": 337,
+      "control": 337,
+      "strikeout": 337
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 691951,
+     "previous_innings": [
+      4.0,
+      5.0,
+      3.0,
+      4.666666666666667,
+      5.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 133,
+      "control": 133,
+      "strikeout": 133
+     }
+    }
+   ],
+   "game_pk": 824012,
+   "official_date": "2026-07-04",
+   "pitcher_ids": [
+    543243,
+    691951
+   ],
+   "series": null,
+   "sha256": "3b0a4c48b12cca533f00bea8ac3ce74f89ec0ff5a35ef37b6f4d35d89373f49a",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 691951
+    }
+   }
+  },
+  {
+   "as_of": "2026-06-21",
+   "case_id": "limited-824344",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 687562,
+     "previous_innings": [
+      5.0,
+      5.333333333333333,
+      5.0,
+      5.333333333333333
+     ],
+     "prior_seasons": 0,
+     "samples": {
+      "arsenal": null,
+      "control": 85,
+      "strikeout": 85
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 663372,
+     "previous_innings": [
+      3.0,
+      5.333333333333333,
+      4.0,
+      5.666666666666667,
+      2.0,
+      6.0,
+      6.0,
+      4.333333333333333,
+      4.666666666666667
+     ],
+     "prior_seasons": 5,
+     "samples": {
+      "arsenal": 173,
+      "control": 173,
+      "strikeout": 173
+     }
+    }
+   ],
+   "game_pk": 824344,
+   "official_date": "2026-06-22",
+   "pitcher_ids": [
+    687562,
+    663372
+   ],
+   "series": null,
+   "sha256": "dfa216843dadac1ade2de4e460cab8bc2942b0d315a1c7afbb4ae42f97ca6f33",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 687562
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-28",
+   "case_id": "limited-824594",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 675512,
+     "previous_innings": [
+      5.666666666666667
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": null,
+      "control": 22,
+      "strikeout": 22
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 607200,
+     "previous_innings": [
+      5.0,
+      5.0,
+      4.666666666666667,
+      7.0,
+      4.666666666666667,
+      5.0,
+      3.0
+     ],
+     "prior_seasons": 8,
+     "samples": {
+      "arsenal": 217,
+      "control": 217,
+      "strikeout": 217
+     }
+    }
+   ],
+   "game_pk": 824594,
+   "official_date": "2026-05-29",
+   "pitcher_ids": [
+    675512,
+    607200
+   ],
+   "series": null,
+   "sha256": "e982b621160f518742f2d4aa48051d2e9fa2357faa17ecdcadc0436d3a4f1319",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "strikeout",
+      "control"
+     ],
+     "pitcher_id": 675512
+    }
+   }
+  },
+  {
+   "as_of": "2026-04-28",
+   "case_id": "limited-823633",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 676917,
+     "previous_innings": [
+      3.6666666666666665,
+      6.0,
+      4.666666666666667,
+      1.3333333333333333,
+      4.0,
+      5.0
+     ],
+     "prior_seasons": 2,
+     "samples": {
+      "arsenal": 116,
+      "control": 116,
+      "strikeout": 116
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 656849,
+     "previous_innings": [
+      5.333333333333333,
+      4.333333333333333,
+      5.0,
+      5.0
+     ],
+     "prior_seasons": 6,
+     "samples": {
+      "arsenal": 125,
+      "control": 125,
+      "strikeout": 125
+     }
+    }
+   ],
+   "game_pk": 823633,
+   "official_date": "2026-04-29",
+   "pitcher_ids": [
+    676917,
+    656849
+   ],
+   "series": null,
+   "sha256": "8d749fa60592b6e8a8226428296ecfb81c5141d109c24f9deda486871116d628",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 676917
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-01",
+   "case_id": "limited-823715",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 656302,
+     "previous_innings": [
+      5.333333333333333,
+      4.333333333333333,
+      5.0,
+      6.0,
+      5.0,
+      5.666666666666667
+     ],
+     "prior_seasons": 7,
+     "samples": {
+      "arsenal": 138,
+      "control": 138,
+      "strikeout": 138
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 687570,
+     "previous_innings": [
+      4.0,
+      5.0
+     ],
+     "prior_seasons": 0,
+     "samples": {
+      "arsenal": null,
+      "control": 36,
+      "strikeout": 36
+     }
+    }
+   ],
+   "game_pk": 823715,
+   "official_date": "2026-05-02",
+   "pitcher_ids": [
+    656302,
+    687570
+   ],
+   "series": null,
+   "sha256": "b77b94e52366cc16f6ae5f24bc759f16e89c5bb1540d66273405bf4ad2a0e535",
+   "stratum": "limited",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 656302
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-10",
+   "case_id": "veteran-823012",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 641743,
+     "previous_innings": [
+      4.666666666666667,
+      5.666666666666667,
+      3.6666666666666665,
+      4.0,
+      5.0,
+      5.0,
+      6.0,
+      5.333333333333333,
+      6.0,
+      5.0,
+      4.0,
+      5.0,
+      4.0,
+      6.0,
+      3.6666666666666665,
+      4.0,
+      5.333333333333333,
+      4.0,
+      5.0,
+      5.333333333333333,
+      6.333333333333333,
+      6.0,
+      5.333333333333333,
+      6.0,
+      4.666666666666667,
+      4.666666666666667,
+      4.333333333333333
+     ],
+     "prior_seasons": 5,
+     "samples": {
+      "arsenal": 633,
+      "control": 633,
+      "strikeout": 633
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669461,
+     "previous_innings": [
+      5.0,
+      6.0,
+      5.0,
+      5.0,
+      6.0,
+      3.3333333333333335,
+      5.666666666666667,
+      6.0,
+      5.0,
+      4.666666666666667,
+      5.0,
+      5.333333333333333,
+      4.333333333333333,
+      4.333333333333333,
+      1.6666666666666665,
+      5.333333333333333,
+      5.0,
+      5.0,
+      6.0,
+      5.333333333333333,
+      3.6666666666666665,
+      6.0,
+      5.0,
+      5.333333333333333,
+      6.0,
+      4.0,
+      5.666666666666667,
+      4.333333333333333
+     ],
+     "prior_seasons": 4,
+     "samples": {
+      "arsenal": 608,
+      "control": 608,
+      "strikeout": 608
+     }
+    }
+   ],
+   "game_pk": 823012,
+   "official_date": "2026-09-11",
+   "pitcher_ids": [
+    641743,
+    669461
+   ],
+   "series": null,
+   "sha256": "433ccf5f033fe3f077ffecba5daae86762578f0b43f5fb62d7f88a1d56dcd87c",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      641743,
+      669461
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-05-31",
+   "case_id": "veteran-824027",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 607536,
+     "previous_innings": [
+      4.333333333333333,
+      5.0,
+      6.333333333333333,
+      5.0,
+      4.333333333333333,
+      5.0,
+      3.6666666666666665,
+      4.666666666666667,
+      4.0
+     ],
+     "prior_seasons": 9,
+     "samples": {
+      "arsenal": 202,
+      "control": 202,
+      "strikeout": 202
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 667755,
+     "previous_innings": [
+      6.0,
+      6.0,
+      8.0,
+      7.0,
+      5.666666666666667,
+      5.0,
+      5.0,
+      4.0,
+      7.666666666666667,
+      5.333333333333333,
+      6.666666666666667,
+      5.0
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": 289,
+      "control": 289,
+      "strikeout": 289
+     }
+    }
+   ],
+   "game_pk": 824027,
+   "official_date": "2026-06-01",
+   "pitcher_ids": [
+    607536,
+    667755
+   ],
+   "series": null,
+   "sha256": "60ffb34a063dc91da5a2a9b1a02285f9656e3d6385749c50db527248b8df2602",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      607536,
+      667755
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-25",
+   "case_id": "veteran-824543",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 500779,
+     "previous_innings": [
+      4.333333333333333,
+      3.6666666666666665,
+      5.0,
+      5.333333333333333,
+      6.0,
+      5.666666666666667,
+      4.0,
+      5.666666666666667,
+      1.3333333333333333,
+      4.0
+     ],
+     "prior_seasons": 14,
+     "samples": {
+      "arsenal": 199,
+      "control": 199,
+      "strikeout": 199
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 663436,
+     "previous_innings": [
+      5.0,
+      6.0,
+      7.0,
+      7.0,
+      6.333333333333333,
+      5.666666666666667,
+      7.0,
+      6.0,
+      6.0,
+      5.666666666666667,
+      6.0,
+      4.666666666666667,
+      6.0,
+      3.3333333333333335,
+      6.0,
+      5.333333333333333,
+      3.3333333333333335,
+      4.0,
+      5.666666666666667,
+      5.0,
+      6.0,
+      5.0,
+      1.0,
+      2.0,
+      5.666666666666667,
+      5.0,
+      4.333333333333333
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": 610,
+      "control": 610,
+      "strikeout": 610
+     }
+    }
+   ],
+   "game_pk": 824543,
+   "official_date": "2026-09-26",
+   "pitcher_ids": [
+    500779,
+    663436
+   ],
+   "series": null,
+   "sha256": "ec40772fe2194761195fd7b0a1de9ba667df197afd6024225a1e23ada34d16e6",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      500779,
+      663436
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-06-14",
+   "case_id": "veteran-823938",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 607259,
+     "previous_innings": [
+      6.0,
+      6.0,
+      4.666666666666667,
+      5.333333333333333,
+      8.0,
+      7.0,
+      5.0,
+      5.666666666666667,
+      6.0,
+      6.0,
+      7.0,
+      4.0,
+      7.0
+     ],
+     "prior_seasons": 8,
+     "samples": {
+      "arsenal": 318,
+      "control": 318,
+      "strikeout": 318
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 641778,
+     "previous_innings": [
+      5.333333333333333,
+      2.0,
+      5.333333333333333,
+      5.0,
+      4.333333333333333,
+      4.333333333333333,
+      6.0,
+      4.666666666666667,
+      5.666666666666667
+     ],
+     "prior_seasons": 7,
+     "samples": {
+      "arsenal": 224,
+      "control": 224,
+      "strikeout": 224
+     }
+    }
+   ],
+   "game_pk": 823938,
+   "official_date": "2026-06-15",
+   "pitcher_ids": [
+    607259,
+    641778
+   ],
+   "series": null,
+   "sha256": "8f23811d6246d7afa1c7c762f7262e29714fafa3068f1237f52c398f73e3aa14",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      607259,
+      641778
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-22",
+   "case_id": "veteran-824785",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 453286,
+     "previous_innings": [
+      6.0,
+      2.0,
+      2.3333333333333335,
+      6.0,
+      2.3333333333333335,
+      3.3333333333333335,
+      2.6666666666666665,
+      6.0,
+      5.333333333333333,
+      5.0,
+      4.0,
+      5.0,
+      7.0,
+      5.666666666666667,
+      5.0,
+      5.0
+     ],
+     "prior_seasons": 18,
+     "samples": {
+      "arsenal": 315,
+      "control": 315,
+      "strikeout": 315
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 605135,
+     "previous_innings": [
+      4.333333333333333,
+      2.0,
+      4.666666666666667,
+      5.0,
+      5.333333333333333,
+      6.666666666666667,
+      4.0,
+      5.0,
+      6.0,
+      3.0,
+      5.333333333333333,
+      5.666666666666667,
+      6.666666666666667,
+      5.666666666666667,
+      5.666666666666667,
+      5.0,
+      6.666666666666667
+     ],
+     "prior_seasons": 11,
+     "samples": {
+      "arsenal": 438,
+      "control": 438,
+      "strikeout": 438
+     }
+    }
+   ],
+   "game_pk": 824785,
+   "official_date": "2026-09-23",
+   "pitcher_ids": [
+    453286,
+    605135
+   ],
+   "series": null,
+   "sha256": "7d5ca91d96474cc238a2f3c77545d8afc4c8c2e9511680206c4e7f6c724a43e7",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      453286,
+      605135
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-08-17",
+   "case_id": "veteran-824803",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 607074,
+     "previous_innings": [
+      4.333333333333333,
+      3.6666666666666665,
+      5.0,
+      6.0,
+      6.0,
+      6.0,
+      5.0,
+      5.333333333333333,
+      5.0
+     ],
+     "prior_seasons": 11,
+     "samples": {
+      "arsenal": 194,
+      "control": 194,
+      "strikeout": 194
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669358,
+     "previous_innings": [
+      5.333333333333333,
+      5.666666666666667,
+      5.0,
+      6.0,
+      6.333333333333333,
+      5.666666666666667,
+      5.666666666666667,
+      4.666666666666667,
+      7.0,
+      6.0,
+      7.0,
+      7.0,
+      5.666666666666667,
+      5.0,
+      7.0,
+      5.0,
+      7.0,
+      6.0,
+      4.666666666666667,
+      6.0,
+      4.333333333333333,
+      6.333333333333333,
+      8.0,
+      3.0
+     ],
+     "prior_seasons": 4,
+     "samples": {
+      "arsenal": 598,
+      "control": 598,
+      "strikeout": 598
+     }
+    }
+   ],
+   "game_pk": 824803,
+   "official_date": "2026-08-18",
+   "pitcher_ids": [
+    607074,
+    669358
+   ],
+   "series": null,
+   "sha256": "e4e9ca40bb9fabc99460ea5611fe64cfc17073ed983f4622b97a06e1b5764586",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      607074,
+      669358
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-07-25",
+   "case_id": "veteran-822870",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669302,
+     "previous_innings": [
+      5.333333333333333,
+      5.333333333333333,
+      6.0,
+      7.0,
+      5.333333333333333,
+      4.0,
+      5.0,
+      6.0,
+      6.0,
+      6.666666666666667,
+      5.666666666666667,
+      6.0,
+      5.333333333333333,
+      6.0,
+      7.0,
+      6.333333333333333,
+      7.0,
+      7.333333333333333,
+      6.666666666666667,
+      6.0
+     ],
+     "prior_seasons": 5,
+     "samples": {
+      "arsenal": 472,
+      "control": 472,
+      "strikeout": 472
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 594798,
+     "previous_innings": [
+      4.666666666666667,
+      5.0,
+      6.0,
+      4.0,
+      5.666666666666667,
+      6.0,
+      6.333333333333333,
+      7.0,
+      6.0,
+      3.0,
+      6.0,
+      5.0,
+      6.0,
+      6.0,
+      6.0,
+      6.0,
+      7.0,
+      5.0,
+      4.666666666666667
+     ],
+     "prior_seasons": 12,
+     "samples": {
+      "arsenal": 424,
+      "control": 424,
+      "strikeout": 424
+     }
+    }
+   ],
+   "game_pk": 822870,
+   "official_date": "2026-07-26",
+   "pitcher_ids": [
+    669302,
+    594798
+   ],
+   "series": null,
+   "sha256": "182a18f199f880a448d1ab5ec1b8d545aece564d3a359cde3e910214509f81c8",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      669302,
+      594798
+     ]
+    }
+   }
+  }
+ ],
+ "collection_date": "2026-10-30",
+ "halted": null,
+ "lookups": {
+  "limited": 22,
+  "opener": 40,
+  "postseason": 20,
+  "veteran": 24
+ },
+ "postseason_end_argument": "auto",
+ "season": [
+  "2026-03-25",
+  "2026-09-27"
+ ],
+ "seed": "00672a7f0dc9483cc8d7d88e86cd6ed692c3a358f8a66043e7671d84d4927c99",
+ "short": {
+  "opener": 1,
+  "veteran": 3
+ },
+ "skipped": {
+  "limited": {},
+  "opener": {},
+  "postseason": {},
+  "veteran": {}
+ },
+ "stopped": {
+  "opener": "screen_cap",
+  "veteran": "screen_cap"
+ },
+ "version": 1
+}
