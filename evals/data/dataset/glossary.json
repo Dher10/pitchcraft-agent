@@ -1,0 +1,58 @@
+{
+ "language": "en",
+ "terms": [
+  {
+   "definition": "Earned run average: earned runs allowed per nine innings. Lower is better.",
+   "term": "ERA"
+  },
+  {
+   "definition": "Walks plus hits per inning pitched. Lower is better.",
+   "term": "WHIP"
+  },
+  {
+   "definition": "Strikeouts.",
+   "term": "K"
+  },
+  {
+   "definition": "On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
+   "term": "OPS"
+  },
+  {
+   "definition": "Share of plate appearances that end in a strikeout.",
+   "term": "K%"
+  },
+  {
+   "definition": "Share of plate appearances that end in a walk.",
+   "term": "BB%"
+  },
+  {
+   "definition": "Total movement of the pitch, sideways and up or down, compared with a pitch thrown without spin.",
+   "term": "Break"
+  },
+  {
+   "definition": "Left-handed hitters / right-handed hitters.",
+   "term": "LHH / RHH"
+  },
+  {
+   "definition": "The number of hitters a pitcher has pitched to.",
+   "term": "batters faced"
+  },
+  {
+   "definition": "How often hitters swing and miss against him.",
+   "term": "swing-and-miss"
+  },
+  {
+   "definition": "How well a pitcher puts the ball where he wants it.",
+   "term": "command"
+  },
+  {
+   "definition": "In this report, the pitch he uses second most (at least 15% of his pitches).",
+   "term": "put-away pitch"
+  },
+  {
+   "definition": "Too few pitches or batters faced for a reliable read; the packet says how many are needed.",
+   "term": "limited sample"
+  }
+ ],
+ "version": "1"
+}
