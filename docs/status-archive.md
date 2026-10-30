@@ -2,6 +2,11 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-30 - P2.2 writer guide 0.2, glossary, writer code (offline)
+
+- Scope: owner approved the guide as 0.2 with nine changes (`3566590`), then P2.2: projection, CallBudget, checks, cascade and the dev runner (one commit instead of three; plan `docs/plans/P2.2.md`). No provider call yet; `public/data/`, `evals/live/` and the test split untouched.
+- Review round 1 (BLOCK, 9 findings, all accepted): checks were not fail-closed on malformed citations (now every sentence is checked inside a guard, `W0.error`), comparison direction and distinct values were unverified, number words and claimed zeros slipped through, sentence-initial names and non-ASCII capitals slipped through, variants of forbidden words (unlikely, might, hence, thus, now, currently), the missing-value rule rejected the guide's own sentence, dict keys (pitch names) were not validated before the prompt, cap-ended items were saved as final. Fixed with a test per finding. Optional notes accepted: partial ledger row and negative cap refused, atomic item write, stale guide digest re-runs an item. Not done: an allowlist for intensity words (denylist only; semantic support is the NLI/judge stage).
+
 ### 2026-10-30 - P2.4 gate 4a offline adapters and collector
 
 - Scope: owner approved gate 4a, MLB ceiling 160, opener screening before lookups, collection date = run date, `--postseason-end` = last final found. No network used; `public/data/`, `evals/live/`, workflows untouched.

@@ -100,7 +100,7 @@ def test_an_unexpected_exception_never_escapes_and_never_leaks_its_text():
 
 def test_attempt_codes_and_paths_are_closed():
     assert set(policy.CODES) == {"timeout", "http_429", "http_503", "http_4xx", "http_5xx",
-                                 "connection_failed", "malformed_response"}
+                                 "connection_failed", "malformed_response", "call_cap_reached"}
     assert set(policy.PATHS) == {"primary", "primary_retry", "fallback", "fallback_retry", "rules"}
 
 

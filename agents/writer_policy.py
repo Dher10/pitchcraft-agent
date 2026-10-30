@@ -15,7 +15,14 @@ WRITER_MODELS = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
 WRITER_TIMEOUT = 120
 BACKOFF_SECONDS = 3
 PATHS = ("primary", "primary_retry", "fallback", "fallback_retry", "rules")
-CODES = ("timeout", "http_429", "http_503", "http_4xx", "http_5xx", "connection_failed", "malformed_response")
+CODES = ("timeout", "http_429", "http_503", "http_4xx", "http_5xx", "connection_failed", "malformed_response", "call_cap_reached")
+class CapReached(Exception):
+    """The durable call cap (agents/call_budget.py) refused the next request; nothing was sent."""
+
+    def __init__(self):
+        super().__init__("call_cap_reached")
+
+
 _RETRYABLE = ("timeout", "http_429", "http_503")
 
 
@@ -30,6 +37,8 @@ def _classify(call, model):
     """Return (response, None) on success, else (None, closed code)."""
     try:
         response = call(model, WRITER_TIMEOUT)
+    except CapReached:
+        return None, "call_cap_reached"
     except ConnectionTimeout:
         return None, "timeout"
     except ConnectionFailed:
@@ -57,7 +66,7 @@ def write_with_policy(call, *, sleep=time.sleep):
                 suffix = "" if number == 1 else "_retry"
                 return WriterOutcome(("primary", "fallback")[index] + suffix, response, tuple(attempts))
             attempts.append({"model": model, "try": number, "code": code})
-            if code == "http_4xx":
+            if code in ("http_4xx", "call_cap_reached"):
                 return WriterOutcome("rules", None, tuple(attempts))
             if code not in _RETRYABLE or number == 2:
                 break
