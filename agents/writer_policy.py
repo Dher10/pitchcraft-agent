@@ -14,6 +14,7 @@ from agents.model_transport import ConnectionFailed, ConnectionTimeout
 WRITER_MODELS = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
 WRITER_TIMEOUT = 120
 BACKOFF_SECONDS = 3
+PACING_SECONDS = 20  # owner decision (guide 0.4, A8): at least this long between the starts of two Gemini calls
 PATHS = ("primary", "primary_retry", "fallback", "fallback_retry", "rules")
 CODES = ("timeout", "http_429", "http_503", "http_4xx", "http_5xx", "connection_failed", "malformed_response", "call_cap_reached")
 class CapReached(Exception):
@@ -84,3 +85,24 @@ def summarize(outcomes):
     llm = calls - paths["rules"]
     off_primary = paths["fallback"] + paths["fallback_retry"] + paths["rules"]
     return {"calls": calls, "paths": paths, "llm_coverage": llm / calls, "fallback_rate": off_primary / calls}
+
+
+class Pacer:
+    """Keeps the start of one Gemini call at least `interval` seconds after the start of the previous one.
+
+    The D49 retry backoff is separate and unchanged: after a 503 the backoff sleeps first, then the pacer tops the gap up."""
+
+    def __init__(self, interval=PACING_SECONDS, *, clock=time.monotonic, sleep=time.sleep):
+        self.interval, self.clock, self.sleep, self.last = interval, clock, sleep, None
+
+    def wait(self) -> None:
+        now = self.clock()
+        if self.last is not None:
+            gap = self.interval - (now - self.last)
+            if gap > 0:
+                self.sleep(gap)
+                now = self.clock()
+        self.last = now
+
+
+DEFAULT_PACER = Pacer()  # shared by every production writer call in the process

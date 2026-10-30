@@ -231,7 +231,7 @@ def test_the_guide_the_writer_reads_has_no_case_id_or_dataset_path():
     text = lw.guide_text()
 
     assert not re.findall(r"[a-z]+-[0-9]{6}", text) and "findings/" not in text and "packets/" not in text and "manifest" not in text
-    assert text.startswith("# PitchCraft writer guide (version 0.3)") and "## 6." not in text and "## 1." in text
+    assert text.startswith("# PitchCraft writer guide (version 0.4)") and "## 6." not in text and "## 1." in text
 
 
 def test_a_hostile_pitch_name_key_is_refused_before_any_request(parts):

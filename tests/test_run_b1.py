@@ -63,7 +63,7 @@ def test_the_review_document_puts_both_texts_and_the_path_and_checks_side_by_sid
     text = run_b1.review_markdown([ok, rejected], budget)
 
     assert "Path: **primary**" in text and "Path: **rules** (reason: `checks_failed`)" in text
-    assert "### Rules text (A)" in text and "### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks" in text
+    assert "### Rules text (A)" in text and "### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed gate checks" in text and "Outcome: **REJECTED" in text and "Outcome: **ACCEPTED" in text
     assert "checks ['W10.cause']" in text and "run 3 of 8" in text
     assert "Kyle Freeland and José Soriano start this game." in text
 
@@ -123,3 +123,93 @@ def test_a_readability_note_may_only_quote_text_that_is_shown(tmp_path, monkeypa
     assert "Reads fine." in run_b1.review_markdown([item], budget, notes=good)
     with pytest.raises(ValueError):
         run_b1.review_markdown([item], budget, notes=bad)
+
+
+
+def make_budget(tmp_path, cap=80):
+    return cb.CallBudget(tmp_path / "calls.jsonl", run="r", run_cap=cap)
+
+
+def test_the_review_document_prints_the_versions_recorded_in_the_run_not_the_current_ones(tmp_path):
+    rules = run_b1.lw.rules_report_for(bp.load_dev_packet(DATASET, "veteran-824027"))
+    item = {"case_id": "veteran-824027", "path": "rules", "reason": "checks_failed", "content_attempts": 0, "attempts": [], "report": rules,
+            "rules_report": rules, "style_findings": [], "failures": [], "guide_sha256": "a" * 64, "prompt_version": "p2.2-1"}
+
+    text = run_b1.review_markdown([item], make_budget(tmp_path))
+
+    assert "`aaaaaaaa" in text and "prompt version(s) recorded in this run: `p2.2-1`" in text
+    assert run_b1.lw.PROMPT_VERSION not in text.split("## veteran-824027")[0]
+
+
+def test_an_accepted_case_lists_its_style_findings_and_a_rejected_one_its_gate_and_style_detail(tmp_path, monkeypatch):
+    case = "veteran-824027"
+    glossary = writer_input.load_glossary(DATASET / "glossary.json")
+    doc = writer_input.build_writer_input(bp.load_dev_packet(DATASET, case), bp.load_dev_findings(DATASET, case), glossary)
+    control = tlw.twc.candidate(doc)
+    monkeypatch.setattr(writer_checks, "rules_length", lambda report: writer_checks.report_length(control))
+    styled = json.loads(json.dumps(control))
+    styled["sections"]["arsenal"][0]["text"] = "Kyle Freeland utilizes his Four-seam most."
+    both = json.loads(json.dumps(styled))
+    both["sections"]["confidence"][0]["text"] = "The starters listed are the probable pitchers because it works."
+    budget = make_budget(tmp_path)
+    accepted = run_b1.run_item(case, DATASET, glossary, tlw.Fake(tlw.answer(styled)), budget, tmp_path / "a", sleep=lambda s: None)
+    rejected = run_b1.run_item(case, DATASET, glossary, tlw.Fake(tlw.answer(both), tlw.answer(both)), budget, tmp_path / "b", sleep=lambda s: None)
+
+    text = run_b1.review_markdown([accepted, rejected], budget)
+
+    assert "Outcome: **ACCEPTED" in text and "Style findings recorded for S1 (never a reason to reject): `S-4` `utilizes`" in text
+    assert "- gate `W10.cause` token `because`" in text and "- style `S-4` token `utilizes`" in text
+    assert "accepted 1, rejected 1, not attempted 0" in text
+
+
+class CapacityProvider:
+    """Answers 429 on the primary model and 200 on the fallback, to trigger the capacity stop."""
+
+    def __init__(self, good):
+        self.good, self.calls = good, 0
+
+    def __call__(self, model, timeout, body):
+        self.calls += 1
+        return tlw.status(429) if model == "gemini-3.5-flash" else tlw.answer(None, text="{}", version="gemini-3.1-flash-lite")
+
+
+def test_more_than_a_third_capacity_failures_stops_the_run_keeps_partial_results_and_names_the_model(tmp_path, monkeypatch):
+    glossary = writer_input.load_glossary(DATASET / "glossary.json")
+    case_ids = run_b1.pick_cases()[:5]
+    budget = make_budget(tmp_path)
+    provider = CapacityProvider(None)
+    monkeypatch.setattr(run_b1, "STOP_MIN_CALLS", 4)
+
+    items, stop = run_b1.run_all(case_ids, DATASET, glossary, provider, budget, tmp_path / "items", sleep=lambda s: None, clock=lambda: 1.0)
+
+    assert stop is not None and stop["after_case"] in case_ids and stop["by_model"]["gemini-3.5-flash"]["capacity"] >= 4
+    attempted = [i for i in items if i["path"] != "not_attempted"]
+    skipped = [i for i in items if i["path"] == "not_attempted"]
+    assert attempted and skipped and len(attempted) + len(skipped) == 5 and all(i["reason"] == "capacity_stop" for i in skipped)
+    assert provider.calls == budget.used_run
+    info = {"started_local": "2026-10-31 10:00", "started_utc": "2026-10-31 15:00", "finished_local": "2026-10-31 10:05", "timezone": "COT",
+            "stopped": {**{k: v for k, v in stop.items() if k != "at_epoch"}, "at_utc": "2026-10-31 15:03", "at_local": "2026-10-31 10:03"}}
+    text = run_b1.review_markdown(items, budget, info)
+    assert "The run stopped early" in text and "Failing model(s): `gemini-3.5-flash`" in text and "NOT ATTEMPTED" in text
+
+
+def test_a_run_with_few_capacity_failures_does_not_stop(tmp_path, monkeypatch):
+    glossary = writer_input.load_glossary(DATASET / "glossary.json")
+    case_ids = run_b1.pick_cases()[:2]
+    doc = writer_input.build_writer_input(bp.load_dev_packet(DATASET, case_ids[0]), bp.load_dev_findings(DATASET, case_ids[0]), glossary)
+    monkeypatch.setattr(writer_checks, "rules_length", lambda report: 10**9)
+    budget = make_budget(tmp_path)
+    provider = tlw.Fake(*[tlw.status(500)] * 8)
+
+    items, stop = run_b1.run_all(case_ids, DATASET, glossary, provider, budget, tmp_path / "items", sleep=lambda s: None)
+
+    assert stop is None and all(i["path"] != "not_attempted" for i in items)
+
+
+def test_the_early_stop_needs_nine_calls_and_more_than_a_third():
+    assert run_b1.STOP_MIN_CALLS == 9
+    assert run_b1.should_stop(8, 8) is False   # eight calls, all capacity failures: too few to judge
+    assert run_b1.should_stop(3, 9) is False   # exactly one third does not stop
+    assert run_b1.should_stop(4, 9) is True    # more than a third stops
+    assert run_b1.should_stop(0, 20) is False
+    assert run_b1.should_stop(7, 20) is True and run_b1.should_stop(6, 20) is False

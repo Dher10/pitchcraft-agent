@@ -32,7 +32,7 @@ def digest(value) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()).hexdigest()
 
 
-PROMPT_VERSION = "p2.2-2"
+PROMPT_VERSION = "p2.2-3"
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_PATH = ROOT / "docs" / "writer-guide.md"
 MAX_OUTPUT_TOKENS = 8192
@@ -159,6 +159,7 @@ class WriterResult:
     candidate: dict | None = None
     failures: list = field(default_factory=list)  # the check codes of the last rejected candidate
     reason: str | None = None  # closed code when the rules report was used
+    style_findings: list = field(default_factory=list)  # style rules the accepted report broke: S1 inputs, never a reason to reject (D52)
 
 
 def rules_report_for(matchup_input: dict) -> dict:
@@ -181,6 +182,7 @@ def write(
     budget: Any = None,
     item_id: str = "item",
     sleep: Callable[[float], None] | None = None,
+    pacer: Any = None,
 ) -> WriterResult:
     rules_report = rules_report_for(matchup_input)
     if provider is None:
@@ -192,6 +194,8 @@ def write(
     except (writer_input.WriterInputError, PromptRejected):
         return rules_result(rules_report, "input_rejected")
     result = WriterResult(rules_report, "rules")
+    # Every Gemini call, the D49 retries included, starts at least PACING_SECONDS after the previous one (guide 0.4, A8).
+    pacer = pacer or (writer_policy.Pacer(sleep=sleep) if sleep is not None else writer_policy.DEFAULT_PACER)
     failures: list[str] | None = None
     for content_attempt in (1, 2):
         if failures is not None:
@@ -203,7 +207,14 @@ def write(
         def call(model, timeout, body=body):
             return provider(model, timeout, body)
 
-        guarded = budget.guard(item_id, call) if budget is not None else call
+        counted = budget.guard(item_id, call) if budget is not None else call
+
+        def guarded(model, timeout, counted=counted):
+            if budget is not None and budget.remaining_run <= 0:
+                raise writer_policy.CapReached()  # no waiting for a call that will be refused
+            pacer.wait()
+            return counted(model, timeout)
+
         kwargs = {"sleep": sleep} if sleep is not None else {}
         outcome = writer_policy.write_with_policy(guarded, **kwargs)
         record: dict = {"content_attempt": content_attempt, "transport": list(outcome.attempts), "path": outcome.path}
@@ -223,12 +234,16 @@ def write(
             record["checks"] = failures
             continue
         detail = writer_checks.check_report_detailed(candidate, doc, rules_len)
-        failures = list(dict.fromkeys(f["check"] for f in detail))
-        record["checks"] = failures
+        gates, styles = writer_checks.split_failures(detail)
+        gate_codes = list(dict.fromkeys(f["check"] for f in gates))
+        record["checks"] = gate_codes  # the hard gates (accuracy, safety, policy, output shape)
+        record["style_findings"] = styles  # scored by S1, never a reason to reject (D52)
         record["check_detail"] = detail  # sentence, check and offending token: the local run record only, never fed back
-        if not failures:
-            return WriterResult(writer_checks.to_report(candidate, rules_report), outcome.path, content_attempt, result.attempts, candidate, [])
-        result.failures = failures
+        if not gate_codes:
+            return WriterResult(writer_checks.to_report(candidate, rules_report), outcome.path, content_attempt, result.attempts, candidate, [], style_findings=styles)
+        # The informed retry names every failed rule, style ones included, as closed codes.
+        failures = list(dict.fromkeys(f["check"] for f in detail))
+        result.failures = gate_codes
     return rules_result(rules_report, "checks_failed", content_attempts=2, attempts=result.attempts, failures=result.failures)
 
 

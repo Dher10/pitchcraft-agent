@@ -49,13 +49,13 @@ def test_the_ideal_report_passes_every_code_check_and_its_length_is_inside_the_r
     assert 0.8 * rules_len <= wc.report_length(candidate) <= 1.2 * rules_len
 
 
-def test_the_ideal_report_uses_each_short_form_once_and_no_definition_and_no_repeated_scope():
+def test_the_ideal_report_uses_each_short_form_once_and_no_definition_and_states_the_scope_once():
     _, _, candidate = load()
     text = " ".join(s["text"] for s in wc._all_sentences(candidate))
 
     for short in ("(earned run average)", "(walks plus hits per inning)", "(on-base plus slugging)", "(strikeout rate)", "(walk rate)"):
         assert text.count(short) == 1, short
-    assert text.count("2026 regular season through May 31") == 3  # once in each of three sections
+    assert text.count("2026 regular season through May 31") == 1  # S-1: once per report
 
 
 def test_the_ideal_report_reads_as_prose_not_as_a_list_of_facts():
@@ -76,8 +76,9 @@ def test_each_wording_rule_still_fails_on_a_spoiled_copy_of_the_ideal_report():
 
     spoiled = json.loads(json.dumps(candidate))
     spoiled["sections"]["home_vs_away"][1]["text"] = "He shows above-average swing-and-miss ability and below-average command over the 2026 regular season through May 31."
-    spoiled["sections"]["home_vs_away"][1]["evidence"].append(spoiled["sections"]["home_vs_away"][0]["evidence"][-1])
-    assert "W12.repeat" in wc.check_report(spoiled, doc, rules_len)
+    spoiled["sections"]["home_vs_away"][1]["evidence"].append(spoiled["sections"]["summary"][2]["evidence"][0])
+    found = wc.check_report_detailed(spoiled, doc, rules_len)
+    assert [f["check"] for f in found if not wc.is_gate(f["check"])] == ["S-1"] and not [f for f in found if wc.is_gate(f["check"])]
 
 
 @pytest.mark.parametrize("text", ["Kyle Freeland is great.", "Kyle Freeland will win."])

@@ -7,6 +7,7 @@ Findings reach the writer as labels only, never as the rules writer's sentences.
 from __future__ import annotations
 
 from copy import deepcopy
+from decimal import Decimal, InvalidOperation
 import json
 from pathlib import Path
 import unicodedata
@@ -94,6 +95,7 @@ def build_writer_input(packet: dict, findings: dict, glossary: list[dict]) -> di
     for slot in SLOTS:
         starter = _need(starters, slot, "starters")
         doc["starters"][slot] = {key: _need(starter, key, f"starters.{slot}") for key in STARTER_KEYS}
+    _add_numeric_twins(doc)
     doc["pitch_mix"] = _need(charts, "pitch_mix", "charts")
     doc["pitch_movement"] = _need(charts, "pitch_movement", "charts")
     doc["velocity_by_pitch"] = _need(charts, "velocity_by_pitch", "charts")
@@ -104,8 +106,32 @@ def build_writer_input(packet: dict, findings: dict, glossary: list[dict]) -> di
     return _nfc(doc)
 
 
+def _number(text: Any) -> float | None:
+    """A figure the packet carries as text ("8.08", ".712", "24.3%") as a number, or None."""
+
+    if text is None:
+        return None
+    try:
+        return float(Decimal(str(text).strip().rstrip("%")))
+    except InvalidOperation:
+        return None
+
+
+def _add_numeric_twins(doc: dict) -> None:
+    """Parallel numbers for ERA, WHIP, OPS, K% and BB% (not innings, whose ".1" means a third), so a comparison can be verified."""
+
+    for slot in SLOTS:
+        summary = doc["starters"][slot]["season_summary"]
+        summary["era_number"], summary["whip_number"] = _number(summary.get("era")), _number(summary.get("whip"))
+    for side in SIDES:
+        offense = doc["teams"][side]["offense_profile"]
+        offense["ops_number"] = _number(offense.get("ops_vs_hand"))
+        offense["k_rate_number"], offense["bb_rate_number"] = _number(offense.get("k_rate_vs_hand")), _number(offense.get("bb_rate_vs_hand"))
+
+
 def _findings(findings: dict, teams: dict) -> dict:
-    out: dict[str, Any] = {key: list(_need(findings, key, "findings")) for key in FINDING_LISTS}
+    # One string per list (None when empty), so each list is a citable scalar path (guide 0.4, A9).
+    out: dict[str, Any] = {key: "; ".join(_need(findings, key, "findings")) or None for key in FINDING_LISTS}
     for key in FINDING_STYLES:
         out[key] = _need(findings, key, "findings")
     by_team = _need(findings, "lineup_pressure_points_by_team", "findings")

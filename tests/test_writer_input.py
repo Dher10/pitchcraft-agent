@@ -63,7 +63,8 @@ def test_the_figures_the_guide_names_are_present(parts):
 def test_the_findings_reach_the_writer_as_labels_only_never_as_sentences(parts):
     findings = build(parts)["findings"]
 
-    assert findings["away_starter_strengths"] == ["Solid command supports strike-zone control", "Four-seam to set up, Curveball to finish"]
+    assert findings["away_starter_strengths"] == "Solid command supports strike-zone control; Four-seam to set up, Curveball to finish"
+    assert findings["away_starter_risks"] is None
     assert findings["lineup_notes"]["home"] == "has elevated swing-and-miss risk; draws walks at an above-average rate"
     assert findings["lineup_notes"]["away"] is None
     text = json.dumps(findings)

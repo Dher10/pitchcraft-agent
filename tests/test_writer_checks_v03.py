@@ -70,14 +70,6 @@ def test_terms_without_a_short_form_need_no_expansion(doc):
     assert not [f for f in check(c, doc) if f.startswith("W11")]
 
 
-def test_the_scope_is_stated_once_per_section_not_per_sentence(doc):
-    twice = with_first(candidate(doc), "away_vs_home", 0, f"Kyle Freeland shows solid command, over the {SCOPE}.", "starters.away_starter.pitching_profile.command_label", "starters.away_starter.season_summary.scopes.counts.label", doc=doc)
-    assert "W12.repeat" in check(twice, doc)
-
-    other = with_first(candidate(doc), "home_vs_away", 0, f"José Soriano shows below-average command, over the {SCOPE}.", "starters.home_starter.pitching_profile.command_label", "starters.home_starter.season_summary.scopes.counts.label", doc=doc)
-    assert "W12.repeat" not in check(other, doc)
-
-
 def test_labels_may_be_written_in_lowercase_inside_a_sentence(doc):
     paths = ("starters.away_starter.pitching_profile.command_label", "starters.away_starter.pitching_profile.swing_miss_label")
     lower = with_first(candidate(doc), "away_vs_home", 0, "Kyle Freeland shows solid command and average swing-and-miss ability.", *paths, doc=doc)

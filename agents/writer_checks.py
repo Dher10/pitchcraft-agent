@@ -47,7 +47,8 @@ _WATCH_OUTCOME, _NUMBER_WORDS = _word(_W["watch_outcome"]), _word(_W["number_wor
 _PREDICTION, _TOPIC, _CAUSE, _TIME = (re.compile(_P[k], re.I) for k in ("prediction", "topic", "cause", "time"))
 _INTERNAL, _UNKNOWN_TERMS = re.compile(_P["internal"], re.I), re.compile(_P["unknown_terms"], re.I)
 _QUESTION_OPENER, _ZERO_CLAIM = re.compile(_P["question_opener"], re.I), re.compile(_P["zero_claim"], re.I)
-_MOVEMENT_BAD, _MOVEMENT_FORM = re.compile(_P["movement_bad"], re.I), re.compile(_P["movement_form"], re.I)
+_MOVEMENT_BAD, _MOVEMENT_CORE = re.compile(_P["movement_bad"], re.I), re.compile(_P["movement_core"], re.I)
+_MOVEMENT_CLAUSE = re.compile(_P["movement_clause"], re.I)
 _SERIES_STANDING, _LIMITED_WORDS = re.compile(_P["series_standing"], re.I), re.compile(_P["limited_words"], re.I)
 _WATCH_FORM = re.compile(_P["watch_form"])
 _OPENERS, _EXEMPT_CAPITALS = frozenset(LEX["openers"]), frozenset(LEX["exempt_capitals"])
@@ -56,6 +57,22 @@ _TERM_PATTERNS = {k: re.compile(v) for k, v in LEX["term_patterns"].items()}
 _IS = LEX["is_joiner"]
 _DEFINING = LEX["patterns"]["defining_verbs"]
 _BAD_CODE = "W0.error"
+_STYLE_CODES = frozenset(LEX["style_codes"])
+_STYLE = LEX["style"]
+_S4 = _word(_STYLE["s4_verbs"])
+_S7 = re.compile(_STYLE["s7_tails"], re.I)
+_S8 = re.compile(_STYLE["s8_authority"], re.I)
+_S2_FRAME = re.compile(_STYLE["s2_frame"])
+
+
+def is_gate(code: str) -> bool:
+    """Hard gates are accuracy, safety, policy and output-shape checks (D52). Style rules are scored, never gates. Unknown codes are gates."""
+
+    return code not in _STYLE_CODES
+
+
+def split_failures(found: list[dict]) -> tuple[list[dict], list[dict]]:
+    return [f for f in found if is_gate(f["check"])], [f for f in found if not is_gate(f["check"])]
 
 
 def _nfc(text: str) -> str:
@@ -249,7 +266,7 @@ def check_report_detailed(candidate: dict, doc: dict, rules_len: int) -> list[di
         add(code, None, token)
 
     _terms(sentences, texts, glossary, fail_at)
-    _scope_repeats(candidate, texts, scope_labels, fail_at)
+    _style(candidate, doc, index, texts, scope_labels, phrases, vocab, fail_at)
     _limits(candidate, sentences, doc, fail_all)
     _series(doc, texts, fail_all)
     _coverage(doc, texts, scope_labels, fail_all)
@@ -388,8 +405,13 @@ def _comparison_ok(text: str, cited: list[dict], doc: dict, index: dict) -> bool
 
 
 def _movement(text: str, paths: list[str], index: dict, fail) -> None:
-    match = _MOVEMENT_FORM.search(text)
-    if not match or _MOVEMENT_BAD.search(text):
+    match = _MOVEMENT_CORE.search(text)
+    clauses = _MOVEMENT_CLAUSE.findall(text)
+    stripped = text.rstrip(". ").lower()
+    clause = _MOVEMENT_CLAUSE.pattern
+    at_end = stripped.endswith(clause)
+    at_start = text.lower().startswith(clause)
+    if not match or _MOVEMENT_BAD.search(text) or len(clauses) != 1 or not (at_end or at_start):
         fail("W8.form")
         return
     h = [p for p in paths if p.endswith(".h_break")]
@@ -415,7 +437,8 @@ def _term_pattern(term: str):
 
 
 def _terms(sentences: list[dict], texts: list[str], glossary: dict, fail_at) -> None:
-    """A term with a short form gets it in parentheses, cited, on its first use and only once per report."""
+    """A term with a short form gets it on its first use, in either order ("OPS (on-base plus slugging)" or "on-base plus slugging
+    (OPS)"), cited, and only once per report (guide 0.4, A1)."""
 
     for term, entry in glossary.items():
         short = entry["short"]
@@ -423,28 +446,55 @@ def _terms(sentences: list[dict], texts: list[str], glossary: dict, fail_at) -> 
         uses = [(i, m) for i, t in enumerate(texts) for m in pattern.finditer(t)]
         if not uses or short is None:
             continue
-        expansion = re.compile("(?:" + pattern.pattern + ")" + re.escape(" (" + short + ")"), pattern.flags)
+        forward = re.compile("(?:" + pattern.pattern + ")" + re.escape(" (" + short + ")"), pattern.flags)
+        reverse = re.compile("(?i:" + re.escape(short) + r") \((?:" + pattern.pattern + r")\)", pattern.flags)
         first_i, first_match = uses[0]
+        first_text = texts[first_i]
+        inside_reverse = any(m.start() < first_match.start() < m.end() for m in reverse.finditer(first_text))
         cited = [e["path"] for e in sentences[first_i]["evidence"]]
-        if not expansion.match(texts[first_i], first_match.start()) or f"glossary.{term}.short" not in cited:
+        if not (forward.match(first_text, first_match.start()) or inside_reverse) or f"glossary.{term}.short" not in cited:
             fail_at(first_i, "W11.expansion", term)
-        seen = [i for i, t in enumerate(texts) for _ in expansion.finditer(t)]
+        seen = [i for i, t in enumerate(texts) for _ in (*forward.finditer(t), *reverse.finditer(t))]
         if len(seen) > 1:
             fail_at(seen[1], "W11.repeat", term)
 
 
-def _scope_repeats(candidate: dict, texts: list[str], scope_labels: set, fail_at) -> None:
-    """A scope is stated once per section (the headline and summary lines count as one), not in every sentence."""
+def _style(candidate: dict, doc: dict, index: dict, texts: list[str], scope_labels: set, phrases: set, vocab: set, fail_at) -> None:
+    """Detectors for the style rules S-1, S-2, S-4, S-5, S-7 and S-8. They feed S1; none of them is a gate (D52).
+    S-3, S-6 and S-9 are judged by S1, not by code."""
 
-    groups, start = [range(0, 4)], 4
-    for key in SECTION_KEYS:
-        groups.append(range(start, start + len(candidate["sections"][key])))
-        start += len(candidate["sections"][key])
-    for group in groups:
-        for label in scope_labels:
-            hits = [i for i in group if label in texts[i]]
-            if len(hits) > 1:
-                fail_at(hits[1], "W12.repeat", label)
+    for label in scope_labels:  # S-1: each scope once per report
+        hits = [i for i, t in enumerate(texts) if label in t]
+        if len(hits) > 1:
+            fail_at(hits[1], "S-1", label)
+    openers: dict[str, list[int]] = {}
+    frames: list[int] = []
+    for i, text in enumerate(texts):
+        first = re.match(r"[^\W\d_][\w'’-]*", text)
+        if first and first.group(0).lower() != "watch" and i != 0:
+            openers.setdefault(first.group(0).lower(), []).append(i)
+        if _S2_FRAME.match(text):
+            frames.append(i)
+        for match in _S4.finditer(text):
+            fail_at(i, "S-4", match.group(0))
+        for match in _S7.finditer(text):
+            fail_at(i, "S-7", match.group(0))
+        for match in _S8.finditer(text):
+            fail_at(i, "S-8", match.group(0))
+    for word, hits in openers.items():
+        if len(hits) > _STYLE["s2_max_same_opener"]:
+            fail_at(hits[_STYLE["s2_max_same_opener"]], "S-2", word)
+    if len(frames) > 1:
+        fail_at(frames[1], "S-2", _S2_FRAME.match(texts[frames[1]]).group(0))
+    headline = texts[0]
+    name_tokens = {t for phrase in phrases for t in phrase}
+    for run, opens in _entity_runs(headline):
+        for token in run[1:] if opens else run:
+            if token not in name_tokens and token not in vocab:
+                fail_at(0, "S-5", token)
+    last = re.findall(r"[^\W\d_][\w'’-]*", headline)
+    if last and last[-1].lower() in _STYLE["s5_tag_words"]:
+        fail_at(0, "S-5", last[-1])
 
 
 def _surname(name: str) -> str:

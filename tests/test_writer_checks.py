@@ -57,7 +57,7 @@ def candidate(doc):
                 s("Watch how the Angels lineup handles left-handed pitching.", "teams.home.offense_profile.vs_pitcher_hand"),
             ],
             "confidence": [
-                s(f"The pitcher figures cover the {SCOPE}.", f"{A}.season_summary.scopes.counts.label"),
+                s("The starters listed are the probable pitchers.", "data_confidence.lineup_status"),
                 s("Lineups can change before first pitch.", "status"),
             ],
         },

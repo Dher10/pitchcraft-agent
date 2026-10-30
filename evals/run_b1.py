@@ -25,9 +25,10 @@ DATASET = ROOT / "evals" / "data" / "dataset"
 WORK = ROOT / ".local" / "p2-2"
 KEY_NAME = "PITCHCRAFT_GEMINI_API_KEY_LOCAL"
 QUOTA = {"veteran": 3, "limited": 3, "opener": 2, "postseason": 2}  # the ten dev examples, in the manifest order
-RUN_ID = "b1-dev-examples-2"  # run 1 (guide 0.2, 40 calls) is in the same ledger and counts against the experiment cap
+RUN_ID = "b1-dev-examples-3"  # runs 1 and 2 (95 calls) are in the same ledger and count against the experiment cap
+ITEMS_DIR = "items-3"
+STOP_MIN_CALLS = 9  # the early stop needs at least this many finished calls, so one early 429 does not end a run
 DEFAULT_RUN_CAP = 80  # owner decision of 2026-10-30 (run 1 spent 22 of 40 calls on 503/429)
-PAUSE_SECONDS = 5
 
 
 def pick_cases(dataset=DATASET) -> list[str]:
@@ -43,7 +44,7 @@ def pick_cases(dataset=DATASET) -> list[str]:
     return chosen
 
 
-def run_item(case_id: str, dataset, glossary, provider, budget, items_dir: Path, sleep=time.sleep) -> dict:
+def run_item(case_id: str, dataset, glossary, provider, budget, items_dir: Path, sleep=None) -> dict:
     path = items_dir / f"{case_id}.json"
     if path.exists():
         saved = json.loads(path.read_text(encoding="utf-8"))
@@ -55,6 +56,7 @@ def run_item(case_id: str, dataset, glossary, provider, budget, items_dir: Path,
         "case_id": case_id, "path": result.path, "reason": result.reason, "content_attempts": result.content_attempts,
         "failures": result.failures, "attempts": result.attempts, "report": result.report,
         "rules_report": lw.rules_report_for(packet),
+        "style_findings": result.style_findings,
         "guide_sha256": lw.guide_sha256(), "prompt_version": lw.PROMPT_VERSION,
     }
     if result.reason == "call_cap_reached":
@@ -80,11 +82,57 @@ def length_of(report: dict) -> int:
     return writer_checks.rules_length(report)
 
 
+def writer_checks_is_gate(code: str) -> bool:
+    from agents import writer_checks
+
+    return writer_checks.is_gate(code)
+
+
 def capacity_share(budget: cb.CallBudget) -> tuple[int, int]:
     """(503/429 answers, finished calls) of this run, from the ledger."""
 
     done = [r for r in budget.rows if r["kind"] == "finish" and r["run"] == budget.run]
     return sum(1 for r in done if r["code"] in ("http_503", "http_429")), len(done)
+
+
+def should_stop(capacity: int, done: int) -> bool:
+    """More than a third of the finished calls failed on capacity, after at least STOP_MIN_CALLS of them."""
+
+    return done >= STOP_MIN_CALLS and capacity * 3 > done
+
+
+def capacity_by_model(budget: cb.CallBudget) -> dict[str, dict[str, int]]:
+    """Per model of this run: finished calls and capacity failures (503/429)."""
+
+    model_of = {r["seq"]: r["model"] for r in budget.rows if r["kind"] == "reserve" and r["run"] == budget.run}
+    out: dict[str, dict[str, int]] = {}
+    for r in budget.rows:
+        if r["kind"] == "finish" and r["run"] == budget.run:
+            entry = out.setdefault(model_of.get(r["ticket"], "?"), {"calls": 0, "capacity": 0})
+            entry["calls"] += 1
+            entry["capacity"] += r["code"] in ("http_503", "http_429")
+    return out
+
+
+def run_all(case_ids, dataset, glossary, provider, budget, items_dir: Path, sleep=None, clock=time.time, on_item=None) -> tuple[list[dict], dict | None]:
+    """Every case in order. If more than a third of this run's finished calls failed on capacity (after STOP_MIN_CALLS calls), stop:
+    the remaining cases are recorded as not_attempted and the partial results are kept. Returns (items, stop info or None)."""
+
+    items: list[dict] = []
+    stop = None
+    for case_id in case_ids:
+        if stop is not None:
+            items.append({"case_id": case_id, "path": "not_attempted", "reason": "capacity_stop", "content_attempts": 0, "attempts": [],
+                          "report": None, "rules_report": lw.rules_report_for(bp.load_dev_packet(dataset, case_id)), "style_findings": [],
+                          "failures": [], "guide_sha256": None, "prompt_version": None})
+            continue
+        items.append(run_item(case_id, dataset, glossary, provider, budget, items_dir, sleep=sleep))
+        if on_item:
+            on_item(items[-1])
+        capacity, done = capacity_share(budget)
+        if should_stop(capacity, done):
+            stop = {"after_case": case_id, "at_epoch": clock(), "capacity": capacity, "calls": done, "by_model": capacity_by_model(budget)}
+    return items, stop
 
 
 def calibration_section(case_id="veteran-824027", dataset=DATASET) -> list[str]:
@@ -107,7 +155,12 @@ def calibration_section(case_id="veteran-824027", dataset=DATASET) -> list[str]:
 
 def _run_lines(budget: cb.CallBudget, run_info: dict | None) -> list[str]:
     capacity, done = capacity_share(budget)
-    lines = [f"Capacity failures (503/429) in this run: {capacity} of {done} finished calls."]
+    lines = [f"Capacity failures (503/429) in this run: {capacity} of {done} finished calls. By model: " + "; ".join(
+        f"`{m}` {v['capacity']} of {v['calls']}" for m, v in sorted(capacity_by_model(budget).items())) + "."]
+    if run_info and run_info.get("stopped"):
+        stop = run_info["stopped"]
+        lines.append(f"**The run stopped early** after case `{stop['after_case']}` at {stop['at_local']} local ({stop['at_utc']} UTC): {stop['capacity']} of {stop['calls']} finished calls "
+                     f"were capacity failures (more than a third). Failing model(s): " + ", ".join(f"`{m}` ({v['capacity']} of {v['calls']})" for m, v in sorted(stop['by_model'].items()) if v['capacity']) + ". The remaining cases are `not_attempted`.")
     if run_info:
         lines.append(f"Run started {run_info['started_local']} local ({run_info['started_utc']} UTC), finished {run_info['finished_local']} local.")
         if done and capacity * 3 > done:
@@ -127,30 +180,39 @@ def best_attempt(item: dict) -> tuple[int, dict] | None:
 
 def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | None = None, calibrate: bool = False,
                     summary: str | None = None, notes: dict | None = None) -> str:
-    paths = {p: 0 for p in writer_policy.PATHS}
+    paths = {p: 0 for p in (*writer_policy.PATHS, "not_attempted")}
     for item in items:
         paths[item["path"]] += 1
-    llm = len(items) - paths["rules"]
+    llm = len(items) - paths["rules"] - paths["not_attempted"]
+    accepted = sum(1 for i in items if i["path"] not in ("rules", "not_attempted"))
     out = [
         "# B1 dev examples: model text beside the rules text (owner gate)\n",
-        f"Dev split only. Guide digest `{lw.guide_sha256()}`, prompt `{lw.PROMPT_VERSION}`. Nothing here is published; rules stay live.\n",
+        f"Dev split only. Guide digest(s) recorded in this run: {', '.join('`' + g + '`' for g in sorted({i.get('guide_sha256') for i in items if i.get('guide_sha256')})) or 'none'}; "
+        f"prompt version(s) recorded in this run: {', '.join('`' + v + '`' for v in sorted({i.get('prompt_version') for i in items if i.get('prompt_version')})) or 'none'}. "
+        "Nothing here is published; rules stay live.\n",
         f"Gemini HTTP calls: run {budget.used_run} of {budget.run_cap}, experiment {budget.used_experiment} of {budget.experiment_cap}.",
         *_run_lines(budget, run_info),
-        f"Paths: {', '.join(f'{k} {v}' for k, v in paths.items())}. LLM coverage {llm}/{len(items)}; "
+        f"Paths: {', '.join(f'{k} {v}' for k, v in paths.items())}. LLM coverage {llm}/{len(items)}; accepted {accepted}, rejected {paths['rules']}, not attempted {paths['not_attempted']}; "
         f"not written by the primary model {len(items) - paths['primary']}/{len(items)} (a fallback or rules result is not a primary first-attempt success).\n",
     ]
     if summary:
         out.append(summary)
     for item in items:
         out.append(f"\n## {item['case_id']}\n")
+        verdict = {"rules": "REJECTED (the rules report is used)", "not_attempted": "NOT ATTEMPTED (capacity stop)"}.get(item["path"], "ACCEPTED (model text; style findings below)")
+        out.append(f"- Outcome: **{verdict}**")
         out.append(f"- Path: **{item['path']}**" + (f" (reason: `{item['reason']}`)" if item["reason"] else "") + f"; content attempts: {item['content_attempts']}")
+        if item["path"] == "not_attempted":
+            out.append("")
+            continue
         for attempt in item["attempts"]:
             usage = attempt.get("usage") or {}
             out.append(f"- Content attempt {attempt['content_attempt']}: transport path `{attempt['path']}`, transport failures "
                        f"{[(a['model'], a['try'], a['code']) for a in attempt['transport']] or 'none'}, model `{attempt.get('model', '-')}`, "
-                       f"checks {attempt.get('checks', 'not reached')}, tokens {usage or '-'}")
+                       f"gate checks {attempt.get('checks', 'not reached')}, style findings {sorted({f['check'] for f in attempt.get('style_findings', [])}) or 'none'}, tokens {usage or '-'}")
             for failure in attempt.get("check_detail", []):
-                out.append(f"  - `{failure['check']}` token `{failure['token']}` in: {failure['sentence'] or '(whole report)'}")
+                kind = "gate" if writer_checks_is_gate(failure["check"]) else "style"
+                out.append(f"  - {kind} `{failure['check']}` token `{failure['token']}` in: {failure['sentence'] or '(whole report)'}")
         rules = item["rules_report"]
         out.append(f"- Length: rules {length_of(rules)} characters; shown text {length_of(item['report'])} characters.\n")
         out.append("### Rules text (A)\n")
@@ -160,18 +222,22 @@ def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | N
         best = best_attempt(item)
         shown_text = ""
         if candidate_shown:
-            out.append("### Model text (B1)\n")
+            out.append("### Model text (B1): accepted\n")
             shown = item["report"]
+            styles = item.get("style_findings", [])
+            out.append("Style findings recorded for S1 (never a reason to reject): " + (", ".join(f"`{f['check']}` `{f['token']}`" for f in styles) or "none") + "\n")
         elif best is not None:
             from agents import writer_checks
 
             number, attempt = best
-            out.append(f"### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt {number} of {item['content_attempts']}, "
-                       f"model `{attempt.get('model', '-')}`, checks {attempt['checks']}\n")
+            out.append(f"### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed gate checks, content attempt {number} of {item['content_attempts']}, "
+                       f"model `{attempt.get('model', '-')}`, gate checks {attempt['checks']}, style findings {sorted({f['check'] for f in attempt.get('style_findings', [])}) or 'none'}\n")
             shown = writer_checks.to_report(attempt["candidate"], rules)
         else:
             shown = None
             out.append("### Model text (B1)\n\nNo model text: the call never produced a usable answer.\n")
+        if item["path"] == "not_attempted":
+            shown = None
         if shown is not None:
             for title, body in report_text(shown):
                 out.append(f"**{title}**\n\n{body}\n")
@@ -196,17 +262,19 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point
     parser = argparse.ArgumentParser(description="P2.2 offline B1 capture on dev cases")
     parser.add_argument("--owner-pc-offline", action="store_true")
     parser.add_argument("--doc-only", action="store_true", help="rebuild the review document from the saved items; makes no request")
-    parser.add_argument("--doc-inputs", default=str(ROOT / "docs" / "b1-run2-doc-inputs.json"))
+    parser.add_argument("--doc-inputs", default=str(ROOT / "docs" / "b1-run3-doc-inputs.json"))
     parser.add_argument("--out", default=str(ROOT / "docs" / "b1-dev-examples.md"))
     parser.add_argument("--run-cap", type=int, default=DEFAULT_RUN_CAP)
     args = parser.parse_args(argv)
     case_ids = pick_cases()
+    run_info_file = WORK / "run-info-3.json"
     if args.doc_only:
         inputs = json.loads(Path(args.doc_inputs).read_text(encoding="utf-8"))
-        glossary = writer_input.load_glossary(DATASET / "glossary.json")
         budget = cb.CallBudget(WORK / "calls.jsonl", run=RUN_ID, run_cap=args.run_cap)
-        items = [json.loads((WORK / "items-2" / f"{c}.json").read_text(encoding="utf-8")) for c in case_ids]
-        text = review_markdown(items, budget, inputs["run_info"], calibrate=True, summary=inputs["summary"], notes=inputs["notes"])
+        items = [json.loads((WORK / ITEMS_DIR / f"{c}.json").read_text(encoding="utf-8")) if (WORK / ITEMS_DIR / f"{c}.json").exists()
+                 else _not_attempted(c) for c in case_ids]
+        run_info = inputs.get("run_info") or json.loads(run_info_file.read_text(encoding="utf-8"))
+        text = review_markdown(items, budget, run_info, calibrate=True, summary=inputs["summary"], notes=inputs["notes"])
         Path(args.out).write_text(text, encoding="utf-8", newline="\n")
         print(json.dumps({"rebuilt": args.out, "items": len(items)}))
         return 0
@@ -223,20 +291,29 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point
         print(json.dumps({"stopped": "key_unavailable"}))
         return 1
     provider = make_provider(key)
-    items = []
-    for case_id in case_ids:
-        fresh = not (WORK / "items-2" / f"{case_id}.json").exists()
-        items.append(run_item(case_id, DATASET, glossary, provider, budget, WORK / "items-2"))
-        print(json.dumps({"case": case_id, "path": items[-1]["path"], "reason": items[-1]["reason"], "calls_run": budget.used_run}), flush=True)
-        if fresh:
-            time.sleep(PAUSE_SECONDS)
+
+    def report(item):
+        print(json.dumps({"case": item["case_id"], "path": item["path"], "reason": item["reason"], "calls_run": budget.used_run}), flush=True)
+
+    items, stop = run_all(case_ids, DATASET, glossary, provider, budget, WORK / ITEMS_DIR, on_item=report)
     finished = datetime.now(timezone.utc)
+    zone = started.astimezone().tzinfo
     run_info = {"started_utc": started.strftime("%Y-%m-%d %H:%M"), "finished_utc": finished.strftime("%Y-%m-%d %H:%M"),
                 "started_local": started.astimezone().strftime("%Y-%m-%d %H:%M"), "finished_local": finished.astimezone().strftime("%Y-%m-%d %H:%M"),
-                "timezone": str(started.astimezone().tzinfo)}
+                "timezone": str(zone)}
+    if stop:
+        at = datetime.fromtimestamp(stop["at_epoch"], timezone.utc)
+        run_info["stopped"] = {**{k: v for k, v in stop.items() if k != "at_epoch"}, "at_utc": at.strftime("%Y-%m-%d %H:%M"), "at_local": at.astimezone().strftime("%Y-%m-%d %H:%M")}
+    run_info_file.write_text(json.dumps(run_info, indent=1), encoding="utf-8", newline="\n")
     Path(args.out).write_text(review_markdown(items, budget, run_info, calibrate=True), encoding="utf-8", newline="\n")
-    print(json.dumps({"run_calls": budget.used_run, "run_cap": budget.run_cap, "experiment_calls": budget.used_experiment, "experiment_cap": budget.experiment_cap}))
+    print(json.dumps({"run_calls": budget.used_run, "run_cap": budget.run_cap, "experiment_calls": budget.used_experiment, "experiment_cap": budget.experiment_cap, "stopped": bool(stop)}))
     return 0
+
+
+def _not_attempted(case_id: str) -> dict:
+    return {"case_id": case_id, "path": "not_attempted", "reason": "capacity_stop", "content_attempts": 0, "attempts": [], "report": None,
+            "rules_report": lw.rules_report_for(bp.load_dev_packet(DATASET, case_id)), "style_findings": [], "failures": [],
+            "guide_sha256": None, "prompt_version": None}  # nothing was sent: no guide or prompt version was used
 
 
 if __name__ == "__main__":  # pragma: no cover
