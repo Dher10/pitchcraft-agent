@@ -231,7 +231,9 @@ def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | N
 
             number, attempt = best
             out.append(f"### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed gate checks, content attempt {number} of {item['content_attempts']}, "
-                       f"model `{attempt.get('model', '-')}`, gate checks {attempt['checks']}, style findings {sorted({f['check'] for f in attempt.get('style_findings', [])}) or 'none'}\n")
+                       f"model `{attempt.get('model', '-')}`, gate checks {attempt['checks']}, style findings {sorted({f['check'] for f in attempt.get('style_findings', [])}) or 'none'}"
+                       + ("; a `W17.structure` failure stops the other gate checks, so this attempt's other gates were not evaluated and its count is not comparable"
+                          if "W17.structure" in attempt["checks"] else "") + "\n")
             shown = writer_checks.to_report(attempt["candidate"], rules)
         else:
             shown = None

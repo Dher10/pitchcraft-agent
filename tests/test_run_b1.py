@@ -213,3 +213,17 @@ def test_the_early_stop_needs_nine_calls_and_more_than_a_third():
     assert run_b1.should_stop(4, 9) is True    # more than a third stops
     assert run_b1.should_stop(0, 20) is False
     assert run_b1.should_stop(7, 20) is True and run_b1.should_stop(6, 20) is False
+
+
+def test_a_shown_attempt_with_a_structure_failure_says_its_other_gates_were_not_evaluated(tmp_path):
+    rules = run_b1.lw.rules_report_for(bp.load_dev_packet(DATASET, "veteran-824027"))
+    candidate = {"headline": {"text": "h", "evidence": []}, "summary_lines": [], "sections": {}}
+    item = {"case_id": "veteran-824027", "path": "rules", "reason": "checks_failed", "content_attempts": 1, "report": rules, "rules_report": rules,
+            "attempts": [{"content_attempt": 1, "checks": ["W17.structure"], "candidate": {"headline": {"text": "h", "evidence": []}, "summary_lines": [{"text": "a", "evidence": []}] * 3,
+                          "sections": {k: [{"text": "t", "evidence": []}] for k in ("summary", "away_vs_home", "home_vs_away", "arsenal", "watch", "confidence")}},
+                          "model": "m", "transport": [], "path": "primary"}],
+            "style_findings": [], "failures": [], "guide_sha256": None, "prompt_version": None}
+
+    text = run_b1.review_markdown([item], make_budget(tmp_path))
+
+    assert "other gates were not evaluated and its count is not comparable" in text
