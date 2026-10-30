@@ -2,6 +2,12 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-29 - P2.4 gate 3 evidence (D32 recompute)
+
+- Scope: `python -m evals.thresholds` over the cached/fetched Savant closed months, 2026-03-25..2026-09-27, through the hash-chained ledger. 198 of 210 closed-month requests, 0 failed, 0 pending. No `labels.py`, golden, `public/data/` or `evals/live/` change.
+- Result: 60 team-hand rows, none under 200 PA. Pooled 75th K 23.84, BB 9.35, OPS .736; rounded 24.0 / 9.0 / .735 against D32 23.0 / 9.0 / .750. Two cutoffs changed, so the plan's stop applied and D50 was drafted.
+- Owner decision: D50 approved as drafted. Rationale: the method was fixed before any data was read, so the result is adopted as computed. Limitation disclosed (per-hand 75th K 24.16 vs LHP, 22.60 vs RHP; backlog idea, no code change). Evidence and method: `docs/thresholds-proposal.md`.
+
 ### 2026-10-29 - P2.4 gate 2 offline code
 
 - Scope: owner-approved plan with five amendments; request ledger, D32 recompute, dataset builder, seal. No network, no `labels.py`/golden/public data change.
