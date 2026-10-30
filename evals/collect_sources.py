@@ -91,6 +91,10 @@ HISTORY = Obj(
 )
 
 
+class HistoryMissing(FileNotFoundError):
+    """A packet needs the cached history of a pitcher and there is none; the build never asks for it."""
+
+
 @dataclass(frozen=True)
 class ListedGame:
     game_pk: int
@@ -217,6 +221,26 @@ class HistoryStore:
 
         return pitcher_id in self.memory or self._path(pitcher_id).exists()
 
+    def _record(self, pitcher_id: int) -> dict:
+        """The cached record of a pitcher, digest-checked. Never a request: a missing file is `HistoryMissing`."""
+
+        path = self._path(pitcher_id)
+        if not path.exists():
+            raise HistoryMissing(f"no cached history for pitcher {pitcher_id} (season {self.season}); the packet build never fetches")
+        record = json.loads(path.read_text(encoding="utf-8"))
+        body = json.dumps(record["response"], sort_keys=True, separators=(",", ":"))
+        if hashlib.sha256(body.encode("utf-8")).hexdigest() != record["sha256"]:
+            raise SourceShapeError(f"cached history of {pitcher_id} does not match its digest")
+        return record
+
+    def cached_response(self, pitcher_id: int) -> dict:
+        """The raw `gameLog,yearByYear` answer from disk (the packet's season line is derived from it)."""
+
+        return self._record(pitcher_id)["response"]
+
+    def cached_digest(self, pitcher_id: int) -> str:
+        return self._record(pitcher_id)["sha256"]
+
     def get(self, pitcher_id: int) -> History:
         if pitcher_id in self.memory:
             return self.memory[pitcher_id]
@@ -264,3 +288,34 @@ def facts_as_of(history: History, official_date: str) -> bd.StarterFacts:
         previous_innings=tuple(a.innings for a in before if a.started),
         flagged_opener=False,  # the schedule answer carries no opener flag (see the plan, section 2)
     )
+
+
+@dataclass(frozen=True)
+class CachedGame:
+    raw: dict  # the game exactly as the schedule answered
+    file: str  # the cache file it came from
+    sha256: str  # the digest of that file's answer
+
+
+def cached_schedule(cache_dir) -> dict[int, CachedGame]:
+    """game_pk -> the raw game from the schedule answers on disk, each file digest-checked. Never a request.
+
+    A game that appears twice (postponed, then replayed) keeps its final row; among final rows the later file wins."""
+
+    games: dict[int, CachedGame] = {}
+    for path in sorted(Path(cache_dir).glob("schedule_*.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if _digest(record["response"]) != record["sha256"]:
+            raise SourceShapeError(f"cached schedule {path.name} does not match its digest")
+        mlb_schemas.validate(SCHEDULE, record["response"], "cached collection schedule response")
+        for entry in record["response"]["dates"]:
+            for game in entry["games"]:
+                final = schema.game_status(game["status"]["abstractGameState"], game["status"]["detailedState"]) == "final"
+                earlier = games.get(game["gamePk"])
+                if earlier is None or final or not _is_final(earlier.raw):
+                    games[game["gamePk"]] = CachedGame(game, path.name, record["sha256"])
+    return games
+
+
+def _is_final(game: dict) -> bool:
+    return schema.game_status(game["status"]["abstractGameState"], game["status"]["detailedState"]) == "final"

@@ -179,7 +179,6 @@ def test_finish_refuses_an_unknown_or_already_finished_reservation_and_keeps_the
         ("https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-04-01&endDate=2026-04-30", "mlb_schedule"),
         ("https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=1&hydrate=seriesStatus", "mlb_series"),
         ("https://statsapi.mlb.com/api/v1/people/11/stats?stats=gameLog&group=pitching", "mlb_people"),
-        ("https://statsapi.mlb.com/api/v1/people/11", "mlb_people"),
     ],
 )
 def test_each_mlb_request_is_reserved_before_it_is_sent_under_its_own_source(tmp_path, monkeypatch, url, source):
@@ -196,6 +195,16 @@ def test_each_mlb_request_is_reserved_before_it_is_sent_under_its_own_source(tmp
 
     assert seen == [1] and led.rows[0]["source"] == source and led.rows[1]["outcome"] == "ok"
     assert lp._get_json is fake  # the patch is undone
+
+
+def test_a_hand_lookup_is_reserved_under_its_own_ceiling_not_the_mlb_one(tmp_path, monkeypatch):
+    led = ledger(tmp_path)
+    seen = []
+    monkeypatch.setattr(lp, "_get_json", lambda u, timeout=8: seen.append(led.count("pitcher_hand")) or {})
+    with rl.counted_mlb(led):
+        lp._get_json("https://statsapi.mlb.com/api/v1/people/11")
+
+    assert seen == [1] and led.count("mlb") == 0 and led.rows[0]["source"] == "pitcher_hand"
 
 
 def test_an_mlb_url_with_no_ledger_source_is_refused_before_it_is_sent(tmp_path, monkeypatch):

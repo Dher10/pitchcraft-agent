@@ -13,6 +13,9 @@ import json
 import os
 from pathlib import Path
 import time
+from urllib.parse import urlsplit
+
+from requests.adapters import HTTPAdapter
 
 from data_pipeline.fetchers import live_pipeline
 from evals.provider_protocol import canonical, digest
@@ -161,7 +164,8 @@ def mlb_source(url):
     if "hydrate=seriesStatus" in url:
         return "mlb_series"
     if "/people/" in url:
-        return "mlb_people"
+        # A throwing-hand lookup (`people/{id}`) has its own ceiling; the per-pitcher history (`/stats?`) is a lookup.
+        return "mlb_people" if "/stats" in urlsplit(url).path else "pitcher_hand"
     if "/schedule" in url:
         return "mlb_schedule"
     raise ValueError(f"no ledger source for the MLB request {url!r}")
@@ -190,3 +194,41 @@ def counted_mlb(ledger):
         yield ledger
     finally:
         live_pipeline._get_json = real
+
+
+@contextmanager
+def counted_statcast_pitcher(ledger):
+    """Reserve every Statcast pitcher HTTP request in the ledger before it is sent.
+
+    `live_pipeline._counted_pitcher_transport` already counts and paces the requests of one run; this wraps it so each
+    request that really leaves the machine is also a reservation in the collection-wide ledger (a hit of pybaseball's
+    own cache sends nothing and costs nothing). A request refused at the ceiling is never sent."""
+
+    real = live_pipeline._counted_pitcher_transport
+
+    @contextmanager
+    def counted():
+        with real():
+            inner = HTTPAdapter.send
+
+            def send(adapter, request, **kwargs):
+                seq = ledger.reserve("pitcher_statcast", request.url)
+                try:
+                    response = inner(adapter, request, **kwargs)
+                except BaseException:
+                    ledger.finish(seq, "failed")
+                    raise
+                ledger.finish(seq, "ok")
+                return response
+
+            HTTPAdapter.send = send
+            try:
+                yield
+            finally:
+                HTTPAdapter.send = inner
+
+    live_pipeline._counted_pitcher_transport = counted
+    try:
+        yield ledger
+    finally:
+        live_pipeline._counted_pitcher_transport = real

@@ -488,6 +488,50 @@ def season_dates(season: int) -> tuple[date, date]:
     )
 
 
+def game_record(game: dict[str, Any]) -> dict[str, Any]:
+    """
+    One schedule game as the pipeline's game record (teams, ids, probable pitchers, state, series fields).
+
+    The daily fetch and the historical packet builder read a schedule game through this one function, so the two
+    never differ in which fields a game record has.
+    """
+
+    away = game["teams"]["away"]
+    home = game["teams"]["home"]
+    # Not announced yet is a normal answer: no probablePitcher object at all.
+    away_pp = away.get("probablePitcher") or {}
+    home_pp = home.get("probablePitcher") or {}
+    venue = game.get("venue") or {}
+    return {
+        "game_pk": game.get("gamePk"),
+        # The official MLB date, not the UTC date of the start time (D29).
+        "official_date": game["officialDate"],
+        "away_team": away["team"]["name"],
+        "away_team_id": away["team"]["id"],
+        "away_team_abbr": _team_abbreviation(away["team"]),
+        "home_team": home["team"]["name"],
+        "home_team_id": home["team"]["id"],
+        "home_team_abbr": _team_abbreviation(home["team"]),
+        "away_pitcher_name": away_pp.get("fullName"),
+        "away_pitcher_id": away_pp.get("id"),
+        "home_pitcher_name": home_pp.get("fullName"),
+        "home_pitcher_id": home_pp.get("id"),
+        "venue": venue.get("name"),
+        # D33: the schedule's UTC instant, and the venue's zone only when it says one.
+        "start_time_utc": game["gameDate"],
+        "venue_timezone": (venue.get("timeZone") or {}).get("id"),
+        "status": (game.get("status") or {}).get("abstractGameState"),
+        # A postponed or cancelled game is "Final" in the first; this says which (D40, F5).
+        "detailed_state": (game.get("status") or {}).get("detailedState"),
+        # The series fields are kept as the schedule sent them and judged by `series.build`: they are not
+        # in the strict schema, so a malformed one can never fail the whole day (rule 5).
+        "game_type": game.get("gameType"),
+        "series_description": game.get("seriesDescription"),
+        "series_game_number": game.get("seriesGameNumber"),
+        "games_in_series": game.get("gamesInSeries"),
+    }
+
+
 def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
     """
     Fetch today's MLB games with probable pitchers.
@@ -502,44 +546,7 @@ def fetch_todays_games(target_date: str | None = None) -> list[dict[str, Any]]:
     )
     try:
         data = _get_json(url)
-        games = []
-        for game in _schedule_games(data, mlb_schemas.SCHEDULE_DAY, "schedule response"):
-            away = game["teams"]["away"]
-            home = game["teams"]["home"]
-            # Not announced yet is a normal answer: no probablePitcher object at all.
-            away_pp = away.get("probablePitcher") or {}
-            home_pp = home.get("probablePitcher") or {}
-            venue = game.get("venue") or {}
-            games.append(
-                {
-                    "game_pk": game.get("gamePk"),
-                    # The official MLB date, not the UTC date of the start time (D29).
-                    "official_date": game["officialDate"],
-                    "away_team": away["team"]["name"],
-                    "away_team_id": away["team"]["id"],
-                    "away_team_abbr": _team_abbreviation(away["team"]),
-                    "home_team": home["team"]["name"],
-                    "home_team_id": home["team"]["id"],
-                    "home_team_abbr": _team_abbreviation(home["team"]),
-                    "away_pitcher_name": away_pp.get("fullName"),
-                    "away_pitcher_id": away_pp.get("id"),
-                    "home_pitcher_name": home_pp.get("fullName"),
-                    "home_pitcher_id": home_pp.get("id"),
-                    "venue": venue.get("name"),
-                    # D33: the schedule's UTC instant, and the venue's zone only when it says one.
-                    "start_time_utc": game["gameDate"],
-                    "venue_timezone": (venue.get("timeZone") or {}).get("id"),
-                    "status": (game.get("status") or {}).get("abstractGameState"),
-                    # A postponed or cancelled game is "Final" in the first; this says which (D40, F5).
-                    "detailed_state": (game.get("status") or {}).get("detailedState"),
-                    # The series fields are kept as the schedule sent them and judged by `series.build`: they are not
-                    # in the strict schema, so a malformed one can never fail the whole day (rule 5).
-                    "game_type": game.get("gameType"),
-                    "series_description": game.get("seriesDescription"),
-                    "series_game_number": game.get("seriesGameNumber"),
-                    "games_in_series": game.get("gamesInSeries"),
-                }
-            )
+        games = [game_record(game) for game in _schedule_games(data, mlb_schemas.SCHEDULE_DAY, "schedule response")]
         print(f"[LIVE] Fetched {len(games)} games for {date_str}")
         return games
     except Exception as exc:
@@ -1335,9 +1342,14 @@ def fetch_pitcher_statcast(
     pitcher_name: str,
     season_start: str | None = None,
     as_of: str | date | None = None,
+    season_stats: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     """
     Fetch and process Statcast data for one pitcher, or return None on failure.
+
+    `season_stats`, when given, is the season line as `fetch_pitcher_season_stats` returns it (possibly `{}`, which is
+    "unavailable") and replaces that request. The historical dataset (P2.4) derives the line from a cached game log
+    this way; the daily job passes nothing and asks the API as before.
 
     Only pitches dated on or before `as_of` (default today) are used, for the
     pitch data and for the season stats, and only from regular-season and
@@ -1409,7 +1421,7 @@ def fetch_pitcher_statcast(
                 return None
             processed = _empty_pitcher_data(pitcher_name, throws)
             counts = None
-        mlb_stats = fetch_pitcher_season_stats(pitcher_id, as_of=as_of)
+        mlb_stats = season_stats if season_stats is not None else fetch_pitcher_season_stats(pitcher_id, as_of=as_of)
         # Invalid events cannot establish an incomplete sample either. Preserve
         # sound pitch data and let the independent API line supply its figures.
         problem = None if event_problem is not None else incomplete_sample(df, mlb_stats.get("batters_faced"))
@@ -2034,6 +2046,16 @@ def _run_as_of(target: str, as_of: str | date | None) -> str | None:
         return None
 
 
+def reset_run_budgets() -> None:
+    """Start a run: empty the recorded errors and warnings and zero the per-run request budgets."""
+
+    _run_errors.clear()
+    _run_warnings.clear()
+    _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
+    _pitcher_hand_run.update(requests=0)  # so is the pitcher-hand budget
+    _pitcher_statcast_run.update(requests=0)  # and the Statcast pitcher budget (D42)
+
+
 def run_live_pipeline(
     target_date: str | None = None,
     as_of: str | date | None = None,
@@ -2045,11 +2067,7 @@ def run_live_pipeline(
     can never be mistaken for a live one.
     """
 
-    _run_errors.clear()
-    _run_warnings.clear()
-    _savant_run.update(requests=0, open_requests=0)  # the Savant budgets are per run
-    _pitcher_hand_run.update(requests=0)  # so is the pitcher-hand budget
-    _pitcher_statcast_run.update(requests=0)  # and the Statcast pitcher budget (D42)
+    reset_run_budgets()
     _mlb_requests.clear()
     info: dict[str, Any] = {}
     run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
