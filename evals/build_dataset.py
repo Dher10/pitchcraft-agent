@@ -28,6 +28,12 @@ SEED_TEXT = (
     "opener: a starter averaged under 2.0 innings in his previous starts of the season, or the schedule flags him|"
     "postseason: game type F, D, L or W, final, dated before the collection date|"
     "priority: postseason, opener, limited, veteran|"
+    "pools from the schedule alone, both starters listed, final games before the collection date: "
+    "postseason = all postseason games; "
+    "opener = regular games where a starter has a listed start number of 2 or more, tried in order of that starter's fewest listed starts of the season; "
+    "limited = regular games where a starter has listed start number 2 to 6; "
+    "veteran = regular games where both starters have listed start number 10 or more; "
+    "within a pool, sha256 rank order; one request per pitcher for the whole season, a pitcher fetched once is reused|"
     "rank: sha256(seed + game_pk)|no shared starter or game|10 per stratum|split 5 dev, 5 test by sha256(seed + 'split' + game_pk)"
 )
 SEED = hashlib.sha256(SEED_TEXT.encode()).hexdigest()

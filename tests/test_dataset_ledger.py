@@ -22,7 +22,7 @@ def test_ceilings_are_the_approved_numbers():
         "savant_open_month": 80,
         "pitcher_hand": 80,
         "pitcher_statcast": 160,
-        "mlb": 120,
+        "mlb": 160,
     }
     assert rl.GROUP == {"mlb_schedule": "mlb", "mlb_series": "mlb", "mlb_people": "mlb"} | {
         s: s for s in rl.CEILINGS if s != "mlb"
@@ -47,12 +47,12 @@ def test_every_source_stops_at_its_ceiling_and_the_refusal_writes_nothing(tmp_pa
 
 def test_the_three_mlb_sources_share_one_ceiling(tmp_path):
     led = ledger(tmp_path)
-    for source, n in (("mlb_schedule", 70), ("mlb_people", 40), ("mlb_series", 10)):
+    for source, n in (("mlb_schedule", 100), ("mlb_people", 40), ("mlb_series", 20)):
         for _ in range(n):
             led.finish(led.reserve(source, "x"), "ok")
 
     with pytest.raises(rl.CeilingReached):
-        led.reserve("mlb_series", "121st")
+        led.reserve("mlb_series", "161st")
 
 
 def test_unknown_source_and_outcome_are_refused(tmp_path):
@@ -168,3 +168,41 @@ def test_finish_refuses_an_unknown_or_already_finished_reservation_and_keeps_the
         with pytest.raises(ValueError):
             led.finish(bad, "ok")
     assert ledger(tmp_path).count("mlb") == 1  # still loads
+
+
+# --- every MLB request goes through the ledger (gate 4a) ----------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "url, source",
+    [
+        ("https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-04-01&endDate=2026-04-30", "mlb_schedule"),
+        ("https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=1&hydrate=seriesStatus", "mlb_series"),
+        ("https://statsapi.mlb.com/api/v1/people/11/stats?stats=gameLog&group=pitching", "mlb_people"),
+        ("https://statsapi.mlb.com/api/v1/people/11", "mlb_people"),
+    ],
+)
+def test_each_mlb_request_is_reserved_before_it_is_sent_under_its_own_source(tmp_path, monkeypatch, url, source):
+    led = ledger(tmp_path)
+    seen = []
+
+    def fake(u, timeout=8):
+        seen.append(led.count("mlb"))  # already reserved when the wire is touched
+        return {}
+
+    monkeypatch.setattr(lp, "_get_json", fake)
+    with rl.counted_mlb(led):
+        lp._get_json(url)
+
+    assert seen == [1] and led.rows[0]["source"] == source and led.rows[1]["outcome"] == "ok"
+    assert lp._get_json is fake  # the patch is undone
+
+
+def test_an_mlb_url_with_no_ledger_source_is_refused_before_it_is_sent(tmp_path, monkeypatch):
+    sent = []
+    monkeypatch.setattr(lp, "_get_json", lambda u, timeout=8: sent.append(u))
+    led = ledger(tmp_path)
+    with rl.counted_mlb(led), pytest.raises(ValueError):
+        lp._get_json("https://statsapi.mlb.com/api/v1/teams/147/stats?stats=statSplits")
+
+    assert sent == [] and led.rows == []

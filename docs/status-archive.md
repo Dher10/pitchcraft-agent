@@ -2,6 +2,12 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-30 - P2.4 gate 4a offline adapters and collector
+
+- Scope: owner approved gate 4a, MLB ceiling 160, opener screening before lookups, collection date = run date, `--postseason-end` = last final found. No network used; `public/data/`, `evals/live/`, workflows untouched.
+- Tests: `tests/test_collect_sources.py`, `tests/test_collect_select.py`, ledger tests extended (160, `counted_mlb`). Thirteen hand mutants (pool bounds, as-of boundary, cap accounting, collection-date edge, path guard, started flag, prior-season boundary, failed outcome, stratum check, shared starters, seal guard); one survived (veteran boundary at the 10th start) and a test was added that kills it. The adapter tests were written after the adapter code, not before; the mutants stand in for the red run. The gameLog/yearByYear fixtures are synthetic (documented shape, not recorded).
+- Reviewer round 1 BLOCK, both findings real and fixed: (1) the collector called `store.known()` that only the test fake had (tests now also run `select_cases` over the real `HistoryStore`, ledger and series fetcher); (2) `fetch_series_status` swallows `CeilingReached`, so a refused series request looked like a leak (the ledger now records `refused`, `select_cases` halts with `ceiling_reached`). Also: a cap-stopped stratum still takes later games whose pitchers are known, a malformed answer halts with `source_shape` keeping the cases found, the lookup is counted before it is sent. Four more mutants killed.
+
 ### 2026-10-30 - D50 and D51 (versioned cut-off sets)
 
 - Scope: owner approved D50 as drafted and the additive schema change D51. Not touched: `public/data/`, `evals/live/`, workflows, `main`, tags.

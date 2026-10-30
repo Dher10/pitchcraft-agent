@@ -43,7 +43,7 @@ def stratum(c):
 
 def test_the_seed_is_the_hash_of_the_frozen_strata_text_and_is_pinned():
     assert bd.SEED == hashlib.sha256(bd.SEED_TEXT.encode()).hexdigest()
-    assert bd.SEED == "a90dafafffb97ee8b2337a216fb5aa4abb03f7d3cf08311de1e1378041c4f76c"  # pinned: any edit to the frozen text changes the seed and must be deliberate
+    assert bd.SEED == "00672a7f0dc9483cc8d7d88e86cd6ed692c3a358f8a66043e7671d84d4927c99"  # pinned (pool rules added Oct 30, before any pool was read): any edit to the frozen text changes the seed and must be deliberate
     assert bd.STRATA == ("postseason", "opener", "limited", "veteran")  # the priority order of the plan
 
 

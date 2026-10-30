@@ -17,13 +17,14 @@ import time
 from data_pipeline.fetchers import live_pipeline
 from evals.provider_protocol import canonical, digest
 
-# Collection-wide ceilings (owner approval of Oct 29). The three MLB sources share one ceiling of 120.
+# Collection-wide ceilings (owner approval of Oct 29; the MLB ceiling raised from 120 to 160 on Oct 30). The three MLB
+# sources share one ceiling.
 CEILINGS = {
     "savant_closed_month": 210,
     "savant_open_month": 80,
     "pitcher_hand": 80,
     "pitcher_statcast": 160,
-    "mlb": 120,
+    "mlb": 160,
 }
 GROUP = {
     "mlb_schedule": "mlb",
@@ -50,6 +51,7 @@ class LedgerCorrupt(ValueError):
 class RequestLedger:
     def __init__(self, path):
         self.path = Path(path)
+        self.refused = False  # set when a reservation was refused at a ceiling (shows even if a caller swallows the error)
         self.rows = self._load()
 
     def _load(self):
@@ -117,6 +119,7 @@ class RequestLedger:
             raise ValueError(f"unknown request source {source!r}")
         group = GROUP[source]
         if self.count(group) >= CEILINGS[group]:
+            self.refused = True
             raise CeilingReached(f"{CEILINGS[group]} {group} requests already made in this collection")
         return self._append("reserve", source, str(detail)[:300])
 
@@ -150,3 +153,40 @@ def counted_savant(ledger):
         yield ledger
     finally:
         live_pipeline._savant_get = real
+
+
+def mlb_source(url):
+    """The ledger source of an MLB Stats API request, by what the url asks for."""
+
+    if "hydrate=seriesStatus" in url:
+        return "mlb_series"
+    if "/people/" in url:
+        return "mlb_people"
+    if "/schedule" in url:
+        return "mlb_schedule"
+    raise ValueError(f"no ledger source for the MLB request {url!r}")
+
+
+@contextmanager
+def counted_mlb(ledger):
+    """Route every MLB Stats API request of `live_pipeline._get_json` through the ledger, reserved before it is sent.
+
+    A url the ledger has no source for is refused before anything is sent, so no request can go uncounted."""
+
+    real = live_pipeline._get_json
+
+    def counted(url, timeout=8):
+        seq = ledger.reserve(mlb_source(url), url)
+        try:
+            data = real(url, timeout)
+        except BaseException:
+            ledger.finish(seq, "failed")
+            raise
+        ledger.finish(seq, "ok")
+        return data
+
+    live_pipeline._get_json = counted
+    try:
+        yield ledger
+    finally:
+        live_pipeline._get_json = real
