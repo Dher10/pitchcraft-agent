@@ -3,9 +3,9 @@
     "project_name": "PitchCraft Matchup Agent",
     "version": "0.9.0",
     "data_mode": "fetched_snapshot",
-    "generated_at": "2026-10-29T20:07:30+00:00",
-    "data_fetched_at": "2026-10-29T20:07:30+00:00",
-    "last_updated_label": "Live data fetched 2026-10-29",
+    "generated_at": "2026-10-30T19:53:11+00:00",
+    "data_fetched_at": "2026-10-30T19:53:10+00:00",
+    "last_updated_label": "Live data fetched 2026-10-30",
     "data_sources": [
       "MLB Stats API (schedule, probable pitchers, season statistics)",
       "Baseball Savant / Statcast (pitch data, team batting splits)"
@@ -15,9 +15,9 @@
       "reason": null,
       "live_run": {
         "status": "no_games",
-        "run_at": "2026-10-29T20:07:30+00:00",
-        "target_date": "2026-10-29",
-        "as_of": "2026-10-28",
+        "run_at": "2026-10-30T19:53:10+00:00",
+        "target_date": "2026-10-30",
+        "as_of": "2026-10-29",
         "games_scheduled": 0,
         "games_live": 0,
         "errors": [],
@@ -101,7 +101,7 @@
       "id": "c1",
       "key": "generator.metadata.last_updated.live",
       "args": {
-        "date": "2026-10-29"
+        "date": "2026-10-30"
       },
       "subject": null,
       "location": "metadata.last_updated_label"
