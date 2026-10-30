@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Not code, and may not be readable on Windows: pytest's cache.
     ".pytest_cache/**",
+    // Untracked local artifacts (the isolated NLI environment holds third-party JavaScript inside torch); never linted.
+    ".local/**",
   ]),
 ]);
 

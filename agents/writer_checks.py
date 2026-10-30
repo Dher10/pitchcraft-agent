@@ -300,12 +300,13 @@ def _check_sentence(sentence, text, doc, index, phrases, vocab, glossary, watch_
             fail("W1.evidence_value", e["path"])
             paths_ok = False
     paths = [e["path"] for e in cited]
-    for path in paths:
-        if path.endswith(".meaning"):
-            fail("W11.definition", path)
+    # A definition of a glossary term in the prose: the approved wording is a style finding (W11.inline), any other wording is
+    # an unverified claim and a gate (W11.definition, D52).
+    cited_terms = {p[len("glossary."):-len(".meaning")] for p in paths if p.startswith("glossary.") and p.endswith(".meaning")}
     for term, entry in glossary.items():
-        if _is_definition(text, term, _nfc(entry["meaning"])):
-            fail("W11.definition", term)
+        meaning = _nfc(entry["meaning"])
+        if term in cited_terms or _is_definition(text, term, meaning):
+            fail("W11.inline" if _norm(text) in _approved_forms(term, meaning) else "W11.definition", term)
     if not paths_ok:
         return
     cited_text = " ".join(_value_text(index[p]) for p in paths if p in index)
@@ -361,6 +362,16 @@ def _check_sentence(sentence, text, doc, index, phrases, vocab, glossary, watch_
             fail("W15.form", text[:20])
         if _WATCH_OUTCOME.search(text):
             fail("W15.outcome", _first(_WATCH_OUTCOME, text))
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"\s+", " ", text.lower()).strip().rstrip(".").strip()
+
+
+def _approved_forms(term: str, meaning: str) -> set[str]:
+    """The sentences that are the approved definition of `term`: the meaning as written, or `<term> is <meaning>`."""
+
+    return {_norm(meaning), _norm(f"{term}{_IS}{meaning}")}
 
 
 def _is_definition(text: str, term: str, meaning: str) -> bool:

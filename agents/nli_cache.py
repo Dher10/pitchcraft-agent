@@ -134,7 +134,50 @@ def checked_tokens(tokenizer, premise, sentence):
     return tokens
 
 
-def entails(directory, pairs, *, calibration=None, timeout=30):
+def _worker_python(python):
+    """The interpreter of the isolated NLI environment: an explicit regular file, never taken from the environment."""
+
+    if python is None:
+        return sys.executable
+    path = Path(python).absolute()
+    _safe_file(path)
+    if path.name.lower() != "python.exe" and path.name != "python":
+        raise NliRejected()
+    return str(path)
+
+
+def _run_worker(directory, pairs, python, timeout, limit=600):
+    """Entailment probabilities from the disposable worker, or None on any failure."""
+
+    try:
+        if not _pairs_valid(pairs) or type(timeout) not in (float, int) or not 0 < timeout <= limit:
+            return None
+        path = verify_cache(directory)
+        interpreter = _worker_python(python)
+        env = {key: os.environ[key] for key in ("SystemRoot", "WINDIR", "PATH", "TEMP", "TMP") if key in os.environ}
+        env.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1", TOKENIZERS_PARALLELISM="false")
+        result = subprocess.run([interpreter, "-I", str(Path(__file__).resolve()), "--worker"],
+            input=json.dumps({"cache":str(path), "pairs":pairs, "identity":identity()}),
+            text=True, encoding="utf-8", capture_output=True, timeout=timeout, env=env)
+        if result.returncode != 0 or len(result.stdout) > 4096:
+            return None
+        values = _json(result.stdout)
+        if type(values) is list and len(values) == len(pairs) and all(type(v) in (float, int) and math.isfinite(v) and 0 <= v <= 1 for v in values):
+            return [float(v) for v in values]
+        return None
+    except Exception:
+        return None
+
+
+def scores(directory, pairs, *, python=None, timeout=60):
+    """Raw entailment probabilities for (premise, sentence) pairs, or None on any failure.
+
+    For calibration and evidence only: a score is never an admission (see `entails`, which needs a calibrated threshold)."""
+
+    return _run_worker(directory, pairs, python, timeout)
+
+
+def entails(directory, pairs, *, calibration=None, timeout=30, python=None):
     """Internal primitive; calibration must be an explicitly supplied dev artifact.
 
     It never reads a threshold or credential from environment/files implicitly.
@@ -146,19 +189,8 @@ def entails(directory, pairs, *, calibration=None, timeout=30):
         threshold = calibration["threshold"]
         if type(threshold) not in (float,int) or not math.isfinite(threshold) or not 0 < threshold <= 1 or calibration["identity"] != identity():
             return False
-        if not _pairs_valid(pairs) or type(timeout) not in (float,int) or not 0 < timeout <= 120:
-            return False
-        path = verify_cache(directory)
-        env = {key: os.environ[key] for key in ("SystemRoot", "WINDIR", "PATH", "TEMP", "TMP") if key in os.environ}
-        env.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1", TOKENIZERS_PARALLELISM="false")
-        result = subprocess.run([sys.executable, "-I", str(Path(__file__).resolve()), "--worker"],
-            input=json.dumps({"cache":str(path), "pairs":pairs, "identity":identity()}),
-            text=True, encoding="utf-8", capture_output=True, timeout=timeout, env=env)
-        if result.returncode != 0 or len(result.stdout) > 4096:
-            return False
-        values = _json(result.stdout)
-        return type(values) is list and len(values)==len(pairs) and all(
-            type(value) in (float,int) and math.isfinite(value) and threshold <= value <= 1 for value in values)
+        values = _run_worker(directory, pairs, python, timeout, limit=120)  # entails keeps its original 120 s bound
+        return values is not None and all(threshold <= value <= 1 for value in values)
     except Exception:
         return False
 

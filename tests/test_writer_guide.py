@@ -105,3 +105,19 @@ def test_decision_d52_is_appended_and_names_the_split():
     row = next(line for line in decisions.splitlines() if line.startswith("| D52 |"))
     assert "never send a report to the rules writer by themselves" in row and "`style_codes`" in row
     assert decisions.index("| D51 |") < decisions.index("| D52 |")
+
+
+def test_decision_d53_supersedes_d52_in_part_and_d52_is_marked_not_rewritten():
+    decisions = (ROOT / "docs" / "DECISIONS.md").read_text(encoding="utf-8")
+
+    d52 = next(line for line in decisions.splitlines() if line.startswith("| D52 |"))
+    d53 = next(line for line in decisions.splitlines() if line.startswith("| D53 |"))
+    assert "Superseded in part by D53" in d52 and "a definition of a glossary term written into the prose" in d52.split("Superseded in part by D53")[1]
+    assert "W11 for a statistic the glossary lacks, W12 for a time claim" in d52  # the text D52 was approved with is unchanged
+    assert "Supersedes in part D52" in d53 and "`W11.inline`" in d53 and "`W11.definition`" in d53
+
+
+def test_eslint_ignores_the_untracked_local_artifacts_such_as_the_isolated_nli_environment():
+    config = (ROOT / "eslint.config.mjs").read_text(encoding="utf-8")
+
+    assert '".local/**"' in config

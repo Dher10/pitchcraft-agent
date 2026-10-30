@@ -296,5 +296,20 @@ calibration bound to model/runtime/fact-renderer identity, and complete
 P2.3/P2.6/guide/schema/eval/release gates. Missing any keeps rules; P2-SEC
 fixture/metadata evidence never proves the Nov 2 publication boundary.
 
+Provisioned Oct 30 (owner-approved install, P2.3): isolated environment `.local/nli-venv` (CPython 3.14.6;
+`pip install --no-deps --only-binary=:all: -r requirements-nli-windows.txt`, so only the pinned set and only wheels), and the weights
+through `evals/provision_nli_cache.py` (the pinned revision over HTTPS from Hugging Face hosts only; each file kept only if its size and
+SHA-256 equal the manifest; no pickle, no code, no unlisted file) into `.local/nli-cache`, then `agents/nli_cache.verify_cache`. A real CPU
+smoke ran in the worker (`tests/test_nli_real_smoke.py`, skipped where the environment is absent): an entailed sentence scored 0.9987, a
+wrong number 0.0012, a wrong team 0.0002. `agents/nli_admission.py` is the adapter (verified fact sentences from
+`agents/fact_renderer.py`, batches of at most 32, Watch sentences not checked, fail closed on no human calibration, an identity mismatch,
+an unrenderable or oversize premise, a worker failure or a low score) and is wired into the cascade as an optional gate
+(`llm_report_writer.write(nli=...)`); `entails` itself stays unwired from publication. Calibration is PROVISIONAL and SYNTHETIC
+(`evals/nli_calibration.py`, artifact `evals/data/writer/nli_calibration_provisional.json`, `admission_allowed: false`, no threshold):
+379 positives (the hand-written control and the rules writer's sentences) and 758 deterministic perturbations. Result: the
+model rarely entails a perturbed sentence (true-negative rate 97.9% at 0.5, 98.9% at 0.9 over all negatives; 72% of the negatives are an appended unsupported or cause clause, and on the flipped-word negatives the rate at 0.9 is 86.2%) but entails few true ones
+(recall at 0.9: positive control 52%, rules sentences 12%); it also entailed 8 of 58 flipped-word negatives at 0.9,
+for example "shows weak" against a premise of "shows average" (some flips are ungrammatical, such as "above-weak"). Scoring 378 real, unlabelled dev model sentences (362 distinct) gave 62% at or above 0.5 and 55% at or above 0.9, so the low recall on the rules writer's catalog wording understates what model prose would pass; none of this is a label. See STATUS for what this means for the gate.
+
 Verification results, observed red counts, controls, real-response/browser
 checks and clean-context review are recorded in STATUS/status-archive.

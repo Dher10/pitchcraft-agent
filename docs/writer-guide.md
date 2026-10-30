@@ -52,9 +52,11 @@ Each rule has a stable ID (S1 scores each one pass or fail per report) and the c
 
 ### Gates and style (decision D52)
 
-Hard gates are the accuracy, safety, policy and output-shape checks: W0 (sentence security and malformed citations), W1 (evidence, numbers, names), W2 and W9 (arithmetic and comparisons), W3, W4, W5, W6, W7, W8, W10, W11 only for a statistic the glossary lacks, W12 only for a time claim, W13, W15 only for naming an outcome, W16 and W17 only for the structure of the report. A report that fails a gate gets one informed retry and then the rules writer's report.
+Decision D52 set this split; decision D53 moved one check from style to gate (a definition of a glossary term written into the prose in any wording other than the approved one).
 
-Style rules are scored by S1 and never send a report to the rules writer by themselves: the S rules below, W11 (the short-form form and its repeat, and a definition written into the prose), W12 (the scope statement), W14 (coverage), W15 (the Watch form and a question), W17 (length). They are named in the retry feedback and recorded with the report. S-1, S-2, S-4, S-5, S-7 and S-8 have code detectors that feed S1; S-3, S-6 and S-9 are judged by S1.
+Hard gates are the accuracy, safety, policy and output-shape checks: W0 (sentence security and malformed citations), W1 (evidence, numbers, names), W2 and W9 (arithmetic and comparisons), W3, W4, W5, W6, W7, W8, W10, W11 for a statistic the glossary lacks and for a definition of a glossary term written into the prose in any wording other than the approved one (an unverified claim), W12 only for a time claim, W13, W15 only for naming an outcome, W16 and W17 only for the structure of the report. A report that fails a gate gets one informed retry and then the rules writer's report.
+
+Style rules are scored by S1 and never send a report to the rules writer by themselves: the S rules below, W11 (the short-form form and its repeat, and a definition written in exactly the approved wording), W12 (the scope statement), W14 (coverage), W15 (the Watch form and a question), W17 (length). They are named in the retry feedback and recorded with the report. S-1, S-2, S-4, S-5, S-7 and S-8 have code detectors that feed S1; S-3, S-6 and S-9 are judged by S1.
 
 ### Style rules (S1)
 

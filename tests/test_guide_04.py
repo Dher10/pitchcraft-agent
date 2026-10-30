@@ -42,8 +42,8 @@ def codes(c, doc):
     ("W1.entity", True), ("W1.number", True), ("W1.evidence_path", True), ("W2.comparison", True), ("W2.arithmetic", True), ("W3.prediction", True),
     ("W4.topic", True), ("W5.intensity", True), ("W5.label", True), ("W6.arsenal", True), ("W7.missing", True), ("W8.form", True), ("W8.value", True),
     ("W10.cause", True), ("W11.unknown_term", True), ("W12.time", True), ("W13.standing", True), ("W15.outcome", True), ("W16.internal", True),
-    ("W0.sentence", True), ("W0.error", True), ("W17.structure", True), ("W-unknown", True),
-    ("W11.expansion", False), ("W11.repeat", False), ("W11.definition", False), ("W12.scope", False), ("W14.starter", False), ("W14.team", False),
+    ("W0.sentence", True), ("W0.error", True), ("W17.structure", True), ("W-unknown", True), ("W11.definition", True),
+    ("W11.expansion", False), ("W11.repeat", False), ("W11.inline", False), ("W12.scope", False), ("W14.starter", False), ("W14.team", False),
     ("W15.form", False), ("W15.question", False), ("W17.length", False),
     ("S-1", False), ("S-2", False), ("S-4", False), ("S-5", False), ("S-7", False), ("S-8", False),
 ])

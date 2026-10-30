@@ -1,0 +1,96 @@
+{
+ "admission_allowed": false,
+ "human_labels": 0,
+ "identity": "e2b62f3bcab147b4dacbe170b202498092e316f9fae70e636e4640980d39ecba",
+ "labels": "synthetic",
+ "missing": [
+  "no human entailment labels (owner labeling is Nov 4-6)",
+  "no accepted B1 model output yet; no sentence written by a model has a human label",
+  "negatives are deterministic perturbations, not the errors a model actually makes",
+  "the rules writer's sentences are true by construction and phrased in catalog wording, not in model prose",
+  "no threshold is proposed: a threshold needs human labels bound to this identity"
+ ],
+ "model": "cross-encoder/nli-deberta-v3-small",
+ "renderer": "p2.3-2:00c0f8b1b4eb3da8",
+ "revision": "fa2804872c3b4bd748f38c0185cc85775361e735",
+ "summary": {
+  "by_kind_of_negative": {
+   "cause": {
+    "n": 268,
+    "wrongly_entailed_at_0.9": 0
+   },
+   "flip": {
+    "n": 58,
+    "wrongly_entailed_at_0.9": 8
+   },
+   "quantity": {
+    "n": 43,
+    "wrongly_entailed_at_0.9": 0
+   },
+   "scope": {
+    "n": 9,
+    "wrongly_entailed_at_0.9": 0
+   },
+   "subject": {
+    "n": 101,
+    "wrongly_entailed_at_0.9": 0
+   },
+   "unsupported": {
+    "n": 279,
+    "wrongly_entailed_at_0.9": 0
+   }
+  },
+  "negatives": 758,
+  "pairs": 1137,
+  "positives": 379,
+  "positives_by_source": {
+   "positive_control": 21,
+   "rules_writer": 358
+  },
+  "recall_by_source": {
+   "positive_control": {
+    "0.5": 0.667,
+    "0.8": 0.571,
+    "0.9": 0.524,
+    "0.95": 0.524,
+    "0.99": 0.19
+   },
+   "rules_writer": {
+    "0.5": 0.179,
+    "0.8": 0.151,
+    "0.9": 0.123,
+    "0.95": 0.101,
+    "0.99": 0.017
+   }
+  },
+  "scored": 1137,
+  "table": [
+   {
+    "threshold": 0.5,
+    "tnr": 0.978891820580475,
+    "tpr": 0.20580474934036938
+   },
+   {
+    "threshold": 0.8,
+    "tnr": 0.9854881266490765,
+    "tpr": 0.1741424802110818
+   },
+   {
+    "threshold": 0.9,
+    "tnr": 0.9894459102902374,
+    "tpr": 0.14511873350923482
+   },
+   {
+    "threshold": 0.95,
+    "tnr": 0.996042216358839,
+    "tpr": 0.12401055408970976
+   },
+   {
+    "threshold": 0.99,
+    "tnr": 1.0,
+    "tpr": 0.026385224274406333
+   }
+  ]
+ },
+ "threshold": null
+}

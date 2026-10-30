@@ -52,15 +52,20 @@ def test_a_term_with_a_short_form_gets_it_in_parentheses_once_on_first_use(doc):
     assert "W11.expansion" in check(wrong, doc)
 
 
-@pytest.mark.parametrize("text,path", [
-    ("OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for.", "glossary.OPS.meaning"),
-    ("On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.", "glossary.OPS.meaning"),
-    ("Command is how well a pitcher puts the ball where he wants it.", "glossary.command.meaning"),
+@pytest.mark.parametrize("text,path,code", [
+    # the approved wording written into the prose is a style finding (guide: never write a definition) ...
+    ("On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.", "glossary.OPS.meaning", "W11.inline"),
+    ("OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.", "glossary.OPS.meaning", "W11.inline"),
+    ("Command is how well a pitcher puts the ball where he wants it.", "glossary.command.meaning", "W11.inline"),
+    # ... but a definition in other words, or only part of the approved one, fails (accuracy, D52)
+    ("OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for.", "glossary.OPS.meaning", "W11.definition"),
+    ("Command is how well a pitcher throws strikes.", "glossary.command.meaning", "W11.definition"),
 ])
-def test_a_definition_sentence_is_never_written_into_the_prose(doc, text, path):
-    c = with_first(candidate(doc), "arsenal", 0, text, path, doc=doc)
+def test_a_definition_in_the_prose_is_a_gate_unless_it_is_the_approved_wording(doc, text, path, code):
+    found = check(with_first(candidate(doc), "arsenal", 0, text, path, doc=doc), doc)
 
-    assert "W11.definition" in check(c, doc)
+    assert code in found
+    assert ("W11.definition" in found) is (code == "W11.definition") and (code == "W11.inline") is not wc.is_gate(code)
 
 
 def test_terms_without_a_short_form_need_no_expansion(doc):
@@ -215,3 +220,11 @@ def test_a_missing_lineup_note_does_not_exempt_a_label_term(doc):
     c = with_first(candidate(doc), "away_vs_home", 1, "His command is sloppy.", "findings.lineup_notes.away", doc=doc)
 
     assert "W5.label" in check(c, doc)
+
+
+def test_a_sentence_unrelated_to_a_term_that_cites_its_meaning_is_a_definition_gate(doc):
+    c = with_first(candidate(doc), "arsenal", 0, "Kyle Freeland throws his Four-seam most.", ARS, "glossary.OPS.meaning", doc=doc)
+
+    found = check(c, doc)
+
+    assert "W11.definition" in found and wc.is_gate("W11.definition")

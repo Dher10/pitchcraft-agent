@@ -183,6 +183,7 @@ def write(
     item_id: str = "item",
     sleep: Callable[[float], None] | None = None,
     pacer: Any = None,
+    nli: Callable[[dict, dict], tuple[list[str], list[dict]]] | None = None,
 ) -> WriterResult:
     rules_report = rules_report_for(matchup_input)
     if provider is None:
@@ -239,10 +240,23 @@ def write(
         record["checks"] = gate_codes  # the hard gates (accuracy, safety, policy, output shape)
         record["style_findings"] = styles  # scored by S1, never a reason to reject (D52)
         record["check_detail"] = detail  # sentence, check and offending token: the local run record only, never fed back
+        nli_codes: list[str] = []
+        if not gate_codes and nli is not None:
+            # The local entailment stage (agents/nli_admission.py) runs only after every code gate passed; it fails closed.
+            try:
+                nli_codes, record["nli"] = nli(candidate, doc)
+            except Exception:
+                nli_codes, record["nli"] = ["NLI.unavailable"], []
+            gate_codes = list(nli_codes)
+            record["checks"] = gate_codes
+            if nli_codes and set(nli_codes) <= {"NLI.uncalibrated", "NLI.unavailable"}:
+                # A missing calibration or a broken worker cannot be fixed by a second Gemini call (capacity is scarce): rules now.
+                result.failures = gate_codes
+                return rules_result(rules_report, "nli_unavailable", content_attempts=content_attempt, attempts=result.attempts, failures=gate_codes)
         if not gate_codes:
             return WriterResult(writer_checks.to_report(candidate, rules_report), outcome.path, content_attempt, result.attempts, candidate, [], style_findings=styles)
         # The informed retry names every failed rule, style ones included, as closed codes.
-        failures = list(dict.fromkeys(f["check"] for f in detail))
+        failures = list(dict.fromkeys([f["check"] for f in detail] + nli_codes))
         result.failures = gate_codes
     return rules_result(rules_report, "checks_failed", content_attempts=2, attempts=result.attempts, failures=result.failures)
 
