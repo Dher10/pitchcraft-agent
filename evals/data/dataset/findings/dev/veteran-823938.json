@@ -1,0 +1,43 @@
+{
+ "away_data_notes": [
+  "Nick Martinez has allowed 6 home runs over 318 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Solid command supports strike-zone control",
+  "Sinker to set up, Changeup to finish"
+ ],
+ "away_style": "Sinker to set up, Changeup to finish",
+ "away_vs_home_offense": "Nick Martinez works off a sinker-changeup combination. He shows below-average swing-and-miss ability. He shows solid command. Nick Martinez has allowed 6 home runs over 318 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.806 OPS), so Nick Martinez cannot live over the middle. They draw walks at an above-average rate, so Nick Martinez needs efficient strikes.",
+ "home_data_notes": [
+  "Eric Lauer has allowed 15 home runs over 224 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Cutter to finish"
+ ],
+ "home_style": "Four-seam to set up, Cutter to finish",
+ "home_vs_away_offense": "Eric Lauer works off a four-seam-cutter combination. He shows below-average swing-and-miss ability. He shows average command. Eric Lauer has allowed 15 home runs over 224 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.685 OPS), which gives Eric Lauer an edge if he gets ahead.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "119": [
+   "has strong OPS against this pitcher's hand",
+   "draws walks at an above-average rate"
+  ],
+  "139": []
+ },
+ "matchup_headline": "Sinker-Changeup starter against Four-seam-Cutter starter",
+ "matchup_summary": "This matchup features Sinker-Changeup starter against Four-seam-Cutter starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Nick Martinez and Eric Lauer: all pitcher figures cover the 2026 regular season through Jun 14.",
+  "Team offense splits cover the 2026 regular season through Jun 14."
+ ],
+ "three_things_to_watch": [
+  "Can Nick Martinez land the changeup early in counts?",
+  "Can Eric Lauer keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

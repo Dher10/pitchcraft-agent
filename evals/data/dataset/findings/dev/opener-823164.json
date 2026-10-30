@@ -1,0 +1,44 @@
+{
+ "away_data_notes": [
+  "Jack Dreyer has allowed 7 home runs over 254 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Four-seam to set up, Slider to finish"
+ ],
+ "away_style": "Four-seam to set up, Slider to finish",
+ "away_vs_home_offense": "Jack Dreyer works off a four-seam-slider combination. He shows above-average swing-and-miss ability. He shows average command. Jack Dreyer has allowed 7 home runs over 254 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.660 OPS), which gives Jack Dreyer an edge if he gets ahead.",
+ "home_data_notes": [
+  "Control data for Carson Seymour is limited (137 batters faced; 170 needed), so no command claim is made.",
+  "Carson Seymour has allowed 6 home runs over 137 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Sinker to set up, Slider to finish"
+ ],
+ "home_style": "Sinker to set up, Slider to finish",
+ "home_vs_away_offense": "Carson Seymour works off a sinker-slider combination. He shows below-average swing-and-miss ability. Control data for Carson Seymour is limited (137 batters faced; 170 needed), so no command claim is made. Carson Seymour has allowed 6 home runs over 137 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.766 OPS), so Carson Seymour cannot live over the middle. They draw walks at an above-average rate, so Carson Seymour needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "119": [
+   "has strong OPS against this pitcher's hand",
+   "draws walks at an above-average rate"
+  ],
+  "137": []
+ },
+ "matchup_headline": "Four-seam-Slider starter against Sinker-Slider starter",
+ "matchup_summary": "This matchup features Four-seam-Slider starter against Sinker-Slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Jack Dreyer and Carson Seymour: all pitcher figures cover the 2026 regular season through Sep 26.",
+  "Team offense splits cover the 2026 regular season through Sep 26."
+ ],
+ "three_things_to_watch": [
+  "Can Jack Dreyer land the slider early in counts?",
+  "Can Carson Seymour keep the ball low?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

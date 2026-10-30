@@ -1,0 +1,50 @@
+{
+ "away_data_notes": [
+  "Carlos Rod\u00f3n has allowed 3 home runs over 194 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [
+  "Below-average command can create deep-count traffic"
+ ],
+ "away_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Four-seam to set up, Slider to finish"
+ ],
+ "away_style": "Four-seam to set up, Slider to finish",
+ "away_vs_home_offense": "Carlos Rod\u00f3n works off a four-seam-slider combination. He shows above-average swing-and-miss ability. He shows below-average command. Carlos Rod\u00f3n has allowed 3 home runs over 194 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against LHP pitching (.723 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Carlos Rod\u00f3n needs efficient strikes.",
+ "home_data_notes": [
+  "Shane Baz has allowed 10 home runs over 598 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Curveball to finish"
+ ],
+ "home_style": "Four-seam to set up, Curveball to finish",
+ "home_vs_away_offense": "Shane Baz works off a four-seam-curveball combination. He shows average swing-and-miss ability. He shows average command. Shane Baz has allowed 10 home runs over 598 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.713 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Shane Baz needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate",
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "110": [
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ],
+  "147": [
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Four-seam-Slider starter against Four-seam-Curveball starter",
+ "matchup_summary": "This matchup features Four-seam-Slider starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Carlos Rod\u00f3n and Shane Baz: all pitcher figures cover the 2026 regular season through Aug 17.",
+  "Team offense splits cover the 2026 regular season through Aug 17."
+ ],
+ "three_things_to_watch": [
+  "Can Carlos Rod\u00f3n land the slider early in counts?",
+  "Can Shane Baz keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

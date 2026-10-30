@@ -1,0 +1,45 @@
+{
+ "away_data_notes": [
+  "Sonny Gray has allowed 9 home runs over 337 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Solid command supports strike-zone control",
+  "Cutter to set up, Sweeper to finish"
+ ],
+ "away_style": "Cutter to set up, Sweeper to finish",
+ "away_vs_home_offense": "Sonny Gray works off a cutter-sweeper combination. He shows average swing-and-miss ability. He shows solid command. Sonny Gray has allowed 9 home runs over 337 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.706 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach.",
+ "home_data_notes": [
+  "Control data for Sam Aldegheri is limited (133 batters faced; 170 needed), so no command claim is made.",
+  "Sam Aldegheri has allowed 4 home runs over 133 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Changeup to finish"
+ ],
+ "home_style": "Four-seam to set up, Changeup to finish",
+ "home_vs_away_offense": "Sam Aldegheri works off a four-seam-changeup combination. He shows below-average swing-and-miss ability. Control data for Sam Aldegheri is limited (133 batters faced; 170 needed), so no command claim is made. Sam Aldegheri has allowed 4 home runs over 133 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (.755 OPS), so Sam Aldegheri cannot live over the middle.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "has strong OPS against this pitcher's hand"
+ ],
+ "lineup_pressure_points_by_team": {
+  "108": [
+   "has elevated swing-and-miss risk"
+  ],
+  "111": [
+   "has strong OPS against this pitcher's hand"
+  ]
+ },
+ "matchup_headline": "Cutter-Sweeper starter against Four-seam-Changeup starter",
+ "matchup_summary": "This matchup features Cutter-Sweeper starter against Four-seam-Changeup starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Sonny Gray and Sam Aldegheri: all pitcher figures cover the 2026 regular season through Jul 3.",
+  "Team offense splits cover the 2026 regular season through Jul 3."
+ ],
+ "three_things_to_watch": [
+  "Can Sonny Gray land the sweeper early in counts?",
+  "Can Sam Aldegheri keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

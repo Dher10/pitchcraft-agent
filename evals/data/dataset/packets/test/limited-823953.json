@@ -1,0 +1,475 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 51,
+     "overall": 63.0,
+     "total": 81,
+     "vs_lhh": 64.3,
+     "vs_rhh": 62.3
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 543,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 25,
+     "overall": 30.9,
+     "total": 81,
+     "vs_lhh": 17.9,
+     "vs_rhh": 37.7
+    },
+    "home_starter": {
+     "count": 110,
+     "overall": 20.3,
+     "total": 543,
+     "vs_lhh": 17.0,
+     "vs_rhh": 26.0
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 3,
+     "overall": 3.7,
+     "total": 81,
+     "vs_lhh": 10.7,
+     "vs_rhh": 0.0
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 543,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 2,
+     "overall": 2.5,
+     "total": 81,
+     "vs_lhh": 7.1,
+     "vs_rhh": 0.0
+    },
+    "home_starter": {
+     "count": 229,
+     "overall": 42.2,
+     "total": 543,
+     "vs_lhh": 44.7,
+     "vs_rhh": 37.8
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 81,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 115,
+     "overall": 21.2,
+     "total": 543,
+     "vs_lhh": 23.1,
+     "vs_rhh": 17.9
+    },
+    "pitch": "Forkball"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 81,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 89,
+     "overall": 16.4,
+     "total": 543,
+     "vs_lhh": 15.3,
+     "vs_rhh": 18.4
+    },
+    "pitch": "Splitter"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -13.8,
+     "v_break": -0.2
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": null,
+     "v_break": null
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -17.6,
+     "v_break": 1.2
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 11.6,
+     "v_break": -3.4
+    }
+   },
+   "home_starter": {
+    "Forkball": {
+     "family": "Offspeed",
+     "h_break": -2.9,
+     "v_break": -3.1
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -8.3,
+     "v_break": 15.5
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 1.6,
+     "v_break": -2.7
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -9.1,
+     "v_break": 0.8
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 85.3,
+    "home_starter_velocity": null,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 93.6,
+    "home_starter_velocity": 96.9,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 94.3,
+    "home_starter_velocity": null,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 86.6,
+    "home_starter_velocity": 86.1,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 84.9,
+    "pitch": "Forkball"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 90.3,
+    "pitch": "Splitter"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for limited-823953."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-05-11",
+ "game": {
+  "away_team_id": "137",
+  "broadcast_note": null,
+  "home_team_id": "119",
+  "start_time_local": null,
+  "start_time_utc": "2026-05-12T02:10:00Z",
+  "timezone": null,
+  "title": "San Francisco Giants vs Los Angeles Dodgers",
+  "venue": "UNIQLO Field at Dodger Stadium"
+ },
+ "id": "limited-823953",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.468,
+     "y": 0.556
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.3,
+     "y": 0.611
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.491,
+     "y": 0.597
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.657,
+     "y": 0.691
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.435,
+     "y": 0.568
+    },
+    {
+     "pitch": "Forkball",
+     "x": 0.242,
+     "y": 0.6
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.502,
+     "y": 0.692
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.483,
+     "y": 0.741
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.422,
+     "y": 0.597
+    },
+    {
+     "pitch": "Forkball",
+     "x": 0.45,
+     "y": 0.667
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.503,
+     "y": 0.73
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.554,
+     "y": 0.794
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "686790",
+   "name": "Trevor McDonald",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Sinker",
+    "putaway_pitch": "Slider",
+    "style_label": "Arsenal data limited",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 81,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     }
+    },
+    "limited": {
+     "arsenal": true,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 24,
+     "home_runs": 1,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     },
+     "source": "mlb_api",
+     "strikeouts": 8,
+     "walks": 0
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "1.29",
+    "home_runs_allowed": 1,
+    "innings": "7.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     }
+    },
+    "strikeouts": 8,
+    "walks": 0,
+    "whip": "0.29"
+   },
+   "team": "SF",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "808963",
+   "name": "Roki Sasaki",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Forkball",
+    "style_label": "Four-seam-Forkball starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 543,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 134,
+     "home_runs": 8,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     },
+     "source": "mlb_api",
+     "strikeouts": 26,
+     "walks": 15
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "5.97",
+    "home_runs_allowed": 8,
+    "innings": "28.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 10",
+      "through": "2026-05-10"
+     }
+    },
+    "strikeouts": 26,
+    "walks": 15,
+    "whip": "1.67"
+   },
+   "team": "LAD",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "SF",
+   "id": "137",
+   "name": "San Francisco Giants",
+   "offense_profile": {
+    "bb_rate_vs_hand": "5.4%",
+    "k_rate_vs_hand": "21.1%",
+    "ops_vs_hand": ".655",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 10",
+     "through": "2026-05-10"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "LAD",
+   "id": "119",
+   "name": "Los Angeles Dodgers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "10.4%",
+    "k_rate_vs_hand": "21.1%",
+    "ops_vs_hand": ".782",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 10",
+     "through": "2026-05-10"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

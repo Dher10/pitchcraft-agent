@@ -1,0 +1,44 @@
+{
+ "away_data_notes": [
+  "Bryce Elder's arsenal data is limited (83 pitches; 100 needed), so this report makes no arsenal claim for him.",
+  "Strikeout data for Bryce Elder is limited (23 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for Bryce Elder is limited (23 batters faced; 170 needed), so no command claim is made.",
+  "Bryce Elder has allowed 0 home runs over 23 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [],
+ "away_style": "Sinker to set up, Slider to finish",
+ "away_vs_home_offense": "Bryce Elder's arsenal data is limited (83 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Bryce Elder is limited (23 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Bryce Elder is limited (23 batters faced; 170 needed), so no command claim is made. Bryce Elder has allowed 0 home runs over 23 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against RHP pitching (.653 OPS), which gives Bryce Elder an edge if he gets ahead.",
+ "home_data_notes": [
+  "Michael Soroka's arsenal data is limited (89 pitches; 100 needed), so this report makes no arsenal claim for him.",
+  "Strikeout data for Michael Soroka is limited (20 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for Michael Soroka is limited (20 batters faced; 170 needed), so no command claim is made.",
+  "Michael Soroka has allowed 0 home runs over 20 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [],
+ "home_style": "Slurve to set up, Four-seam to finish",
+ "home_vs_away_offense": "Michael Soroka's arsenal data is limited (89 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Michael Soroka is limited (20 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Michael Soroka is limited (20 batters faced; 170 needed), so no command claim is made. Michael Soroka has allowed 0 home runs over 20 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.827 OPS), so Michael Soroka cannot live over the middle. They draw walks at an above-average rate, so Michael Soroka needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "109": [],
+  "144": [
+   "has strong OPS against this pitcher's hand",
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Bryce Elder against Michael Soroka",
+ "matchup_summary": "This matchup features Bryce Elder against Michael Soroka. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Bryce Elder and Michael Soroka: all pitcher figures cover the 2026 regular season through Apr 3.",
+  "Team offense splits cover the 2026 regular season through Apr 3."
+ ],
+ "three_things_to_watch": [
+  "Can Bryce Elder stay ahead of hitters early in counts?",
+  "Can Michael Soroka work efficiently through the lineup?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

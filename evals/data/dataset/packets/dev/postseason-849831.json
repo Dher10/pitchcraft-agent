@@ -1,0 +1,530 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 1128,
+     "overall": 37.2,
+     "total": 3033,
+     "vs_lhh": 38.8,
+     "vs_rhh": 34.9
+    },
+    "home_starter": {
+     "count": 856,
+     "overall": 27.8,
+     "total": 3076,
+     "vs_lhh": 31.1,
+     "vs_rhh": 23.0
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 621,
+     "overall": 20.5,
+     "total": 3033,
+     "vs_lhh": 24.6,
+     "vs_rhh": 14.5
+    },
+    "home_starter": {
+     "count": 690,
+     "overall": 22.4,
+     "total": 3076,
+     "vs_lhh": 26.7,
+     "vs_rhh": 16.2
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 497,
+     "overall": 16.4,
+     "total": 3033,
+     "vs_lhh": 8.6,
+     "vs_rhh": 27.6
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 3076,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 412,
+     "overall": 13.6,
+     "total": 3033,
+     "vs_lhh": 11.2,
+     "vs_rhh": 16.9
+    },
+    "home_starter": {
+     "count": 477,
+     "overall": 15.5,
+     "total": 3076,
+     "vs_lhh": 11.0,
+     "vs_rhh": 22.2
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 322,
+     "overall": 10.6,
+     "total": 3033,
+     "vs_lhh": 13.9,
+     "vs_rhh": 5.9
+    },
+    "home_starter": {
+     "count": 178,
+     "overall": 5.8,
+     "total": 3076,
+     "vs_lhh": 7.5,
+     "vs_rhh": 3.3
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 3033,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 875,
+     "overall": 28.4,
+     "total": 3076,
+     "vs_lhh": 23.7,
+     "vs_rhh": 35.4
+    },
+    "pitch": "Sweeper"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 5.5,
+     "v_break": -14.3
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 3.5,
+     "v_break": 9.0
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -4.4,
+     "v_break": 18.6
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -13.0,
+     "v_break": 14.5
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 5.6,
+     "v_break": 3.4
+    }
+   },
+   "home_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 10.4,
+     "v_break": -14.5
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": -1.4,
+     "v_break": 6.4
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -10.4,
+     "v_break": 14.5
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -15.4,
+     "v_break": 9.4
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": 11.4,
+     "v_break": -0.7
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 79.0,
+    "home_starter_velocity": 82.6,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 89.8,
+    "home_starter_velocity": 92.4,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 94.8,
+    "home_starter_velocity": 97.7,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 94.7,
+    "home_starter_velocity": 97.0,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 86.5,
+    "home_starter_velocity": null,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 87.6,
+    "pitch": "Sweeper"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for postseason-849831."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-10-10",
+ "game": {
+  "away_team_id": "145",
+  "broadcast_note": null,
+  "home_team_id": "114",
+  "start_time_local": null,
+  "start_time_utc": "2026-10-11T00:00:00Z",
+  "timezone": null,
+  "title": "Chicago White Sox vs Cleveland Guardians",
+  "venue": "Progressive Field"
+ },
+ "id": "postseason-849831",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.437,
+     "y": 0.469
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.485,
+     "y": 0.673
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.551,
+     "y": 0.687
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.378,
+     "y": 0.509
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.489,
+     "y": 0.538
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.541,
+     "y": 0.457
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.567,
+     "y": 0.632
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.664,
+     "y": 0.638
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.34,
+     "y": 0.536
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.545,
+     "y": 0.519
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sweeper",
+     "x": 0.612,
+     "y": 0.698
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.5,
+     "y": 0.434
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.486,
+     "y": 0.71
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.433,
+     "y": 0.587
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.531,
+     "y": 0.467
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sweeper",
+     "x": 0.758,
+     "y": 0.704
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.62,
+     "y": 0.442
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.609,
+     "y": 0.757
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.569,
+     "y": 0.547
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.658,
+     "y": 0.482
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": {
+  "game_number": 5,
+  "games_in_series": 5,
+  "series_name": "AL Division Series",
+  "standing": "Series tied 2-2"
+ },
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "680732",
+   "name": "Sean Burke",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Curveball",
+    "style_label": "Four-seam-Curveball starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 3033,
+     "scope": {
+      "kind": "regular_and_postseason",
+      "label": "2026 regular season and postseason through Oct 9",
+      "through": "2026-10-09"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 716,
+     "home_runs": 19,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-09"
+     },
+     "source": "mlb_api",
+     "strikeouts": 185,
+     "walks": 62
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.34",
+    "home_runs_allowed": 19,
+    "innings": "172.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-09"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-09"
+     }
+    },
+    "strikeouts": 185,
+    "walks": 62,
+    "whip": "1.20"
+   },
+   "team": "CWS",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "668909",
+   "name": "Gavin Williams",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Sweeper",
+    "putaway_pitch": "Four-seam",
+    "style_label": "Sweeper-Four-seam starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 3076,
+     "scope": {
+      "kind": "regular_and_postseason",
+      "label": "2026 regular season and postseason through Oct 9",
+      "through": "2026-10-09"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 746,
+     "home_runs": 28,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-09"
+     },
+     "source": "mlb_api",
+     "strikeouts": 248,
+     "walks": 61
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.76",
+    "home_runs_allowed": 28,
+    "innings": "184.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-09"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-09"
+     }
+    },
+    "strikeouts": 248,
+    "walks": 61,
+    "whip": "1.11"
+   },
+   "team": "CLE",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "CWS",
+   "id": "145",
+   "name": "Chicago White Sox",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.4%",
+    "k_rate_vs_hand": "24.1%",
+    "ops_vs_hand": ".716",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season",
+     "through": "2026-10-09"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "CLE",
+   "id": "114",
+   "name": "Cleveland Guardians",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.1%",
+    "k_rate_vs_hand": "20.6%",
+    "ops_vs_hand": ".706",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season",
+     "through": "2026-10-09"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

@@ -1,0 +1,505 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 254,
+     "overall": 20.6,
+     "total": 1231,
+     "vs_lhh": 16.6,
+     "vs_rhh": 27.9
+    },
+    "home_starter": {
+     "count": 54,
+     "overall": 10.3,
+     "total": 522,
+     "vs_lhh": 20.4,
+     "vs_rhh": 6.4
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 245,
+     "overall": 19.9,
+     "total": 1231,
+     "vs_lhh": 16.8,
+     "vs_rhh": 25.6
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 522,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter": {
+     "count": 240,
+     "overall": 19.5,
+     "total": 1231,
+     "vs_lhh": 25.6,
+     "vs_rhh": 8.5
+    },
+    "home_starter": {
+     "count": 239,
+     "overall": 45.8,
+     "total": 522,
+     "vs_lhh": 44.9,
+     "vs_rhh": 46.1
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 227,
+     "overall": 18.4,
+     "total": 1231,
+     "vs_lhh": 9.9,
+     "vs_rhh": 33.9
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 522,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 202,
+     "overall": 16.4,
+     "total": 1231,
+     "vs_lhh": 23.2,
+     "vs_rhh": 4.1
+    },
+    "home_starter": {
+     "count": 37,
+     "overall": 7.1,
+     "total": 522,
+     "vs_lhh": 4.1,
+     "vs_rhh": 8.3
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 63,
+     "overall": 5.1,
+     "total": 1231,
+     "vs_lhh": 7.9,
+     "vs_rhh": 0.0
+    },
+    "home_starter": {
+     "count": 163,
+     "overall": 31.2,
+     "total": 522,
+     "vs_lhh": 15.0,
+     "vs_rhh": 37.6
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1231,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 29,
+     "overall": 5.6,
+     "total": 522,
+     "vs_lhh": 15.6,
+     "vs_rhh": 1.6
+    },
+    "pitch": "Slider"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -13.0,
+     "v_break": 3.8
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 12.7,
+     "v_break": -14.3
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 4.4,
+     "v_break": 3.4
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 0.7,
+     "v_break": 11.4
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -11.0,
+     "v_break": 7.0
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": 13.8,
+     "v_break": -4.6
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 13.4,
+     "v_break": 9.4
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -11.3,
+     "v_break": -8.4
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": -1.8,
+     "v_break": 6.4
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 5.4,
+     "v_break": 16.0
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -1.9,
+     "v_break": -4.0
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 86.1,
+    "home_starter_velocity": 80.3,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 79.8,
+    "home_starter_velocity": 74.7,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 88.4,
+    "home_starter_velocity": 86.9,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 91.8,
+    "home_starter_velocity": 92.0,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 92.3,
+    "home_starter_velocity": null,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 85.0,
+    "home_starter_velocity": null,
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 81.7,
+    "pitch": "Slider"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for limited-824012."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-07-04",
+ "game": {
+  "away_team_id": "111",
+  "broadcast_note": null,
+  "home_team_id": "108",
+  "start_time_local": null,
+  "start_time_utc": "2026-07-05T01:38:00Z",
+  "timezone": null,
+  "title": "Boston Red Sox vs Los Angeles Angels",
+  "venue": "Angel Stadium"
+ },
+ "id": "limited-824012",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Cutter",
+     "x": 0.646,
+     "y": 0.602
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.616,
+     "y": 0.846
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.543,
+     "y": 0.523
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.539,
+     "y": 0.661
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.483,
+     "y": 0.751
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.428,
+     "y": 0.704
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Cutter",
+     "x": 0.676,
+     "y": 0.652
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.769,
+     "y": 0.855
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.61,
+     "y": 0.605
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.528,
+     "y": 0.654
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.609,
+     "y": 0.662
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [],
+   "vs_rhh": []
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "543243",
+   "name": "Sonny Gray",
+   "pitching_profile": {
+    "command_label": "Solid command",
+    "contact_risk_label": null,
+    "primary_pitch": "Cutter",
+    "putaway_pitch": "Sweeper",
+    "style_label": "Cutter-Sweeper starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1231,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 337,
+     "home_runs": 9,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     },
+     "source": "mlb_api",
+     "strikeouts": 75,
+     "walks": 21
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "2.69",
+    "home_runs_allowed": 9,
+    "innings": "83.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     }
+    },
+    "strikeouts": 75,
+    "walks": 21,
+    "whip": "1.11"
+   },
+   "team": "BOS",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "691951",
+   "name": "Sam Aldegheri",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Changeup",
+    "style_label": "Four-seam-Changeup starter",
+    "swing_miss_label": "Below-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 522,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 133,
+     "home_runs": 4,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     },
+     "source": "mlb_api",
+     "strikeouts": 20,
+     "walks": 13
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "4.85",
+    "home_runs_allowed": 4,
+    "innings": "29.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 3",
+      "through": "2026-07-03"
+     }
+    },
+    "strikeouts": 20,
+    "walks": 13,
+    "whip": "1.45"
+   },
+   "team": "LAA",
+   "throws": "L"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "BOS",
+   "id": "111",
+   "name": "Boston Red Sox",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.3%",
+    "k_rate_vs_hand": "21.2%",
+    "ops_vs_hand": ".755",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Jul 3",
+     "through": "2026-07-03"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "LAA",
+   "id": "108",
+   "name": "Los Angeles Angels",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.2%",
+    "k_rate_vs_hand": "24.8%",
+    "ops_vs_hand": ".706",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Jul 3",
+     "through": "2026-07-03"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "away_data_notes": [
+  "Dustin May has allowed 14 home runs over 621 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Cutter to set up, Four-seam to finish"
+ ],
+ "away_style": "Cutter to set up, Four-seam to finish",
+ "away_vs_home_offense": "Dustin May works off a cutter-four-seam combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Dustin May has allowed 14 home runs over 621 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.751 OPS), so Dustin May cannot live over the middle.",
+ "home_data_notes": [
+  "Griffin Jax has allowed 15 home runs over 459 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Sweeper to set up, Sinker to finish"
+ ],
+ "home_style": "Sweeper to set up, Sinker to finish",
+ "home_vs_away_offense": "Griffin Jax works off a sweeper-sinker combination. He shows above-average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Griffin Jax has allowed 15 home runs over 459 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.759 OPS), so Griffin Jax cannot live over the middle. They draw walks at an above-average rate, so Griffin Jax needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand",
+  "has strong OPS against this pitcher's hand",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "139": [
+   "has strong OPS against this pitcher's hand"
+  ],
+  "158": [
+   "has strong OPS against this pitcher's hand",
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Cutter-Four-seam starter against Sweeper-Sinker starter",
+ "matchup_summary": "This matchup features Cutter-Four-seam starter against Sweeper-Sinker starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Dustin May and Griffin Jax: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the 2026 regular season; the pitch mix, velocity and movement cover the 2026 regular season and postseason through Oct 26. They are different samples.",
+  "Team offense splits cover the 2026 regular season."
+ ],
+ "series_note": "This is Game 4 of the World Series. Before first pitch, MIL leads 3-0.",
+ "three_things_to_watch": [
+  "Can Dustin May land the four-seam early in counts?",
+  "Can Griffin Jax keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

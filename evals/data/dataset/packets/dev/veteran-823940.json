@@ -1,0 +1,537 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 374,
+     "overall": 36.4,
+     "total": 1028,
+     "vs_lhh": 41.8,
+     "vs_rhh": 35.3
+    },
+    "home_starter": {
+     "count": 476,
+     "overall": 45.6,
+     "total": 1045,
+     "vs_lhh": 49.9,
+     "vs_rhh": 40.5
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 301,
+     "overall": 29.3,
+     "total": 1028,
+     "vs_lhh": 12.7,
+     "vs_rhh": 32.4
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1045,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 213,
+     "overall": 20.7,
+     "total": 1028,
+     "vs_lhh": 38.8,
+     "vs_rhh": 17.3
+    },
+    "home_starter": {
+     "count": 9,
+     "overall": 0.9,
+     "total": 1045,
+     "vs_lhh": 1.4,
+     "vs_rhh": 0.2
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 140,
+     "overall": 13.6,
+     "total": 1028,
+     "vs_lhh": 6.7,
+     "vs_rhh": 14.9
+    },
+    "home_starter": {
+     "count": 103,
+     "overall": 9.9,
+     "total": 1045,
+     "vs_lhh": 13.7,
+     "vs_rhh": 5.4
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1028,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 324,
+     "overall": 31.0,
+     "total": 1045,
+     "vs_lhh": 20.1,
+     "vs_rhh": 43.8
+    },
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1028,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 89,
+     "overall": 8.5,
+     "total": 1045,
+     "vs_lhh": 14.0,
+     "vs_rhh": 2.1
+    },
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1028,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 37,
+     "overall": 3.5,
+     "total": 1045,
+     "vs_lhh": 0.0,
+     "vs_rhh": 7.7
+    },
+    "pitch": "Sinker"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 16.1,
+     "v_break": 2.9
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -4.2,
+     "v_break": -10.1
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 9.1,
+     "v_break": 16.3
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -2.9,
+     "v_break": 2.0
+    }
+   },
+   "home_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 13.6,
+     "v_break": -14.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -4.7,
+     "v_break": 14.5
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -14.6,
+     "v_break": 7.2
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 3.4,
+     "v_break": -1.0
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -13.1,
+     "v_break": 2.5
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": 15.1,
+     "v_break": 3.7
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 86.9,
+    "home_starter_velocity": null,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 82.0,
+    "home_starter_velocity": 74.7,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 95.4,
+    "home_starter_velocity": 97.9,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 88.2,
+    "home_starter_velocity": 87.4,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 95.6,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 88.7,
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 84.7,
+    "pitch": "Sweeper"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for veteran-823940."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-06-17",
+ "game": {
+  "away_team_id": "139",
+  "broadcast_note": null,
+  "home_team_id": "119",
+  "start_time_local": null,
+  "start_time_utc": "2026-06-17T19:10:00Z",
+  "timezone": null,
+  "title": "Tampa Bay Rays vs Los Angeles Dodgers",
+  "venue": "UNIQLO Field at Dodger Stadium"
+ },
+ "id": "veteran-823940",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.421,
+     "y": 0.543
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.477,
+     "y": 0.647
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.299,
+     "y": 0.741
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.361,
+     "y": 0.695
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.49,
+     "y": 0.52
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.634,
+     "y": 0.708
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.38,
+     "y": 0.697
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.47,
+     "y": 0.684
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.489,
+     "y": 0.592
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.479,
+     "y": 0.666
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.465,
+     "y": 0.665
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.377,
+     "y": 0.743
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.448,
+     "y": 0.614
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.591,
+     "y": 0.552
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.657,
+     "y": 0.643
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.429,
+     "y": 0.601
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.551,
+     "y": 0.705
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.502,
+     "y": 0.675
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "663556",
+   "name": "Shane McClanahan",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Changeup",
+    "style_label": "Four-seam-Changeup starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1028,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 268,
+     "home_runs": 3,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     },
+     "source": "mlb_api",
+     "strikeouts": 66,
+     "walks": 22
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.23",
+    "home_runs_allowed": 3,
+    "innings": "64.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     }
+    },
+    "strikeouts": 66,
+    "walks": 22,
+    "whip": "1.17"
+   },
+   "team": "TB",
+   "throws": "L"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "660271",
+   "name": "Shohei Ohtani",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Sweeper",
+    "style_label": "Four-seam-Sweeper starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1045,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 262,
+     "home_runs": 3,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     },
+     "source": "mlb_api",
+     "strikeouts": 73,
+     "walks": 21
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "1.06",
+    "home_runs_allowed": 3,
+    "innings": "67.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jun 16",
+      "through": "2026-06-16"
+     }
+    },
+    "strikeouts": 73,
+    "walks": 21,
+    "whip": "0.84"
+   },
+   "team": "LAD",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "TB",
+   "id": "139",
+   "name": "Tampa Bay Rays",
+   "offense_profile": {
+    "bb_rate_vs_hand": "10.1%",
+    "k_rate_vs_hand": "19.6%",
+    "ops_vs_hand": ".734",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Jun 16",
+     "through": "2026-06-16"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "LAD",
+   "id": "119",
+   "name": "Los Angeles Dodgers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.5%",
+    "k_rate_vs_hand": "20.6%",
+    "ops_vs_hand": ".737",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Jun 16",
+     "through": "2026-06-16"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  }
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "away_data_notes": [
+  "Control data for Cade Cavalli is limited (116 batters faced; 170 needed), so no command claim is made.",
+  "Cade Cavalli has allowed 0 home runs over 116 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Four-seam to set up, Curveball to finish"
+ ],
+ "away_style": "Four-seam to set up, Curveball to finish",
+ "away_vs_home_offense": "Cade Cavalli works off a four-seam-curveball combination. He shows average swing-and-miss ability. Control data for Cade Cavalli is limited (116 batters faced; 170 needed), so no command claim is made. Cade Cavalli has allowed 0 home runs over 116 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against RHP pitching (.624 OPS), which gives Cade Cavalli an edge if he gets ahead.",
+ "home_data_notes": [
+  "Control data for David Peterson is limited (125 batters faced; 170 needed), so no command claim is made.",
+  "David Peterson has allowed 2 home runs over 125 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Sinker to set up, Four-seam to finish"
+ ],
+ "home_style": "Sinker to set up, Four-seam to finish",
+ "home_vs_away_offense": "David Peterson works off a sinker-four-seam combination. He shows average swing-and-miss ability. Control data for David Peterson is limited (125 batters faced; 170 needed), so no command claim is made. David Peterson has allowed 2 home runs over 125 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (.763 OPS), so David Peterson cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so David Peterson needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand",
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "120": [
+   "has strong OPS against this pitcher's hand",
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ],
+  "121": []
+ },
+ "matchup_headline": "Four-seam-Curveball starter against Sinker-Four-seam starter",
+ "matchup_summary": "This matchup features Four-seam-Curveball starter against Sinker-Four-seam starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Cade Cavalli and David Peterson: all pitcher figures cover the 2026 regular season through Apr 28.",
+  "Team offense splits cover the 2026 regular season through Apr 28."
+ ],
+ "three_things_to_watch": [
+  "Can Cade Cavalli land the curveball early in counts?",
+  "Can David Peterson keep the ball low?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

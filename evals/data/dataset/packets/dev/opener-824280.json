@@ -1,0 +1,438 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 118,
+     "overall": 48.6,
+     "total": 243,
+     "vs_lhh": 46.5,
+     "vs_rhh": 50.0
+    },
+    "home_starter": {
+     "count": 8,
+     "overall": 7.1,
+     "total": 112,
+     "vs_lhh": 10.7,
+     "vs_rhh": 6.0
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 89,
+     "overall": 36.6,
+     "total": 243,
+     "vs_lhh": 49.5,
+     "vs_rhh": 27.5
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 112,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter": {
+     "count": 36,
+     "overall": 14.8,
+     "total": 243,
+     "vs_lhh": 4.0,
+     "vs_rhh": 22.5
+    },
+    "home_starter": {
+     "count": 21,
+     "overall": 18.8,
+     "total": 112,
+     "vs_lhh": 14.3,
+     "vs_rhh": 20.2
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 243,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 66,
+     "overall": 58.9,
+     "total": 112,
+     "vs_lhh": 21.4,
+     "vs_rhh": 71.4
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 243,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 17,
+     "overall": 15.2,
+     "total": 112,
+     "vs_lhh": 53.6,
+     "vs_rhh": 2.4
+    },
+    "pitch": "Changeup"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -4.8,
+     "v_break": 19.9
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -2.9,
+     "v_break": 5.9
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -11.8,
+     "v_break": 6.2
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -15.6,
+     "v_break": -1.1
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -12.4,
+     "v_break": 10.6
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -16.2,
+     "v_break": 3.4
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 1.7,
+     "v_break": 2.8
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 94.0,
+    "home_starter_velocity": 96.1,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 87.9,
+    "home_starter_velocity": 88.3,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": 81.8,
+    "home_starter_velocity": null,
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 89.5,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 94.8,
+    "pitch": "Sinker"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for opener-824280."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-05-15",
+ "game": {
+  "away_team_id": "141",
+  "broadcast_note": null,
+  "home_team_id": "116",
+  "start_time_local": null,
+  "start_time_utc": "2026-05-15T22:45:00Z",
+  "timezone": null,
+  "title": "Toronto Blue Jays vs Detroit Tigers",
+  "venue": "Comerica Park"
+ },
+ "id": "opener-824280",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.421,
+     "y": 0.511
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.437,
+     "y": 0.633
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.515,
+     "y": 0.566
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.38,
+     "y": 0.661
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.62,
+     "y": 0.708
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.304,
+     "y": 0.56
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.392,
+     "y": 0.684
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.534,
+     "y": 0.609
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.657,
+     "y": 0.807
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.751,
+     "y": 0.396
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "702056",
+   "name": "Trey Yesavage",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Splitter",
+    "style_label": "Four-seam-Splitter starter",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 243,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 57,
+     "home_runs": 0,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     },
+     "source": "mlb_api",
+     "strikeouts": 15,
+     "walks": 5
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "0.68",
+    "home_runs_allowed": 0,
+    "innings": "13.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     }
+    },
+    "strikeouts": 15,
+    "walks": 5,
+    "whip": "1.35"
+   },
+   "team": "TOR",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "669724",
+   "name": "Brenan Hanifee",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Sinker",
+    "putaway_pitch": "Slider",
+    "style_label": "Sinker-Slider starter",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 112,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 33,
+     "home_runs": 1,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     },
+     "source": "mlb_api",
+     "strikeouts": 4,
+     "walks": 1
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "1.08",
+    "home_runs_allowed": 1,
+    "innings": "8.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 14",
+      "through": "2026-05-14"
+     }
+    },
+    "strikeouts": 4,
+    "walks": 1,
+    "whip": "1.08"
+   },
+   "team": "DET",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "TOR",
+   "id": "141",
+   "name": "Toronto Blue Jays",
+   "offense_profile": {
+    "bb_rate_vs_hand": "7.3%",
+    "k_rate_vs_hand": "18.2%",
+    "ops_vs_hand": ".701",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 14",
+     "through": "2026-05-14"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "DET",
+   "id": "116",
+   "name": "Detroit Tigers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.0%",
+    "k_rate_vs_hand": "22.3%",
+    "ops_vs_hand": ".725",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 14",
+     "through": "2026-05-14"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

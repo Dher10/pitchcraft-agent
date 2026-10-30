@@ -1,0 +1,47 @@
+{
+ "away_data_notes": [
+  "Control data for Chris Sale is limited (137 batters faced; 170 needed), so no command claim is made.",
+  "Chris Sale has allowed 5 home runs over 137 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Slider to set up, Four-seam to finish"
+ ],
+ "away_style": "Slider to set up, Four-seam to finish",
+ "away_vs_home_offense": "Chris Sale works off a slider-four-seam combination. He shows above-average swing-and-miss ability. Control data for Chris Sale is limited (137 batters faced; 170 needed), so no command claim is made. Chris Sale has allowed 5 home runs over 137 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.663 OPS), which gives Chris Sale an edge if he gets ahead. They also strike out often, which favors a swing-and-miss approach.",
+ "home_data_notes": [
+  "Strikeout data for Brennan Bernardino is limited (49 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for Brennan Bernardino is limited (49 batters faced; 170 needed), so no command claim is made.",
+  "Brennan Bernardino has allowed 0 home runs over 49 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Sinker to set up, Curveball to finish"
+ ],
+ "home_style": "Sinker to set up, Curveball to finish",
+ "home_vs_away_offense": "Brennan Bernardino works off a sinker-curveball combination. Strikeout data for Brennan Bernardino is limited (49 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Brennan Bernardino is limited (49 batters faced; 170 needed), so no command claim is made. Brennan Bernardino has allowed 0 home runs over 49 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (.756 OPS), so Brennan Bernardino cannot live over the middle.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "has strong OPS against this pitcher's hand"
+ ],
+ "lineup_pressure_points_by_team": {
+  "115": [
+   "has elevated swing-and-miss risk"
+  ],
+  "144": [
+   "has strong OPS against this pitcher's hand"
+  ]
+ },
+ "matchup_headline": "Slider-Four-seam starter against Sinker-Curveball starter",
+ "matchup_summary": "This matchup features Slider-Four-seam starter against Sinker-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Chris Sale and Brennan Bernardino: all pitcher figures cover the 2026 regular season through May 1.",
+  "Team offense splits cover the 2026 regular season through May 1."
+ ],
+ "three_things_to_watch": [
+  "Can Chris Sale land the four-seam early in counts?",
+  "Can Brennan Bernardino keep the ball low?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

@@ -1,0 +1,483 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 222,
+     "overall": 36.9,
+     "total": 602,
+     "vs_lhh": 38.7,
+     "vs_rhh": 34.9
+    },
+    "home_starter": {
+     "count": 47,
+     "overall": 28.3,
+     "total": 166,
+     "vs_lhh": 26.5,
+     "vs_rhh": 28.8
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 171,
+     "overall": 28.4,
+     "total": 602,
+     "vs_lhh": 21.7,
+     "vs_rhh": 35.6
+    },
+    "home_starter": {
+     "count": 78,
+     "overall": 47.0,
+     "total": 166,
+     "vs_lhh": 47.1,
+     "vs_rhh": 47.0
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 67,
+     "overall": 11.1,
+     "total": 602,
+     "vs_lhh": 20.4,
+     "vs_rhh": 1.0
+    },
+    "home_starter": {
+     "count": 22,
+     "overall": 13.3,
+     "total": 166,
+     "vs_lhh": 0.0,
+     "vs_rhh": 16.7
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 49,
+     "overall": 8.1,
+     "total": 602,
+     "vs_lhh": 2.9,
+     "vs_rhh": 13.8
+    },
+    "home_starter": {
+     "count": 8,
+     "overall": 4.8,
+     "total": 166,
+     "vs_lhh": 23.5,
+     "vs_rhh": 0.0
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 48,
+     "overall": 8.0,
+     "total": 602,
+     "vs_lhh": 13.1,
+     "vs_rhh": 2.4
+    },
+    "home_starter": {
+     "count": 11,
+     "overall": 6.6,
+     "total": 166,
+     "vs_lhh": 2.9,
+     "vs_rhh": 7.6
+    },
+    "pitch": "Curveball"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -9.8,
+     "v_break": 15.8
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 2.7,
+     "v_break": -14.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -3.7,
+     "v_break": 19.0
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -11.5,
+     "v_break": 14.2
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 0.6,
+     "v_break": 3.5
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 16.2,
+     "v_break": 5.6
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -12.8,
+     "v_break": -8.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 7.8,
+     "v_break": 16.1
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": 15.2,
+     "v_break": 10.8
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -2.4,
+     "v_break": 1.0
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 83.8,
+    "home_starter_velocity": 86.8,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 82.8,
+    "home_starter_velocity": 82.7,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 97.9,
+    "home_starter_velocity": 95.2,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 96.1,
+    "home_starter_velocity": 94.1,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 89.4,
+    "home_starter_velocity": 87.4,
+    "pitch": "Slider"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for limited-823715."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-05-02",
+ "game": {
+  "away_team_id": "141",
+  "broadcast_note": null,
+  "home_team_id": "142",
+  "start_time_local": null,
+  "start_time_utc": "2026-05-02T18:10:00Z",
+  "timezone": null,
+  "title": "Toronto Blue Jays vs Minnesota Twins",
+  "venue": "Target Field"
+ },
+ "id": "limited-823715",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.511,
+     "y": 0.476
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.599,
+     "y": 0.758
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.362,
+     "y": 0.629
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.61,
+     "y": 0.384
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.546,
+     "y": 0.782
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.625,
+     "y": 0.491
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.727,
+     "y": 0.732
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.317,
+     "y": 0.618
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.488,
+     "y": 0.643
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Slider",
+     "x": 0.298,
+     "y": 0.679
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.514,
+     "y": 0.403
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.35,
+     "y": 0.716
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Slider",
+     "x": 0.372,
+     "y": 0.698
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.601,
+     "y": 0.396
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.688,
+     "y": 0.573
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.345,
+     "y": 0.918
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "656302",
+   "name": "Dylan Cease",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 602,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 138,
+     "home_runs": 0,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     },
+     "source": "mlb_api",
+     "strikeouts": 49,
+     "walks": 17
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "2.87",
+    "home_runs_allowed": 0,
+    "innings": "31.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     }
+    },
+    "strikeouts": 49,
+    "walks": 17,
+    "whip": "1.37"
+   },
+   "team": "TOR",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "687570",
+   "name": "Connor Prielipp",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Slider",
+    "putaway_pitch": "Four-seam",
+    "style_label": "Slider-Four-seam starter",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 166,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 36,
+     "home_runs": 0,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     },
+     "source": "mlb_api",
+     "strikeouts": 11,
+     "walks": 3
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "4.00",
+    "home_runs_allowed": 0,
+    "innings": "9.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 1",
+      "through": "2026-05-01"
+     }
+    },
+    "strikeouts": 11,
+    "walks": 3,
+    "whip": "0.89"
+   },
+   "team": "MIN",
+   "throws": "L"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "TOR",
+   "id": "141",
+   "name": "Toronto Blue Jays",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.8%",
+    "k_rate_vs_hand": "16.2%",
+    "ops_vs_hand": ".632",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 1",
+     "through": "2026-05-01"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "MIN",
+   "id": "142",
+   "name": "Minnesota Twins",
+   "offense_profile": {
+    "bb_rate_vs_hand": "10.1%",
+    "k_rate_vs_hand": "23.8%",
+    "ops_vs_hand": ".707",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 1",
+     "through": "2026-05-01"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "away_data_notes": [
+  "George Kirby has allowed 21 home runs over 695 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Solid command supports strike-zone control",
+  "Four-seam to set up, Sweeper to finish"
+ ],
+ "away_style": "Four-seam to set up, Sweeper to finish",
+ "away_vs_home_offense": "George Kirby works off a four-seam-sweeper combination. He shows average swing-and-miss ability. He shows solid command. George Kirby has allowed 21 home runs over 695 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against RHP pitching (.676 OPS), which gives George Kirby an edge if he gets ahead. They also strike out often, which favors a swing-and-miss approach.",
+ "home_data_notes": [
+  "Yusei Kikuchi has allowed 7 home runs over 236 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Slider to finish"
+ ],
+ "home_style": "Four-seam to set up, Slider to finish",
+ "home_vs_away_offense": "Yusei Kikuchi works off a four-seam-slider combination. He shows average swing-and-miss ability. He shows average command. Yusei Kikuchi has allowed 7 home runs over 236 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.647 OPS), which gives Yusei Kikuchi an edge if he gets ahead. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Yusei Kikuchi needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "108": [
+   "has elevated swing-and-miss risk"
+  ],
+  "136": [
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Four-seam-Sweeper starter against Four-seam-Slider starter",
+ "matchup_summary": "This matchup features Four-seam-Sweeper starter against Four-seam-Slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "George Kirby and Yusei Kikuchi: all pitcher figures cover the 2026 regular season through Sep 15.",
+  "Team offense splits cover the 2026 regular season through Sep 15."
+ ],
+ "three_things_to_watch": [
+  "Can George Kirby land the sweeper early in counts?",
+  "Can Yusei Kikuchi keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

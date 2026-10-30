@@ -1,0 +1,46 @@
+{
+ "away_data_notes": [
+  "Kyle Freeland has allowed 12 home runs over 202 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Solid command supports strike-zone control",
+  "Four-seam to set up, Curveball to finish"
+ ],
+ "away_style": "Four-seam to set up, Curveball to finish",
+ "away_vs_home_offense": "Kyle Freeland works off a four-seam-curveball combination. He shows average swing-and-miss ability. He shows solid command. Kyle Freeland has allowed 12 home runs over 202 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against LHP pitching (.712 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Kyle Freeland needs efficient strikes.",
+ "home_data_notes": [
+  "Jos\u00e9 Soriano has allowed 6 home runs over 289 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [
+  "Below-average command can create deep-count traffic"
+ ],
+ "home_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Sinker to set up, Curveball to finish"
+ ],
+ "home_style": "Sinker to set up, Curveball to finish",
+ "home_vs_away_offense": "Jos\u00e9 Soriano works off a sinker-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Jos\u00e9 Soriano has allowed 6 home runs over 289 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.709 OPS), with no glaring weakness to attack.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "108": [
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ],
+  "115": []
+ },
+ "matchup_headline": "Four-seam-Curveball starter against Sinker-Curveball starter",
+ "matchup_summary": "This matchup features Four-seam-Curveball starter against Sinker-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Kyle Freeland and Jos\u00e9 Soriano: all pitcher figures cover the 2026 regular season through May 31.",
+  "Team offense splits cover the 2026 regular season through May 31."
+ ],
+ "three_things_to_watch": [
+  "Can Kyle Freeland land the curveball early in counts?",
+  "Can Jos\u00e9 Soriano keep the ball low?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

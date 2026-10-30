@@ -1,0 +1,532 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 201,
+     "overall": 50.1,
+     "total": 401,
+     "vs_lhh": 55.0,
+     "vs_rhh": 42.1
+    },
+    "home_starter": {
+     "count": 446,
+     "overall": 49.3,
+     "total": 904,
+     "vs_lhh": 51.7,
+     "vs_rhh": 46.0
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 86,
+     "overall": 21.4,
+     "total": 401,
+     "vs_lhh": 26.9,
+     "vs_rhh": 12.5
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 904,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter": {
+     "count": 67,
+     "overall": 16.7,
+     "total": 401,
+     "vs_lhh": 9.6,
+     "vs_rhh": 28.3
+    },
+    "home_starter": {
+     "count": 136,
+     "overall": 15.0,
+     "total": 904,
+     "vs_lhh": 11.7,
+     "vs_rhh": 19.7
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 47,
+     "overall": 11.7,
+     "total": 401,
+     "vs_lhh": 8.4,
+     "vs_rhh": 17.1
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 904,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 401,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 128,
+     "overall": 14.2,
+     "total": 904,
+     "vs_lhh": 10.6,
+     "vs_rhh": 19.1
+    },
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 401,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 95,
+     "overall": 10.5,
+     "total": 904,
+     "vs_lhh": 14.4,
+     "vs_rhh": 5.1
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 401,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 60,
+     "overall": 6.6,
+     "total": 904,
+     "vs_lhh": 10.0,
+     "vs_rhh": 1.9
+    },
+    "pitch": "Curveball"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 5.4,
+     "v_break": 13.3
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -4.6,
+     "v_break": 20.0
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 5.8,
+     "v_break": -0.2
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -9.6,
+     "v_break": 8.4
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -14.9,
+     "v_break": 9.7
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 8.5,
+     "v_break": -7.2
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -11.5,
+     "v_break": 18.0
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 2.7,
+     "v_break": 4.7
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": 8.9,
+     "v_break": 10.9
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 86.6,
+    "home_starter_velocity": null,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 92.6,
+    "home_starter_velocity": 98.1,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 81.7,
+    "home_starter_velocity": 87.6,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": 79.8,
+    "home_starter_velocity": null,
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 89.5,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 81.1,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 83.3,
+    "pitch": "Sweeper"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for limited-823863."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-05-22",
+ "game": {
+  "away_team_id": "121",
+  "broadcast_note": null,
+  "home_team_id": "146",
+  "start_time_local": null,
+  "start_time_utc": "2026-05-22T23:10:00Z",
+  "timezone": null,
+  "title": "New York Mets vs Miami Marlins",
+  "venue": "loanDepot park"
+ },
+ "id": "limited-823863",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.478,
+     "y": 0.545
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.473,
+     "y": 0.672
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.51,
+     "y": 0.551
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.62,
+     "y": 0.573
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.498,
+     "y": 0.537
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.398,
+     "y": 0.675
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.677,
+     "y": 0.648
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.556,
+     "y": 0.68
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.435,
+     "y": 0.534
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.675,
+     "y": 0.733
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.458,
+     "y": 0.562
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.322,
+     "y": 0.797
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.521,
+     "y": 0.696
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.487,
+     "y": 0.599
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.709,
+     "y": 0.788
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.606,
+     "y": 0.654
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.326,
+     "y": 0.766
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.649,
+     "y": 0.854
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "668964",
+   "name": "Tobias Myers",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Splitter",
+    "style_label": "Four-seam-Splitter starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 401,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 115,
+     "home_runs": 5,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "source": "mlb_api",
+     "strikeouts": 23,
+     "walks": 6
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.41",
+    "home_runs_allowed": 5,
+    "innings": "29.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "strikeouts": 23,
+    "walks": 6,
+    "whip": "1.03"
+   },
+   "team": "NYM",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "691587",
+   "name": "Eury P\u00e9rez",
+   "pitching_profile": {
+    "command_label": "Below-average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 904,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 230,
+     "home_runs": 10,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "source": "mlb_api",
+     "strikeouts": 58,
+     "walks": 28
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "5.33",
+    "home_runs_allowed": 10,
+    "innings": "52.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "strikeouts": 58,
+    "walks": 28,
+    "whip": "1.41"
+   },
+   "team": "MIA",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "NYM",
+   "id": "121",
+   "name": "New York Mets",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.1%",
+    "k_rate_vs_hand": "20.7%",
+    "ops_vs_hand": ".659",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 21",
+     "through": "2026-05-21"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "MIA",
+   "id": "146",
+   "name": "Miami Marlins",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.8%",
+    "k_rate_vs_hand": "20.9%",
+    "ops_vs_hand": ".697",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 21",
+     "through": "2026-05-21"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}
