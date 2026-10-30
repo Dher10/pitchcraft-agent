@@ -45,13 +45,18 @@
     678061,
     605483
    ],
+   "prior_starts": [
+    1,
+    9
+   ],
    "series": {
     "game_number": 2,
     "games_played": 1,
     "is_over": false,
     "result": "LAD leads 1-0"
    },
-   "sha256": "dbf79880c3aaefc9c3e951055f3a9ac3ffbc5086928723cce2191c0e55bc8941",
+   "series_ended": false,
+   "sha256": "1b64e22a8fbbfbef32fc7d9d380f8eeb076aaa5f87cb0c086517e90cd4675124",
    "stratum": "postseason",
    "traits": {
     "limited": {
@@ -161,13 +166,18 @@
     592662,
     694819
    ],
+   "prior_starts": [
+    30,
+    30
+   ],
    "series": {
     "game_number": 1,
     "games_played": 0,
     "is_over": false,
     "result": null
    },
-   "sha256": "1ed2d1faf38514d0c11050ce27d171fa9909af9160917d4ae13a89fd184f00d4",
+   "series_ended": false,
+   "sha256": "44793a97958b1f4ea3f332c325cbd93c49c678efcc005b96a1bb3d9090be226c",
    "stratum": "postseason",
    "traits": {
     "postseason": {
@@ -269,13 +279,18 @@
     801139,
     693645
    ],
+   "prior_starts": [
+    26,
+    33
+   ],
    "series": {
     "game_number": 1,
     "games_played": 0,
     "is_over": false,
     "result": null
    },
-   "sha256": "1c0a9f83b788080e2479ada759c6b053fba3ecc9537709cebd72b740bb235eda",
+   "series_ended": false,
+   "sha256": "bdbb6334207e1ab70912cc96c434f6a08f939f4737b4fbef62acf9d891b3f922",
    "stratum": "postseason",
    "traits": {
     "postseason": {
@@ -358,13 +373,18 @@
     592332,
     601713
    ],
+   "prior_starts": [
+    32,
+    8
+   ],
    "series": {
     "game_number": 2,
     "games_played": 1,
     "is_over": false,
     "result": "SD leads 1-0"
    },
-   "sha256": "31d09dbe76cd361d7f4b8f40e1e17fc3c0b71b1c07e6709a113e0e53a4b422e2",
+   "series_ended": true,
+   "sha256": "2dd9e72f2d433ae6de8d29a146fb5cbd47fa10234628a0879e95cadf47db9c65",
    "stratum": "postseason",
    "traits": {
     "limited": {
@@ -422,13 +442,18 @@
     682982,
     656794
    ],
+   "prior_starts": [
+    3,
+    6
+   ],
    "series": {
     "game_number": 3,
     "games_played": 2,
     "is_over": false,
     "result": "CWS leads 2-0"
    },
-   "sha256": "fadd83812df154a651f96ca5698ea2c5735fe30b0e8ab6f484a5d503e9ef9a1c",
+   "series_ended": false,
+   "sha256": "e42dc17ecb9d7d911774c860f60b389fc0d8d9006c88bae042ee17f026a3dd22",
    "stratum": "postseason",
    "traits": {
     "limited": {
@@ -485,13 +510,18 @@
     696146,
     805123
    ],
+   "prior_starts": [
+    1,
+    0
+   ],
    "series": {
     "game_number": 1,
     "games_played": 0,
     "is_over": false,
     "result": null
    },
-   "sha256": "2885a6d2a853f82604a803f0ccab9b40ad4404fb7a32e14a3cebd40513155a0f",
+   "series_ended": false,
+   "sha256": "46b71aba793bb744bc1626434b4fd1c93f96c2e5025d4cb8ba63106193a67143",
    "stratum": "postseason",
    "traits": {
     "limited": {
@@ -599,13 +629,18 @@
     680732,
     668909
    ],
+   "prior_starts": [
+    27,
+    32
+   ],
    "series": {
     "game_number": 5,
     "games_played": 4,
     "is_over": false,
     "result": "Series tied 2-2"
    },
-   "sha256": "418140df253156e74a737b11c339da478871c629a025382981d0a8917bc05dc5",
+   "series_ended": true,
+   "sha256": "bb293a0f5ff549e1bc89afe46469e5661996aafe8d2234c5429b75c52c69f98a",
    "stratum": "postseason",
    "traits": {
     "postseason": {
@@ -700,13 +735,18 @@
     688107,
     621111
    ],
+   "prior_starts": [
+    20,
+    32
+   ],
    "series": {
     "game_number": 4,
     "games_played": 3,
     "is_over": false,
     "result": "MIL leads 2-1"
    },
-   "sha256": "4e4df4e0b77cf64edd97eab6d92a0592ae3c296f4ee8169c734a535976bcd0a2",
+   "series_ended": true,
+   "sha256": "cb4c313f09598c37f5b0c8ba6e11ba0c7e6bbc11c739c04db28e51ce3a9dc45e",
    "stratum": "postseason",
    "traits": {
     "postseason": {
@@ -803,13 +843,18 @@
     669160,
     643377
    ],
+   "prior_starts": [
+    31,
+    23
+   ],
    "series": {
     "game_number": 4,
     "games_played": 3,
     "is_over": false,
     "result": "MIL leads 3-0"
    },
-   "sha256": "0ad7cabe99aabbf5b1ecbd8adbabe721cc9efd4b5ab8b893076a17762275680d",
+   "series_ended": false,
+   "sha256": "5a32e0659ad5ef66970fbe65439671a80f3133c2621763fca196814d0670ccf2",
    "stratum": "postseason",
    "traits": {
     "postseason": {
@@ -918,13 +963,18 @@
     650911,
     641816
    ],
+   "prior_starts": [
+    33,
+    27
+   ],
    "series": {
     "game_number": 2,
     "games_played": 1,
     "is_over": false,
     "result": "ATL leads 1-0"
    },
-   "sha256": "a31518b9be641f0e57129d3afc364db2044ee43c0e48f670a01c629f8d1f6cb3",
+   "series_ended": false,
+   "sha256": "52f901580966fd9bc264a7e744364e34c06e4e073d992df51b2e844debd89c91",
    "stratum": "postseason",
    "traits": {
     "postseason": {
@@ -977,8 +1027,13 @@
     702056,
     669724
    ],
+   "prior_starts": [
+    3,
+    1
+   ],
    "series": null,
-   "sha256": "4a422883b39a494cd9575049a611ade269f5f6a81ed52bdd37ebf95fd08a029c",
+   "series_ended": null,
+   "sha256": "e55fe80849844dfb7fdf2cefce42b6a5ec30ff1c84a1669c871f64d8c61ac53d",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1038,8 +1093,13 @@
     681190,
     623474
    ],
+   "prior_starts": [
+    4,
+    2
+   ],
    "series": null,
-   "sha256": "04ee5c467cea6640f7b0eaa1a7c420839898b41fefd6d4b4c22a53da76a4c6eb",
+   "series_ended": null,
+   "sha256": "73fff3dc99fef4fb47ec11d7e5cbbfc68100300c4c7f34495f3c288234b53f78",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1110,8 +1170,13 @@
     621112,
     656876
    ],
+   "prior_starts": [
+    1,
+    17
+   ],
    "series": null,
-   "sha256": "dc12100adf413af0cfa1e196838a8ec24504c7d41caa8a1362806a5629296a6f",
+   "series_ended": null,
+   "sha256": "a63169589fddbd4ba0f3634626607cced3b9db5438ca6eddf3396bf37747af7f",
    "stratum": "opener",
    "traits": {
     "opener": {
@@ -1172,8 +1237,13 @@
     669020,
     605540
    ],
+   "prior_starts": [
+    1,
+    7
+   ],
    "series": null,
-   "sha256": "1dc75e5659892f29498d11986d7a0903444316dd8ef891755fa0233aa80d92f5",
+   "series_ended": null,
+   "sha256": "1b357b17d8644203aa3aa422926c7074f0c190e78c117408289f2265379e90a9",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1233,8 +1303,13 @@
     519242,
     657514
    ],
+   "prior_starts": [
+    6,
+    1
+   ],
    "series": null,
-   "sha256": "98976e9e1393d0a32d7a9b4dbc64d16ae0634560211e57d135d89a5a12cde456",
+   "series_ended": null,
+   "sha256": "ea008cae0fb50ccdfc09c0668ebbb110ede0b0c4f10bd787d6f22e106db6922c",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1318,8 +1393,13 @@
     669684,
     656492
    ],
+   "prior_starts": [
+    2,
+    29
+   ],
    "series": null,
-   "sha256": "48a950423ccba10bb0a1234369bb0a527b9e2aeada4c5c6e0fdb490681233a1b",
+   "series_ended": null,
+   "sha256": "8495116cd3dbc4a42eca9313974b4dc3333088ce930994fd2541b10ba61f7361",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1383,8 +1463,13 @@
     656427,
     669211
    ],
+   "prior_starts": [
+    10,
+    1
+   ],
    "series": null,
-   "sha256": "9f45d0d26b0d4a7bdccffa3deac2515791d68d05c4ee80af36ce3763e32f2670",
+   "series_ended": null,
+   "sha256": "fea850b01042b702953ac812191e558098a2d8466f4cb6d4b282d7ebc036a3f4",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1450,8 +1535,13 @@
     674444,
     681035
    ],
+   "prior_starts": [
+    1,
+    11
+   ],
    "series": null,
-   "sha256": "40c8e45fc220bec13993d636a50f07a72f8bbf7a07ec64b1a51107787b6fee19",
+   "series_ended": null,
+   "sha256": "169a5e37d0135274b4ac31aa64f76577e29e941ab13d3af7f741985bed1336ee",
    "stratum": "opener",
    "traits": {
     "limited": {
@@ -1523,8 +1613,13 @@
     663855,
     805673
    ],
+   "prior_starts": [
+    1,
+    18
+   ],
    "series": null,
-   "sha256": "a2bea50167cbf8338bd0a19380198e805a4034aeeddc1d4f28d8fe97d0eeb6ac",
+   "series_ended": null,
+   "sha256": "355e1f535f09311561458e79d7774859a0b9f2802623179e44045bc011b6d0c9",
    "stratum": "opener",
    "traits": {
     "opener": {
@@ -1533,6 +1628,66 @@
       "starts": 1
      },
      "pitcher_id": 663855
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-26",
+   "case_id": "opener-823164",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 676263,
+     "previous_innings": [
+      1.0,
+      1.0
+     ],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 254,
+      "control": 254,
+      "strikeout": 254
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 693313,
+     "previous_innings": [],
+     "prior_seasons": 1,
+     "samples": {
+      "arsenal": 137,
+      "control": 137,
+      "strikeout": 137
+     }
+    }
+   ],
+   "game_pk": 823164,
+   "official_date": "2026-09-27",
+   "pitcher_ids": [
+    676263,
+    693313
+   ],
+   "prior_starts": [
+    2,
+    0
+   ],
+   "series": null,
+   "series_ended": null,
+   "sha256": "f65d68f1daa12c2f78834607d05b3ffca7200807f898ff9de25bd4b127b1eed5",
+   "stratum": "opener",
+   "traits": {
+    "limited": {
+     "dimensions": [
+      "control"
+     ],
+     "pitcher_id": 693313
+    },
+    "opener": {
+     "evidence": {
+      "average_innings": 1.0,
+      "starts": 2
+     },
+     "pitcher_id": 676263
     }
    }
   },
@@ -1585,8 +1740,13 @@
     691946,
     663969
    ],
+   "prior_starts": [
+    2,
+    12
+   ],
    "series": null,
-   "sha256": "457f8f71de3631e838a0975645219d8f4f1ecff593ebc5b5bb54664cd5fca621",
+   "series_ended": null,
+   "sha256": "53ff50f6efe7ced301ef6c3f0b714002813a573b78f9f7eb8d6517e3e9cbc440",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1650,8 +1810,13 @@
     695505,
     695684
    ],
+   "prior_starts": [
+    14,
+    3
+   ],
    "series": null,
-   "sha256": "5783339f49f0b478e6fab45ccd046dac1a7641744b08a8d1561642258ac3a489",
+   "series_ended": null,
+   "sha256": "41aab58ac4bb7146edda57ed99910b8be1675297a1127f97e28013afb47fcc4b",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1705,8 +1870,13 @@
     686790,
     808963
    ],
+   "prior_starts": [
+    1,
+    6
+   ],
    "series": null,
-   "sha256": "d1e076bf503ffededcac59fc62691acdc09424704329ab7399aa8f1ade275e90",
+   "series_ended": null,
+   "sha256": "869d8b4a0830d605b355e388874793bf9d878538d60719dfe4804dca99f78393",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1755,8 +1925,13 @@
     693821,
     647336
    ],
+   "prior_starts": [
+    1,
+    1
+   ],
    "series": null,
-   "sha256": "98bf974d516f31ef0722e88abc5af9e38bf81e2c25854d3ec64002171955383a",
+   "series_ended": null,
+   "sha256": "ff644642be9518f90438c266cb69e99744b01f72bba99a10222e9ece216fba06",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1814,8 +1989,13 @@
     668964,
     691587
    ],
+   "prior_starts": [
+    1,
+    10
+   ],
    "series": null,
-   "sha256": "291f45d30c89d454d6fb4f2aee5f259ae61a0335619926db5939837d567d2eb5",
+   "series_ended": null,
+   "sha256": "0db036ab7060d388056b04cc2d316c3da0dc1071ec3be715f2956022dbb71c62",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1881,8 +2061,13 @@
     543243,
     691951
    ],
+   "prior_starts": [
+    15,
+    5
+   ],
    "series": null,
-   "sha256": "3b0a4c48b12cca533f00bea8ac3ce74f89ec0ff5a35ef37b6f4d35d89373f49a",
+   "series_ended": null,
+   "sha256": "daffd23dcea8efbbca0577a8da0f191dc7f73b5fd85f202120c720a13c8ae776",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1941,8 +2126,13 @@
     687562,
     663372
    ],
+   "prior_starts": [
+    4,
+    9
+   ],
    "series": null,
-   "sha256": "dfa216843dadac1ade2de4e460cab8bc2942b0d315a1c7afbb4ae42f97ca6f33",
+   "series_ended": null,
+   "sha256": "07f7a5f4589815b2e4d7a04591564c3fb5a3062e573232d7f47d1b7537fd3a71",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -1996,8 +2186,13 @@
     675512,
     607200
    ],
+   "prior_starts": [
+    1,
+    7
+   ],
    "series": null,
-   "sha256": "e982b621160f518742f2d4aa48051d2e9fa2357faa17ecdcadc0436d3a4f1319",
+   "series_ended": null,
+   "sha256": "4e28b2a1b03e569e1838b7787b7de4e4082176ee416aef9252f91e2c3d0ee72f",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -2054,8 +2249,13 @@
     676917,
     656849
    ],
+   "prior_starts": [
+    6,
+    4
+   ],
    "series": null,
-   "sha256": "8d749fa60592b6e8a8226428296ecfb81c5141d109c24f9deda486871116d628",
+   "series_ended": null,
+   "sha256": "51bfb247fada01d76544abd7ece0832e3d7d8e41cd0fd5b4f555a11786a01dde",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -2109,8 +2309,13 @@
     656302,
     687570
    ],
+   "prior_starts": [
+    6,
+    2
+   ],
    "series": null,
-   "sha256": "b77b94e52366cc16f6ae5f24bc759f16e89c5bb1540d66273405bf4ad2a0e535",
+   "series_ended": null,
+   "sha256": "ab25d5addec931343bd739b8e69c3601304699617495c35225dcfbd752a10447",
    "stratum": "limited",
    "traits": {
     "limited": {
@@ -2211,8 +2416,13 @@
     641743,
     669461
    ],
+   "prior_starts": [
+    27,
+    28
+   ],
    "series": null,
-   "sha256": "433ccf5f033fe3f077ffecba5daae86762578f0b43f5fb62d7f88a1d56dcd87c",
+   "series_ended": null,
+   "sha256": "8a37d7a397b9a867720aca5f13f34f97a5ec7109c3818e51408b126d353f7d34",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2279,8 +2489,13 @@
     607536,
     667755
    ],
+   "prior_starts": [
+    9,
+    12
+   ],
    "series": null,
-   "sha256": "60ffb34a063dc91da5a2a9b1a02285f9656e3d6385749c50db527248b8df2602",
+   "series_ended": null,
+   "sha256": "e9eb739f0ca55d15863ad9e64f42252f9fb6beb721bac15a38e5f95fd570ee33",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2363,8 +2578,13 @@
     500779,
     663436
    ],
+   "prior_starts": [
+    10,
+    27
+   ],
    "series": null,
-   "sha256": "ec40772fe2194761195fd7b0a1de9ba667df197afd6024225a1e23ada34d16e6",
+   "series_ended": null,
+   "sha256": "46c45da19ce3786300cd43e1728d961369d69af553f8d48e0248983e66d10199",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2432,8 +2652,13 @@
     607259,
     641778
    ],
+   "prior_starts": [
+    13,
+    9
+   ],
    "series": null,
-   "sha256": "8f23811d6246d7afa1c7c762f7262e29714fafa3068f1237f52c398f73e3aa14",
+   "series_ended": null,
+   "sha256": "b13f668a2c622afa9cea2642047954ec75d382441e7fd56b522d7802ffa7836c",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2512,8 +2737,13 @@
     453286,
     605135
    ],
+   "prior_starts": [
+    16,
+    17
+   ],
    "series": null,
-   "sha256": "7d5ca91d96474cc238a2f3c77545d8afc4c8c2e9511680206c4e7f6c724a43e7",
+   "series_ended": null,
+   "sha256": "ab0eb3ab118c8dd5074b5c190314779dab3d38d6acdf44dfed480e73dc939128",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2592,8 +2822,13 @@
     607074,
     669358
    ],
+   "prior_starts": [
+    9,
+    24
+   ],
    "series": null,
-   "sha256": "e4e9ca40bb9fabc99460ea5611fe64cfc17073ed983f4622b97a06e1b5764586",
+   "series_ended": null,
+   "sha256": "7a2cb2392872a82a38c2c3042a3844b3e3c20d95c408b78b632fcfb4c5dd0e7d",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2678,8 +2913,13 @@
     669302,
     594798
    ],
+   "prior_starts": [
+    20,
+    19
+   ],
    "series": null,
-   "sha256": "182a18f199f880a448d1ab5ec1b8d545aece564d3a359cde3e910214509f81c8",
+   "series_ended": null,
+   "sha256": "f44e0bd43781cb4899c02ab033c871a9e7e9bf54b2a6d0d72a27dc133140a08a",
    "stratum": "veteran",
    "traits": {
     "veteran": {
@@ -2689,35 +2929,310 @@
      ]
     }
    }
+  },
+  {
+   "as_of": "2026-06-16",
+   "case_id": "veteran-823940",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 663556,
+     "previous_innings": [
+      4.666666666666667,
+      4.0,
+      5.0,
+      4.333333333333333,
+      5.0,
+      6.0,
+      5.666666666666667,
+      5.0,
+      5.0,
+      5.333333333333333,
+      5.0,
+      5.0,
+      4.0
+     ],
+     "prior_seasons": 3,
+     "samples": {
+      "arsenal": 268,
+      "control": 268,
+      "strikeout": 268
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 660271,
+     "previous_innings": [
+      6.0,
+      6.0,
+      6.0,
+      6.0,
+      6.0,
+      7.0,
+      7.0,
+      5.0,
+      6.0,
+      6.0,
+      6.666666666666667
+     ],
+     "prior_seasons": 6,
+     "samples": {
+      "arsenal": 262,
+      "control": 262,
+      "strikeout": 262
+     }
+    }
+   ],
+   "game_pk": 823940,
+   "official_date": "2026-06-17",
+   "pitcher_ids": [
+    663556,
+    660271
+   ],
+   "prior_starts": [
+    13,
+    11
+   ],
+   "series": null,
+   "series_ended": null,
+   "sha256": "f1351cb60015a0b017cb62304211d9e8a2de4c96c64882d6b29d4c761f10aee1",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      663556,
+      660271
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-15",
+   "case_id": "veteran-823979",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669923,
+     "previous_innings": [
+      6.0,
+      6.0,
+      8.0,
+      7.666666666666667,
+      5.666666666666667,
+      6.0,
+      5.666666666666667,
+      7.0,
+      5.0,
+      5.666666666666667,
+      6.0,
+      5.333333333333333,
+      4.0,
+      6.0,
+      6.0,
+      6.0,
+      8.0,
+      6.0,
+      6.0,
+      4.0,
+      7.0,
+      5.0,
+      4.666666666666667,
+      3.3333333333333335,
+      7.666666666666667,
+      5.0,
+      6.666666666666667,
+      6.0
+     ],
+     "prior_seasons": 4,
+     "samples": {
+      "arsenal": 695,
+      "control": 695,
+      "strikeout": 695
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 579328,
+     "previous_innings": [
+      4.333333333333333,
+      5.333333333333333,
+      5.0,
+      3.3333333333333335,
+      6.0,
+      5.0,
+      2.0,
+      5.0,
+      7.0,
+      6.0,
+      4.0
+     ],
+     "prior_seasons": 7,
+     "samples": {
+      "arsenal": 236,
+      "control": 236,
+      "strikeout": 236
+     }
+    }
+   ],
+   "game_pk": 823979,
+   "official_date": "2026-09-16",
+   "pitcher_ids": [
+    669923,
+    579328
+   ],
+   "prior_starts": [
+    28,
+    11
+   ],
+   "series": null,
+   "series_ended": null,
+   "sha256": "7d6e69b4e5303a0d5340be8d966d545145ecd1e7ed53004fbf828a26bd902411",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      669923,
+      579328
+     ]
+    }
+   }
+  },
+  {
+   "as_of": "2026-09-21",
+   "case_id": "veteran-822840",
+   "facts": [
+    {
+     "flagged_opener": false,
+     "pitcher_id": 640455,
+     "previous_innings": [
+      6.0,
+      5.333333333333333,
+      3.0,
+      5.666666666666667,
+      5.0,
+      7.0,
+      4.666666666666667,
+      6.0,
+      6.0,
+      6.0,
+      7.0,
+      6.333333333333333,
+      6.0,
+      5.666666666666667,
+      5.666666666666667,
+      5.0,
+      5.333333333333333
+     ],
+     "prior_seasons": 10,
+     "samples": {
+      "arsenal": 601,
+      "control": 601,
+      "strikeout": 601
+     }
+    },
+    {
+     "flagged_opener": false,
+     "pitcher_id": 669022,
+     "previous_innings": [
+      5.333333333333333,
+      6.0,
+      5.0,
+      4.666666666666667,
+      5.0,
+      5.0,
+      3.6666666666666665,
+      5.333333333333333,
+      8.0,
+      1.0,
+      6.0,
+      6.333333333333333,
+      4.666666666666667,
+      5.0,
+      7.0,
+      6.0,
+      7.0,
+      5.0,
+      5.0,
+      4.0,
+      5.666666666666667,
+      5.0,
+      7.0,
+      6.0,
+      5.333333333333333,
+      5.666666666666667,
+      6.0,
+      3.6666666666666665,
+      5.333333333333333,
+      3.0,
+      4.0,
+      4.0
+     ],
+     "prior_seasons": 4,
+     "samples": {
+      "arsenal": 720,
+      "control": 720,
+      "strikeout": 720
+     }
+    }
+   ],
+   "game_pk": 822840,
+   "official_date": "2026-09-22",
+   "pitcher_ids": [
+    640455,
+    669022
+   ],
+   "prior_starts": [
+    17,
+    32
+   ],
+   "series": null,
+   "series_ended": null,
+   "sha256": "480bc39e9028c9c79e073e269c8972a21f646efa003dbf93813a893e2daea437",
+   "stratum": "veteran",
+   "traits": {
+    "veteran": {
+     "pitcher_ids": [
+      640455,
+      669022
+     ]
+    }
+   }
   }
  ],
  "collection_date": "2026-10-30",
  "halted": null,
  "lookups": {
-  "limited": 22,
-  "opener": 40,
-  "postseason": 20,
-  "veteran": 24
+  "limited": 0,
+  "opener": 0,
+  "postseason": 0,
+  "veteran": 0
  },
+ "opener_flag_read_from_schedule": false,
  "postseason_end_argument": "auto",
+ "screened": {
+  "limited": 20,
+  "opener": 38,
+  "postseason": 20,
+  "veteran": 31
+ },
  "season": [
   "2026-03-25",
   "2026-09-27"
  ],
  "seed": "00672a7f0dc9483cc8d7d88e86cd6ed692c3a358f8a66043e7671d84d4927c99",
- "short": {
-  "opener": 1,
-  "veteran": 3
- },
+ "short": {},
  "skipped": {
   "limited": {},
   "opener": {},
   "postseason": {},
   "veteran": {}
  },
- "stopped": {
-  "opener": "screen_cap",
-  "veteran": "screen_cap"
+ "stopped": {},
+ "stratum_labels": {
+  "limited": "starters with limited samples",
+  "opener": "starters with short recent outings (opener-like)",
+  "postseason": "postseason games",
+  "veteran": "veteran starters"
  },
  "version": 1
 }

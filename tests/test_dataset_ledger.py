@@ -22,7 +22,7 @@ def test_ceilings_are_the_approved_numbers():
         "savant_open_month": 80,
         "pitcher_hand": 80,
         "pitcher_statcast": 160,
-        "mlb": 160,
+        "mlb": 172,
     }
     assert rl.GROUP == {"mlb_schedule": "mlb", "mlb_series": "mlb", "mlb_people": "mlb"} | {
         s: s for s in rl.CEILINGS if s != "mlb"
@@ -47,12 +47,12 @@ def test_every_source_stops_at_its_ceiling_and_the_refusal_writes_nothing(tmp_pa
 
 def test_the_three_mlb_sources_share_one_ceiling(tmp_path):
     led = ledger(tmp_path)
-    for source, n in (("mlb_schedule", 100), ("mlb_people", 40), ("mlb_series", 20)):
+    for source, n in (("mlb_schedule", 100), ("mlb_people", 40), ("mlb_series", 32)):
         for _ in range(n):
             led.finish(led.reserve(source, "x"), "ok")
 
     with pytest.raises(rl.CeilingReached):
-        led.reserve("mlb_series", "161st")
+        led.reserve("mlb_series", "173rd")
 
 
 def test_unknown_source_and_outcome_are_refused(tmp_path):

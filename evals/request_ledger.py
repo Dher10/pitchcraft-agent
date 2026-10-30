@@ -17,14 +17,14 @@ import time
 from data_pipeline.fetchers import live_pipeline
 from evals.provider_protocol import canonical, digest
 
-# Collection-wide ceilings (owner approval of Oct 29; the MLB ceiling raised from 120 to 160 on Oct 30). The three MLB
+# Collection-wide ceilings (owner approval of Oct 29; the MLB ceiling raised from 120 to 160 on Oct 30, and once more to 172 for the selection re-run). The three MLB
 # sources share one ceiling.
 CEILINGS = {
     "savant_closed_month": 210,
     "savant_open_month": 80,
     "pitcher_hand": 80,
     "pitcher_statcast": 160,
-    "mlb": 160,
+    "mlb": 172,
 }
 GROUP = {
     "mlb_schedule": "mlb",
