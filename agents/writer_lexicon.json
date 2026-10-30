@@ -152,6 +152,7 @@
    "prediction": "\\b(?:will|would|should|likely|unlikely|probably|might|could|bound to|going to|expected to|projected|odds|chance|chances|favorite|favorites)\\b",
    "question_opener": "^(?:does|do|did|is|are|was|were|can|could|will|would|should|who|what|when|where|why|which|how (?:many|much|often|well|long))\\b",
    "series_standing": "\\b(?:leads?|trails?|tied|ahead|behind)\\b",
+   "term_key_chars": "[A-Za-z][A-Za-z0-9 /%\\-]{0,39}",
    "time": "\\b(?:recently|recent\\w*|lately|latest|tonight|today|tomorrow|yesterday|now|currently|this (?:week|month|season|year)|last (?:week|night|start|outing|game|time)|of late|so far|these days|right now)\\b",
    "topic": "\\b(?:injur\\w*|surgery|contract|contracts|award|awards|mvp|all-star|cy young|trade|traded|rumou?rs?|career|rookie|family|wife|last year|last season|previous season|prior season|history|historic\\w*)\\b",
    "unknown_terms": "\\b(?:babip|fip|xfip|siera|war|woba|xwoba|wrc\\+?|slg|obp|iso|spin rate|launch angle|exit velocity|barrel|whiff rate|csw|stuff\\+?)\\b",

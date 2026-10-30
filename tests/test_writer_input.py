@@ -73,7 +73,8 @@ def test_the_findings_reach_the_writer_as_labels_only_never_as_sentences(parts):
 def test_the_glossary_is_the_frozen_file_whole_and_in_order(parts):
     terms = json.loads((DATASET / "glossary.json").read_text(encoding="utf-8"))["terms"]
 
-    assert build(parts)["glossary"] == terms
+    assert build(parts)["glossary"] == {x["term"]: x["definition"] for x in terms}
+    assert list(build(parts)["glossary"]) == [x["term"] for x in terms]
 
 
 def test_names_are_nfc_even_when_the_source_is_not(parts):

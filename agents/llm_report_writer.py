@@ -78,16 +78,17 @@ def system_instruction(rules_len: int) -> str:
 
 
 def _validate_strings(doc: dict) -> None:
-    def walk(node):
+    def walk(node, parent=""):
         if isinstance(node, dict):
             for key, value in node.items():
-                # Pitch names are keys and reach the prompt too: short, plain characters only (structural keys use underscores).
-                if type(key) is not str or re.fullmatch(LEX["patterns"]["key_chars"], key) is None:
+                # Pitch names and glossary terms are keys and reach the prompt too: short, plain characters only.
+                pattern = LEX["patterns"]["term_key_chars" if parent == "glossary" else "key_chars"]
+                if type(key) is not str or re.fullmatch(pattern, key) is None:
                     raise ModelRejected()
-                walk(value)
+                walk(value, key)
         elif isinstance(node, list):
             for value in node:
-                walk(value)
+                walk(value, parent)
         elif isinstance(node, str):
             bounded_text(node, 400)
 

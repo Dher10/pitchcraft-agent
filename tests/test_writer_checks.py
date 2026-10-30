@@ -346,3 +346,22 @@ def test_the_guides_own_missing_value_sentence_passes(doc):
     c = replace(candidate(doc), "sections.home_vs_away.0", "There is not enough data yet to rate the contact risk of José Soriano.", path, doc=doc)
 
     assert "W7.missing" not in check(c, doc) and "W5.label" not in check(c, doc)
+
+
+@pytest.mark.parametrize("text", [
+    "OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
+    "OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
+    "On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
+])
+def test_the_definition_is_accepted_with_either_capitalization_after_is(doc, text):
+    c = candidate(doc)
+    c["sections"]["away_vs_home"][2] = {"text": text, "evidence": ev(doc, "glossary.OPS")}
+
+    assert check(c, doc) == []
+
+
+def test_the_glossary_is_cited_by_term_and_an_index_path_does_not_exist(doc):
+    index = wc.wi.evidence_index(doc)
+
+    assert "glossary.OPS" in index and "glossary.K%" in index and "glossary.LHH / RHH" in index
+    assert not [p for p in index if p.startswith("glossary.") and p.split(".")[1].isdigit()]

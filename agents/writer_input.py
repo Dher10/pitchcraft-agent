@@ -98,7 +98,7 @@ def build_writer_input(packet: dict, findings: dict, glossary: list[dict]) -> di
     doc["pitch_movement"] = _need(charts, "pitch_movement", "charts")
     doc["velocity_by_pitch"] = _need(charts, "velocity_by_pitch", "charts")
     doc["findings"] = _findings(findings, teams)
-    doc["glossary"] = [{"term": t["term"], "definition": t["definition"]} for t in glossary]
+    doc["glossary"] = {t["term"]: t["definition"] for t in glossary}  # an object keyed by term, so `glossary.OPS` is the natural path
     _drop_internal(doc)
     return _nfc(doc)
 
@@ -128,11 +128,7 @@ def evidence_index(doc: dict) -> dict[str, Any]:
             index[path] = node
 
     for key, value in doc.items():
-        if key == "glossary":
-            for entry in value:
-                index[f"glossary.{entry['term']}"] = entry["definition"]
-        else:
-            walk(value, key)
+        walk(value, key)
     return index
 
 

@@ -60,7 +60,7 @@ def definition_forms(term: str, definition: str) -> set[str]:
     """The sentences that count as the glossary definition of `term`: the definition as written, or `<term> is <definition>`."""
 
     first = definition[0].lower() + definition[1:] if definition[:2].isupper() is False else definition
-    return {_nfc(definition), _nfc(f"{term}{_IS}{first}"), _nfc(f"{term[0].upper()}{term[1:]}{_IS}{first}")}
+    return {_nfc(definition), _nfc(f"{term}{_IS}{definition}"), _nfc(f"{term}{_IS}{first}"), _nfc(f"{term[0].upper()}{term[1:]}{_IS}{first}")}
 
 
 def _nfc(text: str) -> str:
@@ -155,7 +155,7 @@ def check_report(candidate: dict, doc: dict, rules_len: int) -> list[str]:
 
     index = wi.evidence_index(doc)
     allowed = _allowed_capitals(doc)
-    glossary = {entry["term"]: definition_forms(entry["term"], entry["definition"]) for entry in doc["glossary"]}
+    glossary = {term: definition_forms(term, definition) for term, definition in doc["glossary"].items()}
     sentences = _all_sentences(candidate)
     watch_ids = {id(s) for s in candidate["sections"]["watch"]}
     ordered_texts = [_nfc(s["text"]) for s in sentences]
