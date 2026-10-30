@@ -150,7 +150,7 @@ def test_a_failure_outside_any_sentence_has_no_sentence_and_the_codes_stay_the_s
 
 def test_a_lineup_note_may_speak_of_swing_and_miss_without_the_pitcher_label(doc):
     c = with_first(candidate(doc), "away_vs_home", 1, f"The Angels lineup has a .712 OPS (on-base plus slugging) against left-handed pitchers and an elevated swing-and-miss risk, over the {SCOPE}.",
-                   "teams.home.offense_profile.ops_vs_hand", "glossary.OPS.short", "findings.lineup_notes.home.0", "teams.home.offense_profile.scope.label", doc=doc)
+                   "teams.home.offense_profile.ops_vs_hand", "glossary.OPS.short", "findings.lineup_notes.home", "teams.home.offense_profile.scope.label", doc=doc)
 
     assert "W5.label" not in check(c, doc)
 
@@ -204,6 +204,22 @@ def test_two_names_side_by_side_are_not_a_team(doc, text):
 
 
 def test_a_lineup_note_exempts_only_the_words_that_are_in_the_note(doc):
-    note = "findings.lineup_notes.home.0"  # "has elevated swing-and-miss risk"
+    note = "findings.lineup_notes.home"  # "has elevated swing-and-miss risk"
     assert "W5.label" not in run_text(doc, "The Angels carry an elevated swing-and-miss risk.", note, "teams.home.offense_profile.vs_pitcher_hand")
     assert "W5.label" in run_text(doc, "His command is sloppy.", note, "teams.home.offense_profile.vs_pitcher_hand")
+
+
+def test_the_whole_lineup_note_is_a_citable_path_and_an_empty_one_is_null(doc):
+    index = wc.wi.evidence_index(doc)
+
+    assert index["findings.lineup_notes.home"] == "has elevated swing-and-miss risk; draws walks at an above-average rate"
+    assert index["findings.lineup_notes.away"] is None
+    c = with_first(candidate(doc), "away_vs_home", 1, "The Angels draw walks at an above-average rate and have an elevated swing-and-miss risk.", "findings.lineup_notes.home", doc=doc)
+    assert "W1.evidence_path" not in check(c, doc) and "W5.intensity" not in check(c, doc)
+
+
+def test_a_missing_lineup_note_does_not_exempt_a_label_term(doc):
+    # the away lineup has no notes (None): citing it must not turn the word "none" into an exemption for "command"
+    c = with_first(candidate(doc), "away_vs_home", 1, "His command is sloppy.", "findings.lineup_notes.away", doc=doc)
+
+    assert "W5.label" in check(c, doc)

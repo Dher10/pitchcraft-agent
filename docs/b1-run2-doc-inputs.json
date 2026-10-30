@@ -1,0 +1,88 @@
+{
+ "run_info": {
+  "started_utc": "2026-10-30 20:22",
+  "finished_utc": "2026-10-30 20:27",
+  "started_local": "2026-10-30 15:22",
+  "finished_local": "2026-10-30 15:27",
+  "timezone": "America/Bogota (UTC-5)"
+ },
+ "summary": "\n## Run 2 summary (read first)\n\n- **Result:** 0 of 10 accepted; all ten ended on the rules report (`checks_failed`). Run 1 (guide 0.2) also ended 0 of 10; the numbers below are new evidence, not a repeat. The run used prompt `p2.2-1`; the next prompt version is `p2.2-2` (see the lineup-note fix below).\n- **Gemini calls:** run 55 of the run cap 80; experiment 95 of 400 (40 in run 1). Outcomes of the 55: 20 answered, 33 `http_429`, 2 `http_503`. **All 33 `http_429` and both `http_503` were on the primary `gemini-3.5-flash`**, which answered 3 of its 38 calls; the fallback `gemini-3.1-flash-lite` answered 17 of 17. So 8 of the 10 texts shown below are fallback text, which is not a Gemini primary B1 result (the two primary-model texts shown are `postseason-849842` and `postseason-849849`); each case names the model of the text it shows. Tokens: about 10,950 per answered call (about 7,100 in).\n- **Capacity:** 35 of 55 calls (64%) failed on capacity, more than a third. Time of day: 15:22 to 15:27 local (America/Bogota, UTC-5), that is 20:22 to 20:27 UTC, about 11 calls per minute. A 429 is a rate or quota limit, not the overload a 503 means; run 1 (earlier the same day) had 15 `http_503` and 7 `http_429`. The free-tier limits of the primary model are not published, so I cannot say whether this was the per-minute or the daily limit.\n- **What the checks found (162 failures over 20 candidates):** `W1.evidence_path` 34, `W11.expansion` 28, `W1.entity` 23, `W1.number` 21, `W1.evidence_value` 12, `W2.comparison` 8, `W8.form` 6, `W10.cause` 5, `W1.no_evidence` 5, `W15.form` 4, `W12.time` 3, `W17.structure` 3, and 2 or fewer each of `W5.label`, `W3.prediction`, `W11.repeat`, `W12.repeat`, `W6.arsenal`, `W17.length`. Many are our rules being rigid or our input being awkward, not the model being wrong; see `docs/writer-guide-0.4-proposal.md`, part A.\n- **Harness defect found and fixed after the run (no further call):** the lineup notes were a list, so the natural citation `findings.lineup_notes.home` pointed at no value (15 of the 34 `W1.evidence_path`). It is now one string per side; prompt version `p2.2-2`.\n- **What is shown per case:** the model candidate with the fewest failed checks (a later attempt wins a tie), labelled with its attempt number and model. Every phrase quoted in a readability note is checked by code against the text shown; the document cannot be built if a quote is missing.\n- **A caution on what is shown:** \"fewest failed checks\" counts a `W17.structure` failure as one check, so it can prefer a candidate whose other checks never ran (`postseason-849842`, `limited-825104`, `limited-823863`). The heading of each case names the checks of the text shown.\n- **Readability verdicts (per case below):** better 5, mixed 3, not better 2. Better: `limited-823836`, `opener-823769`, `opener-824280`, `postseason-849842`, `postseason-849849`. Mixed: `limited-825104`, `limited-823863`, `veteran-824803`. Not better: `veteran-824027`, `veteran-823938`. Common weaknesses of the model text: the scope repeated, stat runs of the same shape, filler sentences, title-case headlines and words such as \"utilizes\". They are the subject of the guide 0.4 proposals.\n",
+ "notes": {
+  "postseason-849842": {
+   "text": "Verdict: better. The model text puts the series situation in the headline and the first lines, says who starts for which team and keeps the figures in sentences, where the rules text uses template lines (\"works off a four-seam-splitter combination\", \"The scouting note is matchup fit\"). Weakness: the Game 2 and standing sentence appears twice (summary lines and body) and the scope is repeated in each section.",
+   "quotes": [
+    "Before first pitch, SD leads 1-0.",
+    "Kevin Gausman starts for Chicago against Nick Pivetta for San Diego."
+   ]
+  },
+  "postseason-849849": {
+   "text": "Verdict: better. It opens with the Game 1 framing (\"This is Game 1 of the AL Wild Card Series.\") and says the limited control read once with its numbers (\"Control data for Smith is limited with 110 batters faced when 170 are needed for a read.\"), where the rules text repeats its limited-data sentences in internal wording. Weaknesses: the scope is stated in five places, the confidence note is awkward (\"Data for this report comes from probable pitchers listed for the 2026 regular season through Sep 28.\"), \"utilizes\" and a title-case headline.",
+   "quotes": [
+    "This is Game 1 of the AL Wild Card Series.",
+    "Control data for Smith is limited with 110 batters faced when 170 are needed for a read.",
+    "Data for this report comes from probable pitchers listed for the 2026 regular season through Sep 28.",
+    "utilizes"
+   ]
+  },
+  "opener-824280": {
+   "text": "Verdict: better, not yet good. It is easier to follow than the rules text (who pitches for whom, what each lineup does) but the short forms make it clumsy (\"1.35 walks plus hits per inning (WHIP)\", \"a splitter as his put-away pitch (second most used pitch)\"), and the figures arrive in dense runs. The rules text is template sentences and the repeated \"no ... claim is made\" lines.",
+   "quotes": [
+    "1.35 walks plus hits per inning (WHIP)",
+    "put-away pitch (second most used pitch)"
+   ]
+  },
+  "opener-823769": {
+   "text": "Verdict: better, clearly. The rules text contains the empty line \"The primary pitch contrast is Four-seam against Four-seam\"; the model text names the teams, the duel and what each lineup tends to do. Weak spots: \"possess\" wording, a repeated scope phrase and a watch item that restates a label.",
+   "quotes": [
+    "possess above-average swing-and-miss ability",
+    "Watch how the lineups handle the above-average swing-and-miss ability of each starter."
+   ]
+  },
+  "limited-823836": {
+   "text": "Verdict: better. The limited-data situation is said once with its counts (32 batters faced, 170 and 70 needed) where the rules text says it three times in the same stiff form, and the opening tells the fan who starts for whom. Weaknesses: a paragraph of ERA, WHIP, OPS, K% and BB% in a row, \"utilizes\", the scope in four places and a vague watch item (\"whether the Marlins lineup can handle the pitchers\").",
+   "quotes": [
+    "utilizes",
+    "Watch whether the Marlins lineup can handle the pitchers.",
+    "32 batters faced"
+   ]
+  },
+  "limited-825104": {
+   "text": "Verdict: mixed. The scene setting is plainer than the rules text, but the limited data is not stated more briefly: the shown text says it in the short summary (\"Both starters carry limited data for command and strikeout metrics for the 2026 regular season through Apr 3.\"), again in the Matchup Summary (\"Data for both pitchers regarding command and strikeout ability is limited.\") and in the confidence note (\"Data for Bryce Elder is limited with 83 pitches thrown, short of the 100 needed\"), where the rules text repeats it in each field. It also has a time claim (\"continues its pattern of drawing walks\"), a scope repeated in every section and the same sentence shape in both lineup sections.",
+   "quotes": [
+    "Both starters carry limited data for command and strikeout metrics for the 2026 regular season through Apr 3.",
+    "Data for both pitchers regarding command and strikeout ability is limited.",
+    "Data for Bryce Elder is limited with 83 pitches thrown, short of the 100 needed",
+    "continues its pattern of drawing walks"
+   ]
+  },
+  "limited-823863": {
+   "text": "Verdict: mixed. Smoother than the rules text, and it names where the game is played, but it adds filler (\"Both teams look to adjust to the specific arsenal styles of their opponents\") that says nothing, a title-case headline and velocity figures that are listed, not explained. The rules text is accurate and hard to read.",
+   "quotes": [
+    "Both teams look to adjust to the specific arsenal styles of their opponents."
+   ]
+  },
+  "veteran-824027": {
+   "text": "Verdict: not better. The model text is fluent but contains an error a fan would notice (\"against left-handed and right-handed hitters (LHH / RHH) like Freeland\" misuses a glossary term), a place name that is not in the data (\"Anaheim\"), a lost accent in the starter's name and the filler line \"Both starters enter the matchup with distinct pitching profiles\". The rules text is stiff but correct. The hand-written positive control for this case reads better than both.",
+   "quotes": [
+    "against left-handed and right-handed hitters (LHH / RHH) like Freeland",
+    "Anaheim",
+    "Both starters enter the matchup with distinct pitching profiles."
+   ]
+  },
+  "veteran-823938": {
+   "text": "Verdict: not better. Smoother than the rules text but riskier. It compares one lineup's OPS against right-handed pitchers with the other lineup's OPS against left-handed pitchers (a misleading comparison the check caught), writes \"average command label\" (an internal word) and its confidence note makes no sense (\"based on the lineup notes\").",
+   "quotes": [
+    "which is higher than the .685 OPS that the Rays produce against left-handed pitchers",
+    "average command label",
+    "based on the lineup notes"
+   ]
+  },
+  "veteran-824803": {
+   "text": "Verdict: mixed. A fan would read it faster than the rules text and trust it less: it pads with unsupported lines (\"Both pitchers are established starters with sufficient data\", \"Shane Baz leads the Baltimore Orioles pitching staff\"), repeats the same lineup sentence in both sections and repeats the scope.",
+   "quotes": [
+    "Both pitchers are established starters with sufficient data for these profiles.",
+    "Shane Baz leads the Baltimore Orioles pitching staff"
+   ]
+  }
+ }
+}

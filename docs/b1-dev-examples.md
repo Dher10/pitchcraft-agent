@@ -1,24 +1,36 @@
 # B1 dev examples: model text beside the rules text (owner gate)
 
-Dev split only. Guide digest `9c85e2e21a9db548f2f57c2c1536d9e998c2ec52f752d7e0d08be0ce8f149b8e`, prompt `p2.2-1`. Nothing here is published; rules stay live.
+Dev split only. Guide digest `55fb2a171f8e8b5b09c8f24c02e73c27a522f0efd6d8aaecc7b42a5323be46d3`, prompt `p2.2-2`. Nothing here is published; rules stay live.
 
-Gemini HTTP calls: run 40 of 40, experiment 40 of 400.
+Gemini HTTP calls: run 55 of 80, experiment 95 of 400.
+Capacity failures (503/429) in this run: 35 of 55 finished calls.
+Run started 2026-10-30 15:22 local (2026-10-30 20:22 UTC), finished 2026-10-30 15:27 local.
+More than a third of the calls failed on capacity; time of day of the run: 2026-10-30 15:22 to 2026-10-30 15:27 local (America/Bogota (UTC-5)).
 Paths: primary 0, primary_retry 0, fallback 0, fallback_retry 0, rules 10. LLM coverage 0/10; not written by the primary model 10/10 (a fallback or rules result is not a primary first-attempt success).
 
 
+## Run 2 summary (read first)
 
-## Notes added after the run (read first)
+- **Result:** 0 of 10 accepted; all ten ended on the rules report (`checks_failed`). Run 1 (guide 0.2) also ended 0 of 10; the numbers below are new evidence, not a repeat. The run used prompt `p2.2-1`; the next prompt version is `p2.2-2` (see the lineup-note fix below).
+- **Gemini calls:** run 55 of the run cap 80; experiment 95 of 400 (40 in run 1). Outcomes of the 55: 20 answered, 33 `http_429`, 2 `http_503`. **All 33 `http_429` and both `http_503` were on the primary `gemini-3.5-flash`**, which answered 3 of its 38 calls; the fallback `gemini-3.1-flash-lite` answered 17 of 17. So 8 of the 10 texts shown below are fallback text, which is not a Gemini primary B1 result (the two primary-model texts shown are `postseason-849842` and `postseason-849849`); each case names the model of the text it shows. Tokens: about 10,950 per answered call (about 7,100 in).
+- **Capacity:** 35 of 55 calls (64%) failed on capacity, more than a third. Time of day: 15:22 to 15:27 local (America/Bogota, UTC-5), that is 20:22 to 20:27 UTC, about 11 calls per minute. A 429 is a rate or quota limit, not the overload a 503 means; run 1 (earlier the same day) had 15 `http_503` and 7 `http_429`. The free-tier limits of the primary model are not published, so I cannot say whether this was the per-minute or the daily limit.
+- **What the checks found (162 failures over 20 candidates):** `W1.evidence_path` 34, `W11.expansion` 28, `W1.entity` 23, `W1.number` 21, `W1.evidence_value` 12, `W2.comparison` 8, `W8.form` 6, `W10.cause` 5, `W1.no_evidence` 5, `W15.form` 4, `W12.time` 3, `W17.structure` 3, and 2 or fewer each of `W5.label`, `W3.prediction`, `W11.repeat`, `W12.repeat`, `W6.arsenal`, `W17.length`. Many are our rules being rigid or our input being awkward, not the model being wrong; see `docs/writer-guide-0.4-proposal.md`, part A.
+- **Harness defect found and fixed after the run (no further call):** the lineup notes were a list, so the natural citation `findings.lineup_notes.home` pointed at no value (15 of the 34 `W1.evidence_path`). It is now one string per side; prompt version `p2.2-2`.
+- **What is shown per case:** the model candidate with the fewest failed checks (a later attempt wins a tie), labelled with its attempt number and model. Every phrase quoted in a readability note is checked by code against the text shown; the document cannot be built if a quote is missing.
+- **A caution on what is shown:** "fewest failed checks" counts a `W17.structure` failure as one check, so it can prefer a candidate whose other checks never ran (`postseason-849842`, `limited-825104`, `limited-823863`). The heading of each case names the checks of the text shown.
+- **Readability verdicts (per case below):** better 5, mixed 3, not better 2. Better: `limited-823836`, `opener-823769`, `opener-824280`, `postseason-849842`, `postseason-849849`. Mixed: `limited-825104`, `limited-823863`, `veteran-824803`. Not better: `veteran-824027`, `veteran-823938`. Common weaknesses of the model text: the scope repeated, stat runs of the same shape, filler sentences, title-case headlines and words such as "utilizes". They are the subject of the guide 0.4 proposals.
 
-- Run at commit `3fc3a92`, guide 0.2, prompt `p2.2-1`, first live Gemini calls of P2.2. Gemini HTTP calls from the ledger: 40 of the run cap 40 (4 x 10 items) and 40 of the experiment cap 400. Outcomes: 18 answered (`ok`), 15 `http_503`, 7 `http_429`. Models that answered: `gemini-3.5-flash` 10, `gemini-3.1-flash-lite` 8. The cap was reached during the tenth case, which ended on rules with `call_cap_reached`.
-- **No model report was accepted: 0 of 10 passed the checks, so every case below ended on the rules report.** Two causes were defects of the harness, not of the model, and are fixed in the commit that adds this document, with no further call: (1) the glossary was shown to the model as a list, so the model cited `glossary.0.definition`, which does not exist (16 `W1.evidence_path`); it is now an object keyed by term, so the path is `glossary.OPS`; (2) the definition check rejected "OPS is On-base plus slugging ..." (capital after "is") and the plain definition forms the model wrote (17 `W11.definition`); both capitalizations are accepted now.
-- The other failures are the model's: `W1.entity` 9, `W1.number` 5, `W11.order` 5, `W10.cause` 3, `W1.no_evidence` 3, `W17.length` 2, `W15.form` 2, `W6.arsenal` 2, `W2.comparison` 2, and one each of `W14.starter`, `W14.team`, `W4.topic`, `W5.label`, `W17.structure`, `W1.evidence_value`. The counts are confounded by the two harness defects: a sentence with an invalid glossary path skipped its own content checks, and part of the retry feedback named the harness failures instead of the model's. They are not a clean estimate of the model's failure rate.
-- The 40-call run cap was a binding limit here because 22 of 40 calls were 503/429 capacity failures. Nothing was re-run, because the run cap is spent and a re-run needs your decision.
 
 ## postseason-849842
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W1.entity', 'W2.comparison', 'W11.definition'], tokens {'promptTokenCount': 6391, 'candidatesTokenCount': 2212, 'totalTokenCount': 8603}
-- Content attempt 2: transport path `primary_retry`, transport failures [('gemini-3.5-flash', 1, 'http_503')], model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W1.entity', 'W11.definition'], tokens {'promptTokenCount': 6485, 'candidatesTokenCount': 2923, 'totalTokenCount': 9408}
+- Content attempt 1: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.entity', 'W10.cause'], tokens {'candidatesTokenCount': 2164, 'promptTokenCount': 7247, 'totalTokenCount': 9411}
+  - `W1.entity` token `Sep` in: Kevin Gausman has a 4.51 ERA (earned run average) and a 1.27 WHIP (walks plus hits per inning) over the 2026 regular season through Sep 29.
+  - `W1.entity` token `Sep` in: Nick Pivetta has a 2.86 ERA and a 1.01 WHIP over the 2026 regular season through Sep 29.
+  - `W1.entity` token `Sep` in: Kevin Gausman relies on his Four-seam at 50.6% and Splitter at 39.2% over the 2026 regular season through Sep 29.
+  - `W10.cause` token `due to` in: Control metrics for Nick Pivetta are limited due to a sample of 140 batters faced compared to the required 170.
+- Content attempt 2: transport path `primary_retry`, transport failures [('gemini-3.5-flash', 1, 'http_429')], model `gemini-3.5-flash`, checks ['W17.structure'], tokens {'candidatesTokenCount': 2237, 'promptTokenCount': 7287, 'totalTokenCount': 9524}
+  - `W17.structure` token `None` in: (whole report)
 - Length: rules 2279 characters; shown text 2279 characters.
 
 ### Rules text (A)
@@ -59,52 +71,73 @@ The main contrast is Four-seam to set up, Splitter to finish versus Four-seam to
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Kevin Gausman and Nick Pivetta: all pitcher figures cover the 2026 regular season. Team offense splits cover the 2026 regular season. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.evidence_path', 'W1.entity', 'W11.definition']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 2 of 2, model `gemini-3.5-flash`, checks ['W17.structure']
 
 **Headline**
 
-Kevin Gausman faces Nick Pivetta in Game 2 of the NL Wild Card Series.
+Kevin Gausman faces Nick Pivetta in Game 2 of the NL Wild Card Series
 
 **Short summary**
 
 - This is Game 2 of the NL Wild Card Series.
 - Before first pitch, SD leads 1-0.
-- Kevin Gausman starts for CHC, and Nick Pivetta starts for SD.
+- Kevin Gausman starts for Chicago against Nick Pivetta for San Diego.
 
 **Matchup Summary**
 
-This is Game 2 of the NL Wild Card Series. Before first pitch, SD leads 1-0. ERA is Earned run average: earned runs allowed per nine innings. Lower is better. Kevin Gausman has a 4.51 ERA over the 2026 regular season through Sep 29. Nick Pivetta has a 2.86 ERA over the 2026 regular season through Sep 29.
+Kevin Gausman carries a 4.51 ERA (earned run average) and a 1.27 WHIP (walks plus hits per inning) over the 2026 regular season through Sep 29. Nick Pivetta has a 2.86 ERA and a 1.01 WHIP in that same span. This is Game 2 of the NL Wild Card Series, and SD leads 1-0 before first pitch.
 
 **Kevin Gausman vs San Diego Padres**
 
-swing-and-miss is How often hitters swing and miss against him. command is How well a pitcher puts the ball where he wants it. Kevin Gausman shows Average swing-and-miss ability over the 2026 regular season through Sep 29. Kevin Gausman shows Solid command over the 2026 regular season through Sep 29. BB% is Share of plate appearances that end in a walk. San Diego Padres draws walks at a 9.4% BB% rate against right-handed pitchers over the 2026 regular season through Sep 29.
+Kevin Gausman shows solid command and average swing-and-miss ability over the 2026 regular season through Sep 29. The San Diego Padres offense has a .722 OPS (on-base plus slugging) against right-handed pitchers like him. Their K% (strikeout rate) is 21.5% and their BB% (walk rate) is 9.4% in that matchup. San Diego draws walks at an above-average rate.
 
 **Nick Pivetta vs Chicago Cubs**
 
-Nick Pivetta shows Above-average swing-and-miss ability over the 2026 regular season through Sep 29. batters faced is The number of hitters a pitcher has pitched to. Control data for Nick Pivetta is limited: 140 batters faced, and 170 are needed for a read. OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. Chicago Cubs has a .757 OPS against right-handed pitchers over the 2026 regular season through Sep 29.
+Nick Pivetta shows above-average swing-and-miss ability over the 2026 regular season through Sep 29. Control data for Nick Pivetta is limited: 140 batters faced, and 170 are needed for a read. The Chicago Cubs lineup has a .757 OPS against right-handed pitchers. Their strikeout rate is 21.2% and their walk rate is 10.6% in that split. Chicago has strong OPS against this pitcher's hand and draws walks at an above-average rate.
 
 **Arsenal Scout**
 
-put-away pitch is In this report, the pitch he uses second most (at least 15% of his pitches). Kevin Gausman relies on his Four-seam as his primary pitch and Splitter as his put-away pitch. Nick Pivetta relies on his Four-seam as his primary pitch and Curveball as his put-away pitch. Nick Pivetta throws his Four-seam at 94.0 mph, which is faster than Kevin Gausman at 93.8 mph over the 2026 regular season.
+Kevin Gausman relies on his Four-seam as his primary pitch (50.6%) and Splitter as his put-away pitch (second most used pitch) at 39.2%. His Four-seam reaches 93.8 mph velocity and his Splitter reaches 84.0 mph velocity. Nick Pivetta throws his Four-seam at 52.2% and Curveball at 22.1%. His Four-seam averages 94.0 mph, and his Curveball moves 6.7 in. sideways and 15.2 in. down compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch how often Kevin Gausman throws his Splitter.
-- Watch whether Nick Pivetta uses his Curveball against Chicago Cubs.
-- Watch how San Diego Padres handles Kevin Gausman and his Four-seam.
+- Watch how often Kevin Gausman throws his Splitter against San Diego hitters.
+- Watch how Nick Pivetta uses his Curveball in key counts.
+- Watch whether the Chicago lineup draws walks against Nick Pivetta.
 
 **Data Confidence Note**
 
-limited sample is Too few pitches or batters faced for a reliable read; the packet says how many are needed. Kevin Gausman has full sample data across all tracked areas over the 2026 regular season through Sep 29. Control data for Nick Pivetta is limited with 140 batters faced out of 170 needed over the 2026 regular season through Sep 29.
+The lineup status for this game is listed as probable pitchers.
+
+### Readability for a casual fan
+
+Verdict: better. The model text puts the series situation in the headline and the first lines, says who starts for which team and keeps the figures in sentences, where the rules text uses template lines ("works off a four-seam-splitter combination", "The scouting note is matchup fit"). Weakness: the Game 2 and standing sentence appears twice (summary lines and body) and the scope is repeated in each section.
 
 
 ## postseason-849849
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W1.no_evidence', 'W1.evidence_path', 'W1.number', 'W1.entity', 'W11.definition', 'W11.order'], tokens {'promptTokenCount': 6133, 'candidatesTokenCount': 3025, 'thoughtsTokenCount': 550, 'totalTokenCount': 9708}
-- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W17.structure'], tokens {'promptTokenCount': 6250, 'candidatesTokenCount': 2072, 'thoughtsTokenCount': 1167, 'totalTokenCount': 9489}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.number', 'W1.entity', 'W1.evidence_path', 'W11.expansion'], tokens {'candidatesTokenCount': 2453, 'promptTokenCount': 6988, 'thoughtsTokenCount': 1481, 'totalTokenCount': 10922}
+  - `W1.number` token `1` in: AL Wild Card Series: Smith and Blubaugh Start Game 1
+  - `W1.entity` token `Blubaugh Start Game` in: AL Wild Card Series: Smith and Blubaugh Start Game 1
+  - `W1.entity` token `Sep` in: Hagen Smith carries a 1.29 ERA (earned run average) and a 0.96 WHIP (walks plus hits per inning) through the 2026 regular season through Sep 28.
+  - `W1.entity` token `Sep` in: Hagen Smith faces a Houston lineup that has a .713 OPS (on-base plus slugging) against left-handed pitchers in the 2026 regular season through Sep 28.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.control` in: Control data for Smith is limited: 110 batters faced, and 170 are needed for a read, and there is not enough data yet to rate his command.
+  - `W1.entity` token `Sep` in: AJ Blubaugh faces a Chicago White Sox lineup that posts a .716 OPS against right-handed pitchers in the 2026 regular season through Sep 28.
+  - `W1.entity` token `Sep` in: Hagen Smith uses a four-seam as his primary pitch, which averages 93.8 mph in the 2026 regular season through Sep 28.
+  - `W1.entity` token `Sep` in: This report uses data from the 2026 regular season through Sep 28.
+  - `W11.expansion` token `put-away pitch` in: Watch how often AJ Blubaugh relies on his sweeper as a put-away pitch with his below-average command.
+- Content attempt 2: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.entity', 'W1.number', 'W2.comparison', 'W1.evidence_value'], tokens {'candidatesTokenCount': 4420, 'promptTokenCount': 7087, 'totalTokenCount': 11507}
+  - `W1.entity` token `Hagen Smith Faces AJ Blubaugh` in: Hagen Smith Faces AJ Blubaugh in AL Wild Card Series Game 1
+  - `W1.entity` token `Sep` in: Over the 2026 regular season through Sep 28, Smith has pitched 28.0 innings.
+  - `W1.entity` token `Sep` in: Hagen Smith shows above-average swing-and-miss ability over the 2026 regular season through Sep 28.
+  - `W1.entity` token `Sep` in: AJ Blubaugh demonstrates average swing-and-miss ability and below-average command over the 2026 regular season through Sep 28.
+  - `W1.number` token `2026` in: Smith uses the Four-seam as his primary pitch at 48.4% and the Slider as his put-away pitch (second most used pitch) at 30.3% over the 2026 regular season through Sep 28.
+  - `W1.number` token `28` in: Smith uses the Four-seam as his primary pitch at 48.4% and the Slider as his put-away pitch (second most used pitch) at 30.3% over the 2026 regular season through Sep 28.
+  - `W1.entity` token `Sep` in: Smith uses the Four-seam as his primary pitch at 48.4% and the Slider as his put-away pitch (second most used pitch) at 30.3% over the 2026 regular season through Sep 28.
+  - `W2.comparison` token `faster` in: His Four-seam is faster than Smith's Four-seam, reaching 95.8 miles per hour.
+  - `W1.evidence_value` token `starters.home_starter.name` in: Watch how the Chicago lineup handles Blubaugh's Four-seam fastball.
+  - `W1.entity` token `Sep` in: Data for this report comes from probable pitchers listed for the 2026 regular season through Sep 28.
 - Length: rules 2221 characters; shown text 2221 characters.
 
 ### Rules text (A)
@@ -145,53 +178,78 @@ The main contrast is Four-seam to set up, Slider to finish versus Four-seam to s
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Hagen Smith and AJ Blubaugh: all pitcher figures cover the 2026 regular season. Team offense splits cover the 2026 regular season. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W17.structure']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 2 of 2, model `gemini-3.5-flash`, checks ['W1.entity', 'W1.number', 'W2.comparison', 'W1.evidence_value']
 
 **Headline**
 
-AL Wild Card Series Game 1: Chicago White Sox at Houston Astros
+Hagen Smith Faces AJ Blubaugh in AL Wild Card Series Game 1
 
 **Short summary**
 
 - This is Game 1 of the AL Wild Card Series.
-- Hagen Smith starts for Chicago, while AJ Blubaugh starts for Houston.
-- Both starters use a four-seam fastball to set up their approach.
-- The White Sox and Astros lineups face their respective pitchers in this three-game series.
+- Hagen Smith brings an ERA (earned run average) of 1.29 and a WHIP (walks plus hits per inning) of 0.96 for Chicago.
+- AJ Blubaugh carries a 3.66 ERA and a 1.23 WHIP for Houston.
 
 **Matchup Summary**
 
-ERA is earned runs allowed per nine innings; lower is better. WHIP is walks plus hits per inning pitched; lower is better. Hagen Smith enters with a 1.29 ERA and a 0.96 WHIP for the 2026 regular season through Sep 28. AJ Blubaugh enters with a 3.66 ERA and a 1.23 WHIP for the 2026 regular season through Sep 28.
+This match features Hagen Smith for CWS and AJ Blubaugh for HOU in Game 1 of the AL Wild Card Series. Over the 2026 regular season through Sep 28, Smith has pitched 28.0 innings. Over the same period, Blubaugh has thrown 96.0 innings.
 
 **Hagen Smith vs Houston Astros**
 
-OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for; higher means a stronger lineup. The Houston Astros lineup has a .713 OPS against left-handed pitchers, for the 2026 regular season through Sep 28. Swing-and-miss is how often hitters swing and miss against him. Hagen Smith shows above-average swing-and-miss ability for the 2026 regular season through Sep 28.
+Hagen Smith shows above-average swing-and-miss ability over the 2026 regular season through Sep 28. Control data for Smith is limited with 110 batters faced when 170 are needed for a read. The Houston Astros lineup has a .713 OPS (on-base plus slugging) against left-handed pitchers. That offense carries a 21.0% K% (strikeout rate) and a 7.9% BB% (walk rate).
 
 **AJ Blubaugh vs Chicago White Sox**
 
-The Chicago White Sox lineup has a .716 OPS against right-handed pitchers, for the 2026 regular season through Sep 28. Command is how well a pitcher puts the ball where he wants it. AJ Blubaugh shows below-average command for the 2026 regular season through Sep 28.
+AJ Blubaugh demonstrates average swing-and-miss ability and below-average command over the 2026 regular season through Sep 28. The Chicago White Sox offense has a .716 OPS, a 24.1% K%, and a 9.4% BB% against right-handed pitchers. Chicago draws walks at an above-average rate and has elevated swing-and-miss risk.
 
 **Arsenal Scout**
 
-Put-away pitch is the pitch he uses second most, at least 15% of his pitches. Hagen Smith uses a slider as his put-away pitch, throwing it 30.3% of the time. AJ Blubaugh uses a sweeper as his put-away pitch, throwing it 22.9% of the time. Break is total movement of the pitch, sideways and up or down, compared with a pitch thrown without spin. The Smith slider moves 5.2 in. sideways and 3.5 in. down. The Blubaugh sweeper moves 11.9 in. sideways and 3.7 in. up.
+Smith uses the Four-seam as his primary pitch at 48.4% and the Slider as his put-away pitch (second most used pitch) at 30.3% over the 2026 regular season through Sep 28. His Four-seam averages 93.8 miles per hour, and his Slider averages 83.1 miles per hour. Blubaugh features a Four-seam primary pitch at 51.4% and a Sweeper put-away pitch at 22.9%. His Four-seam is faster than Smith's Four-seam, reaching 95.8 miles per hour. Blubaugh's Sweeper moves 11.9 in. sideways and 3.7 in. up compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch how often Hagen Smith uses his slider to finish sequences.
-- Watch whether AJ Blubaugh encounters deep-count traffic given his below-average command.
-- Watch how the Chicago lineup handles the sweeper from AJ Blubaugh.
+- Watch how often Hagen Smith relies on his Slider against right-handed hitters.
+- Watch whether AJ Blubaugh utilizes his Sweeper against the White Sox lineup.
+- Watch how the Chicago lineup handles Blubaugh's Four-seam fastball.
 
 **Data Confidence Note**
 
-Limited sample is too few pitches or batters faced for a reliable read; the packet says how many are needed. Control data for Hagen Smith is limited: 110 batters faced, and 170 are needed for a read. There is not enough data yet to rate his command.
+Data for this report comes from probable pitchers listed for the 2026 regular season through Sep 28. Hagen Smith has pitched 28.0 innings across 110 batters faced. AJ Blubaugh has logged 96.0 innings across 401 batters faced.
+
+### Readability for a casual fan
+
+Verdict: better. It opens with the Game 1 framing ("This is Game 1 of the AL Wild Card Series.") and says the limited control read once with its numbers ("Control data for Smith is limited with 110 batters faced when 170 are needed for a read."), where the rules text repeats its limited-data sentences in internal wording. Weaknesses: the scope is stated in five places, the confidence note is awkward ("Data for this report comes from probable pitchers listed for the 2026 regular season through Sep 28."), "utilizes" and a title-case headline.
 
 
 ## opener-824280
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W11.order', 'W11.definition'], tokens {'promptTokenCount': 5918, 'candidatesTokenCount': 1998, 'totalTokenCount': 7916}
-- Content attempt 2: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W10.cause', 'W11.definition'], tokens {'promptTokenCount': 5985, 'candidatesTokenCount': 2307, 'totalTokenCount': 8292}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.number', 'W1.evidence_path', 'W1.entity', 'W10.cause', 'W11.expansion'], tokens {'candidatesTokenCount': 2937, 'promptTokenCount': 6772, 'thoughtsTokenCount': 2116, 'totalTokenCount': 11825}
+  - `W1.number` token `two` in: This matchup in Detroit features two starting pitchers in the early part of the 2026 regular season through May 14.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.control` in: Data on Trey Yesavage is limited with 57 batters faced; 170 are required for a full control read and 70 for a strikeout read.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.strikeout` in: Data on Trey Yesavage is limited with 57 batters faced; 170 are required for a full control read and 70 for a strikeout read.
+  - `W1.evidence_path` token `starters.home_starter.thresholds.control` in: Data on Brenan Hanifee is limited with 33 batters faced; 170 are required for a full control read and 70 for a strikeout read.
+  - `W1.evidence_path` token `starters.home_starter.thresholds.strikeout` in: Data on Brenan Hanifee is limited with 33 batters faced; 170 are required for a full control read and 70 for a strikeout read.
+  - `W1.evidence_path` token `pitch_mix.3.home_starter.pitch` in: Watch how Brenan Hanifee balances his sinker and slider usage.
+  - `W1.evidence_path` token `pitch_mix.2.home_starter.pitch` in: Watch how Brenan Hanifee balances his sinker and slider usage.
+  - `W1.entity` token `Statistical` in: Statistical readings for these starters are limited due to a small number of batters faced.
+  - `W10.cause` token `due to` in: Statistical readings for these starters are limited due to a small number of batters faced.
+  - `W11.expansion` token `ERA` in: Trey Yesavage starts for the Toronto Blue Jays with a 0.68 ERA.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.no_evidence', 'W1.number', 'W1.evidence_path', 'W11.expansion'], tokens {'candidatesTokenCount': 2191, 'promptTokenCount': 6881, 'thoughtsTokenCount': 3143, 'totalTokenCount': 12215}
+  - `W1.no_evidence` token `None` in: Both pitchers show specific pitch preferences to handle lineups.
+  - `W1.number` token `2026` in: Trey Yesavage has a 0.68 ERA (earned run average) and a 1.35 walks plus hits per inning (WHIP) for the 2026 regular season through May 14.
+  - `W1.number` token `14` in: Trey Yesavage has a 0.68 ERA (earned run average) and a 1.35 walks plus hits per inning (WHIP) for the 2026 regular season through May 14.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: This group draws walks at an above-average rate.
+  - `W1.number` token `2026` in: Trey Yesavage uses a four-seam fastball at 48.6% and a splitter as his put-away pitch (second most used pitch) at 36.6% for the 2026 regular season through May 14.
+  - `W1.number` token `14` in: Trey Yesavage uses a four-seam fastball at 48.6% and a splitter as his put-away pitch (second most used pitch) at 36.6% for the 2026 regular season through May 14.
+  - `W1.no_evidence` token `None` in: Watch how often Trey Yesavage throws his four-seam fastball.
+  - `W1.no_evidence` token `None` in: Watch how the Detroit lineup approach develops against right-handed pitches.
+  - `W1.no_evidence` token `None` in: Watch how often Brenan Hanifee uses his sinker.
+  - `W11.expansion` token `ERA` in: Trey Yesavage records a 0.68 earned run average (ERA) for the Toronto Blue Jays.
+  - `W11.expansion` token `WHIP` in: Trey Yesavage has a 0.68 ERA (earned run average) and a 1.35 walks plus hits per inning (WHIP) for the 2026 regular season through May 14.
+  - `W11.expansion` token `OPS` in: The Detroit offense enters with a .725 on-base plus slugging (OPS) against right-handed pitchers.
+  - `W11.expansion` token `K%` in: Their strikeout rate (K%) is 22.3% and their walk rate (BB%) is 9.0% in that split.
+  - `W11.expansion` token `BB%` in: Their strikeout rate (K%) is 22.3% and their walk rate (BB%) is 9.0% in that split.
 - Length: rules 2330 characters; shown text 2330 characters.
 
 ### Rules text (A)
@@ -232,52 +290,67 @@ The main contrast is Four-seam to set up, Splitter to finish versus Sinker to se
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Trey Yesavage and Brenan Hanifee: all pitcher figures cover the 2026 regular season through May 14. Team offense splits cover the 2026 regular season through May 14. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.evidence_path', 'W10.cause', 'W11.definition']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 2 of 2, model `gemini-3.1-flash-lite`, checks ['W1.no_evidence', 'W1.number', 'W1.evidence_path', 'W11.expansion']
 
 **Headline**
 
-Trey Yesavage faces Brenan Hanifee in a matchup between Toronto Blue Jays and Detroit Tigers.
+Toronto Blue Jays starter Trey Yesavage faces Detroit Tigers starter Brenan Hanifee
 
 **Short summary**
 
-- Trey Yesavage brings a 0.68 ERA over 13.1 innings pitched.
-- Brenan Hanifee holds a 1.08 ERA across 8.1 innings pitched.
-- Detroit Tigers draws walks at an above-average rate against right-handed pitchers.
+- Trey Yesavage records a 0.68 earned run average (ERA) for the Toronto Blue Jays.
+- Brenan Hanifee brings a 1.08 ERA to the mound for the Detroit Tigers.
+- The Detroit offense enters with a .725 on-base plus slugging (OPS) against right-handed pitchers.
 
 **Matchup Summary**
 
-ERA is Earned run average: earned runs allowed per nine innings. Lower is better. WHIP is Walks plus hits per inning pitched. Lower is better. Trey Yesavage has a 0.68 ERA and a 1.35 WHIP for Toronto Blue Jays. Brenan Hanifee posts a 1.08 ERA and a 1.08 WHIP for Detroit Tigers.
+Trey Yesavage starts for the Toronto Blue Jays for the 2026 regular season through May 14. Brenan Hanifee represents the Detroit Tigers in the same period. Both pitchers show specific pitch preferences to handle lineups.
 
 **Trey Yesavage vs Detroit Tigers**
 
-OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. batters faced is The number of hitters a pitcher has pitched to. limited sample is Too few pitches or batters faced for a reliable read; the packet says how many are needed. Trey Yesavage has faced 57 batters, which is a limited sample since 170 are needed for control. Detroit Tigers has a .725 OPS against right-handed pitchers over the 2026 regular season through May 14. Detroit Tigers draws walks at an above-average rate.
+Trey Yesavage has a 0.68 ERA (earned run average) and a 1.35 walks plus hits per inning (WHIP) for the 2026 regular season through May 14. The Detroit Tigers offense carries a .725 OPS (on-base plus slugging) against right-handed pitchers. Their strikeout rate (K%) is 22.3% and their walk rate (BB%) is 9.0% in that split. This group draws walks at an above-average rate.
 
 **Brenan Hanifee vs Toronto Blue Jays**
 
-Brenan Hanifee has faced 33 batters, which is a limited sample where 170 are needed for control. Toronto Blue Jays posts a .701 OPS against right-handed pitchers over the 2026 regular season through May 14.
+Brenan Hanifee maintains a 1.08 ERA and a 1.08 WHIP over the 2026 regular season through May 14. The Toronto Blue Jays lineup records a .701 OPS against right-handed pitchers. This offense shows an 18.2% K% and a 7.3% BB% against right-handed pitching.
 
 **Arsenal Scout**
 
-put-away pitch is In this report, the pitch he uses second most (at least 15% of his pitches). Trey Yesavage throws his Four-seam pitch 48.6 percent of the time as his primary pitch. His put-away pitch is the Splitter, used 36.6 percent of the time. Brenan Hanifee relies on his Sinker 58.9 percent of the time as his primary pitch. His put-away pitch is the Slider, used 18.8 percent of the time.
+Trey Yesavage uses a four-seam fastball at 48.6% and a splitter as his put-away pitch (second most used pitch) at 36.6% for the 2026 regular season through May 14. The four-seam fastball moves 4.8 in. sideways and 19.9 in. up compared with a pitch thrown without spin. The splitter moves 11.8 in. sideways and 6.2 in. up compared with a pitch thrown without spin. Brenan Hanifee features a sinker at 58.9% and a slider as his put-away pitch at 18.8%. The sinker moves 16.2 in. sideways and 3.4 in. up compared with a pitch thrown without spin. The slider moves 1.7 in. sideways and 2.8 in. up compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch how often Trey Yesavage throws his Four-seam pitch.
-- Watch whether Brenan Hanifee uses his Slider as his put-away pitch.
-- Watch how Detroit Tigers fares against right-handed pitching.
+- Watch how often Trey Yesavage throws his four-seam fastball.
+- Watch how the Detroit lineup approach develops against right-handed pitches.
+- Watch how often Brenan Hanifee uses his sinker.
 
 **Data Confidence Note**
 
-Lineup status is probable pitchers. Trey Yesavage has limited control data with 57 batters faced when 170 are needed. Brenan Hanifee has limited strikeout data with 33 batters faced when 70 are needed.
+Control and strikeout data for Trey Yesavage are limited with 57 batters faced. 170 batters faced are required for a control read and 70 for a strikeout read. Control and strikeout data for Brenan Hanifee are limited with 33 batters faced. 170 batters faced are required for a control read and 70 for a strikeout read.
+
+### Readability for a casual fan
+
+Verdict: better, not yet good. It is easier to follow than the rules text (who pitches for whom, what each lineup does) but the short forms make it clumsy ("1.35 walks plus hits per inning (WHIP)", "a splitter as his put-away pitch (second most used pitch)"), and the figures arrive in dense runs. The rules text is template sentences and the repeated "no ... claim is made" lines.
 
 
 ## opener-823769
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W1.no_evidence', 'W1.entity', 'W4.topic', 'W1.evidence_path', 'W11.definition', 'W14.team'], tokens {'promptTokenCount': 6334, 'candidatesTokenCount': 2092, 'thoughtsTokenCount': 1764, 'totalTokenCount': 10190}
-- Content attempt 2: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W10.cause', 'W11.definition'], tokens {'promptTokenCount': 6441, 'candidatesTokenCount': 3408, 'totalTokenCount': 9849}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.number', 'W1.no_evidence', 'W1.evidence_path', 'W1.evidence_value', 'W15.form'], tokens {'candidatesTokenCount': 2158, 'promptTokenCount': 7187, 'thoughtsTokenCount': 1860, 'totalTokenCount': 11205}
+  - `W1.number` token `two` in: Ryan Rolison takes the mound for Chicago against Brandon Woodruff in a matchup of two starters with above-average swing-and-miss ability.
+  - `W1.no_evidence` token `None` in: Both lineups enter this game looking to overcome the starting pitching opposition.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: That group shows a 10.3% BB% (walk rate) and a 21.8% K% (strikeout rate), and the lineup notes indicate it draws walks at an above-average rate.
+  - `W1.evidence_path` token `findings.lineup_notes.away` in: That group shows a 11.4% BB% and a 21.2% K%, and the lineup notes indicate it draws walks at an above-average rate.
+  - `W1.evidence_path` token `pitch_mix.0.away_starter.pitch` in: Ryan Rolison primarily throws a four-seam fastball at 94.5 mph, which is faster than Brandon Woodruff's four-seam fastball at 92.0 mph.
+  - `W1.evidence_value` token `velocity_by_pitch.2.away_starter_velocity` in: Ryan Rolison primarily throws a four-seam fastball at 94.5 mph, which is faster than Brandon Woodruff's four-seam fastball at 92.0 mph.
+  - `W1.evidence_value` token `velocity_by_pitch.2.home_starter_velocity` in: Ryan Rolison primarily throws a four-seam fastball at 94.5 mph, which is faster than Brandon Woodruff's four-seam fastball at 92.0 mph.
+  - `W15.form` token `Watch if both teams ` in: Watch if both teams maintain their walk rates during the game.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.evidence_path', 'W8.form'], tokens {'candidatesTokenCount': 2989, 'promptTokenCount': 7292, 'thoughtsTokenCount': 1868, 'totalTokenCount': 12149}
+  - `W1.evidence_path` token `findings.lineup_notes.away` in: The Milwaukee Brewers and Chicago Cubs lineups show a shared tendency to work counts for walks.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: The Milwaukee Brewers and Chicago Cubs lineups show a shared tendency to work counts for walks.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.control` in: Control data for Ryan Rolison is limited: 114 batters faced, and 170 are needed for a read.
+  - `W1.evidence_path` token `starters.home_starter.thresholds.control` in: Control data for Brandon Woodruff is limited: 140 batters faced, and 170 are needed for a read.
+  - `W8.form` token `None` in: His four-seam fastball moves 4.6 in. sideways compared with a pitch thrown without spin, and 18.1 in. up.
 - Length: rules 2325 characters; shown text 2325 characters.
 
 ### Rules text (A)
@@ -318,52 +391,84 @@ The main contrast is Four-seam to set up, Slider to finish versus Four-seam to s
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Ryan Rolison and Brandon Woodruff: all pitcher figures cover the 2026 regular season through Jun 27. Team offense splits cover the 2026 regular season through Jun 27. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.evidence_path', 'W10.cause', 'W11.definition']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 2 of 2, model `gemini-3.1-flash-lite`, checks ['W1.evidence_path', 'W8.form']
 
 **Headline**
 
-Ryan Rolison faces Brandon Woodruff in Milwaukee.
+Ryan Rolison and Brandon Woodruff face off in Milwaukee
 
 **Short summary**
 
-- Ryan Rolison pitches for the Chicago Cubs against Brandon Woodruff for the Milwaukee Brewers.
-- Both starters feature above-average swing-and-miss ability.
-- Both lineups draw walks at an above-average rate.
+- Ryan Rolison leads the Chicago Cubs against Brandon Woodruff of the Milwaukee Brewers.
+- Both starters exhibit above-average swing-and-miss ability.
+- Each lineup enters this matchup drawing walks at an above-average rate.
 
 **Matchup Summary**
 
-ERA is Earned run average: earned runs allowed per nine innings. Lower is better. WHIP is Walks plus hits per inning pitched. Lower is better. For the 2026 regular season through Jun 27, Ryan Rolison posted a 1.82 ERA and a 1.11 WHIP over 29.2 innings. Over the same period, Brandon Woodruff posted a 3.00 ERA and a 0.89 WHIP over 36.0 innings.
+Ryan Rolison and Brandon Woodruff face off in this pitching duel over the 2026 regular season through Jun 27. Both pitchers possess above-average swing-and-miss ability according to their profiles. The Milwaukee Brewers and Chicago Cubs lineups show a shared tendency to work counts for walks.
 
 **Ryan Rolison vs Milwaukee Brewers**
 
-swing-and-miss is How often hitters swing and miss against him. Ryan Rolison has Above-average swing-and-miss ability. OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. The Milwaukee Brewers offense draws walks at an above-average rate and recorded a .682 OPS against left-handed pitchers for the 2026 regular season through Jun 27.
+Ryan Rolison brings a 1.82 ERA (earned run average) and 1.11 WHIP (walks plus hits per inning) into this game over the 2026 regular season through Jun 27. Milwaukee faces him with a .682 OPS (on-base plus slugging). That lineup has a 21.8% K% (strikeout rate) and 10.3% BB% (walk rate) against left-handed pitchers. Control data for Ryan Rolison is limited: 114 batters faced, and 170 are needed for a read.
 
 **Brandon Woodruff vs Chicago Cubs**
 
-Brandon Woodruff shows Above-average swing-and-miss ability. The Chicago Cubs offense draws walks at an above-average rate and registered a .734 OPS against right-handed pitchers for the 2026 regular season through Jun 27.
+Brandon Woodruff carries a 3.00 ERA and 0.89 WHIP over the 2026 regular season through Jun 27. The Chicago lineup features a .734 OPS against right-handed pitchers. Their stats include a 21.2% K% and 11.4% BB%. Control data for Brandon Woodruff is limited: 140 batters faced, and 170 are needed for a read.
 
 **Arsenal Scout**
 
-put-away pitch is In this report, the pitch he uses second most (at least 15% of his pitches). Ryan Rolison uses a Four-seam as his primary pitch and a Slider as his put-away pitch. His Four-seam averages 94.5 miles per hour and moves 2.0 in. sideways and 15.1 in. up compared with a pitch thrown without spin. Brandon Woodruff uses a Four-seam as his primary pitch and a Changeup as his put-away pitch. His Four-seam averages 92.0 miles per hour, which is slower than the 94.5 miles per hour Four-seam of Ryan Rolison.
+Ryan Rolison uses a four-seam fastball 44.8% of the time and a slider 19.9% of the time over the 2026 regular season through Jun 27. His four-seam fastball moves 2.0 in. sideways and 15.1 in. up compared with a pitch thrown without spin. Brandon Woodruff relies on a four-seam fastball 43.9% of the time and a changeup 19.8% of the time. His four-seam fastball moves 4.6 in. sideways compared with a pitch thrown without spin, and 18.1 in. up.
 
 **Three Things to Watch**
 
-- Watch how often Ryan Rolison throws his Slider.
-- Watch whether Brandon Woodruff relies on his Changeup against the Chicago Cubs lineup.
-- Watch how often both lineups draw walks during the game.
+- Watch whether Ryan Rolison can maintain his control with his limited data sample.
+- Watch how Brandon Woodruff utilizes his changeup against the Chicago Cubs.
+- Watch how the lineups handle the above-average swing-and-miss ability of each starter.
 
 **Data Confidence Note**
 
-limited sample is Too few pitches or batters faced for a reliable read; the packet says how many are needed. batters faced is The number of hitters a pitcher has pitched to. command is How well a pitcher puts the ball where he wants it. Control data for Ryan Rolison is a limited sample with 114 batters faced, where 170 are needed for a read, so there is not enough data to rate his command. Control data for Brandon Woodruff is a limited sample with 140 batters faced, where 170 are needed for a read, so there is not enough data to rate his command.
+The lineup status is based on probable pitchers.
+
+### Readability for a casual fan
+
+Verdict: better, clearly. The rules text contains the empty line "The primary pitch contrast is Four-seam against Four-seam"; the model text names the teams, the duel and what each lineup tends to do. Weak spots: "possess" wording, a repeated scope phrase and a watch item that restates a label.
 
 
 ## limited-823836
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.entity', 'W11.definition', 'W17.length'], tokens {'promptTokenCount': 6268, 'candidatesTokenCount': 1443, 'totalTokenCount': 7711}
-- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W1.evidence_path', 'W1.number', 'W11.order', 'W11.definition', 'W17.length'], tokens {'promptTokenCount': 6335, 'candidatesTokenCount': 2361, 'thoughtsTokenCount': 1727, 'totalTokenCount': 10423}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.evidence_path', 'W1.number', 'W15.form'], tokens {'candidatesTokenCount': 1770, 'promptTokenCount': 7124, 'thoughtsTokenCount': 1480, 'totalTokenCount': 10374}
+  - `W1.evidence_path` token `season_summary.era` in: George Klassen has an 11.57 ERA (earned run average) and a 3.64 WHIP (walks plus hits per inning) over the 2026 regular season through Aug 6.
+  - `W1.evidence_path` token `season_summary.whip` in: George Klassen has an 11.57 ERA (earned run average) and a 3.64 WHIP (walks plus hits per inning) over the 2026 regular season through Aug 6.
+  - `W1.evidence_path` token `season_summary.scopes.counts.label` in: George Klassen has an 11.57 ERA (earned run average) and a 3.64 WHIP (walks plus hits per inning) over the 2026 regular season through Aug 6.
+  - `W1.evidence_path` token `season_summary.era` in: Tyler Phillips carries a 3.53 ERA and a 1.35 WHIP through the same period.
+  - `W1.evidence_path` token `season_summary.whip` in: Tyler Phillips carries a 3.53 ERA and a 1.35 WHIP through the same period.
+  - `W1.evidence_path` token `season_summary.scopes.season_rates.label` in: Tyler Phillips carries a 3.53 ERA and a 1.35 WHIP through the same period.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.control` in: Control and strikeout data for George Klassen are limited: 32 batters faced, where 170 are needed for a control read and 70 are needed for a strikeout read.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.strikeout` in: Control and strikeout data for George Klassen are limited: 32 batters faced, where 170 are needed for a control read and 70 are needed for a strikeout read.
+  - `W1.evidence_path` token `findings.lineup_notes.away` in: The group carries an elevated swing-and-miss risk.
+  - `W1.number` token `6` in: George Klassen uses his Four-seam fastball 38.6% of the time and his Changeup 24.8% of the time, measured through Aug 6, 2026.
+  - `W1.number` token `2026` in: George Klassen uses his Four-seam fastball 38.6% of the time and his Changeup 24.8% of the time, measured through Aug 6, 2026.
+  - `W15.form` token `Watch if Tyler Phill` in: Watch if Tyler Phillips uses his Sinker to control the zone against the Los Angeles lineup.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W1.number', 'W2.comparison', 'W10.cause', 'W12.time', 'W8.form', 'W1.evidence_path'], tokens {'candidatesTokenCount': 2195, 'promptTokenCount': 7195, 'thoughtsTokenCount': 2365, 'totalTokenCount': 11755}
+  - `W1.entity` token `A Right-Handed Pitching Duel` in: A Right-Handed Pitching Duel in Miami
+  - `W1.number` token `7` in: George Klassen and Tyler Phillips prepare for their start on Aug 7, 2026, over the 2026 regular season through Aug 6.
+  - `W1.number` token `two` in: The two right-handers look to set the tempo against their opposing lineups.
+  - `W1.number` token `2026` in: George Klassen has an 11.57 ERA (earned run average) and a 3.64 WHIP (walks plus hits per inning) during the 2026 regular season through Aug 6.
+  - `W1.number` token `6` in: George Klassen has an 11.57 ERA (earned run average) and a 3.64 WHIP (walks plus hits per inning) during the 2026 regular season through Aug 6.
+  - `W2.comparison` token `fewer` in: He has faced 32 batters so far, but because he has faced fewer than the 170 batters required for a control reading and the 70 required for a strikeout reading, his command and strikeout data remain limited.
+  - `W10.cause` token `so` in: He has faced 32 batters so far, but because he has faced fewer than the 170 batters required for a control reading and the 70 required for a strikeout reading, his command and strikeout data remain limited.
+  - `W12.time` token `so far` in: He has faced 32 batters so far, but because he has faced fewer than the 170 batters required for a control reading and the 70 required for a strikeout reading, his command and strikeout data remain limited.
+  - `W1.number` token `2026` in: The Miami Marlins lineup has a .734 OPS (on-base plus slugging) against right-handed pitchers over the same 2026 regular season period.
+  - `W12.time` token `this season` in: The Los Angeles Angels offense produces a .687 OPS when facing right-handed pitchers this season.
+  - `W8.form` token `None` in: Klassen throws a four-seam fastball 38.6% of the time, moving 14.8 in. sideways and 14.2 in. up compared with a pitch thrown without spin.
+  - `W8.form` token `None` in: He uses his changeup 24.8% of the time as his second most used pitch (second most used pitch), moving 14.9 in. sideways and 4.7 in. up.
+  - `W8.form` token `None` in: Phillips relies on his sinker 25.5% of the time, moving 17.3 in. sideways and 8.5 in. up.
+  - `W8.form` token `None` in: He uses his sweeper 24.2% of the time, moving 12.4 in. sideways and 1.1 in. up.
+  - `W1.evidence_path` token `findings.lineup_notes.away` in: Watch how the Angels hitters adjust their approach given their elevated swing-and-miss risk.
+  - `W1.number` token `1` in: The stats for Tyler Phillips reflect a full season of work over 1,422 pitches.
+  - `W1.number` token `422` in: The stats for Tyler Phillips reflect a full season of work over 1,422 pitches.
+  - `W12.time` token `currently` in: Data for George Klassen is currently limited with only 145 pitches recorded for the 2026 season through Aug 6.
 - Length: rules 2196 characters; shown text 2196 characters.
 
 ### Rules text (A)
@@ -404,52 +509,63 @@ The main contrast is Four-seam to set up, Changeup to finish versus Sinker to se
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. George Klassen and Tyler Phillips: all pitcher figures cover the 2026 regular season through Aug 6. Team offense splits cover the 2026 regular season through Aug 6. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.evidence_path', 'W1.number', 'W11.order', 'W11.definition', 'W17.length']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 1 of 2, model `gemini-3.1-flash-lite`, checks ['W1.evidence_path', 'W1.number', 'W15.form']
 
 **Headline**
 
-George Klassen and the Los Angeles Angels face Tyler Phillips and the Miami Marlins at loanDepot park.
+George Klassen faces Tyler Phillips in Miami
 
 **Short summary**
 
-- George Klassen starts for the Los Angeles Angels in this upcoming matchup.
-- Tyler Phillips takes the mound for the Miami Marlins, carrying a 3.53 ERA.
-- The Miami Marlins hold a .734 OPS against right-handed pitchers, compared to the .687 OPS of the Los Angeles Angels against right-handed pitchers.
+- George Klassen starts for the Angels.
+- Tyler Phillips takes the mound for the Marlins.
+- Both starters are right-handed pitchers.
 
 **Matchup Summary**
 
-ERA is earned run average: earned runs allowed per nine innings. Lower is better. WHIP is walks plus hits per inning pitched. Lower is better. OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. George Klassen has an 11.57 ERA and a 3.64 WHIP over 4.2 innings pitched, measured for the 2026 regular season through Aug 6. Tyler Phillips has a 3.53 ERA and a 1.35 WHIP over 89.1 innings pitched, for the same 2026 regular season through Aug 6.
+George Klassen has an 11.57 ERA (earned run average) and a 3.64 WHIP (walks plus hits per inning) over the 2026 regular season through Aug 6. Tyler Phillips carries a 3.53 ERA and a 1.35 WHIP through the same period. Phillips shows average command and below-average swing-and-miss ability. Control and strikeout data for George Klassen are limited: 32 batters faced, where 170 are needed for a control read and 70 are needed for a strikeout read.
 
 **George Klassen vs Miami Marlins**
 
-The Los Angeles Angels offense faces Tyler Phillips. K% is share of plate appearances that end in a strikeout. BB% is share of plate appearances that end in a walk. The Los Angeles Angels have a 24.9% K% and an 8.3% BB% against right-handed pitchers, through Aug 6. Tyler Phillips shows average command and below-average swing-and-miss ability.
+The Miami Marlins lineup has a .734 OPS (on-base plus slugging) against right-handed pitchers over the 2026 regular season through Aug 6. This group posts a 21.0% K% (strikeout rate) and an 8.9% BB% (walk rate) in that matchup.
 
 **Tyler Phillips vs Los Angeles Angels**
 
-The Miami Marlins offense faces George Klassen. Limited sample is too few pitches or batters faced for a reliable read; the packet says how many are needed. Batters faced is the number of hitters a pitcher has pitched to. Control and strikeout data for George Klassen are based on a limited sample of 32 batters faced, while 170 are required for a control read and 70 are required for a strikeout read. The Miami Marlins have a 21.0% K% and an 8.9% BB% against right-handed pitchers, through Aug 6.
+The Los Angeles Angels lineup has a .687 OPS against right-handed pitchers over the 2026 regular season through Aug 6. That lineup records a 24.9% K% and an 8.3% BB% against right-handed pitchers. The group carries an elevated swing-and-miss risk.
 
 **Arsenal Scout**
 
-Break is total movement of the pitch, sideways and up or down, compared with a pitch thrown without spin. George Klassen relies on a four-seam as his primary pitch and a changeup as his put-away pitch. Put-away pitch is in this report, the pitch he uses second most (at least 15% of his pitches). Klassen throws his four-seam at 96.8 mph, while the four-seam of Tyler Phillips averages 96.2 mph. Tyler Phillips uses a sinker as his primary pitch and a sweeper as his put-away pitch. The sweeper of Phillips moves 12.4 in. sideways and 1.1 in. up compared with a pitch thrown without spin.
+George Klassen uses his Four-seam fastball 38.6% of the time and his Changeup 24.8% of the time, measured through Aug 6, 2026. His Four-seam moves 14.8 in. sideways and 14.2 in. up compared with a pitch thrown without spin. Tyler Phillips relies on his Sinker 25.5% of the time and his Sweeper 24.2% of the time. The Phillips Sinker moves 17.3 in. sideways and 8.5 in. up compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch how often George Klassen utilizes his four-seam to set up at-bats against the Marlins lineup.
-- Watch whether Tyler Phillips relies on his sinker to set up hitters early in the count.
-- Watch if the Los Angeles Angels lineup can generate contact against the pitching staff of Miami.
+- Watch how often George Klassen utilizes his Four-seam fastball to set up his Changeup.
+- Watch whether the Marlins lineup can handle the pitchers.
+- Watch if Tyler Phillips uses his Sinker to control the zone against the Los Angeles lineup.
 
 **Data Confidence Note**
 
-Data for both pitchers is consistent with the 2026 regular season through Aug 6.
+The lineup status is confirmed as probable pitchers.
+
+### Readability for a casual fan
+
+Verdict: better. The limited-data situation is said once with its counts (32 batters faced, 170 and 70 needed) where the rules text says it three times in the same stiff form, and the opening tells the fan who starts for whom. Weaknesses: a paragraph of ERA, WHIP, OPS, K% and BB% in a row, "utilizes", the scope in four places and a vague watch item ("whether the Marlins lineup can handle the pitchers").
 
 
 ## limited-825104
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `primary_retry`, transport failures [('gemini-3.5-flash', 1, 'http_503')], model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W11.definition', 'W6.arsenal'], tokens {'promptTokenCount': 6064, 'candidatesTokenCount': 4379, 'thoughtsTokenCount': 44, 'totalTokenCount': 10487}
-- Content attempt 2: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W1.entity', 'W11.definition', 'W6.arsenal'], tokens {'promptTokenCount': 6136, 'candidatesTokenCount': 4163, 'thoughtsTokenCount': 958, 'totalTokenCount': 11257}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W17.structure'], tokens {'candidatesTokenCount': 2362, 'promptTokenCount': 6916, 'thoughtsTokenCount': 1321, 'totalTokenCount': 10599}
+  - `W17.structure` token `None` in: (whole report)
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W15.form', 'W11.expansion', 'W6.arsenal', 'W17.length'], tokens {'candidatesTokenCount': 1626, 'promptTokenCount': 6945, 'thoughtsTokenCount': 1070, 'totalTokenCount': 9641}
+  - `W15.form` token `Watch the approach o` in: Watch the approach of the Atlanta Braves hitters against right-handed pitching.
+  - `W11.expansion` token `ERA` in: Bryce Elder enters with a 0.00 ERA (earned run average) and a 1.00 WHIP (walks plus hits per inning) over the 2026 regular season through Apr 3.
+  - `W11.expansion` token `WHIP` in: Bryce Elder enters with a 0.00 ERA (earned run average) and a 1.00 WHIP (walks plus hits per inning) over the 2026 regular season through Apr 3.
+  - `W11.expansion` token `OPS` in: Atlanta features an offense with an .827 OPS against right-handed pitching.
+  - `W11.expansion` token `K%` in: The Atlanta Braves lineup shows a .827 OPS, a 19.4% K% (strikeout rate), and a 9.5% BB% (walk rate) against right-handed pitchers over this timeframe.
+  - `W11.expansion` token `BB%` in: The Atlanta Braves lineup shows a .827 OPS, a 19.4% K% (strikeout rate), and a 9.5% BB% (walk rate) against right-handed pitchers over this timeframe.
+  - `W6.arsenal` token `None` in: (whole report)
+  - `W17.length` token `1759` in: (whole report)
 - Length: rules 2494 characters; shown text 2494 characters.
 
 ### Rules text (A)
@@ -490,52 +606,68 @@ Bryce Elder's arsenal data is limited (83 pitches; 100 needed), so this report m
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Bryce Elder and Michael Soroka: all pitcher figures cover the 2026 regular season through Apr 3. Team offense splits cover the 2026 regular season through Apr 3. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.evidence_path', 'W1.entity', 'W11.definition', 'W6.arsenal']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 1 of 2, model `gemini-3.1-flash-lite`, checks ['W17.structure']
 
 **Headline**
 
-Bryce Elder and Michael Soroka start as Atlanta Braves visit Arizona Diamondbacks at Chase Field.
+Bryce Elder and the Braves face Michael Soroka and the Diamondbacks
 
 **Short summary**
 
-- Bryce Elder takes the mound for Atlanta Braves against Arizona Diamondbacks.
-- Michael Soroka starts for Arizona Diamondbacks against Atlanta Braves.
-- Both starters enter with limited sample sizes across control, strikeout, and arsenal metrics.
+- Bryce Elder starts for the Atlanta Braves against Michael Soroka for the Arizona Diamondbacks.
+- Both starters carry limited data for command and strikeout metrics for the 2026 regular season through Apr 3.
+- This matchup at Chase Field features the Braves offense against a Diamondbacks pitching staff in the early regular season.
+- The 2026 regular season through Apr 3 is the scope for these statistics.
 
 **Matchup Summary**
 
-ERA is Earned run average: earned runs allowed per nine innings. Lower is better. WHIP is Walks plus hits per inning pitched. Lower is better. Bryce Elder has a 0.00 ERA and a 1.00 WHIP across 6.0 innings over the 2026 regular season through Apr 3. Michael Soroka has a 0.00 ERA and a 1.00 WHIP across 5.0 innings over the 2026 regular season through Apr 3.
+Bryce Elder and Michael Soroka both hold a 0.00 ERA (earned run average) and a 1.00 WHIP (walks plus hits per inning) for the 2026 regular season through Apr 3. Data for both pitchers regarding command and strikeout ability is limited. Elder has faced 23 batters, and Soroka has faced 20 batters, with 170 and 70 respectively needed for a read on control and strikeouts.
 
 **Bryce Elder vs Arizona Diamondbacks**
 
-batters faced is The number of hitters a pitcher has pitched to. Control data for Bryce Elder is limited: 23 batters faced, and 170 are needed for a read. Strikeout data for Bryce Elder is limited: 23 batters faced, and 70 are needed for a read. OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. Against right-handed pitchers, the Arizona Diamondbacks lineup has a .653 OPS over the 2026 regular season through Apr 3.
+Bryce Elder throws for the Braves at Chase Field for the 2026 regular season through Apr 3. The Diamondbacks offense has a .653 OPS (on-base plus slugging) against right-handed pitchers. This group carries a 22.8% K% (strikeout rate) and an 8.7% BB% (walk rate) in this same matchup.
 
 **Michael Soroka vs Atlanta Braves**
 
-Control data for Michael Soroka is limited: 20 batters faced, and 170 are needed for a read. Strikeout data for Michael Soroka is limited: 20 batters faced, and 70 are needed for a read. Against right-handed pitchers, the Atlanta Braves lineup has a .827 OPS over the 2026 regular season through Apr 3.
+Michael Soroka starts for the Diamondbacks over the 2026 regular season through Apr 3. The Braves lineup has an .827 OPS against right-handed pitchers. They have a 19.4% K% and a 9.5% BB% in these encounters.
 
 **Arsenal Scout**
 
-put-away pitch is In this report, the pitch he uses second most (at least 15% of his pitches). The primary pitch for Bryce Elder is his Sinker, and his put-away pitch is his Slider. The primary pitch for Michael Soroka is his Slurve, and his put-away pitch is his Four-seam. Arsenal data for Bryce Elder is limited: 83 pitches thrown, and 100 are needed for a full sample. Arsenal data for Michael Soroka is limited: 89 pitches thrown, and 100 are needed for a full sample.
+Bryce Elder uses a sinker as his primary pitch and a slider as his second most used pitch (second most used pitch) for the 2026 regular season through Apr 3. His sinker averages 91.1 mph, and his slider averages 83.1 mph. The sinker moves 14.6 in. sideways and 7.6 in. up compared with a pitch thrown without spin. Michael Soroka relies on a slurve as his primary pitch and a four-seam fastball as his second most used pitch. The slurve averages 80.9 mph, while the four-seam fastball averages 93.8 mph. The slurve moves 9.6 in. sideways and 6.8 in. down compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch how often Bryce Elder relies on his Sinker against right-handed hitters.
-- Watch whether Michael Soroka uses his Slurve against left-handed hitters.
-- Watch how often Bryce Elder throws his Slider in two-strike counts.
+- Watch how often Bryce Elder utilizes his sinker compared to his slider as the game progresses.
+- Watch whether Michael Soroka leans on his slurve against the Braves lineup in this matchup.
+- Watch if the Braves offense continues its pattern of drawing walks at a 9.5% BB% against right-handed pitching.
 
 **Data Confidence Note**
 
-limited sample is Too few pitches or batters faced for a reliable read; the packet says how many are needed. Bryce Elder has a limited sample for control, strikeout, and arsenal metrics over the 2026 regular season through Apr 3. Michael Soroka has a limited sample for control, strikeout, and arsenal metrics over the 2026 regular season through Apr 3.
+Data for Bryce Elder is limited with 83 pitches thrown, short of the 100 needed for the 2026 regular season through Apr 3. Data for Michael Soroka is limited with 89 pitches thrown, short of the 100 needed. The pitching style and pitch mix for both starters are based on these limited samples.
+
+### Readability for a casual fan
+
+Verdict: mixed. The scene setting is plainer than the rules text, but the limited data is not stated more briefly: the shown text says it in the short summary ("Both starters carry limited data for command and strikeout metrics for the 2026 regular season through Apr 3."), again in the Matchup Summary ("Data for both pitchers regarding command and strikeout ability is limited.") and in the confidence note ("Data for Bryce Elder is limited with 83 pitches thrown, short of the 100 needed"), where the rules text repeats it in each field. It also has a time claim ("continues its pattern of drawing walks"), a scope repeated in every section and the same sentence shape in both lineup sections.
 
 
 ## limited-823863
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `primary`, transport failures none, model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W11.definition'], tokens {'promptTokenCount': 6221, 'candidatesTokenCount': 2047, 'totalTokenCount': 8268}
-- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W1.number', 'W1.evidence_path', 'W15.form', 'W11.definition', 'W14.starter'], tokens {'promptTokenCount': 6274, 'candidatesTokenCount': 2689, 'thoughtsTokenCount': 1612, 'totalTokenCount': 10575}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W5.label', 'W1.evidence_path', 'W2.comparison', 'W1.number', 'W10.cause', 'W11.expansion'], tokens {'candidatesTokenCount': 3299, 'promptTokenCount': 7077, 'thoughtsTokenCount': 1486, 'totalTokenCount': 11862}
+  - `W5.label` token `command` in: Eury Pérez takes the mound for Miami, looking to command his fastball and slider mix.
+  - `W1.evidence_path` token `starters.away_starter.thresholds.control` in: Control data for Tobias Myers is limited: 115 batters faced, and 170 are needed for a read.
+  - `W2.comparison` token `versus` in: That lineup records a 20.7% K% and an 8.1% BB% versus right-handed pitching.
+  - `W1.number` token `2026` in: Tobias Myers utilizes a four-seam fastball 50.1% of the time and a splitter 21.4% of the time during the 2026 regular season through May 21.
+  - `W1.number` token `21` in: Tobias Myers utilizes a four-seam fastball 50.1% of the time and a splitter 21.4% of the time during the 2026 regular season through May 21.
+  - `W5.label` token `command` in: Watch how Eury Pérez manages base traffic, as his below-average command can lead to deep counts.
+  - `W10.cause` token `lead to` in: Watch how Eury Pérez manages base traffic, as his below-average command can lead to deep counts.
+  - `W11.expansion` token `ERA` in: The visiting starter Myers arrives with a 3.41 earned run average (ERA) and a 1.03 walks plus hits per inning (WHIP).
+  - `W11.expansion` token `WHIP` in: The visiting starter Myers arrives with a 3.41 earned run average (ERA) and a 1.03 walks plus hits per inning (WHIP).
+  - `W11.expansion` token `OPS` in: Against right-handed pitchers, the Marlins have a .697 on-base plus slugging (OPS) during the 2026 regular season through May 21.
+  - `W11.expansion` token `K%` in: The Miami offense carries a 20.9% strikeout rate (K%) and an 8.8% walk rate (BB%) in this matchup.
+  - `W11.expansion` token `BB%` in: The Miami offense carries a 20.9% strikeout rate (K%) and an 8.8% walk rate (BB%) in this matchup.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W17.structure'], tokens {'candidatesTokenCount': 2155, 'promptTokenCount': 7222, 'thoughtsTokenCount': 1168, 'totalTokenCount': 10545}
+  - `W17.structure` token `None` in: (whole report)
 - Length: rules 2060 characters; shown text 2060 characters.
 
 ### Rules text (A)
@@ -576,52 +708,78 @@ The main contrast is Four-seam to set up, Splitter to finish versus Four-seam to
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Tobias Myers and Eury Pérez: all pitcher figures cover the 2026 regular season through May 21. Team offense splits cover the 2026 regular season through May 21. Samples below the minimum are flagged as limited and no claim is made from them.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.entity', 'W1.number', 'W1.evidence_path', 'W15.form', 'W11.definition', 'W14.starter']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 2 of 2, model `gemini-3.1-flash-lite`, checks ['W17.structure']
 
 **Headline**
 
-Tobias Myers and the New York Mets visit Eury Perez and the Miami Marlins
+Tobias Myers and Eury Perez Start at loanDepot Park
 
 **Short summary**
 
-- Tobias Myers holds a 3.41 ERA through the 2026 regular season through May 21.
-- Eury Perez carries a 5.33 ERA over the same period.
-- The game features two right-handed starting pitchers at loanDepot park.
+- Tobias Myers takes the mound for the New York Mets against the Miami Marlins.
+- Eury Perez starts for Miami in this right-handed pitching matchup.
+- Both teams look to adjust to the specific arsenal styles of their opponents.
+- Both starters use a four-seam fastball as their primary pitch.
 
 **Matchup Summary**
 
-ERA is Earned run average: earned runs allowed per nine innings. Lower is better. Tobias Myers has a 3.41 ERA and 1.03 WHIP. WHIP is Walks plus hits per inning pitched. Lower is better. Eury Perez has a 5.33 ERA and 1.41 WHIP through the 2026 regular season through May 21.
+Tobias Myers enters with a 3.41 ERA (earned run average) and a 1.03 WHIP (walks plus hits per inning) for the 2026 regular season through May 21. Eury Perez carries a 5.33 ERA and a 1.41 WHIP over the 2026 regular season through May 21. Myers features average swing-and-miss ability. Perez displays above-average swing-and-miss ability and below-average command.
 
 **Tobias Myers vs Miami Marlins**
 
-Tobias Myers faces the Miami Marlins. The Marlins lineup has a .697 OPS against right-handed pitchers. OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. limited sample is Too few pitches or batters faced for a reliable read; the packet says how many are needed. Control data for Tobias Myers is a limited sample: 115 batters faced, and 170 are needed for a read.
+The Miami lineup faces Tobias Myers in the 2026 regular season through May 21. They have a .697 OPS (on-base plus slugging) against right-handed pitchers. This group maintains a 20.9% K% (strikeout rate) and an 8.8% BB% (walk rate) in such matchups.
 
 **Eury Pérez vs New York Mets**
 
-Eury Perez faces the New York Mets. The Mets lineup has a .659 OPS against right-handed pitchers. swing-and-miss is How often hitters swing and miss against him. Perez shows above-average swing-and-miss ability. command is How well a pitcher puts the ball where he wants it. Perez shows below-average command.
+The New York Mets lineup squares off against Eury Perez over the 2026 regular season through May 21. They record a .659 OPS against right-handed pitchers. The Mets show a 20.7% K% and an 8.1% BB% in these encounters.
 
 **Arsenal Scout**
 
-Tobias Myers throws a four-seam fastball at 92.6 mph and a splitter at 79.8 mph. Eury Perez throws a four-seam fastball at 98.1 mph and a slider at 87.6 mph. Break is Total movement of the pitch, sideways and up or down, compared with a pitch thrown without spin. The four-seam fastball of Myers moves 4.6 in. sideways and 20.0 in. up compared with a pitch thrown without spin. The four-seam fastball of Perez moves 11.5 in. sideways and 18.0 in. up compared with a pitch thrown without spin.
+Tobias Myers relies on a four-seam fastball at 92.6 mph and a splitter at 79.8 mph for the 2026 regular season through May 21. His four-seam fastball moves 4.6 in. sideways and 20.0 in. up compared with a pitch thrown without spin. Eury Perez uses a four-seam fastball at 98.1 mph and a slider at 87.6 mph in the same scope. His slider moves 2.7 in. sideways and 4.7 in. up compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch whether Tobias Myers uses his four-seam fastball as his primary pitch.
-- Watch how often Eury Perez throws his slider as a put-away pitch.
-- Watch if the Miami Marlins offense can generate offense against the control of Tobias Myers.
+- Watch whether Tobias Myers can maintain control, as his data for batters faced is limited with 115 and 170 needed for a read.
+- Watch how often Eury Perez utilizes his slider, as his below-average command can create deep-count traffic.
+- Watch how the hitters for the Mets and Marlins perform against the four-seam fastballs each starter uses as their primary pitch.
 
 **Data Confidence Note**
 
-Both starters are confirmed for this game.
+There is not enough data yet to rate the command of Tobias Myers. Control data for Tobias Myers is limited to 115 batters faced.
+
+### Readability for a casual fan
+
+Verdict: mixed. Smoother than the rules text, and it names where the game is played, but it adds filler ("Both teams look to adjust to the specific arsenal styles of their opponents") that says nothing, a title-case headline and velocity figures that are listed, not explained. The rules text is accurate and hard to read.
 
 
 ## veteran-824027
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_503'), ('gemini-3.5-flash', 2, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W1.no_evidence', 'W1.evidence_path', 'W5.label', 'W10.cause', 'W11.definition'], tokens {'promptTokenCount': 6425, 'candidatesTokenCount': 2294, 'totalTokenCount': 8719}
-- Content attempt 2: transport path `fallback_retry`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429'), ('gemini-3.1-flash-lite', 1, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W2.comparison', 'W1.evidence_path', 'W1.number', 'W1.evidence_value', 'W11.order', 'W11.definition'], tokens {'promptTokenCount': 6547, 'candidatesTokenCount': 1765, 'thoughtsTokenCount': 2731, 'totalTokenCount': 11043}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.evidence_value', 'W1.entity', 'W1.evidence_path', 'W15.form', 'W12.repeat'], tokens {'candidatesTokenCount': 2243, 'promptTokenCount': 7280, 'thoughtsTokenCount': 1802, 'totalTokenCount': 11325}
+  - `W1.evidence_value` token `starters.home_starter.name` in: Kyle Freeland and Jose Soriano Lead Their Teams in Upcoming Angel Stadium Duel
+  - `W1.evidence_value` token `starters.home_starter.name` in: Kyle Freeland starts for Colorado against Jose Soriano and the Angels.
+  - `W1.entity` token `Jose Soriano` in: Jose Soriano holds a 2.65 ERA and a 1.15 WHIP over the 2026 regular season through May 31.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: This group carries an elevated swing-and-miss risk and draws walks at an above-average rate, with a 24.3% K% (strikeout rate) and a 10.4% BB% (walk rate).
+  - `W1.evidence_value` token `velocity_by_pitch.5.home_starter_velocity` in: Jose Soriano utilizes his sinker at 96.7 mph to begin sequences, while his curveball, thrown at 85.6 mph, serves as his second most used pitch.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: Watch whether Freeland uses his solid command to contain the Angels' propensity for drawing walks.
+  - `W15.form` token `Watch if the Rockies` in: Watch if the Rockies hitters can navigate Soriano, who shows above-average swing-and-miss ability.
+  - `W12.repeat` token `2026 regular season through May 31` in: Jose Soriano holds a 2.65 ERA and a 1.15 WHIP over the 2026 regular season through May 31.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.evidence_value', 'W1.entity', 'W1.evidence_path', 'W11.expansion'], tokens {'candidatesTokenCount': 1647, 'promptTokenCount': 7385, 'thoughtsTokenCount': 820, 'totalTokenCount': 9852}
+  - `W1.evidence_value` token `starters.home_starter.name` in: Kyle Freeland and Jose Soriano start in Anaheim
+  - `W1.entity` token `Jose Soriano` in: Jose Soriano provides above-average swing-and-miss ability for the Angels.
+  - `W1.entity` token `Jose Soriano` in: Jose Soriano carries a 2.65 ERA and a 1.15 WHIP over the same period.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: The lineup notes show this group draws walks at an above-average rate and has an elevated swing-and-miss risk.
+  - `W1.evidence_value` token `pitch_mix.0.away_starter.overall` in: Kyle Freeland uses a four-seam fastball 26.4% of the time and a curveball 22.5% of the time for the 2026 regular season through May 31.
+  - `W1.evidence_value` token `pitch_mix.1.away_starter.overall` in: Kyle Freeland uses a four-seam fastball 26.4% of the time and a curveball 22.5% of the time for the 2026 regular season through May 31.
+  - `W1.evidence_value` token `pitch_mix.5.home_starter.overall` in: Jose Soriano relies on a sinker 27.8% of the time and a curveball 24.8% of the time.
+  - `W1.evidence_value` token `pitch_mix.1.home_starter.overall` in: Jose Soriano relies on a sinker 27.8% of the time and a curveball 24.8% of the time.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: Watch whether the Angels lineup takes advantage of their above-average walk rate against Freeland.
+  - `W11.expansion` token `ERA` in: Kyle Freeland enters this game with an 8.08 earned run average (ERA) and a 1.75 walks plus hits per inning (WHIP) for the 2026 regular season through May 31.
+  - `W11.expansion` token `WHIP` in: Kyle Freeland enters this game with an 8.08 earned run average (ERA) and a 1.75 walks plus hits per inning (WHIP) for the 2026 regular season through May 31.
+  - `W11.expansion` token `OPS` in: The Angels lineup has a .712 on-base plus slugging (OPS) against left-handed and right-handed hitters (LHH / RHH) like Freeland, according to data from the 2026 regular season through May 31.
+  - `W11.expansion` token `K%` in: This group carries a 24.3% strikeout rate (K%) and a 10.4% walk rate (BB%) in this matchup.
+  - `W11.expansion` token `BB%` in: This group carries a 24.3% strikeout rate (K%) and a 10.4% walk rate (BB%) in this matchup.
+  - `W11.expansion` token `LHH / RHH` in: The Angels lineup has a .712 on-base plus slugging (OPS) against left-handed and right-handed hitters (LHH / RHH) like Freeland, according to data from the 2026 regular season through May 31.
 - Length: rules 2048 characters; shown text 2048 characters.
 
 ### Rules text (A)
@@ -662,52 +820,65 @@ The main contrast is Four-seam to set up, Curveball to finish versus Sinker to s
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Kyle Freeland and José Soriano: all pitcher figures cover the 2026 regular season through May 31. Team offense splits cover the 2026 regular season through May 31.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.entity', 'W2.comparison', 'W1.evidence_path', 'W1.number', 'W1.evidence_value', 'W11.order', 'W11.definition']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 2 of 2, model `gemini-3.1-flash-lite`, checks ['W1.evidence_value', 'W1.entity', 'W1.evidence_path', 'W11.expansion']
 
 **Headline**
 
-Pitching Matchup: Kyle Freeland versus Jose Soriano
+Kyle Freeland and Jose Soriano start in Anaheim
 
 **Short summary**
 
-- Kyle Freeland starts for Colorado at Angel Stadium.
-- Jose Soriano takes the mound for Los Angeles.
-- Both teams evaluate their pitchers' performance through May 31 of the 2026 season.
+- Kyle Freeland brings solid command to the mound for Colorado.
+- Jose Soriano provides above-average swing-and-miss ability for the Angels.
+- Both starters enter the matchup with distinct pitching profiles.
 
 **Matchup Summary**
 
-Kyle Freeland of the Colorado Rockies has a 8.08 ERA and a 1.75 WHIP in 42.1 innings. Jose Soriano of the Los Angeles Angels has a 2.65 ERA and a 1.15 WHIP in 71.1 innings. ERA is earned run average: earned runs allowed per nine innings. Lower is better. WHIP is walks plus hits per inning pitched. Lower is better.
+Kyle Freeland enters this game with an 8.08 earned run average (ERA) and a 1.75 walks plus hits per inning (WHIP) for the 2026 regular season through May 31. Jose Soriano carries a 2.65 ERA and a 1.15 WHIP over the same period.
 
 **Kyle Freeland vs Los Angeles Angels**
 
-Freeland has solid command. He shows average swing-and-miss ability. The Los Angeles lineup has a .712 OPS against left-handed pitchers, 2026 regular season through May 31. OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. The Angels draw walks at an above-average rate against left-handed pitchers.
+The Angels lineup has a .712 on-base plus slugging (OPS) against left-handed and right-handed hitters (LHH / RHH) like Freeland, according to data from the 2026 regular season through May 31. This group carries a 24.3% strikeout rate (K%) and a 10.4% walk rate (BB%) in this matchup. The lineup notes show this group draws walks at an above-average rate and has an elevated swing-and-miss risk.
 
 **José Soriano vs Colorado Rockies**
 
-Soriano has below-average command. He shows above-average swing-and-miss ability. The Colorado lineup has a .709 OPS against right-handed pitchers, 2026 regular season through May 31.
+The Rockies lineup has a .709 OPS against right-handed pitchers for the 2026 regular season through May 31. Their K% is 22.7% and their BB% is 8.3% in this split.
 
 **Arsenal Scout**
 
-Command is how well a pitcher puts the ball where he wants it. Freeland throws his four-seam fastball 26.4% of the time, averaging 91.3 mph. His put-away pitch is his curveball, thrown 22.5% of the time at 82.1 mph. Soriano throws his sinker 27.8% of the time, averaging 96.7 mph. His put-away pitch is his curveball, thrown 24.8% of the time at 85.6 mph. Break is total movement of the pitch, sideways and up or down, compared with a pitch thrown without spin.
+Kyle Freeland uses a four-seam fastball 26.4% of the time and a curveball 22.5% of the time for the 2026 regular season through May 31. His four-seam fastball moves 5.8 in. sideways and 14.9 in. up compared with a pitch thrown without spin. Jose Soriano relies on a sinker 27.8% of the time and a curveball 24.8% of the time. His sinker moves 15.2 in. sideways and 2.3 in. up compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch whether Kyle Freeland uses his four-seam fastball to set up his curveball.
-- Watch how often Jose Soriano uses his sinker in the strike zone.
-- Watch whether the Los Angeles lineup can exploit the pitch counts of Colorado.
+- Watch whether Freeland uses his four-seam fastball to establish control early.
+- Watch how often Soriano induces swings and misses with his curveball.
+- Watch whether the Angels lineup takes advantage of their above-average walk rate against Freeland.
 
 **Data Confidence Note**
 
-Data for both starters covers the 2026 regular season through May 31.
+This report covers the probable pitchers for the upcoming game.
+
+### Readability for a casual fan
+
+Verdict: not better. The model text is fluent but contains an error a fan would notice ("against left-handed and right-handed hitters (LHH / RHH) like Freeland" misuses a glossary term), a place name that is not in the data ("Anaheim"), a lost accent in the starter's name and the filler line "Both starters enter the matchup with distinct pitching profiles". The rules text is stiff but correct. The hand-written positive control for this case reads better than both.
 
 
 ## veteran-823938
 
 - Path: **rules** (reason: `checks_failed`); content attempts: 2
-- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_503')], model `gemini-3.1-flash-lite`, checks ['W1.number', 'W1.evidence_path', 'W15.form', 'W11.order', 'W11.definition'], tokens {'promptTokenCount': 6220, 'candidatesTokenCount': 2100, 'thoughtsTokenCount': 481, 'totalTokenCount': 8801}
-- Content attempt 2: transport path `primary_retry`, transport failures [('gemini-3.5-flash', 1, 'http_429')], model `gemini-3.5-flash`, checks ['W1.evidence_path', 'W11.definition'], tokens {'promptTokenCount': 6327, 'candidatesTokenCount': 1998, 'thoughtsTokenCount': 875, 'totalTokenCount': 9200}
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W2.comparison', 'W1.evidence_value'], tokens {'candidatesTokenCount': 2783, 'promptTokenCount': 7075, 'thoughtsTokenCount': 1933, 'totalTokenCount': 11791}
+  - `W1.entity` token `Nick Martinez Faces Eric Lauer` in: Nick Martinez Faces Eric Lauer in Los Angeles
+  - `W2.comparison` token `lower` in: Nick Martinez faces the Dodgers with a lower ERA than Eric Lauer.
+  - `W2.comparison` token `lower` in: Martinez holds a lower WHIP than the 1.29 WHIP of Lauer during the 2026 regular season through Jun 14.
+  - `W2.comparison` token `higher` in: The Dodgers offense has a .806 OPS (on-base plus slugging) against right-handed pitchers, which is higher than the .685 OPS that the Rays produce against left-handed pitchers.
+  - `W1.evidence_value` token `pitch_movement.away_starter.Sinker.h_break` in: His sinker moves 15.2 in. sideways and 12.4 in. up compared with a pitch thrown without spin.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W3.prediction', 'W2.comparison', 'W8.form', 'W11.repeat'], tokens {'candidatesTokenCount': 1970, 'promptTokenCount': 7148, 'thoughtsTokenCount': 2340, 'totalTokenCount': 11458}
+  - `W3.prediction` token `will` in: Nick Martinez and Eric Lauer will start this game for their respective teams.
+  - `W2.comparison` token `lower` in: Nick Martinez has a lower 2.43 ERA (earned run average) than Eric Lauer, who holds a 5.47 ERA.
+  - `W2.comparison` token `lower` in: Martinez has a lower 1.16 WHIP (walks plus hits per inning) than the 1.29 WHIP posted by Lauer.
+  - `W8.form` token `None` in: Eric Lauer uses his Four-seam fastball 45.5% of the time, moving 9.2 in. sideways and 15.8 in. up compared with a pitch thrown without spin.
+  - `W11.repeat` token `ERA` in: Nick Martinez has a lower 2.43 ERA (earned run average) than Eric Lauer, who holds a 5.47 ERA.
+  - `W11.repeat` token `OPS` in: The Dodgers lineup has a .806 OPS (on-base plus slugging) against right-handed pitchers, along with a 20.3% K% (strikeout rate) and 11.0% BB% (walk rate).
 - Length: rules 1970 characters; shown text 1970 characters.
 
 ### Rules text (A)
@@ -748,51 +919,69 @@ The main contrast is Sinker to set up, Changeup to finish versus Four-seam to se
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Nick Martinez and Eric Lauer: all pitcher figures cover the 2026 regular season through Jun 14. Team offense splits cover the 2026 regular season through Jun 14.
 
-### Model text (B1) (rejected; the last candidate, not published)
-
-Failed checks: ['W1.evidence_path', 'W11.definition']
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 1 of 2, model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W2.comparison', 'W1.evidence_value']
 
 **Headline**
 
-Nick Martinez faces Eric Lauer as Tampa Bay Rays play Los Angeles Dodgers.
+Nick Martinez Faces Eric Lauer in Los Angeles
 
 **Short summary**
 
-- Nick Martinez starts for Tampa Bay Rays.
-- Eric Lauer starts for Los Angeles Dodgers.
-- The game is at UNIQLO Field at Dodger Stadium.
+- Nick Martinez leads the Tampa Bay Rays against the Los Angeles Dodgers at UNIQLO Field at Dodger Stadium.
+- Martinez enters the 2026 regular season through Jun 14 with a 2.43 ERA (earned run average) and a 1.16 WHIP (walks plus hits per inning).
+- Eric Lauer starts for the Dodgers with a 5.47 ERA and a 1.29 WHIP over the same period.
 
 **Matchup Summary**
 
-ERA is Earned run average: earned runs allowed per nine innings. Lower is better. Nick Martinez has a 2.43 ERA over the 2026 regular season through Jun 14. Eric Lauer has a 5.47 ERA over the 2026 regular season through Jun 14.
+Nick Martinez faces the Dodgers with a lower ERA than Eric Lauer. Martinez holds a lower WHIP than the 1.29 WHIP of Lauer during the 2026 regular season through Jun 14.
 
 **Nick Martinez vs Los Angeles Dodgers**
 
-command is How well a pitcher puts the ball where he wants it. Nick Martinez shows Solid command. swing-and-miss is How often hitters swing and miss against him. Nick Martinez shows Below-average swing-and-miss ability. OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup. Los Angeles Dodgers has a .806 OPS against right-handed pitchers over the 2026 regular season through Jun 14.
+Nick Martinez displays solid command and below-average swing-and-miss ability for the 2026 regular season through Jun 14. The Dodgers offense has a .806 OPS (on-base plus slugging) against right-handed pitchers, which is higher than the .685 OPS that the Rays produce against left-handed pitchers. The Dodgers group draws walks at an 11.0% BB% (walk rate) and carries a 20.3% K% (strikeout rate).
 
 **Eric Lauer vs Tampa Bay Rays**
 
-Eric Lauer shows Average command. Eric Lauer shows Below-average swing-and-miss ability. Tampa Bay Rays has a .685 OPS against left-handed pitchers over the 2026 regular season through Jun 14.
+Eric Lauer carries an average command label and below-average swing-and-miss ability during the 2026 regular season through Jun 14. The Rays lineup faces him with an 8.8% BB% and a 17.7% K% in the same period.
 
 **Arsenal Scout**
 
-put-away pitch is In this report, the pitch he uses second most (at least 15% of his pitches). Nick Martinez throws a Sinker as his primary pitch and a Changeup as his put-away pitch. Eric Lauer throws a Four-seam as his primary pitch and a Cutter as his put-away pitch. Nick Martinez throws a Sinker at 92.5 mph and a Four-seam at 92.7 mph. Eric Lauer throws a Four-seam at 90.7 mph and a Cutter at 86.8 mph.
+Nick Martinez relies on his sinker as a primary pitch (31.4% usage) and his changeup as his second most used pitch (28.0% usage) over the 2026 regular season through Jun 14. His sinker moves 15.2 in. sideways and 12.4 in. up compared with a pitch thrown without spin. Eric Lauer throws his four-seam as his primary pitch (45.5% usage) and his cutter as his second most used pitch (17.5% usage) during the same period. Lauer's four-seam moves 9.2 in. sideways and 15.8 in. up compared with a pitch thrown without spin.
 
 **Three Things to Watch**
 
-- Watch how often Nick Martinez throws his Sinker.
-- Watch whether Eric Lauer uses his Cutter against Tampa Bay Rays hitters.
-- Watch how often Eric Lauer relies on his Four-seam pitch.
+- Watch how Martinez uses his sinker to set up hitters.
+- Watch whether Lauer manages his cutter usage to neutralize the Rays.
+- Watch how the Dodgers approach the sinker of Martinez.
 
 **Data Confidence Note**
 
-Lineups are listed as probable pitchers. Nick Martinez has faced 318 batters faced over the 2026 regular season through Jun 14. Eric Lauer has faced 224 batters faced over the 2026 regular season through Jun 14.
+The probable pitcher status for this matchup is based on the lineup notes for the 2026 regular season through Jun 14.
+
+### Readability for a casual fan
+
+Verdict: not better. Smoother than the rules text but riskier. It compares one lineup's OPS against right-handed pitchers with the other lineup's OPS against left-handed pitchers (a misleading comparison the check caught), writes "average command label" (an internal word) and its confidence note makes no sense ("based on the lineup notes").
 
 
 ## veteran-824803
 
-- Path: **rules** (reason: `call_cap_reached`); content attempts: 1
-- Content attempt 1: transport path `rules`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429'), ('gemini-3.1-flash-lite', 1, 'call_cap_reached')], model `-`, checks not reached, tokens -
+- Path: **rules** (reason: `checks_failed`); content attempts: 2
+- Content attempt 1: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W1.evidence_path', 'W12.repeat'], tokens {'candidatesTokenCount': 2246, 'promptTokenCount': 7078, 'thoughtsTokenCount': 1518, 'totalTokenCount': 10842}
+  - `W1.entity` token `Shane Baz Matchup` in: Carlos Rodón and Shane Baz Matchup at Oriole Park
+  - `W1.evidence_path` token `findings.lineup_notes.away` in: Both lineups present elevated swing-and-miss risk in this matchup.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: Both lineups present elevated swing-and-miss risk in this matchup.
+  - `W1.evidence_path` token `findings.lineup_notes.home` in: The Baltimore offense has an elevated swing-and-miss risk and draws walks at an above-average rate.
+  - `W1.evidence_path` token `findings.lineup_notes.away` in: This lineup also presents an elevated swing-and-miss risk and draws walks at an above-average rate.
+  - `W12.repeat` token `2026 regular season through Aug 17` in: Shane Baz relies on his four-seam fastball at a 34.2% rate and his curveball at 32.7% for the 2026 regular season through Aug 17.
+- Content attempt 2: transport path `fallback`, transport failures [('gemini-3.5-flash', 1, 'http_429'), ('gemini-3.5-flash', 2, 'http_429')], model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W1.number', 'W3.prediction', 'W10.cause', 'W11.expansion'], tokens {'candidatesTokenCount': 2118, 'promptTokenCount': 7143, 'thoughtsTokenCount': 948, 'totalTokenCount': 10209}
+  - `W1.entity` token `Shane Baz Matchup Preview` in: Carlos Rodón and Shane Baz Matchup Preview
+  - `W1.number` token `two` in: The New York Yankees and Baltimore Orioles prepare for a contest featuring two starters with distinct stylistic profiles.
+  - `W3.prediction` token `might` in: Watch whether Carlos Rodón can maintain his command, as his below-average rating might lead to elevated traffic.
+  - `W10.cause` token `lead to` in: Watch whether Carlos Rodón can maintain his command, as his below-average rating might lead to elevated traffic.
+  - `W11.expansion` token `ERA` in: Carlos Rodón brings a 3.30 earned run average (ERA) and 1.25 walks plus hits per inning (WHIP) into his outing.
+  - `W11.expansion` token `WHIP` in: Carlos Rodón brings a 3.30 earned run average (ERA) and 1.25 walks plus hits per inning (WHIP) into his outing.
+  - `W11.expansion` token `OPS` in: The Baltimore lineup faces Carlos Rodón with a .723 on-base plus slugging (OPS) against left-handed pitchers during the 2026 regular season through Aug 17.
+  - `W11.expansion` token `K%` in: This group carries a 25.7% strikeout rate (K%) and a 9.5% walk rate (BB%) in that matchup.
+  - `W11.expansion` token `BB%` in: This group carries a 25.7% strikeout rate (K%) and a 9.5% walk rate (BB%) in that matchup.
 - Length: rules 2179 characters; shown text 2179 characters.
 
 ### Rules text (A)
@@ -833,7 +1022,56 @@ The main contrast is Four-seam to set up, Slider to finish versus Four-seam to s
 
 This report uses a fetched live snapshot with probable pitchers, Statcast pitch data, and season offense splits. Lineups can still change before first pitch. Carlos Rodón and Shane Baz: all pitcher figures cover the 2026 regular season through Aug 17. Team offense splits cover the 2026 regular season through Aug 17.
 
-### Model text (B1) (rejected; the last candidate, not published)
+### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt 1 of 2, model `gemini-3.1-flash-lite`, checks ['W1.entity', 'W1.evidence_path', 'W12.repeat']
 
-No model text: the call never produced a usable answer.
+**Headline**
+
+Carlos Rodón and Shane Baz Matchup at Oriole Park
+
+**Short summary**
+
+- Carlos Rodón delivers above-average swing-and-miss ability for the New York Yankees.
+- Shane Baz leads the Baltimore Orioles pitching staff with a primary four-seam fastball and curveball mix.
+- Both lineups present elevated swing-and-miss risk in this matchup.
+
+**Matchup Summary**
+
+Carlos Rodón carries a 3.30 ERA (earned run average) and a 1.25 WHIP (walks plus hits per inning) for the 2026 regular season through Aug 17. Shane Baz has a 4.00 ERA and a 1.36 WHIP over the same period. Rodón shows below-average command and above-average swing-and-miss ability. Baz shows average command and average swing-and-miss ability.
+
+**Carlos Rodón vs Baltimore Orioles**
+
+The Baltimore Orioles lineup has a .723 OPS (on-base plus slugging) against left-handed pitchers for the 2026 regular season through Aug 17. Against that group, the team has a 25.7% K% (strikeout rate) and a 9.5% BB% (walk rate). The Baltimore offense has an elevated swing-and-miss risk and draws walks at an above-average rate.
+
+**Shane Baz vs New York Yankees**
+
+The New York Yankees lineup hits against right-handed pitchers with a .713 OPS through the 2026 regular season through Aug 17. In this matchup, the team has a 24.5% K% and a 10.2% BB%. This lineup also presents an elevated swing-and-miss risk and draws walks at an above-average rate.
+
+**Arsenal Scout**
+
+Carlos Rodón uses his four-seam fastball 44.4% of the time and his slider 24.4% of the time for the 2026 regular season through Aug 17. His four-seam fastball moves 9.2 in. sideways and 18.5 in. up compared with a pitch thrown without spin. Shane Baz relies on his four-seam fastball at a 34.2% rate and his curveball at 32.7% for the 2026 regular season through Aug 17. His four-seam fastball moves 9.2 in. sideways and 16.6 in. up compared with a pitch thrown without spin. The curveball for Baz moves 5.1 in. sideways and 10.4 in. down compared with a pitch thrown without spin.
+
+**Three Things to Watch**
+
+- Watch how often Rodón relies on his slider to finish off batters.
+- Watch whether the Baltimore Orioles can capitalize on the below-average command of Rodón.
+- Watch how the New York Yankees hitters adjust to the curveball from Baz.
+
+**Data Confidence Note**
+
+Both pitchers are established starters with sufficient data for these profiles.
+
+### Readability for a casual fan
+
+Verdict: mixed. A fan would read it faster than the rules text and trust it less: it pads with unsupported lines ("Both pitchers are established starters with sufficient data", "Shane Baz leads the Baltimore Orioles pitching staff"), repeats the same lineup sentence in both sections and repeats the scope.
+
+
+## Calibration note: the rules text of veteran-824027 through the word-level checks
+
+Not a defect list. These are the words and shapes the word-level checks flag in the text the rules writer publishes today. Whether each would be a violation depends on citations (a comparison word is allowed when both values are quoted; a sentence-opening question word is a limit of the entity heuristic). The checks that need citations were not run.
+
+- `W1.entity`: 'Can José Soriano', 'Can Kyle Freeland', 'Statcast'
+- `W10.cause`: 'because', 'so'
+- `W15.question`: '?'
+- `W16.internal`: 'fetched', 'snapshot'
+- `W2.comparison`: 'larger', 'more', 'versus'
 

@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 from agents import call_budget as cb
 from agents import writer_checks, writer_input
 from evals import build_packets as bp
@@ -61,8 +63,8 @@ def test_the_review_document_puts_both_texts_and_the_path_and_checks_side_by_sid
     text = run_b1.review_markdown([ok, rejected], budget)
 
     assert "Path: **primary**" in text and "Path: **rules** (reason: `checks_failed`)" in text
-    assert "### Rules text (A)" in text and "### Model text (B1)" in text and "rejected; the last candidate" in text
-    assert "Failed checks: ['W10.cause']" in text and "run 3 of 8" in text
+    assert "### Rules text (A)" in text and "### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks" in text
+    assert "checks ['W10.cause']" in text and "run 3 of 8" in text
     assert "Kyle Freeland and José Soriano start this game." in text
 
 
@@ -94,3 +96,30 @@ def test_more_than_a_third_capacity_failures_reports_the_time_of_day(tmp_path):
     text = run_b1.review_markdown([], budget, info)
 
     assert "time of day of the run: 2026-10-30 22:00 to 2026-10-30 22:20 local (COT)" in text
+
+
+def test_the_shown_candidate_is_the_one_with_the_fewest_failed_checks_and_a_later_one_wins_a_tie():
+    def attempt(n, checks):
+        return {"content_attempt": n, "checks": checks, "candidate": {"n": n}}
+
+    assert run_b1.best_attempt({"attempts": [attempt(1, ["a", "b"]), attempt(2, ["a"])]})[0] == 2
+    assert run_b1.best_attempt({"attempts": [attempt(1, ["a"]), attempt(2, ["a"])]})[0] == 2
+    assert run_b1.best_attempt({"attempts": [attempt(1, []), attempt(2, ["a"])]})[0] == 1
+    assert run_b1.best_attempt({"attempts": [{"content_attempt": 1, "checks": ["W17.structure"]}]}) is None
+
+
+def test_a_readability_note_may_only_quote_text_that_is_shown(tmp_path, monkeypatch):
+    case = "veteran-824027"
+    glossary = writer_input.load_glossary(DATASET / "glossary.json")
+    doc = writer_input.build_writer_input(bp.load_dev_packet(DATASET, case), bp.load_dev_findings(DATASET, case), glossary)
+    control = tlw.twc.candidate(doc)
+    monkeypatch.setattr(writer_checks, "rules_length", lambda report: writer_checks.report_length(control))
+    budget = cb.CallBudget(tmp_path / "calls.jsonl", run="r", run_cap=8)
+    item = run_b1.run_item(case, DATASET, glossary, tlw.Fake(tlw.answer(tlw.bad(control)), tlw.answer(tlw.bad(control))), budget, tmp_path / "items", sleep=lambda s: None)
+
+    good = {case: {"text": "Reads fine.", "quotes": ["throws his Four-seam because it works"]}}
+    bad = {case: {"text": "Reads fine.", "quotes": ["a sentence the model never wrote"]}}
+
+    assert "Reads fine." in run_b1.review_markdown([item], budget, notes=good)
+    with pytest.raises(ValueError):
+        run_b1.review_markdown([item], budget, notes=bad)

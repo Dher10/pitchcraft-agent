@@ -32,7 +32,7 @@ def digest(value) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()).hexdigest()
 
 
-PROMPT_VERSION = "p2.2-1"
+PROMPT_VERSION = "p2.2-2"
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_PATH = ROOT / "docs" / "writer-guide.md"
 MAX_OUTPUT_TOKENS = 8192

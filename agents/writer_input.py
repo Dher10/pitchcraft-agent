@@ -109,7 +109,8 @@ def _findings(findings: dict, teams: dict) -> dict:
     for key in FINDING_STYLES:
         out[key] = _need(findings, key, "findings")
     by_team = _need(findings, "lineup_pressure_points_by_team", "findings")
-    out["lineup_notes"] = {side: list(by_team.get(str(teams[side]["id"]), [])) for side in SIDES}
+    # One string per side (None when there are no notes), so the whole note is a citable scalar path.
+    out["lineup_notes"] = {side: "; ".join(by_team.get(str(teams[side]["id"]), [])) or None for side in SIDES}
     return out
 
 

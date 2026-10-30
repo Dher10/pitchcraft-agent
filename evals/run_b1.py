@@ -115,7 +115,18 @@ def _run_lines(budget: cb.CallBudget, run_info: dict | None) -> list[str]:
     return lines
 
 
-def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | None = None, calibrate: bool = False) -> str:
+def best_attempt(item: dict) -> tuple[int, dict] | None:
+    """(number, attempt) of the model candidate with the fewest failed checks; a later one wins a tie."""
+
+    ranked = [(len(a.get("checks") or []), -a["content_attempt"], a) for a in item["attempts"] if a.get("candidate")]
+    if not ranked:
+        return None
+    best = min(ranked, key=lambda r: (r[0], r[1]))
+    return best[2]["content_attempt"], best[2]
+
+
+def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | None = None, calibrate: bool = False,
+                    summary: str | None = None, notes: dict | None = None) -> str:
     paths = {p: 0 for p in writer_policy.PATHS}
     for item in items:
         paths[item["path"]] += 1
@@ -128,6 +139,8 @@ def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | N
         f"Paths: {', '.join(f'{k} {v}' for k, v in paths.items())}. LLM coverage {llm}/{len(items)}; "
         f"not written by the primary model {len(items) - paths['primary']}/{len(items)} (a fallback or rules result is not a primary first-attempt success).\n",
     ]
+    if summary:
+        out.append(summary)
     for item in items:
         out.append(f"\n## {item['case_id']}\n")
         out.append(f"- Path: **{item['path']}**" + (f" (reason: `{item['reason']}`)" if item["reason"] else "") + f"; content attempts: {item['content_attempts']}")
@@ -144,20 +157,31 @@ def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | N
         for title, body in report_text(rules):
             out.append(f"**{title}**\n\n{body}\n")
         candidate_shown = item["path"] != "rules"
-        out.append(f"### Model text (B1){'' if candidate_shown else ' (rejected; the last candidate, not published)'}\n")
-        last = next((a for a in reversed(item["attempts"]) if a.get("candidate")), None)
+        best = best_attempt(item)
+        shown_text = ""
         if candidate_shown:
-            for title, body in report_text(item["report"]):
-                out.append(f"**{title}**\n\n{body}\n")
-        elif last is not None:
+            out.append("### Model text (B1)\n")
+            shown = item["report"]
+        elif best is not None:
             from agents import writer_checks
 
-            shown = writer_checks.to_report(last["candidate"], rules)
-            out.append(f"Failed checks: {last['checks']}\n")
+            number, attempt = best
+            out.append(f"### Model text (B1): rejected, not published. Shown: the attempt with the fewest failed checks, content attempt {number} of {item['content_attempts']}, "
+                       f"model `{attempt.get('model', '-')}`, checks {attempt['checks']}\n")
+            shown = writer_checks.to_report(attempt["candidate"], rules)
+        else:
+            shown = None
+            out.append("### Model text (B1)\n\nNo model text: the call never produced a usable answer.\n")
+        if shown is not None:
             for title, body in report_text(shown):
                 out.append(f"**{title}**\n\n{body}\n")
-        else:
-            out.append("No model text: the call never produced a usable answer.\n")
+                shown_text += "\n" + body + "\n" + title
+        note = (notes or {}).get(item["case_id"])
+        if note:
+            missing = [q for q in note.get("quotes", []) if q not in shown_text]
+            if missing:
+                raise ValueError(f"readability note for {item['case_id']} quotes text that is not in the text shown: {missing}")
+            out.append("### Readability for a casual fan\n\n" + note["text"] + "\n")
     return "\n".join(out + (calibration_section() if calibrate else [])) + "\n"
 
 
@@ -170,13 +194,26 @@ def make_provider(key: str) -> Callable[[str, float, dict], Any]:
 
 def main(argv=None) -> int:  # pragma: no cover - the network entry point
     parser = argparse.ArgumentParser(description="P2.2 offline B1 capture on dev cases")
-    parser.add_argument("--owner-pc-offline", action="store_true", required=True)
+    parser.add_argument("--owner-pc-offline", action="store_true")
+    parser.add_argument("--doc-only", action="store_true", help="rebuild the review document from the saved items; makes no request")
+    parser.add_argument("--doc-inputs", default=str(ROOT / "docs" / "b1-run2-doc-inputs.json"))
     parser.add_argument("--out", default=str(ROOT / "docs" / "b1-dev-examples.md"))
     parser.add_argument("--run-cap", type=int, default=DEFAULT_RUN_CAP)
     args = parser.parse_args(argv)
+    case_ids = pick_cases()
+    if args.doc_only:
+        inputs = json.loads(Path(args.doc_inputs).read_text(encoding="utf-8"))
+        glossary = writer_input.load_glossary(DATASET / "glossary.json")
+        budget = cb.CallBudget(WORK / "calls.jsonl", run=RUN_ID, run_cap=args.run_cap)
+        items = [json.loads((WORK / "items-2" / f"{c}.json").read_text(encoding="utf-8")) for c in case_ids]
+        text = review_markdown(items, budget, inputs["run_info"], calibrate=True, summary=inputs["summary"], notes=inputs["notes"])
+        Path(args.out).write_text(text, encoding="utf-8", newline="\n")
+        print(json.dumps({"rebuilt": args.out, "items": len(items)}))
+        return 0
+    if not args.owner_pc_offline:
+        parser.error("--owner-pc-offline is required to make requests")
     from evals.local_runner import _local_key
 
-    case_ids = pick_cases()
     glossary = writer_input.load_glossary(DATASET / "glossary.json")
     budget = cb.CallBudget(WORK / "calls.jsonl", run=RUN_ID, run_cap=args.run_cap)
     started = datetime.now(timezone.utc)

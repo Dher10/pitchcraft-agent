@@ -64,8 +64,8 @@ def test_the_findings_reach_the_writer_as_labels_only_never_as_sentences(parts):
     findings = build(parts)["findings"]
 
     assert findings["away_starter_strengths"] == ["Solid command supports strike-zone control", "Four-seam to set up, Curveball to finish"]
-    assert findings["lineup_notes"]["home"] == ["has elevated swing-and-miss risk", "draws walks at an above-average rate"]
-    assert findings["lineup_notes"]["away"] == []
+    assert findings["lineup_notes"]["home"] == "has elevated swing-and-miss risk; draws walks at an above-average rate"
+    assert findings["lineup_notes"]["away"] is None
     text = json.dumps(findings)
     assert "needs efficient strikes" not in text and "far larger sample" not in text and "Can " not in text
 

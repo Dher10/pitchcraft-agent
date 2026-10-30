@@ -319,7 +319,7 @@ def _check_sentence(sentence, text, doc, index, phrases, vocab, glossary, watch_
             fail("W5.intensity", match.group(0))
     for term, key in _LABEL_TERMS:
         # A lineup note may speak of swing-and-miss (W5) when the term is in the cited note itself.
-        note_text = " ".join(str(index[p]).lower() for p in paths if p.startswith("findings.lineup_notes."))
+        note_text = " ".join(str(index[p]).lower() for p in paths if p.startswith("findings.lineup_notes.") and index[p] is not None)
         if term in text.lower() and not _LIMITED_WORDS.search(text) and term not in note_text and not any(p.endswith(key) for p in paths):
             fail("W5.label", term)
     for p in paths:

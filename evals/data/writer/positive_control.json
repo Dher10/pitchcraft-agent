@@ -18,7 +18,7 @@
     {"text": "He shows solid command and average swing-and-miss ability.", "paths": ["starters.away_starter.pitching_profile.command_label", "starters.away_starter.pitching_profile.swing_miss_label"]},
     {"text": "The Angels lineup has a .712 OPS (on-base plus slugging) against left-handed pitchers like him.", "paths": ["teams.home.offense_profile.ops_vs_hand", "glossary.OPS.short", "teams.home.offense_profile.vs_pitcher_hand"]},
     {"text": "Their K% (strikeout rate) is 24.3% and their BB% (walk rate) is 10.4% in that matchup.", "paths": ["teams.home.offense_profile.k_rate_vs_hand", "glossary.K%.short", "teams.home.offense_profile.bb_rate_vs_hand", "glossary.BB%.short"]},
-    {"text": "That group draws walks at an above-average rate and carries an elevated swing-and-miss risk.", "paths": ["findings.lineup_notes.home.1", "findings.lineup_notes.home.0"]}
+    {"text": "That group draws walks at an above-average rate and carries an elevated swing-and-miss risk.", "paths": ["findings.lineup_notes.home"]}
    ],
    "home_vs_away": [
     {"text": "José Soriano has a 2.65 ERA and a 1.15 WHIP over the 2026 regular season through May 31.", "paths": ["starters.home_starter.season_summary.era", "starters.home_starter.season_summary.whip", "starters.home_starter.season_summary.scopes.season_rates.label"]},
