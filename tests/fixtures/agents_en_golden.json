@@ -61,7 +61,7 @@
         "Four-seam fastball to set up, Curveball to finish"
       ],
       "away_style": "Four-seam fastball to set up, Curveball to finish",
-      "away_vs_home_offense": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
+      "away_vs_home_offense": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup hits well against RHP pitching (.744 OPS), so Demo Pitcher C cannot live over the middle.",
       "home_data_notes": [],
       "home_starter_risks": [],
       "home_starter_strengths": [
@@ -74,10 +74,13 @@
       "home_vs_away_offense": "Demo Pitcher D needs to keep the command edge visible and use the changeup to manage contact. This lineup hits well against LHP pitching (.756 OPS), so Demo Pitcher D cannot live over the middle. They draw walks at an above-average rate, so Demo Pitcher D needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
+        "has strong OPS against this pitcher's hand",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
-        "bos": [],
+        "bos": [
+          "has strong OPS against this pitcher's hand"
+        ],
         "nyy": [
           "has strong OPS against this pitcher's hand",
           "draws walks at an above-average rate"
@@ -166,7 +169,7 @@
           "title": "Matchup Summary"
         },
         {
-          "body": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup is roughly average against RHP pitching (.744 OPS), with no glaring weakness to attack.",
+          "body": "Demo Pitcher C's four-seam-curveball combination gives him above-average swing-and-miss. This lineup hits well against RHP pitching (.744 OPS), so Demo Pitcher C cannot live over the middle.",
           "title": "Demo Pitcher C vs Boston Red Sox"
         },
         {
@@ -912,18 +915,16 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
         "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": [
@@ -963,7 +964,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {
@@ -1860,18 +1861,16 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
         "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": [
@@ -1912,7 +1911,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {
@@ -2013,18 +2012,16 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
         "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": [
@@ -2065,7 +2062,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {
@@ -2166,18 +2163,16 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
         "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": [
@@ -2217,7 +2212,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.066 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {
@@ -2447,16 +2442,14 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": []
@@ -2494,7 +2487,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {
@@ -2720,18 +2713,16 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Home Ace. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Home Ace. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
         "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": [
@@ -2772,7 +2763,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Home Ace. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. Strikeout data for Home Ace is limited (batters faced not available; 70 needed), so no swing-and-miss claim is made. Control data for Home Ace is limited (batters faced not available; 170 needed), so no command claim is made. Home runs allowed are not available for Home Ace. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {
@@ -2866,18 +2857,16 @@
         "Four-seam to set up, Curveball to finish"
       ],
       "home_style": "Four-seam to set up, Curveball to finish",
-      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+      "home_vs_away_offense": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
       "lineup_pressure_points": [
         "has strong OPS against this pitcher's hand",
         "has elevated swing-and-miss risk",
         "has strong OPS against this pitcher's hand",
-        "has elevated swing-and-miss risk",
         "draws walks at an above-average rate"
       ],
       "lineup_pressure_points_by_team": {
         "111": [
           "has strong OPS against this pitcher's hand",
-          "has elevated swing-and-miss risk",
           "draws walks at an above-average rate"
         ],
         "147": [
@@ -2917,7 +2906,7 @@
           "title": "Away Ace vs New York Yankees"
         },
         {
-          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
+          "body": "Home Ace works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. He shows below-average command. Home Ace has allowed 28 home runs over 225 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (1.044 OPS), so Home Ace cannot live over the middle. They draw walks at an above-average rate, so Home Ace needs efficient strikes.",
           "title": "Home Ace vs Boston Red Sox"
         },
         {

@@ -41,8 +41,8 @@ def codes(payload) -> set[str]:
 
 
 def test_the_schema_is_0_8_0_and_a_snapshot_of_0_7_0_is_not_read():
-    assert SCHEMA_VERSION == "0.9.0"
-    assert snapshot_matches_schema("0.9.0") and not snapshot_matches_schema("0.8.0") and not snapshot_matches_schema("0.7.0")
+    assert SCHEMA_VERSION == "0.10.0"
+    assert snapshot_matches_schema("0.10.0") and not snapshot_matches_schema("0.9.0") and not snapshot_matches_schema("0.8.0") and not snapshot_matches_schema("0.7.0")
 
 
 # --- the table -------------------------------------------------------------------------------------------------------

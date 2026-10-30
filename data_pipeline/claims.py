@@ -35,6 +35,7 @@ from agents.language import (
     UnknownLanguageError,
     catalog_for,
 )
+from data_pipeline import labels
 from data_pipeline.generator_texts import GENERATOR_PREFIX, generator_catalog
 
 JOIN_KEY = "@join"
@@ -210,6 +211,10 @@ def verify_claims(payload: Mapping[str, Any]) -> list[str]:
     except UnknownLanguageError:
         return [f"metadata.language {language!r} has no catalog, so the claims cannot be checked"]
     catalogs = (agents, generator_catalog())
+    try:
+        labels.cutoffs_for(metadata)
+    except labels.UnknownCutoffs as exc:
+        return [f"{exc}, so the band claims cannot be checked"]
 
     problems = _verify_list("root claims", payload.get("claims"), payload, ROOT_TEXT_PATHS, "", catalogs)
     matchups = payload.get("matchups")

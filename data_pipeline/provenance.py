@@ -42,7 +42,7 @@ from zoneinfo import ZoneInfo
 from data_pipeline import archive, config, labels, series
 from data_pipeline.schema import (
     CRITIC_STATUSES,
-    SCHEMA_VERSION,
+    READABLE_VERSIONS,
     STATE_OF_STATUS,
     WORKFLOW_AGENTS,
     is_utc_instant,
@@ -679,7 +679,8 @@ MANIFEST: tuple[Entry, ...] = tuple(
         replace(_derived("featured_matchup_id", "the featured live slot, null on a no-games day (D43)", STR, True, featured_is_live), check_null=True),
         _derived("matchups", "an empty list only on a validated no-games live day (D43)", (list,), False, empty_matchups),
         _label("metadata.project_name", "the name of the product"),
-        _label("metadata.version", "the schema version", STR, equals(lambda c: SCHEMA_VERSION, "the schema version")),
+        _label("metadata.version", "the schema version", STR, in_set(READABLE_VERSIONS)),
+        _label("metadata.label_cutoffs", "the key of the cut-off set the band claims were written with (D51)", STR, in_set(tuple(labels.CUTOFF_SETS))),
         _label("metadata.language", "the catalog the keys of the claims belong to"),
         _derived("metadata.data_mode", "the generator's reading of the live run", STR, False, equals(lambda c: LIVE_MODE, "a live file")),
         _source("metadata.generated_at", "the instant the file was built (the generator's clock); never the fetch time (F9)", STR, False, is_instant),

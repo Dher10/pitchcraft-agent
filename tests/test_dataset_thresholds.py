@@ -23,8 +23,8 @@ def rows_from(ks, bbs, opss, pa=400):
 
 
 def at_cutoffs():
-    # 60 rows whose 75th percentile (linear, index 44.25) lies in a constant tail: exactly 23.0 / 9.0 / .750.
-    return [20.0] * 44 + [23.0] * 16, [8.0] * 44 + [9.0] * 16, [0.700] * 44 + [0.750] * 16
+    # 60 rows whose 75th percentile (linear, index 44.25) lies in a constant tail: exactly the D50 cutoffs 24.0 / 9.0 / .735.
+    return [20.0] * 44 + [24.0] * 16, [8.0] * 44 + [9.0] * 16, [0.700] * 44 + [0.735] * 16
 
 
 def test_percentile_is_the_linear_default():
@@ -49,18 +49,18 @@ def test_a_row_under_200_plate_appearances_is_excluded_and_listed():
 
     assert [(e.team, e.hand, e.pa) for e in result.excluded] == [("SHORT", "L", 199)]
     assert result.n_used == 59
-    assert result.cutoffs == {"k": 23.0, "bb": 9.0, "ops": 0.750}
+    assert result.cutoffs == {"k": 24.0, "bb": 9.0, "ops": 0.735}
 
 
 def test_unchanged_when_the_rounded_quartiles_equal_the_current_cutoffs():
     result = th.recompute(rows_from(*at_cutoffs()))
     comparison = th.compare(result)
 
-    assert result.cutoffs == {"k": 23.0, "bb": 9.0, "ops": 0.750}
+    assert result.cutoffs == {"k": 24.0, "bb": 9.0, "ops": 0.735}
     assert comparison.unchanged and comparison.changed == {}
 
 
-@pytest.mark.parametrize("which,value", [("k", 24.0), ("bb", 10.0), ("ops", 0.780)])
+@pytest.mark.parametrize("which,value", [("k", 25.0), ("bb", 10.0), ("ops", 0.780)])
 def test_changed_when_any_single_cutoff_moves_and_only_that_one_is_named(which, value):
     columns = dict(zip(("k", "bb", "ops"), at_cutoffs()))
     columns[which][44:] = [value] * 16

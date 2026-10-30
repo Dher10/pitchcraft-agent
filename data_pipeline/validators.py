@@ -20,6 +20,7 @@ from data_pipeline.schema import (
     MATCHUP_REQUIRED_KEYS,
     PITCH_LOCATION_SPLITS,
     POSTGAME_STARTER_LINE_REQUIRED_KEYS,
+    READABLE_VERSIONS,
     SCHEMA_VERSION,
     STARTER_SLOTS,
     TEAM_SIDES,
@@ -27,7 +28,7 @@ from data_pipeline.schema import (
     is_utc_instant,
     is_no_games_file,
 )
-from data_pipeline.labels import SCOPE_REGULAR, SEASON_RATE_FIELDS, is_available
+from data_pipeline.labels import CUTOFF_SETS, SCOPE_REGULAR, SEASON_RATE_FIELDS, is_available
 
 
 @dataclass(frozen=True)
@@ -90,11 +91,23 @@ def validate_payload(payload: Mapping[str, Any]) -> list[ValidationCheck]:
     )
 
     metadata = payload.get("metadata")
+    version = metadata.get("version") if isinstance(metadata, Mapping) else None
     record(
-        f"metadata.version is {SCHEMA_VERSION}",
-        isinstance(metadata, Mapping) and metadata.get("version") == SCHEMA_VERSION,
-        f"found {metadata.get('version')!r}" if isinstance(metadata, Mapping) else "metadata missing",
+        f"metadata.version is {SCHEMA_VERSION}" if version == SCHEMA_VERSION else f"metadata.version is one of {list(READABLE_VERSIONS)}",
+        isinstance(metadata, Mapping) and version in READABLE_VERSIONS,
+        f"found {version!r}" if isinstance(metadata, Mapping) else "metadata missing",
     )
+    # D51: the current version names the cut-off set its band claims were written with; the previous one has no such
+    # field (it is judged with D32). An unknown id fails closed.
+    if isinstance(metadata, Mapping) and version in READABLE_VERSIONS:
+        named = metadata.get("label_cutoffs")
+        if version == SCHEMA_VERSION:
+            ok = type(named) is str and named in CUTOFF_SETS
+            detail = f"found {named!r}, expected one of {sorted(CUTOFF_SETS)}"
+        else:
+            ok = "label_cutoffs" not in metadata
+            detail = "schema 0.9.0 has no metadata.label_cutoffs"
+        record("metadata.label_cutoffs names a known cut-off set", ok, "" if ok else detail)
 
     # Rule 6 (F9, D39): a demo file was never fetched; a time of fetch would present it as live data.
     fetched_at = metadata.get("data_fetched_at") if isinstance(metadata, Mapping) else None

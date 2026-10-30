@@ -2,6 +2,12 @@
 
 The session log of `docs/STATUS.md`, moved here on 2026-10-13 (P0.15-D3.2) so that STATUS keeps only the current state, the next task, the pending items and the Notion sync list. The entries below are unchanged from STATUS. Newest session on top.
 
+### 2026-10-30 - D50 and D51 (versioned cut-off sets)
+
+- Scope: owner approved D50 as drafted and the additive schema change D51. Not touched: `public/data/`, `evals/live/`, workflows, `main`, tags.
+- Why D51: D50 code made the committed demo file (and would make main's daily file at the release PR) fail its own validator (`rule4:analyst.offense.average#band`, .744 OPS now strong). Editing a bot-owned file is not allowed (D15); the file is judged with the cut-offs it names, D32 when it names none.
+- Red first: `tests/test_label_cutoffs.py` (22 tests) and the D50 edges in `tests/test_rate_cutoffs.py` failed before the code. Fallout fixed: six schema-version asserts, the page fixture `tests/fixtures/no_games_live.json` (regenerated, +`label_cutoffs`, version), `test_claims_payload` (served file version in `READABLE_VERSIONS`).
+
 ### 2026-10-29 - P2.4 gate 3 evidence (D32 recompute)
 
 - Scope: `python -m evals.thresholds` over the cached/fetched Savant closed months, 2026-03-25..2026-09-27, through the hash-chained ledger. 198 of 210 closed-month requests, 0 failed, 0 pending. No `labels.py`, golden, `public/data/` or `evals/live/` change.

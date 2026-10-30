@@ -360,6 +360,7 @@ def build_payload(language: str = DEFAULT_LANGUAGE, now: datetime | None = None,
     payload = demo_inputs.build_demo_payload()
     _stamp_times(payload, now)
     payload["metadata"]["data_mode"] = _live_status["mode"]
+    payload["metadata"]["label_cutoffs"] = labels.CURRENT_CUTOFFS  # D51: the cut-off set this build writes its bands with
     payload["metadata"]["data_sources"] = config.SOURCE_LABELS
     payload["metadata"]["data_status"] = deepcopy(_live_status)
     text = generator_catalog()

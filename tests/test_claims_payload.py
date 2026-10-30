@@ -12,7 +12,7 @@ import json
 
 import pytest
 
-from data_pipeline.schema import SCHEMA_VERSION
+from data_pipeline.schema import READABLE_VERSIONS, SCHEMA_VERSION
 from tests.corpus import GOLDEN_NAMES, KINDS, SERVED, build, golden_payload, published
 from tests.live_helpers import GAME_DAY, failed_checks
 
@@ -49,7 +49,7 @@ def descendants(claim: dict, by_id: dict[str, dict]):
 
 
 def test_the_schema_version_is_0_4_0():
-    assert SCHEMA_VERSION == "0.9.0"
+    assert SCHEMA_VERSION == "0.10.0"
 
 
 def test_every_payload_says_its_version_and_language(built):
@@ -324,7 +324,7 @@ def test_the_served_file_has_its_claims_and_they_verify():
 
     served = json.loads(SERVED.read_text(encoding="utf-8"))
 
-    assert served["metadata"]["version"] == SCHEMA_VERSION
+    assert served["metadata"]["version"] in READABLE_VERSIONS  # the v2 copy is the stale 0.9.0 file (D51)
     assert served["metadata"]["language"] == "en"
     assert served["claims"]
     assert verify_claims(served) == []

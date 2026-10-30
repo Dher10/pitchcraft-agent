@@ -29,6 +29,8 @@ export interface PitchCraftData {
 export interface Metadata {
   project_name: string;
   version: string;
+  /** The set of lineup cut-offs the band claims were written with (schema 0.10.0, D51); absent in 0.9.0 files, which are D32. */
+  label_cutoffs?: string;
   language?: string;
   data_mode: string;
   /** The instant the file was built (schema 0.7.0): always real, in every mode. */

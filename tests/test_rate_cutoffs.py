@@ -1,4 +1,4 @@
-"""One cut-off for the lineup K% and BB% notes (D32).
+"""One cut-off for the lineup K% and BB% notes (D32, values superseded by D50).
 
 The analyst used two different cut-offs for the same idea: the offense read said "strike out
 often" from 23% and "draws walks" from 9%, while the pressure points said "elevated
@@ -45,17 +45,20 @@ def pressure(k_rate: str | None, bb_rate: str | None) -> list[str]:
 
 
 def test_the_cutoffs_are_the_values_the_fan_already_sees():
-    assert labels.OFFENSE_K_NOTE_PCT == 23.0
+    assert labels.OFFENSE_K_NOTE_PCT == 24.0
     assert labels.OFFENSE_BB_NOTE_PCT == 9.0
 
 
-@pytest.mark.parametrize("rate", ["21.9%", "22.0%", "22.5%", "22.9%", "23.0%", "23.1%", "30.0%"])
-def test_the_strikeout_note_and_the_pressure_point_agree(rate):
+@pytest.mark.parametrize(
+    "rate, flagged",
+    [("21.9%", False), ("22.5%", False), ("23.0%", False), ("23.1%", False), ("23.9%", False), ("24.0%", True), ("24.1%", True), ("30.0%", True)],
+)
+def test_the_strikeout_note_and_the_pressure_point_agree(rate, flagged):
     has_note = strikeout_note(rate)
     has_point = T("analyst.pressure.strikeouts") in pressure(rate, "5.0%")
 
     assert has_note == has_point
-    assert has_note == (float(rate.rstrip("%")) >= labels.OFFENSE_K_NOTE_PCT)
+    assert has_note is flagged
 
 
 @pytest.mark.parametrize("rate", ["8.0%", "8.9%", "9.0%", "9.1%", "12.0%"])
@@ -67,9 +70,10 @@ def test_the_walk_note_and_the_pressure_point_agree(rate):
     assert has_note == (float(rate.rstrip("%")) >= labels.OFFENSE_BB_NOTE_PCT)
 
 
-def test_the_qa_style_boundary_22_5_is_neither_a_note_nor_a_pressure_point():
-    assert not strikeout_note("22.5%")
-    assert T("analyst.pressure.strikeouts") not in pressure("22.5%", "5.0%")
+@pytest.mark.parametrize("rate", ["22.5%", "23.9%"])
+def test_the_boundaries_below_the_cutoff_are_neither_a_note_nor_a_pressure_point(rate):
+    assert not strikeout_note(rate)
+    assert T("analyst.pressure.strikeouts") not in pressure(rate, "5.0%")
 
 
 def test_exactly_9_percent_is_a_walk_pressure_point_too():
@@ -104,10 +108,10 @@ def strong_point(ops: str) -> bool:
 
 
 def test_the_ops_cutoff_is_the_value_the_fan_already_sees():
-    assert labels.OFFENSE_OPS_STRONG == 0.750
+    assert labels.OFFENSE_OPS_STRONG == 0.735
 
 
-@pytest.mark.parametrize("ops, strong", [(".749", False), (".750", True), (".751", True), (".700", False), (".820", True)])
+@pytest.mark.parametrize("ops, strong", [(".734", False), (".735", True), (".736", True), (".744", True), (".749", True), (".700", False), (".820", True)])
 def test_the_ops_sentence_and_the_pressure_point_agree_at_the_edge(ops, strong):
     assert strong_sentence(ops) is strong
     assert strong_point(ops) is strong
