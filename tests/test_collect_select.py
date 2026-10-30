@@ -457,12 +457,197 @@ def test_a_malformed_history_halts_with_a_closed_code_and_keeps_what_was_found(r
     assert result.halted == "source_shape" and [c.game_pk for c in result.selection.cases["postseason"]] == [10]
 
 
-def test_a_stratum_over_its_cap_still_takes_later_games_whose_pitchers_are_known():
-    games = season(7, 3) + season(8, 2)  # pitcher 8 has fewer listed starts, so his game is tried first and is over the cap
-    store = FakeStore(fill(games, {7: hist(7, starts(7, 3, ip="1.0", bf=6)), 8: hist(8, starts(8, 2, ip="1.0", bf=6))}))
-    store.fetched += [7, 9701, 9702]  # pitcher 7 and his opponents are already known: no lookup left to pay
+def test_a_stratum_over_its_cap_still_takes_later_games_whose_pitchers_an_earlier_stratum_touched(monkeypatch):
+    monkeypatch.setattr(bd, "rank", lambda pk: f"{pk:09d}")  # pool order is the game number: R1 is tried before R2
+    games = [
+        game(0, "2026-04-01", 400, 7),
+        game(5, "2026-04-01", 401, 30),
+        game(1, "2026-05-01", 31, 30),  # R1: two new pitchers, over the cap of 1
+        game(2, "2026-05-01", 8, 7),  # R2: pitchers 7 and 8 were touched by the postseason stratum, so it costs nothing
+        game(900, "2026-10-01", 7, 8, "D", 2),  # touched, then skipped: its series answer is for another game number
+    ]
+    store = FakeStore(fill(games, {7: hist(7, starts(7, 1, ip="1.0", bf=6, first=date(2026, 4, 1)))}))
+    wrong_game = lambda pk, as_of: {"game_number": 1, "games_played": 0, "result": None, "is_over": False}  # noqa: E731
 
-    result = co.select_cases(games, store, plan(opener=0), series_ok)
+    result = co.select_cases(games, store, plan(opener=1), wrong_game)
 
-    assert any(c.pitcher_ids[1] == 7 for c in result.selection.cases["opener"])  # costs 0 lookups, so the cap does not stop it
-    assert result.stopped["opener"] == "screen_cap"  # but the stratum still reports that the cap stopped other games
+    assert result.skipped["postseason"] == {900: "series_leak"}
+    assert [c.game_pk for c in result.selection.cases["opener"]] == [2]  # costs 0, so the cap does not stop it
+    assert result.stopped["opener"] == "screen_cap"  # but the stratum still reports that the cap stopped R1
+
+
+# --- owner review of the first selection: caps that do not depend on the cache, replay, honest labels ------------------
+
+
+def opener_world():
+    """Three pitchers with one short outing each, then a start: each of their 2nd/3rd games is an opener-like candidate."""
+
+    games = season(7, 3) + season(8, 3) + season(9, 3)
+    return games, {p: hist(p, starts(p, 3, ip="1.0", bf=6)) for p in (7, 8, 9)}
+
+
+def records(result, tmp_path, name="out"):
+    co.write_selection(tmp_path / name, result, plan(opener=3))
+    return json.loads((tmp_path / name / "selection.json").read_text(encoding="utf-8"))
+
+
+def test_the_screening_cap_counts_a_pitcher_the_first_time_a_stratum_touches_it_whatever_the_cache_holds(tmp_path):
+    games, histories = opener_world()
+    fresh = FakeStore(fill(games, dict(histories)))
+    warm = FakeStore(fill(games, dict(histories)))
+    warm.fetched += list(warm.histories)  # every answer already on disk: a re-run costs no request
+
+    first = co.select_cases(games, fresh, plan(opener=3), series_ok)
+    again = co.select_cases(games, warm, plan(opener=3), series_ok)
+
+    assert first.stopped.get("opener") == "screen_cap" and len(first.selection.cases["opener"]) < 2  # the control: the cap bit
+    assert [c.case_id for c in again.selection.cases["opener"]] == [c.case_id for c in first.selection.cases["opener"]]
+    assert again.lookups["opener"] == 0 and again.screened["opener"] == first.screened["opener"]
+
+
+def test_a_bigger_cap_on_a_warm_cache_adds_cases_without_changing_or_recounting_the_ones_found(tmp_path):
+    games, histories = opener_world()
+    first_store = FakeStore(fill(games, dict(histories)))
+    first = co.select_cases(games, first_store, plan(opener=3, limited=0, veteran=0), series_ok)
+    warm = FakeStore(fill(games, dict(histories)))
+    warm.fetched += list(first_store.fetched)  # exactly what the first run fetched
+
+    wider = co.select_cases(games, warm, plan(opener=40, limited=0, veteran=0), series_ok)
+
+    old, new = records(first, tmp_path, "a"), records(wider, tmp_path, "b")
+    assert len(new["cases"]) > len(old["cases"])
+    co.check_superset(old, new)  # every old case is there with every old field unchanged
+    assert 0 < warm.lookups == len(warm.fetched) - len(first_store.fetched)  # only the new pitchers cost a request
+
+
+def test_check_superset_fails_when_a_case_is_missing_or_a_recorded_field_changed(tmp_path):
+    games, histories = opener_world()
+    result = co.select_cases(games, FakeStore(fill(games, histories)), plan(opener=40), series_ok)
+    doc = records(result, tmp_path)
+    changed = json.loads(json.dumps(doc))
+    changed["cases"][0]["facts"][0]["prior_seasons"] = 99
+
+    with pytest.raises(co.SelectionChanged):
+        co.check_superset(doc, {**doc, "cases": doc["cases"][1:]})
+    with pytest.raises(co.SelectionChanged):
+        co.check_superset(doc, changed)
+
+
+def test_a_standing_recorded_by_an_earlier_run_is_reused_and_costs_no_series_request():
+    games = [game(10, "2026-10-01", 61, 62, "D", 2)]
+    asked = []
+    recorded = {10: {"game_number": 2, "games_played": 1, "is_over": False, "result": "X leads 1-0"}}
+
+    result = co.select_cases(games, FakeStore(fill(games, {})), plan(), lambda pk, as_of: asked.append(pk), known_series=recorded)
+
+    assert asked == [] and result.series[10] == recorded[10] and result.series_calls == 0
+    assert [c.game_pk for c in result.selection.cases["postseason"]] == [10]
+
+
+def team_game(pk, day, away, home, n, kind="D"):
+    return cs.ListedGame(pk, day, kind, n, True, ((pk * 10, "a"), (pk * 10 + 1, "b")), (away, home))
+
+
+def test_the_last_game_of_a_matchup_is_the_one_that_ended_its_series_and_a_second_round_is_a_different_series():
+    games = [
+        team_game(1, "2026-10-01", 1, 2, 1),
+        team_game(2, "2026-10-02", 2, 1, 2),
+        team_game(3, "2026-10-03", 1, 2, 3),
+        team_game(4, "2026-10-01", 3, 4, 1),
+        team_game(5, "2026-10-09", 1, 2, 1, "L"),  # the same clubs meet again in the next round: a new series
+    ]
+
+    assert co.series_ended(games) == {3, 4, 5}
+
+
+def test_a_selected_postseason_game_records_whether_its_series_ended_and_other_strata_record_nothing(tmp_path):
+    games = [team_game(1, "2026-10-01", 1, 2, 1), team_game(2, "2026-10-02", 2, 1, 2)] + season(7, 3)
+    histories = fill(games, {7: hist(7, starts(7, 3, ip="1.0", bf=6))})
+
+    by_number = lambda pk, as_of: {"game_number": pk, "games_played": pk - 1, "result": None if pk == 1 else "LAD leads 1-0", "is_over": False}  # noqa: E731
+    result = co.select_cases(games, FakeStore(histories), plan(), by_number)
+    by_id = {r["case_id"]: r for r in records(result, tmp_path)["cases"]}
+
+    assert by_id["postseason-1"]["series_ended"] is False and by_id["postseason-2"]["series_ended"] is True
+    assert all(r["series_ended"] is None for r in by_id.values() if r["stratum"] != "postseason")
+
+
+def test_each_case_records_the_prior_starts_of_both_starters(tmp_path):
+    games, histories = opener_world()
+    result = co.select_cases(games, FakeStore(fill(games, histories)), plan(opener=40), series_ok)
+
+    for r in records(result, tmp_path)["cases"]:
+        assert r["prior_starts"] == [len(f["previous_innings"]) for f in r["facts"]]
+
+
+def test_the_opener_stratum_is_described_as_short_recent_outings_and_the_selection_says_the_opener_flag_is_unknown(tmp_path):
+    games, histories = opener_world()
+    result = co.select_cases(games, FakeStore(fill(games, histories)), plan(opener=40), series_ok)
+
+    doc = records(result, tmp_path)
+
+    assert doc["stratum_labels"]["opener"] == "starters with short recent outings (opener-like)"
+    assert doc["opener_flag_read_from_schedule"] is False and "flagged_opener_in_pool" not in doc
+    assert doc["screened"] == result.screened
+
+
+# --- a re-run keeps the cases already found and only adds ---------------------------------------------------------------
+
+
+def test_with_the_earlier_cases_kept_a_bigger_cap_only_adds_after_them():
+    games, histories = opener_world()
+    first = co.select_cases(games, FakeStore(fill(games, dict(histories))), plan(opener=3, limited=0, veteran=0), series_ok)
+    kept = {"opener": [c.game_pk for c in first.selection.cases["opener"]]}
+
+    wider = co.select_cases(games, FakeStore(fill(games, dict(histories))), plan(opener=40, limited=0, veteran=0), series_ok, keep=kept)
+
+    found = [c.game_pk for c in wider.selection.cases["opener"]]
+    assert found[: len(kept["opener"])] == kept["opener"] and len(found) > len(kept["opener"])
+    assert wider.selection.cases["opener"][0] == first.selection.cases["opener"][0]
+
+
+def test_a_kept_game_that_is_no_longer_in_its_stratum_or_in_the_schedule_stops_the_run():
+    games, histories = opener_world()
+    store = FakeStore(fill(games, dict(histories)))
+
+    with pytest.raises(co.SelectionChanged):
+        co.select_cases(games, store, plan(opener=40), series_ok, keep={"opener": [123456]})  # not in the schedule
+    with pytest.raises(co.SelectionChanged):
+        co.select_cases(games, store, plan(opener=40), series_ok, keep={"veteran": [season(7, 3)[2].game_pk]})  # opener-like, not veteran
+
+
+def test_the_earlier_selection_gives_the_standings_and_the_kept_games_in_order():
+    document = {"cases": [
+        {"stratum": "opener", "game_pk": 5, "series": None},
+        {"stratum": "postseason", "game_pk": 9, "series": {"game_number": 2}},
+        {"stratum": "opener", "game_pk": 3, "series": None},
+    ]}
+
+    assert co.recorded_series(document) == {9: {"game_number": 2}}
+    assert co.kept_games(document) == {"postseason": [9], "opener": [5, 3], "limited": [], "veteran": []}
+
+
+def test_the_default_schedule_cache_is_outside_the_published_data():
+    args = co.parse_args(["select", "--out", "evals/data/dataset"])
+
+    co.check_output_path(Path(args.schedule_dir))  # raises ForbiddenPath for public/data or evals/live
+    assert "mlb_schedule" in args.schedule_dir
+
+
+def test_a_kept_case_of_a_later_stratum_is_claimed_before_an_earlier_stratum_walks_its_pool(monkeypatch):
+    monkeypatch.setattr(bd, "rank", lambda pk: f"{pk:09d}")
+    games = [
+        game(0, "2026-04-01", 400, 50),
+        game(2, "2026-05-01", 50, 7),  # opener-like (pitcher 50 had a short outing) and shares pitcher 7 with the kept case
+        game(3, "2026-05-02", 7, 40),  # the kept limited case: pitcher 7's one start was long, so he is not an opener
+    ]
+    histories = fill(games, {50: hist(50, starts(50, 1, ip="1.0", bf=6, first=date(2026, 4, 1))), 7: hist(7, starts(7, 1, ip="5.0", bf=22, first=date(2026, 4, 1)))})
+
+    plain = co.select_cases(games, FakeStore(dict(histories)), plan(), series_ok)
+    assert [c.game_pk for c in plain.selection.cases["opener"]] == [2]  # the control: without keep, opener takes pitcher 7 first
+    assert plain.selection.cases["limited"] == ()
+
+    result = co.select_cases(games, FakeStore(dict(histories)), plan(), series_ok, keep={"limited": [3]})
+
+    assert [c.game_pk for c in result.selection.cases["limited"]] == [3]
+    assert all(7 not in c.pitcher_ids for c in result.selection.cases["opener"])

@@ -35,11 +35,21 @@ SELECTION_VERSION = 1
 OPENER_MIN_INDEX = 2  # an opener needs a previous start to have an average
 LIMITED_INDEXES = range(2, 7)  # the 2nd to the 6th listed start of the season: the early starts, where samples are small
 VETERAN_MIN_INDEX = 10
+STRATUM_LABELS = {
+    "postseason": "postseason games",
+    "opener": "starters with short recent outings (opener-like)",
+    "limited": "starters with limited samples",
+    "veteran": "veteran starters",
+}
 DEFAULT_SCREEN_CAPS = {"postseason": 24, "opener": 40, "limited": 24, "veteran": 24}
 
 
 class NotComplete(RuntimeError):
     """The selection has a short stratum and was not sealed with --allow-short."""
+
+
+class SelectionChanged(RuntimeError):
+    """A re-run does not contain a case of the earlier selection, or changed a field recorded for it."""
 
 
 class ForbiddenPath(ValueError):
@@ -53,6 +63,7 @@ class Plan:
     collection_date: date
     postseason_end: date | None  # None: up to the day before the collection date, and the last final game found is reported
     screen_caps: dict
+    schedule_dir: Path | None = None  # where the schedule answers are kept; None: no cache
 
 
 @dataclass(frozen=True)
@@ -69,6 +80,8 @@ class Result:
     lookups: dict = field(default_factory=dict)  # stratum -> pitcher lookups it spent
     skipped: dict = field(default_factory=dict)  # stratum -> {game_pk: reason}
     stopped: dict = field(default_factory=dict)  # stratum -> why it stopped early
+    screened: dict = field(default_factory=dict)  # stratum -> pitchers it touched for the first time (what its cap limits)
+    ended: set = field(default_factory=set)  # game_pk of the games that ended their series
     series_calls: int = 0  # series standings asked for (each is one or two ledger requests)
     halted: str | None = None
 
@@ -100,13 +113,14 @@ def load_games(plan: Plan) -> Loaded:
 
     one_day = timedelta(days=1)
     games: list = []
+    extra = {"cache_dir": plan.schedule_dir} if plan.schedule_dir else {}
     for start, end in live_pipeline._month_chunks(plan.season_start, plan.season_end):
-        games += cs.fetch_schedule(start, end, "R")
+        games += cs.fetch_schedule(start, end, "R", **extra)
     last = plan.collection_date - one_day
     post_end = min(plan.postseason_end, last) if plan.postseason_end else last
     post_start = plan.season_end + one_day
     if post_start <= post_end:
-        games += cs.fetch_schedule(post_start, post_end, "F,D,L,W")
+        games += cs.fetch_schedule(post_start, post_end, "F,D,L,W", **extra)
     kept: dict = {}
     for game in games:
         if not game.final or date.fromisoformat(game.official_date) >= plan.collection_date:
@@ -164,55 +178,122 @@ def pools(games) -> dict:
 # --- lazy selection ------------------------------------------------------------------------------------------------
 
 
-def select_cases(games, store, plan: Plan, series_fn: Callable[[int, str], dict], refused: Callable[[], bool] = lambda: False) -> Result:
+def series_ended(games) -> set:
+    """game_pk of the last game of each matchup (same game type, same two clubs): the game that ended its series.
+
+    Read from the schedule already fetched, so it costs no request. It is only as complete as the schedule: a series with
+    games still to be played after the collection date would be marked early, so it is meaningful once the round is over.
+    """
+
+    last: dict = {}
+    for game in sorted(games, key=lambda g: (g.official_date, g.game_pk)):
+        if game.game_type in series_module.POSTSEASON_GAME_TYPES and game.teams:
+            last[(game.game_type, frozenset(game.teams))] = game.game_pk
+    return set(last.values())
+
+
+def select_cases(
+    games,
+    store,
+    plan: Plan,
+    series_fn: Callable[[int, str], dict],
+    refused: Callable[[], bool] = lambda: False,
+    known_series: dict | None = None,
+    keep: dict | None = None,
+) -> Result:
+    """`known_series`: game_pk -> standing recorded by an earlier run, reused so a re-run asks for no series again.
+
+    The screening cap counts a pitcher the first time a stratum touches it (one touched by an earlier stratum is free),
+    whatever the disk cache holds, so the same caps choose the same cases on a cold or a warm cache and a re-run with
+    larger caps can only add cases.
+
+    `keep`: stratum -> game_pks of the cases an earlier run found, in order. They are taken first and unchanged, then the
+    seeded pool is walked for the rest, so a re-run with larger caps adds cases after them and never replaces one (a
+    walk from the start would let a newly reachable earlier game push a later case out of a full stratum). A kept game
+    that is no longer in its stratum stops the run (`SelectionChanged`).
+    """
+
     pool = pools(games)
+    known_series = known_series or {}
+    keep = keep or {}
+    by_pk = {g.game_pk: g for g in games}
+    touched: set = set()
     cases: dict = {name: [] for name in bd.STRATA}
     result = Result(bd.Selection({}, {}))
+    result.ended = series_ended(games)
+    for name in bd.STRATA:
+        result.lookups[name], result.screened[name], result.skipped[name] = 0, 0, {}
     used_games: set = set()
     used_pitchers: set = set()
+
+    def consider(game, stratum: str, capped: bool) -> bool:
+        """Evaluate one game for `stratum`; True when it became a case. Only the pool walk is limited by the cap."""
+
+        ids = _ids(game)
+        if game.game_pk in used_games or len(set(ids)) < 2 or used_pitchers.intersection(ids):
+            return False
+        new = len(set(ids) - touched)
+        if capped and result.screened[stratum] + new > plan.screen_caps.get(stratum, 0):
+            result.stopped[stratum] = "screen_cap"
+            return False  # a later game whose pitchers are already touched costs nothing
+        touched.update(ids)
+        result.screened[stratum] += new
+        facts = tuple(cs.facts_as_of(store.get(pitcher), game.official_date) for pitcher in ids)
+        candidate = bd.Candidate(game.game_pk, game.official_date, game.game_type, True, facts)
+        verdict = bd.classify(candidate, plan.collection_date)
+        if verdict is None or verdict.primary != stratum:
+            return False
+        as_of = (date.fromisoformat(game.official_date) - timedelta(days=1)).isoformat()
+        if stratum == "postseason":
+            if game.game_pk in known_series:
+                standing = known_series[game.game_pk]
+            else:
+                answer = series_fn(game.game_pk, as_of)
+                result.series_calls += 1
+                if refused():  # the fetcher swallows every error, so a refused reservation looks like "no standing"
+                    raise rl.CeilingReached("the ledger refused a series request")
+                try:
+                    standing = bd.case_series({"seriesGameNumber": game.series_game_number}, answer)
+                except bd.LeakageError:
+                    result.skipped[stratum][game.game_pk] = "series_leak"
+                    return False
+            result.series[game.game_pk] = standing
+        case = bd.Case(f"{stratum}-{game.game_pk}", game.game_pk, game.official_date, as_of, stratum, verdict.traits, ids)
+        cases[stratum].append(case)
+        result.facts[case.case_id] = facts
+        used_games.add(game.game_pk)
+        used_pitchers.update(ids)
+        return True
+
+
+    # Kept cases of every stratum are claimed before any pool is walked: a newly reachable game of an earlier stratum
+    # must not take a game or pitcher that a kept case of a later stratum already uses.
+    try:
+        for stratum in bd.STRATA:
+            spent = store.lookups
+            try:
+                for pk in keep.get(stratum, ()):
+                    if pk not in by_pk or not consider(by_pk[pk], stratum, capped=False):
+                        raise SelectionChanged(f"kept game {pk} is no longer a {stratum} case")
+            finally:
+                result.lookups[stratum] = store.lookups - spent
+    except rl.CeilingReached:
+        result.halted = "ceiling_reached"
+    except SourceShapeError:
+        result.halted = "source_shape"
     for stratum in bd.STRATA:
-        result.lookups[stratum] = 0
-        result.skipped[stratum] = {}
         spent_before = store.lookups
         try:
-            for game in pool[stratum]:
+            for game in [] if result.halted else pool[stratum]:
                 if len(cases[stratum]) == bd.PER_STRATUM:
                     break
-                ids = _ids(game)
-                if game.game_pk in used_games or len(set(ids)) < 2 or used_pitchers.intersection(ids):
-                    continue
-                new = sum(1 for pitcher in ids if not store.known(pitcher))
-                if store.lookups - spent_before + new > plan.screen_caps.get(stratum, 0):
-                    result.stopped[stratum] = "screen_cap"
-                    continue  # a later game whose pitchers are already known costs nothing
-                facts = tuple(cs.facts_as_of(store.get(pitcher), game.official_date) for pitcher in ids)
-                candidate = bd.Candidate(game.game_pk, game.official_date, game.game_type, True, facts)
-                verdict = bd.classify(candidate, plan.collection_date)
-                if verdict is None or verdict.primary != stratum:
-                    continue
-                as_of = (date.fromisoformat(game.official_date) - timedelta(days=1)).isoformat()
-                if stratum == "postseason":
-                    answer = series_fn(game.game_pk, as_of)
-                    result.series_calls += 1
-                    if refused():  # the fetcher swallows every error, so a refused reservation looks like "no standing"
-                        raise rl.CeilingReached("the ledger refused a series request")
-                    try:
-                        standing = bd.case_series({"seriesGameNumber": game.series_game_number}, answer)
-                    except bd.LeakageError:
-                        result.skipped[stratum][game.game_pk] = "series_leak"
-                        continue
-                    result.series[game.game_pk] = standing
-                case = bd.Case(f"{stratum}-{game.game_pk}", game.game_pk, game.official_date, as_of, stratum, verdict.traits, ids)
-                cases[stratum].append(case)
-                result.facts[case.case_id] = facts
-                used_games.add(game.game_pk)
-                used_pitchers.update(ids)
+                consider(game, stratum, capped=True)
         except rl.CeilingReached:
             result.halted = "ceiling_reached"
         except SourceShapeError:
             result.halted = "source_shape"  # a malformed answer stops the collection; what was found is kept
         finally:
-            result.lookups[stratum] = store.lookups - spent_before
+            result.lookups[stratum] += store.lookups - spent_before
         if result.halted:
             break
     short = {name: bd.PER_STRATUM - len(found) for name, found in cases.items() if len(found) < bd.PER_STRATUM}
@@ -244,6 +325,8 @@ def case_record(case: bd.Case, result: Result) -> dict:
         "pitcher_ids": list(case.pitcher_ids),
         "facts": [_facts(f) for f in result.facts[case.case_id]],
         "series": result.series.get(case.game_pk),
+        "prior_starts": [len(f.previous_innings) for f in result.facts[case.case_id]],
+        "series_ended": (case.game_pk in result.ended) if case.stratum == "postseason" else None,
     }
 
 
@@ -252,7 +335,7 @@ def case_hash(record: dict) -> str:
     return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
-def write_selection(directory, result: Result, plan: Plan) -> None:
+def write_selection(directory, result: Result, plan: Plan, earlier: dict | None = None) -> None:
     directory = Path(directory)
     check_output_path(directory)
     records = []
@@ -270,11 +353,40 @@ def write_selection(directory, result: Result, plan: Plan) -> None:
         "short": result.selection.short,
         "stopped": result.stopped,
         "lookups": result.lookups,
+        "screened": result.screened,
+        "stratum_labels": STRATUM_LABELS,
+        "opener_flag_read_from_schedule": False,  # the schedule answer is not read for an opener flag: unknown, not "none"
         "skipped": {k: {str(pk): why for pk, why in v.items()} for k, v in result.skipped.items()},
         "cases": records,
     }
+    if earlier is not None:
+        check_superset(earlier, document)  # before anything is written: a changed earlier case stops the run
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "selection.json").write_bytes((json.dumps(document, indent=1, sort_keys=True) + "\n").encode("utf-8"))
+
+
+def check_superset(old: dict, new: dict) -> None:
+    """Every case of `old` is in `new` with every field it had unchanged (fields added since, and the hash, may differ)."""
+
+    found = {r["case_id"]: r for r in new["cases"]}
+    for record in old["cases"]:
+        again = found.get(record["case_id"])
+        if again is None:
+            raise SelectionChanged(f"case {record['case_id']} of the earlier selection is missing")
+        for key, value in record.items():
+            if key != "sha256" and again.get(key) != value:
+                raise SelectionChanged(f"case {record['case_id']}: field {key!r} changed")
+
+
+def recorded_series(document: dict) -> dict:
+    return {r["game_pk"]: r["series"] for r in document["cases"] if r["series"] is not None}
+
+
+def kept_games(document: dict) -> dict:
+    kept: dict = {name: [] for name in bd.STRATA}
+    for record in document["cases"]:
+        kept[record["stratum"]].append(record["game_pk"])
+    return kept
 
 
 def seal(directory, allow_short: bool = False) -> str:
@@ -327,7 +439,9 @@ def parse_args(argv):
     select.add_argument("--screen-cap", default="")
     select.add_argument("--ledger", default="evals/data/request_ledger.jsonl")
     select.add_argument("--history-dir", default="data_cache/raw/pitcher_history")
+    select.add_argument("--schedule-dir", default="data_cache/raw/mlb_schedule")
     select.add_argument("--out", required=True)
+    select.add_argument("--reuse", default="", help="selection.json of an earlier run: its series standings are reused and the new selection must contain all its cases")
     sealing = commands.add_parser("seal")
     sealing.add_argument("--out", required=True)
     sealing.add_argument("--allow-short", action="store_true")
@@ -341,25 +455,31 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point of gat
         return 0
     check_output_path(Path(args.out))
     check_output_path(Path(args.history_dir))
+    check_output_path(Path(args.schedule_dir))
     plan = Plan(
         date.fromisoformat(args.season_start),
         date.fromisoformat(args.season_end),
         resolve_collection_date(args.collection_date),
         None if args.postseason_end == "auto" else date.fromisoformat(args.postseason_end),
         parse_caps(args.screen_cap),
+        Path(args.schedule_dir),
     )
+    earlier = json.loads(Path(args.reuse).read_text(encoding="utf-8")) if args.reuse else None
+    known_series = recorded_series(earlier) if earlier else None
+    keep = kept_games(earlier) if earlier else None
     ledger = rl.RequestLedger(Path(args.ledger))
     store = cs.HistoryStore(args.history_dir, plan.season_end.year)
     with rl.counted_mlb(ledger):
         loaded = load_games(plan)
-        result = select_cases(loaded.games, store, plan, live_pipeline.fetch_series_status, lambda: ledger.refused)
-    write_selection(args.out, result, plan)
+        result = select_cases(loaded.games, store, plan, live_pipeline.fetch_series_status, lambda: ledger.refused, known_series, keep)
+    write_selection(args.out, result, plan, earlier)
     print(
         json.dumps(
             {
                 "postseason_end_found": loaded.postseason_end.isoformat() if loaded.postseason_end else None,
                 "short": result.selection.short,
                 "lookups_by_stratum": result.lookups,
+                "screened_by_stratum": result.screened,
                 "stopped": result.stopped,
                 "halted": result.halted,
                 "series_calls": result.series_calls,

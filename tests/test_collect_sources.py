@@ -273,3 +273,63 @@ def test_the_people_ceiling_stops_the_lookup_before_anything_is_sent(wire, tmp_p
         store.get(12)
 
     assert len(sent) == 1
+
+
+def test_the_schedule_keeps_the_two_team_ids_away_first(wire):
+    _, answers, _ = wire
+    answers["/schedule?"] = schedule_answer(listed(REAL["final"]))
+    teams = REAL["final"]["teams"]
+
+    (game,) = cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30))
+
+    assert game.teams == (teams["away"]["team"]["id"], teams["home"]["team"]["id"])
+
+
+# --- the schedule is kept on disk: a re-run of the same ranges costs no request --------------------------------------
+
+
+def test_a_schedule_range_is_cached_with_its_digest_and_read_again_for_free(wire, tmp_path):
+    sent, answers, ledger = wire
+    answers["/schedule?"] = schedule_answer(listed(REAL["final"]))
+    first = cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "R", cache_dir=tmp_path / "sched")
+
+    again = cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "R", cache_dir=tmp_path / "sched")
+
+    assert again == first and len(sent) == 1 and ledger.count("mlb") == 1
+    (cached,) = (tmp_path / "sched").glob("*.json")
+    assert json.loads(cached.read_text(encoding="utf-8"))["sha256"]
+
+
+def test_another_range_or_game_type_is_another_cache_entry(wire, tmp_path):
+    sent, answers, _ = wire
+    answers["/schedule?"] = schedule_answer(listed(REAL["final"]))
+    cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "R", cache_dir=tmp_path)
+    cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 29), "R", cache_dir=tmp_path)
+    cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "F,D", cache_dir=tmp_path)
+
+    assert len(sent) == 3
+
+
+def test_a_cached_schedule_that_does_not_match_its_digest_fails_closed(wire, tmp_path):
+    _, answers, _ = wire
+    answers["/schedule?"] = schedule_answer(listed(REAL["final"]))
+    cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "R", cache_dir=tmp_path)
+    (path,) = tmp_path.glob("*.json")
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["response"]["dates"][0]["games"][0]["officialDate"] = "2026-09-02"
+    path.write_text(json.dumps(record), encoding="utf-8")
+
+    with pytest.raises(SourceShapeError):
+        cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "R", cache_dir=tmp_path)
+
+
+def test_a_malformed_schedule_answer_is_never_cached(wire, tmp_path):
+    _, answers, _ = wire
+    bad = listed(REAL["final"])
+    del bad["gamePk"]
+    answers["/schedule?"] = schedule_answer(bad)
+
+    with pytest.raises(SourceShapeError):
+        cs.fetch_schedule(date(2026, 9, 1), date(2026, 9, 30), "R", cache_dir=tmp_path)
+
+    assert list(tmp_path.glob("*.json")) == []

@@ -99,6 +99,7 @@ class ListedGame:
     series_game_number: int | None
     final: bool
     starters: tuple  # (pitcher_id, name) per side, away first; None for a side with no listed starter
+    teams: tuple = ()  # (away team id, home team id)
 
 
 @dataclass(frozen=True)
@@ -116,12 +117,37 @@ class History:
     prior_seasons: int | None  # None: the answer did not say, which is unknown and never zero
 
 
-def fetch_schedule(start: date, end: date, game_types: str = GAME_TYPES) -> list[ListedGame]:
-    """The games of [start, end] in one request. `final` follows the published status table, so a postponed or cancelled game is not final."""
+def _digest(response: Any) -> str:
+    return hashlib.sha256(json.dumps(response, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def fetch_schedule(start: date, end: date, game_types: str = GAME_TYPES, cache_dir=None) -> list[ListedGame]:
+    """The games of [start, end] in one request. `final` follows the published status table, so a postponed or cancelled game is not final.
+
+    With `cache_dir` the answer is kept on disk with its fetch time and digest and read again for free, so a re-run of
+    the same ranges (the same collection date) costs no request. A malformed answer is never cached.
+    """
 
     url = SCHEDULE_URL.format(start=start.isoformat(), end=end.isoformat(), types=game_types)
+    path = Path(cache_dir) / f"schedule_{start.isoformat()}_{end.isoformat()}_{game_types.replace(',', '')}.json" if cache_dir else None
+    if path is not None and path.exists():
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if _digest(record["response"]) != record["sha256"]:
+            raise SourceShapeError(f"cached schedule {path.name} does not match its digest")
+        data = record["response"]
+        mlb_schemas.validate(SCHEDULE, data, "cached collection schedule response")
+        return _schedule_games(data)
     data = live_pipeline._get_json(url)
     mlb_schemas.validate(SCHEDULE, data, "collection schedule response")
+    games = _schedule_games(data)
+    if path is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        record = {"url": url, "fetched_at": round(time.time(), 3), "sha256": _digest(data), "response": data}
+        path.write_text(json.dumps(record, sort_keys=True, indent=1) + "\n", encoding="utf-8", newline="\n")
+    return games
+
+
+def _schedule_games(data: dict) -> list[ListedGame]:
     games = []
     for entry in data["dates"]:
         for game in entry["games"]:
@@ -137,6 +163,7 @@ def fetch_schedule(start: date, end: date, game_types: str = GAME_TYPES) -> list
                     series_game_number=game.get("seriesGameNumber"),
                     final=schema.game_status(game["status"]["abstractGameState"], game["status"]["detailedState"]) == "final",
                     starters=tuple(pitchers),
+                    teams=(game["teams"]["away"]["team"]["id"], game["teams"]["home"]["team"]["id"]),
                 )
             )
     return games
