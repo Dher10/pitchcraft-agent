@@ -73,7 +73,7 @@ def test_the_findings_reach_the_writer_as_labels_only_never_as_sentences(parts):
 def test_the_glossary_is_the_frozen_file_whole_and_in_order(parts):
     terms = json.loads((DATASET / "glossary.json").read_text(encoding="utf-8"))["terms"]
 
-    assert build(parts)["glossary"] == {x["term"]: x["definition"] for x in terms}
+    assert build(parts)["glossary"] == {x["term"]: {"short": x["short"], "meaning": x["definition"]} for x in terms}
     assert list(build(parts)["glossary"]) == [x["term"] for x in terms]
 
 
@@ -110,7 +110,7 @@ def test_the_evidence_index_has_every_scalar_by_dotted_path_and_keeps_nulls(part
     assert index["starters.home_starter.sample.rates.batters_faced"] == 289
     assert index["starters.home_starter.pitching_profile.contact_risk_label"] is None
     assert index["pitch_movement.home_starter.Curveball.v_break"] == -6.5
-    assert index["glossary.OPS"].startswith("On-base plus slugging")
+    assert index["glossary.OPS.meaning"].startswith("On-base plus slugging") and index["glossary.OPS.short"] == "on-base plus slugging"
     assert any(path.startswith("pitch_mix.") for path in index)
 
 
@@ -131,3 +131,10 @@ def test_no_string_the_writer_receives_has_an_underscore_or_an_internal_enum(par
 
     assert strings and not [v for v in strings if "_" in v]
     assert "fetched" not in json.dumps(build(parts)) and "mlb_api" not in json.dumps(build(parts))
+
+
+def test_the_aliases_are_part_of_the_input_and_come_from_the_packet(parts):
+    doc = build(parts)
+
+    assert doc["aliases"] == wi.name_aliases(doc)
+    assert doc["aliases"]["home_starter"] == ["Soriano"] and "Angels" in doc["aliases"]["home"]

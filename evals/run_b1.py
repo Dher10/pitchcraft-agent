@@ -7,6 +7,7 @@ request is counted first by the CallBudget ledger (`.local/p2-2/calls.jsonl`). E
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -24,7 +25,8 @@ DATASET = ROOT / "evals" / "data" / "dataset"
 WORK = ROOT / ".local" / "p2-2"
 KEY_NAME = "PITCHCRAFT_GEMINI_API_KEY_LOCAL"
 QUOTA = {"veteran": 3, "limited": 3, "opener": 2, "postseason": 2}  # the ten dev examples, in the manifest order
-RUN_ID = "b1-dev-examples-1"
+RUN_ID = "b1-dev-examples-2"  # run 1 (guide 0.2, 40 calls) is in the same ledger and counts against the experiment cap
+DEFAULT_RUN_CAP = 80  # owner decision of 2026-10-30 (run 1 spent 22 of 40 calls on 503/429)
 PAUSE_SECONDS = 5
 
 
@@ -78,7 +80,42 @@ def length_of(report: dict) -> int:
     return writer_checks.rules_length(report)
 
 
-def review_markdown(items: list[dict], budget: cb.CallBudget) -> str:
+def capacity_share(budget: cb.CallBudget) -> tuple[int, int]:
+    """(503/429 answers, finished calls) of this run, from the ledger."""
+
+    done = [r for r in budget.rows if r["kind"] == "finish" and r["run"] == budget.run]
+    return sum(1 for r in done if r["code"] in ("http_503", "http_429")), len(done)
+
+
+def calibration_section(case_id="veteran-824027", dataset=DATASET) -> list[str]:
+    """Calibration note only: the rules text of one dev case through the word-level checks (no citations)."""
+
+    from agents import writer_checks
+
+    packet = bp.load_dev_packet(dataset, case_id)
+    doc = writer_input.build_writer_input(packet, bp.load_dev_findings(dataset, case_id), writer_input.load_glossary(dataset / "glossary.json"))
+    rules = lw.rules_report_for(packet)
+    text = " ".join([rules["headline"], *rules["short_summary"], *((s.get("body") or " ".join(s.get("bullets", []))) for s in rules["sections"])])
+    found = writer_checks.lexical_failures(text, doc)
+    lines = [f"\n## Calibration note: the rules text of {case_id} through the word-level checks\n",
+             "Not a defect list. These are the words and shapes the word-level checks flag in the text the rules writer publishes today. Whether each would be a violation depends on citations (a comparison word is allowed when both values are quoted; a sentence-opening question word is a limit of the entity heuristic). The checks that need citations were not run.\n"]
+    for check in sorted({f["check"] for f in found}):
+        tokens = sorted({f["token"] for f in found if f["check"] == check})
+        lines.append(f"- `{check}`: {', '.join(repr(t) for t in tokens)}")
+    return lines + [""]
+
+
+def _run_lines(budget: cb.CallBudget, run_info: dict | None) -> list[str]:
+    capacity, done = capacity_share(budget)
+    lines = [f"Capacity failures (503/429) in this run: {capacity} of {done} finished calls."]
+    if run_info:
+        lines.append(f"Run started {run_info['started_local']} local ({run_info['started_utc']} UTC), finished {run_info['finished_local']} local.")
+        if done and capacity * 3 > done:
+            lines.append(f"More than a third of the calls failed on capacity; time of day of the run: {run_info['started_local']} to {run_info['finished_local']} local ({run_info['timezone']}).")
+    return lines
+
+
+def review_markdown(items: list[dict], budget: cb.CallBudget, run_info: dict | None = None, calibrate: bool = False) -> str:
     paths = {p: 0 for p in writer_policy.PATHS}
     for item in items:
         paths[item["path"]] += 1
@@ -87,6 +124,7 @@ def review_markdown(items: list[dict], budget: cb.CallBudget) -> str:
         "# B1 dev examples: model text beside the rules text (owner gate)\n",
         f"Dev split only. Guide digest `{lw.guide_sha256()}`, prompt `{lw.PROMPT_VERSION}`. Nothing here is published; rules stay live.\n",
         f"Gemini HTTP calls: run {budget.used_run} of {budget.run_cap}, experiment {budget.used_experiment} of {budget.experiment_cap}.",
+        *_run_lines(budget, run_info),
         f"Paths: {', '.join(f'{k} {v}' for k, v in paths.items())}. LLM coverage {llm}/{len(items)}; "
         f"not written by the primary model {len(items) - paths['primary']}/{len(items)} (a fallback or rules result is not a primary first-attempt success).\n",
     ]
@@ -98,6 +136,8 @@ def review_markdown(items: list[dict], budget: cb.CallBudget) -> str:
             out.append(f"- Content attempt {attempt['content_attempt']}: transport path `{attempt['path']}`, transport failures "
                        f"{[(a['model'], a['try'], a['code']) for a in attempt['transport']] or 'none'}, model `{attempt.get('model', '-')}`, "
                        f"checks {attempt.get('checks', 'not reached')}, tokens {usage or '-'}")
+            for failure in attempt.get("check_detail", []):
+                out.append(f"  - `{failure['check']}` token `{failure['token']}` in: {failure['sentence'] or '(whole report)'}")
         rules = item["rules_report"]
         out.append(f"- Length: rules {length_of(rules)} characters; shown text {length_of(item['report'])} characters.\n")
         out.append("### Rules text (A)\n")
@@ -118,7 +158,7 @@ def review_markdown(items: list[dict], budget: cb.CallBudget) -> str:
                 out.append(f"**{title}**\n\n{body}\n")
         else:
             out.append("No model text: the call never produced a usable answer.\n")
-    return "\n".join(out) + "\n"
+    return "\n".join(out + (calibration_section() if calibrate else [])) + "\n"
 
 
 def make_provider(key: str) -> Callable[[str, float, dict], Any]:
@@ -132,12 +172,14 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point
     parser = argparse.ArgumentParser(description="P2.2 offline B1 capture on dev cases")
     parser.add_argument("--owner-pc-offline", action="store_true", required=True)
     parser.add_argument("--out", default=str(ROOT / "docs" / "b1-dev-examples.md"))
+    parser.add_argument("--run-cap", type=int, default=DEFAULT_RUN_CAP)
     args = parser.parse_args(argv)
     from evals.local_runner import _local_key
 
     case_ids = pick_cases()
     glossary = writer_input.load_glossary(DATASET / "glossary.json")
-    budget = cb.CallBudget(WORK / "calls.jsonl", run=RUN_ID, run_cap=cb.run_cap_for(len(case_ids)))
+    budget = cb.CallBudget(WORK / "calls.jsonl", run=RUN_ID, run_cap=args.run_cap)
+    started = datetime.now(timezone.utc)
     try:
         key = _local_key(KEY_NAME)
     except Exception:
@@ -146,12 +188,16 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point
     provider = make_provider(key)
     items = []
     for case_id in case_ids:
-        fresh = not (WORK / "items" / f"{case_id}.json").exists()
-        items.append(run_item(case_id, DATASET, glossary, provider, budget, WORK / "items"))
+        fresh = not (WORK / "items-2" / f"{case_id}.json").exists()
+        items.append(run_item(case_id, DATASET, glossary, provider, budget, WORK / "items-2"))
         print(json.dumps({"case": case_id, "path": items[-1]["path"], "reason": items[-1]["reason"], "calls_run": budget.used_run}), flush=True)
         if fresh:
             time.sleep(PAUSE_SECONDS)
-    Path(args.out).write_text(review_markdown(items, budget), encoding="utf-8", newline="\n")
+    finished = datetime.now(timezone.utc)
+    run_info = {"started_utc": started.strftime("%Y-%m-%d %H:%M"), "finished_utc": finished.strftime("%Y-%m-%d %H:%M"),
+                "started_local": started.astimezone().strftime("%Y-%m-%d %H:%M"), "finished_local": finished.astimezone().strftime("%Y-%m-%d %H:%M"),
+                "timezone": str(started.astimezone().tzinfo)}
+    Path(args.out).write_text(review_markdown(items, budget, run_info, calibrate=True), encoding="utf-8", newline="\n")
     print(json.dumps({"run_calls": budget.used_run, "run_cap": budget.run_cap, "experiment_calls": budget.used_experiment, "experiment_cap": budget.experiment_cap}))
     return 0
 

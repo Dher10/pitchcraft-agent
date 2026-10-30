@@ -26,7 +26,7 @@ def test_the_guide_digest_equals_its_lock():
 def test_the_guide_is_the_approved_version_and_no_longer_a_draft():
     first = guide_text().splitlines()[0]
 
-    assert "version 0.2" in first and "approved" in first
+    assert "version 0.3" in first
     assert "DRAFT" not in guide_text()
 
 
@@ -49,10 +49,10 @@ GLOSSARY = ROOT / "evals" / "data" / "dataset" / "glossary.json"
 GLOSSARY_LOCK = ROOT / "evals" / "data" / "dataset" / "glossary.lock"
 
 
-def table_rows() -> list[tuple[str, str]]:
+def table_rows() -> list[tuple[str, str | None, str]]:
     section = guide_text().split("## 5. Glossary")[1].split("## 6.")[0]
-    rows = re.findall(r"^\| (.+?) \| (.+?) \|$", section, flags=re.M)
-    return [r for r in rows if r[0] != "Term" and not set(r[0]) <= set("-")]
+    rows = re.findall(r"^\| (.+?) \| (.+?) \| (.+?) \|$", section, flags=re.M)
+    return [(t, None if sh == "(none)" else sh, d) for t, sh, d in rows if t != "Term" and not set(t) <= set("-")]
 
 
 def test_the_glossary_file_says_what_the_guide_table_says():
@@ -60,7 +60,7 @@ def test_the_glossary_file_says_what_the_guide_table_says():
 
     terms = json.loads(GLOSSARY.read_text(encoding="utf-8"))["terms"]
 
-    assert [(t["term"], t["definition"]) for t in terms] == table_rows()
+    assert [(t["term"], t["short"], t["definition"]) for t in terms] == table_rows()
     assert len(terms) == 13
 
 
@@ -68,9 +68,20 @@ def test_the_glossary_digest_equals_its_lock():
     assert GLOSSARY_LOCK.read_text(encoding="utf-8").strip() == hashlib.sha256(GLOSSARY.read_bytes()).hexdigest()
 
 
-def test_the_owner_wording_of_the_changed_definitions():
-    rows = dict(table_rows())
+def test_the_owner_wording_of_the_changed_definitions_and_the_short_forms():
+    rows = {t: (sh, d) for t, sh, d in table_rows()}
 
-    assert rows["put-away pitch"] == "In this report, the pitch he uses second most (at least 15% of his pitches)."
-    assert rows["swing-and-miss"] == "How often hitters swing and miss against him."
-    assert rows["command"] == "How well a pitcher puts the ball where he wants it."
+    assert rows["put-away pitch"][1] == "In this report, the pitch he uses second most (at least 15% of his pitches)."
+    assert rows["swing-and-miss"][1] == "How often hitters swing and miss against him."
+    assert rows["command"][1] == "How well a pitcher puts the ball where he wants it."
+    assert {t: rows[t][0] for t in ("OPS", "BB%", "K%", "ERA", "WHIP")} == {
+        "OPS": "on-base plus slugging", "BB%": "walk rate", "K%": "strikeout rate", "ERA": "earned run average", "WHIP": "walks plus hits per inning"}
+    assert all(rows[t][0] is None for t in ("batters faced", "swing-and-miss", "command", "limited sample"))
+
+
+def test_the_guide_states_the_0_3_rules():
+    text = guide_text()
+
+    assert "right after its first use in the report, once per report" in text and "Never write a glossary definition into the prose" in text
+    assert "once per section, or once for both starters" in text and "(\"elite-level\")" in text
+    assert "are denylists" in text and "### Pair 6" in text

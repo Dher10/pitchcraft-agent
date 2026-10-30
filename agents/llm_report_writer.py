@@ -222,8 +222,10 @@ def write(
             failures = result.failures = ["W17.structure"]
             record["checks"] = failures
             continue
-        failures = writer_checks.check_report(candidate, doc, rules_len)
+        detail = writer_checks.check_report_detailed(candidate, doc, rules_len)
+        failures = list(dict.fromkeys(f["check"] for f in detail))
         record["checks"] = failures
+        record["check_detail"] = detail  # sentence, check and offending token: the local run record only, never fed back
         if not failures:
             return WriterResult(writer_checks.to_report(candidate, rules_report), outcome.path, content_attempt, result.attempts, candidate, [])
         result.failures = failures

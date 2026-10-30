@@ -231,7 +231,7 @@ def test_the_guide_the_writer_reads_has_no_case_id_or_dataset_path():
     text = lw.guide_text()
 
     assert not re.findall(r"[a-z]+-[0-9]{6}", text) and "findings/" not in text and "packets/" not in text and "manifest" not in text
-    assert text.startswith("# PitchCraft writer guide (version 0.2)") and "## 6." not in text and "## 1." in text
+    assert text.startswith("# PitchCraft writer guide (version 0.3)") and "## 6." not in text and "## 1." in text
 
 
 def test_a_hostile_pitch_name_key_is_refused_before_any_request(parts):
@@ -243,3 +243,14 @@ def test_a_hostile_pitch_name_key_is_refused_before_any_request(parts):
     result = lw.write(findings, hostile, glossary, provider=fake)
 
     assert result.reason == "input_rejected" and fake.calls == []
+
+
+def test_a_rejected_attempt_keeps_the_sentence_check_and_token_but_the_retry_gets_codes_only(parts):
+    fake = Fake(answer(bad(parts[3])), answer(parts[3]))
+
+    result = go(parts, fake)
+
+    detail = result.attempts[0]["check_detail"]
+    assert {"check": "W10.cause", "sentence": "Kyle Freeland throws his Four-seam because it works.", "token": "because"} in detail
+    assert "check_detail" in result.attempts[1] and result.attempts[1]["check_detail"] == []
+    assert "throws his Four-seam because it works" not in json.dumps(fake.calls[1][2])

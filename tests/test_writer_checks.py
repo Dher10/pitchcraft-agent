@@ -13,7 +13,7 @@ from evals import build_packets as bp
 
 DATASET = Path(__file__).resolve().parents[1] / "evals" / "data" / "dataset"
 SCOPE = "2026 regular season through May 31"
-OPS_DEF = "OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup."
+OPS_DEF = "OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup."  # forbidden since 0.3
 
 
 def ev(doc, *paths):
@@ -40,14 +40,12 @@ def candidate(doc):
         "sections": {
             "summary": [s("The Colorado Rockies visit the Los Angeles Angels at Angel Stadium.", "teams.away.name", "teams.home.name", "venue")],
             "away_vs_home": [
-                s("Command is how well a pitcher puts the ball where he wants it.", "glossary.command"),
                 s("Kyle Freeland shows solid command.", f"{A}.pitching_profile.command_label"),
-                s(OPS_DEF, "glossary.OPS"),
-                s(f"The Angels lineup has a .712 OPS against left-handed pitchers, over the {SCOPE}.", "teams.home.offense_profile.ops_vs_hand", "teams.home.offense_profile.scope.label"),
+                s(f"The Angels lineup has a .712 OPS (on-base plus slugging) against left-handed pitchers, over the {SCOPE}.", "teams.home.offense_profile.ops_vs_hand", "glossary.OPS.short", "teams.home.offense_profile.scope.label"),
             ],
             "home_vs_away": [
                 s("José Soriano shows below-average command.", f"{H}.pitching_profile.command_label"),
-                s(f"The Rockies lineup has a .709 OPS against right-handed pitchers, over the {SCOPE}.", "teams.away.offense_profile.ops_vs_hand", "teams.away.offense_profile.scope.label"),
+                s("The Rockies lineup has a .709 OPS against right-handed pitchers.", "teams.away.offense_profile.ops_vs_hand"),
             ],
             "arsenal": [
                 s("Kyle Freeland throws his Four-seam most and his Curveball second most.", f"{A}.pitching_profile.primary_pitch", f"{A}.pitching_profile.putaway_pitch"),
@@ -94,7 +92,7 @@ def test_the_control_candidate_passes_every_rule(doc):
     # W1: entities and numbers only from the packet
     ("sections.summary.0", "The Colorado Rockies visit Mike Trout at Angel Stadium.", (), "W1.entity"),
     ("sections.away_vs_home.0", "Kyle Freeland shows solid command in 41 starts.", (), "W1.number"),
-    ("sections.away_vs_home.2", f"The Angels lineup has a .712 OPS against left-handed pitchers, over the {SCOPE}.", ("teams.home.offense_profile.scope.label",), "W1.number"),
+    ("sections.away_vs_home.1", f"The Angels lineup has a .712 OPS (on-base plus slugging) against left-handed pitchers, over the {SCOPE}.", ("teams.home.offense_profile.scope.label", "glossary.OPS.short"), "W1.number"),
     # W2: no arithmetic, comparisons only with both values
     ("sections.arsenal.0", "Kyle Freeland throws his Four-seam twice as often as his Curveball.", ("starters.away_starter.pitching_profile.primary_pitch",), "W2.arithmetic"),
     ("sections.arsenal.0", "Kyle Freeland throws his Four-seam more than his Curveball.", ("starters.away_starter.pitching_profile.primary_pitch",), "W2.comparison"),
@@ -182,19 +180,6 @@ def test_a_limited_arsenal_gets_no_description_of_pitch_shapes_and_must_say_it_i
     said["summary_lines"][2] = {"text": "Watch how the Angels lineup handles left-handed pitching.", "evidence": ev(limited, "teams.home.offense_profile.vs_pitcher_hand")}
     said["sections"]["watch"][0] = {"text": "Watch how the Angels lineup handles left-handed pitching.", "evidence": ev(limited, "teams.home.offense_profile.vs_pitcher_hand")}
     assert "W6.arsenal" not in check(said, limited) and "W6.unsaid" not in check(said, limited)
-
-
-def test_a_term_is_defined_before_its_first_use_from_the_glossary_only(doc):
-    c = candidate(doc)
-    c["sections"]["away_vs_home"][2], c["sections"]["away_vs_home"][3] = c["sections"]["away_vs_home"][3], c["sections"]["away_vs_home"][2]
-    assert "W11.order" in check(c, doc)
-
-    c = candidate(doc)
-    c["sections"]["away_vs_home"][2]["text"] = "OPS is a way to add up how good a lineup is."
-    assert "W11.definition" in check(c, doc)
-
-    c = replace(candidate(doc), "sections.arsenal.0", "Kyle Freeland has a high BABIP with his Four-seam.", "starters.away_starter.pitching_profile.primary_pitch", doc=doc)
-    assert "W11.unknown_term" in check(c, doc)
 
 
 def test_the_series_rules_apply_only_with_a_series(doc):
@@ -346,22 +331,3 @@ def test_the_guides_own_missing_value_sentence_passes(doc):
     c = replace(candidate(doc), "sections.home_vs_away.0", "There is not enough data yet to rate the contact risk of José Soriano.", path, doc=doc)
 
     assert "W7.missing" not in check(c, doc) and "W5.label" not in check(c, doc)
-
-
-@pytest.mark.parametrize("text", [
-    "OPS is On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
-    "OPS is on-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
-    "On-base plus slugging: how often a lineup reaches base plus how much power it hits for. Higher means a stronger lineup.",
-])
-def test_the_definition_is_accepted_with_either_capitalization_after_is(doc, text):
-    c = candidate(doc)
-    c["sections"]["away_vs_home"][2] = {"text": text, "evidence": ev(doc, "glossary.OPS")}
-
-    assert check(c, doc) == []
-
-
-def test_the_glossary_is_cited_by_term_and_an_index_path_does_not_exist(doc):
-    index = wc.wi.evidence_index(doc)
-
-    assert "glossary.OPS" in index and "glossary.K%" in index and "glossary.LHH / RHH" in index
-    assert not [p for p in index if p.startswith("glossary.") and p.split(".")[1].isdigit()]

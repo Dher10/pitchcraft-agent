@@ -28,7 +28,7 @@ class WriterInputError(ValueError):
 
 def load_glossary(path) -> list[dict]:
     terms = json.loads(Path(path).read_text(encoding="utf-8"))["terms"]
-    return [{"term": t["term"], "definition": t["definition"]} for t in terms]
+    return [{"term": t["term"], "definition": t["definition"], "short": t.get("short")} for t in terms]
 
 
 def _nfc(node: Any) -> Any:
@@ -98,7 +98,8 @@ def build_writer_input(packet: dict, findings: dict, glossary: list[dict]) -> di
     doc["pitch_movement"] = _need(charts, "pitch_movement", "charts")
     doc["velocity_by_pitch"] = _need(charts, "velocity_by_pitch", "charts")
     doc["findings"] = _findings(findings, teams)
-    doc["glossary"] = {t["term"]: t["definition"] for t in glossary}  # an object keyed by term, so `glossary.OPS` is the natural path
+    doc["glossary"] = {t["term"]: {"short": t.get("short"), "meaning": t["definition"]} for t in glossary}  # keyed by term: `glossary.OPS.short`
+    doc["aliases"] = name_aliases(doc)
     _drop_internal(doc)
     return _nfc(doc)
 
@@ -109,6 +110,38 @@ def _findings(findings: dict, teams: dict) -> dict:
         out[key] = _need(findings, key, "findings")
     by_team = _need(findings, "lineup_pressure_points_by_team", "findings")
     out["lineup_notes"] = {side: list(by_team.get(str(teams[side]["id"]), [])) for side in SIDES}
+    return out
+
+
+TWO_WORD_NICKNAMES = tuple(json.loads(Path(__file__).with_name("writer_lexicon.json").read_text(encoding="utf-8"))["en"]["team_nicknames_two_words"])
+NAME_SUFFIXES = ("Jr.", "Sr.", "II", "III", "IV")
+
+
+def _split_team(name: str) -> tuple[str | None, str]:
+    """(city, nickname) of a team name, from the name alone: a three-word nickname table, else the last word."""
+
+    for nickname in TWO_WORD_NICKNAMES:
+        if name.endswith(" " + nickname):
+            return name[: -len(nickname) - 1], nickname
+    parts = name.split()
+    return (" ".join(parts[:-1]) or None), parts[-1]
+
+
+def name_aliases(doc: dict) -> dict[str, list[str]]:
+    """Short names the writer may use, built from the packet only: a starter's last name; a team's nickname, its city when
+    the other team does not share it, and its abbreviation."""
+
+    out: dict[str, list[str]] = {}
+    for slot in SLOTS:
+        parts = [p for p in doc["starters"][slot]["name"].split() if p not in NAME_SUFFIXES]
+        out[slot] = [parts[-1]] if len(parts) >= 2 else []
+    split = {side: _split_team(doc["teams"][side]["name"]) for side in SIDES}
+    for side, other in (("away", "home"), ("home", "away")):
+        city, nickname = split[side]
+        aliases = {nickname, doc["teams"][side]["abbreviation"]}
+        if city and city != split[other][0]:
+            aliases.add(city)
+        out[side] = sorted(a for a in aliases if a)
     return out
 
 

@@ -64,3 +64,33 @@ def test_the_review_document_puts_both_texts_and_the_path_and_checks_side_by_sid
     assert "### Rules text (A)" in text and "### Model text (B1)" in text and "rejected; the last candidate" in text
     assert "Failed checks: ['W10.cause']" in text and "run 3 of 8" in text
     assert "Kyle Freeland and José Soriano start this game." in text
+
+
+def test_the_review_document_lists_each_failed_check_with_its_sentence_and_token_and_the_capacity_share(tmp_path, monkeypatch):
+    case = "veteran-824027"
+    glossary = writer_input.load_glossary(DATASET / "glossary.json")
+    doc = writer_input.build_writer_input(bp.load_dev_packet(DATASET, case), bp.load_dev_findings(DATASET, case), glossary)
+    control = tlw.twc.candidate(doc)
+    monkeypatch.setattr(writer_checks, "rules_length", lambda report: writer_checks.report_length(control))
+    budget = cb.CallBudget(tmp_path / "calls.jsonl", run="r", run_cap=8)
+    fake = tlw.Fake(tlw.ProviderResponse(503, {}, None), tlw.answer(tlw.bad(control)), tlw.answer(tlw.bad(control)))
+    item = run_b1.run_item(case, DATASET, glossary, fake, budget, tmp_path / "items", sleep=lambda s: None)
+    info = {"started_local": "2026-10-30 22:00", "started_utc": "2026-10-31 03:00", "finished_local": "2026-10-30 22:20", "timezone": "COT"}
+
+    text = run_b1.review_markdown([item], budget, info, calibrate=True)
+
+    assert "`W10.cause` token `because` in: Kyle Freeland throws his Four-seam because it works." in text
+    assert "Capacity failures (503/429) in this run: 1 of 3 finished calls." in text
+    assert "Calibration note: the rules text of veteran-824027" in text and "`W15.question`" in text
+    assert "time of day of the run" not in text  # 1 of 3 is not more than a third
+
+
+def test_more_than_a_third_capacity_failures_reports_the_time_of_day(tmp_path):
+    budget = cb.CallBudget(tmp_path / "calls.jsonl", run="r", run_cap=8)
+    for code in ("http_503", "http_503", "ok"):
+        budget.finish(budget.reserve("x", "m"), code)
+    info = {"started_local": "2026-10-30 22:00", "started_utc": "2026-10-31 03:00", "finished_local": "2026-10-30 22:20", "timezone": "COT"}
+
+    text = run_b1.review_markdown([], budget, info)
+
+    assert "time of day of the run: 2026-10-30 22:00 to 2026-10-30 22:20 local (COT)" in text

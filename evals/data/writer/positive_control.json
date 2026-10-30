@@ -1,0 +1,47 @@
+{
+ "case_id": "veteran-824027",
+ "note": "Hand-written by the implementer for guide 0.3 (not model output). Dev case only. Each sentence lists the packet paths it cites; the tests fill in the values.",
+ "candidate": {
+  "headline": {"text": "Freeland and Soriano bring different looks to Angel Stadium.", "paths": ["starters.away_starter.name", "starters.home_starter.name", "venue"]},
+  "summary_lines": [
+   {"text": "Kyle Freeland uses his Four-seam most, with the Curveball next.", "paths": ["starters.away_starter.pitching_profile.primary_pitch", "starters.away_starter.pitching_profile.putaway_pitch"]},
+   {"text": "José Soriano leans on his Sinker and goes to the Curveball next.", "paths": ["starters.home_starter.pitching_profile.primary_pitch", "starters.home_starter.pitching_profile.putaway_pitch"]},
+   {"text": "Watch how often each starter goes to his Curveball.", "paths": ["starters.away_starter.pitching_profile.putaway_pitch", "starters.home_starter.pitching_profile.putaway_pitch"]}
+  ],
+  "sections": {
+   "summary": [
+    {"text": "The Colorado Rockies visit the Los Angeles Angels at Angel Stadium.", "paths": ["teams.away.name", "teams.home.name", "venue"]},
+    {"text": "Freeland throws left-handed and Soriano throws right-handed.", "paths": ["starters.away_starter.throws", "starters.home_starter.throws"]}
+   ],
+   "away_vs_home": [
+    {"text": "Kyle Freeland carries an 8.08 ERA (earned run average) and a 1.75 WHIP (walks plus hits per inning) over the 2026 regular season through May 31.", "paths": ["starters.away_starter.season_summary.era", "glossary.ERA.short", "starters.away_starter.season_summary.whip", "glossary.WHIP.short", "starters.away_starter.season_summary.scopes.season_rates.label"]},
+    {"text": "He shows solid command and average swing-and-miss ability.", "paths": ["starters.away_starter.pitching_profile.command_label", "starters.away_starter.pitching_profile.swing_miss_label"]},
+    {"text": "The Angels lineup has a .712 OPS (on-base plus slugging) against left-handed pitchers like him.", "paths": ["teams.home.offense_profile.ops_vs_hand", "glossary.OPS.short", "teams.home.offense_profile.vs_pitcher_hand"]},
+    {"text": "Their K% (strikeout rate) is 24.3% and their BB% (walk rate) is 10.4% in that matchup.", "paths": ["teams.home.offense_profile.k_rate_vs_hand", "glossary.K%.short", "teams.home.offense_profile.bb_rate_vs_hand", "glossary.BB%.short"]},
+    {"text": "That group draws walks at an above-average rate and carries an elevated swing-and-miss risk.", "paths": ["findings.lineup_notes.home.1", "findings.lineup_notes.home.0"]}
+   ],
+   "home_vs_away": [
+    {"text": "José Soriano has a 2.65 ERA and a 1.15 WHIP over the 2026 regular season through May 31.", "paths": ["starters.home_starter.season_summary.era", "starters.home_starter.season_summary.whip", "starters.home_starter.season_summary.scopes.season_rates.label"]},
+    {"text": "He shows above-average swing-and-miss ability and below-average command.", "paths": ["starters.home_starter.pitching_profile.swing_miss_label", "starters.home_starter.pitching_profile.command_label"]},
+    {"text": "Colorado's lineup has a .709 OPS against right-handed pitchers.", "paths": ["teams.away.offense_profile.ops_vs_hand", "teams.away.offense_profile.vs_pitcher_hand"]},
+    {"text": "Their K% is 22.7% and their BB% is 8.3% in that matchup.", "paths": ["teams.away.offense_profile.k_rate_vs_hand", "teams.away.offense_profile.bb_rate_vs_hand"]}
+   ],
+   "arsenal": [
+    {"text": "Freeland's Four-seam makes up 26.4% of his pitches and his Curveball 22.5%.", "paths": ["pitch_mix.0.away_starter.overall", "pitch_mix.1.away_starter.overall"]},
+    {"text": "Soriano mixes a Sinker at 27.8%, a Curveball at 24.8% and a Splitter at 18.7%.", "paths": ["pitch_mix.5.home_starter.overall", "pitch_mix.1.home_starter.overall", "pitch_mix.6.home_starter.overall"]},
+    {"text": "His Curveball moves 12.5 in. sideways and 6.5 in. down compared with a pitch thrown without spin.", "paths": ["pitch_movement.home_starter.Curveball.h_break", "pitch_movement.home_starter.Curveball.v_break"]},
+    {"text": "Soriano's Four-seam comes in at 97.7 mph and Freeland's at 91.3 mph.", "paths": ["velocity_by_pitch.3.home_starter_velocity", "velocity_by_pitch.3.away_starter_velocity"]}
+   ],
+   "watch": [
+    {"text": "Watch how often Kyle Freeland throws his Curveball.", "paths": ["starters.away_starter.pitching_profile.putaway_pitch"]},
+    {"text": "Watch whether José Soriano keeps leaning on his Sinker.", "paths": ["starters.home_starter.pitching_profile.primary_pitch"]},
+    {"text": "Watch how the Angels lineup handles a left-hander.", "paths": ["teams.home.offense_profile.vs_pitcher_hand"]}
+   ],
+   "confidence": [
+    {"text": "Both the pitcher figures and the lineup splits cover the 2026 regular season through May 31.", "paths": ["starters.away_starter.season_summary.scopes.counts.label", "teams.away.offense_profile.scope.label"]},
+    {"text": "The starters listed are the probable pitchers, and the game has not started.", "paths": ["status", "data_confidence.lineup_status"]},
+    {"text": "There is not enough data yet to rate either starter's home-run risk.", "paths": ["starters.away_starter.pitching_profile.contact_risk_label", "starters.home_starter.pitching_profile.contact_risk_label"]}
+   ]
+  }
+ }
+}
