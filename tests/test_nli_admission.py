@@ -135,11 +135,12 @@ def lengths(monkeypatch, parts):
 
 def go(parts, fake, nli):
     packet, findings, glossary, _ = parts
-    return lw.write(findings, packet, glossary, provider=fake, item_id="x", sleep=lambda s: None, pacer=wp.Pacer(0, sleep=lambda s: None), nli=nli)
+    return lw.write(findings, packet, glossary, provider=fake, item_id="x", sleep=lambda s: None, pacer=wp.Pacer(0, sleep=lambda s: None), nli=nli, nli_mode="gate")
 
 
 def test_without_an_nli_gate_the_cascade_is_unchanged(parts, lengths):
-    result = go(parts, tlw.Fake(tlw.answer(parts[3])), None)
+    packet, findings, glossary, _ = parts
+    result = lw.write(findings, packet, glossary, provider=tlw.Fake(tlw.answer(parts[3])), sleep=lambda _: None)
 
     assert result.path == "primary" and "nli" not in result.attempts[0]
 

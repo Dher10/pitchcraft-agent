@@ -11,7 +11,7 @@ import time
 
 from agents.model_transport import ConnectionFailed, ConnectionTimeout
 
-WRITER_MODELS = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
+WRITER_MODELS = ("gemini-3.1-flash-lite", "gemini-3.5-flash")  # D54; D49 failure policy stays
 WRITER_TIMEOUT = 120
 BACKOFF_SECONDS = 3
 PACING_SECONDS = 20  # owner decision (guide 0.4, A8): at least this long between the starts of two Gemini calls

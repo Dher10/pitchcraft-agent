@@ -80,6 +80,18 @@ guide requires neutral factual tone, first-use jargon explanations, short
 sentences, concrete things to watch and symmetric starters, with 3-5 real-dev
 good/bad pairs. Named forbidden topics stay forbidden even if in the packet.
 
+**D54-D57 owner amendment (2026-10-30):** the experiment uses primary
+`gemini-3.1-flash-lite`, fallback `gemini-3.5-flash`, LOW thinking, omitted
+temperature and 20-second pacing; D49 failure handling remains. NLI is
+score-only by default until human dev labels exist: record each sentence's
+score/problem and evidence paths; hard code checks and D52/D53 remain gates.
+The retained explicit NLI gate still fails closed. The Nov 2 prose/evidence
+boundary decision uses provisional recall at 0.9 (12% rules, 52% positive
+control), not a new accuracy claim. Decide gate versus score from the owner's
+Nov 4-6 dev labels; no larger model or atomic-claim splitting now. Production
+keeps rules pending a later owner decision. This amendment controls the
+older experiment-gating language below and in section 8.
+
 Before publication, code/schema/contract checks are followed by a pinned
 CPU NLI cross-encoder for each generated sentence against the packet's
 verified catalog fact sentences, never raw JSON. Calibrate its threshold
@@ -212,7 +224,7 @@ frozen test set, preserving shared inputs/comparability; report A/B1/B2.
 
 ## 9. Infrastructure and capacity ($0, no card, no trial)
 
-D46/D47/D49: Gemini via AI Studio (primary gemini-3.5-flash, fallback gemini-3.1-flash-lite) is the only model writer, then rules;
+D46/D47/D49/D54: Gemini via AI Studio (primary gemini-3.1-flash-lite, fallback gemini-3.5-flash) is the only model writer, then rules;
 exact writer IDs verified in P2.1. Groq Free openai/gpt-oss-120b for BOTH
 judge uses; Cloudflare @cf/zai-org/glm-4.7-flash only before judge freeze.
 GitHub Models is retired. Free entitlement/quotas remain to verify; no paid

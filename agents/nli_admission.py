@@ -109,4 +109,40 @@ def make_gate(*, cache, python=None, calibration=None, scorer: Callable = None) 
         except Exception:
             return ["NLI.unavailable"], []
 
+    gate.identity = {"mode": "gate", "cache": str(cache), "python": str(python), "calibration": calibration,
+                     "model": nli_cache.identity(), "renderer": fact_renderer.renderer_identity()}
     return gate
+
+
+def make_scorer(*, cache, python=None, scorer: Callable = None) -> Callable:
+    """D55 experiment diagnostics, without a threshold or admission claim.
+
+    Includes an explicit not-applicable record for Watch sentences, and
+    unavailable scores on worker failure. Code checks remain independent.
+    """
+    def score(candidate, doc):
+        try:
+            results = score_candidate(candidate, doc, cache=cache, python=python, scorer=scorer)
+        except Exception:
+            results = plan_pairs(candidate, doc)
+            for result in results:
+                result["score"] = None
+                result["problem"] = result["problem"] or "unavailable"
+        by_index = {r["index"]: r for r in results}
+        detail = []
+        codes = []
+        for index, sentence in enumerate(writer_checks._all_sentences(candidate)):
+            result = by_index.get(index)
+            if result is None:
+                result = {"index": index, "text": sentence["text"], "premise": None,
+                          "score": None, "problem": "not_applicable"}
+            elif result["score"] is None and result["problem"] is None:
+                result["problem"] = "unavailable"
+            if result["problem"] not in (None, "not_applicable"):
+                codes.append("NLI." + result["problem"])
+            detail.append({**_brief(result, None), "evidence_paths": [e["path"] for e in sentence["evidence"]]})
+        return list(dict.fromkeys(codes)), detail
+
+    score.identity = {"mode": "score_only", "cache": str(cache), "python": str(python),
+                      "model": nli_cache.identity(), "renderer": fact_renderer.renderer_identity()}
+    return score

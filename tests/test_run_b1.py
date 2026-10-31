@@ -170,7 +170,7 @@ class CapacityProvider:
 
     def __call__(self, model, timeout, body):
         self.calls += 1
-        return tlw.status(429) if model == "gemini-3.5-flash" else tlw.answer(None, text="{}", version="gemini-3.1-flash-lite")
+        return tlw.status(429) if model == "gemini-3.1-flash-lite" else tlw.answer(None, text="{}", version="gemini-3.5-flash")
 
 
 def test_more_than_a_third_capacity_failures_stops_the_run_keeps_partial_results_and_names_the_model(tmp_path, monkeypatch):
@@ -182,7 +182,7 @@ def test_more_than_a_third_capacity_failures_stops_the_run_keeps_partial_results
 
     items, stop = run_b1.run_all(case_ids, DATASET, glossary, provider, budget, tmp_path / "items", sleep=lambda s: None, clock=lambda: 1.0)
 
-    assert stop is not None and stop["after_case"] in case_ids and stop["by_model"]["gemini-3.5-flash"]["capacity"] >= 4
+    assert stop is not None and stop["after_case"] in case_ids and stop["by_model"]["gemini-3.1-flash-lite"]["capacity"] >= 4
     attempted = [i for i in items if i["path"] != "not_attempted"]
     skipped = [i for i in items if i["path"] == "not_attempted"]
     assert attempted and skipped and len(attempted) + len(skipped) == 5 and all(i["reason"] == "capacity_stop" for i in skipped)
@@ -190,7 +190,7 @@ def test_more_than_a_third_capacity_failures_stops_the_run_keeps_partial_results
     info = {"started_local": "2026-10-31 10:00", "started_utc": "2026-10-31 15:00", "finished_local": "2026-10-31 10:05", "timezone": "COT",
             "stopped": {**{k: v for k, v in stop.items() if k != "at_epoch"}, "at_utc": "2026-10-31 15:03", "at_local": "2026-10-31 10:03"}}
     text = run_b1.review_markdown(items, budget, info)
-    assert "The run stopped early" in text and "Failing model(s): `gemini-3.5-flash`" in text and "NOT ATTEMPTED" in text
+    assert "The run stopped early" in text and "Failing model(s): `gemini-3.1-flash-lite`" in text and "NOT ATTEMPTED" in text
 
 
 def test_a_run_with_few_capacity_failures_does_not_stop(tmp_path, monkeypatch):

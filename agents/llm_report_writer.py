@@ -184,8 +184,13 @@ def write(
     sleep: Callable[[float], None] | None = None,
     pacer: Any = None,
     nli: Callable[[dict, dict], tuple[list[str], list[dict]]] | None = None,
+    nli_mode: str = "score_only",
 ) -> WriterResult:
+    if nli_mode not in ("score_only", "gate"):
+        raise ValueError("invalid nli mode")
     rules_report = rules_report_for(matchup_input)
+    if nli_mode == "gate" and nli is None:
+        return rules_result(rules_report, "nli_unavailable", failures=["NLI.unavailable"])
     if provider is None:
         return rules_result(rules_report, "no_provider")
     try:
@@ -241,13 +246,18 @@ def write(
         record["style_findings"] = styles  # scored by S1, never a reason to reject (D52)
         record["check_detail"] = detail  # sentence, check and offending token: the local run record only, never fed back
         nli_codes: list[str] = []
-        if not gate_codes and nli is not None:
-            # The local entailment stage (agents/nli_admission.py) runs only after every code gate passed; it fails closed.
+        if nli is not None and (not gate_codes or nli_mode == "score_only") and "W17.structure" not in gate_codes:
+            # D55: scores also cover rejected, structurally usable candidates. Explicit gate mode stays fail closed.
+            record["nli_mode"] = nli_mode
             try:
                 nli_codes, record["nli"] = nli(candidate, doc)
             except Exception:
                 nli_codes, record["nli"] = ["NLI.unavailable"], []
-            gate_codes = list(nli_codes)
+            record["nli_findings"] = list(nli_codes)
+            if nli_mode == "score_only":
+                nli_codes = []  # diagnostic only; never retry or reject on NLI scores/problems
+            else:
+                gate_codes = list(nli_codes)
             record["checks"] = gate_codes
             if nli_codes and set(nli_codes) <= {"NLI.uncalibrated", "NLI.unavailable"}:
                 # A missing calibration or a broken worker cannot be fixed by a second Gemini call (capacity is scarce): rules now.

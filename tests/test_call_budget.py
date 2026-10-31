@@ -120,7 +120,7 @@ def test_a_cap_reached_before_the_first_call_sends_nothing(tmp_path):
 
     outcome = wp.write_with_policy(b.guard("item", lambda m, t: sent.append(m)), sleep=lambda s: None)
 
-    assert sent == [] and outcome.path == "rules" and outcome.attempts == ({"model": "gemini-3.5-flash", "try": 1, "code": "call_cap_reached"},)
+    assert sent == [] and outcome.path == "rules" and outcome.attempts == ({"model": "gemini-3.1-flash-lite", "try": 1, "code": "call_cap_reached"},)
 
 
 def test_an_unreadable_partial_row_and_a_negative_cap_are_refused(tmp_path):

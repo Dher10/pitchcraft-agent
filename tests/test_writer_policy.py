@@ -5,7 +5,7 @@ from agents import model_transport as transport
 from agents.model_transport import ProviderResponse
 from agents import writer_policy as policy
 
-PRIMARY, FALLBACK = "gemini-3.5-flash", "gemini-3.1-flash-lite"
+PRIMARY, FALLBACK = "gemini-3.1-flash-lite", "gemini-3.5-flash"
 OK = ProviderResponse(200, {}, {"candidates": []})
 
 

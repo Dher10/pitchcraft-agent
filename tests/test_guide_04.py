@@ -254,7 +254,7 @@ def test_a8_a_call_starts_at_least_the_interval_after_the_previous_call_started(
 def test_a8_the_production_writer_path_paces_every_call_including_the_d49_retries(parts, lengths):
     clock = Clock()
     pacer = wp.Pacer(20, clock=clock.time, sleep=clock.sleep)
-    fake = tlw.Fake(tlw.status(503), tlw.status(503), tlw.status(503), tlw.answer(parts[3], version="gemini-3.1-flash-lite"))
+    fake = tlw.Fake(tlw.status(503), tlw.status(503), tlw.status(503), tlw.answer(parts[3], version="gemini-3.5-flash"))
     packet, findings, glossary, _ = parts
 
     result = lw.write(findings, packet, glossary, provider=fake, item_id="x", sleep=clock.sleep, pacer=pacer)

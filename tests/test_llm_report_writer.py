@@ -37,7 +37,7 @@ def length_follows_the_control(monkeypatch, parts):
     monkeypatch.setattr(writer_checks, "rules_length", lambda report: writer_checks.report_length(parts[3]))
 
 
-def answer(candidate, version="gemini-3.5-flash", finish="STOP", text=None):
+def answer(candidate, version="gemini-3.1-flash-lite", finish="STOP", text=None):
     body = {"candidates": [{"finishReason": finish, "content": {"role": "model", "parts": [{"text": text if text is not None else json.dumps(candidate)}]}}],
             "modelVersion": version, "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 20, "thoughtsTokenCount": 5, "totalTokenCount": 35}}
     return ProviderResponse(200, {}, body)
@@ -131,7 +131,7 @@ def test_unparseable_and_truncated_answers_count_as_a_content_failure_then_retry
 
 
 def test_the_routed_model_name_is_accepted_and_an_unknown_name_is_not(parts):
-    assert go(parts, Fake(answer(parts[3], version="gemini-3.6-flash"))).path == "primary"
+    assert go(parts, Fake(status(503), status(503), answer(parts[3], version="gemini-3.6-flash"))).path == "fallback"
     assert go(parts, Fake(answer(parts[3], version="gemini-9"), answer(parts[3], version="gemini-9"))).path == "rules"
 
 
@@ -145,7 +145,7 @@ def test_without_a_provider_the_rules_report_is_returned_and_nothing_is_sent(par
 
 
 def test_the_worst_case_is_eight_counted_calls_for_one_item(parts, tmp_path):
-    bad_answer = answer(bad(parts[3]))
+    bad_answer = answer(bad(parts[3]), version="gemini-3.5-flash")
     fake = Fake(status(503), status(503), status(503), bad_answer, status(503), status(503), status(503), bad_answer)
     budget = cb.CallBudget(tmp_path / "c.jsonl", run="r", run_cap=8)
 
@@ -170,7 +170,7 @@ def test_the_request_is_closed_quoted_data_with_the_d48_settings(parts):
     data = json.loads(body["contents"][0]["parts"][0]["text"])["DATA"]
     system = body["systemInstruction"]["parts"][0]["text"]
 
-    assert model == "gemini-3.5-flash" and timeout == 120
+    assert model == "gemini-3.1-flash-lite" and timeout == 120
     assert body["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "LOW"} and "temperature" not in body["generationConfig"]
     assert not {"tools", "tool_choice", "functions"} & set(body)
     assert CASE not in text and "Live snapshot" not in text and "notes" not in data["data_confidence"]
