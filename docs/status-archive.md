@@ -1,5 +1,60 @@
 # PitchCraft v2 — Status archive
 
+### 2026-10-31 — Owner-requested run-4 docs commit and gate audit
+
+- Fresh independent reviewer **PASS**, no findings or optional items. It checked the raw report's 47 gate lines, 12 candidates, 32 candidate/check incidences, all fifteen traced examples and gate mechanisms, plus actual terminal excerpts. Terminal excerpts (all exit 0):
+
+```text
+python -m pytest
+=========== 5559 passed, 2 skipped, 2 warnings in 651.85s (0:10:51) ===========
+
+npm test
+ Test Files  20 passed (20)
+      Tests  296 passed (296)
+   Duration  79.66s (environment 49%, import 22%, setup 17%, tests 12%, transform 1%)
+
+npx tsc --noEmit
+npm notice run tsc --noEmit
+[exit 0, no further output]
+
+npm run lint
+npm notice run eslint
+[exit 0, no further output]
+
+npm run build
+✓ Compiled successfully in 9.0s
+  Finished TypeScript in 2.0s ...
+✓ Generating static pages using 6 workers (5/5) in 644ms
+  Finalizing page optimization ...
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+└ ƒ /quality
+ƒ Proxy (Middleware)
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+- Full verification, default terminal and sequential, without PATH/locale changes: `python -m pytest` -> **5559 passed, 2 skipped, 2 existing warnings, 651.85 s**; `npm test` -> **296 passed / 20 files, 79.66 s**; `npx tsc --noEmit`, `npm run lint`, `npm run build` -> **exit 0 each** (Next 16.4.1). Approved sandbox escalation used. `git diff --check` exit 0; code/test/frozen/protected-path diff empty. No artificial red tests for this docs-only task.
+- Self-review: contract rules 1-8 unchanged; rejected model statements remain labelled/quoted, packet scope and unknown states are not changed, and no publication or runtime error behavior changes. Counts trace 12 nonempty candidates and all 47 saved findings; format/citation failures are not called factual hallucinations. Interpretive examples do not become owner labels or change acceptance. No new tolerance, skip, xfail, workflow or decision. Ledger remains 22/30 and 127/400; raw report SHA-256 remains `4982155a844cf9dcff4d4240f499d6deae883d3744ee1fc7ec89b513529a0544` and frozen inputs match.
+
+- Scope: two review reports and existing handoff (PLAN, STATUS, approved plan and archive), one docs commit under D35. The owner explicitly requests all five suites, independent review, push and green CI; no code changes or Gemini calls. Unrelated research draft stays excluded.
+- `python .local/p2-2/analyze-run4-gates.py` verified all 12 saved candidates against their recorded check lists: **47 finding instances**, **32 candidate/check incidences**, **15 ids**; three traced examples per top-five id. Count rank uses findings, not candidate counts. Structure and invalid-evidence short circuits are documented; counts are recorded findings, not all possible failures.
+- Audit reads only frozen dev packets/findings and cached candidates; no NLI/model/provider run or label-pool change. Verdicts are check-specific: ordinary capitalized openers, scope/matchup 'versus', two valid comparisons and explicitly supported causal reasons expose harness rigidity. Invented threshold paths and missing date citations are model citation errors (distinct from invented facts); 10.4% BB against cited 10.6% is a wrong fact. The 'official' wording caveat and incomplete citations are explicit; no whole-candidate acceptance is inferred.
+- No decision/schema/contract/xfail/tolerance/public text/runtime/frozen-input changes. The raw report is preserved with SHA-256 `4982155a844cf9dcff4d4240f499d6deae883d3744ee1fc7ec89b513529a0544`. Prior CI at `17d5f12`, run 41151295393, reconfirmed success via `gh run view --json conclusion,headSha,status`.
+- Full verification, independent verdict and commit/CI results follow below. Earlier draft-status notes are historical; this task is the owner's authorization to record them. No B1 or remaining-case retry.
+
+### 2026-10-31 — Pre-freeze dev pass run 4, stopped early (review drafts)
+
+- Owner start message authorized the same ten dev ids, cap 30, frozen guide/glossary/prompt and both stops. Clock check: 12:08 UTC (after the retained 07:00 boundary). `17d5f12` CI 41151295393 verified completed/success before calls; initial ledger 0/30 run and 105/400 experiment. Existing untracked research draft untouched.
+- Command: `python -m evals.run_b1 --owner-pc-offline --run-cap 30 --out docs/b1-dev-examples-run4.md` (approved local-key/network escalation; key never printed). Exit 0, run 12:08–12:19 UTC / 07:08–07:19 America/Bogota. Same ten dev cases selected; only first six attempted. No test-split contents read, public/data or evals/live changes, provider-route/config/guide/glossary/prompt/runtime code changes.
+- Outcome: 0 accepted, 6 rejected (`checks_failed`, two content attempts each), 4 not attempted. Calls per case: postseason-849842 2, postseason-849849 2, opener-824280 2, opener-823769 3, limited-823836 6, limited-825104 7. Remaining limited-823863 and all three selected veterans unattempted. This is INCOMPLETE and not a ten-case result for guide 0.4.
+- Final ledger **22/30 run, 127/400 experiment**. 12 successful responses and 10 HTTP 503 failures; no HTTP 429. Flash-lite 17 calls (8 answers, 9 capacity failures); 3.5-flash 5 (4 answers, 1 capacity failure). At case six, both stop predicates held: 10/22 > 1/3 and 22/6 > 3, after at least five cases. Frozen runner checks at case boundaries, records `capacity_stop` ahead of the average reason, and retained the partial results. No restart/fill-in call made.
+- Reports: unchanged runner output `docs/b1-dev-examples-run4.md`; paired full-text review `docs/b1-dev-examples-run4-comparison.md`, including outcomes, all call/path totals, S1 findings, frozen digests, raw shape-rejected sentence appendix and record hashes. Complete candidates/attempts/scores remain in `.local/p2-2/items-4/`; metadata `.local/p2-2/run-info-4.json`; shared ledger `.local/p2-2/calls.jsonl`.
+- NLI diagnostic records across the scored attempts: 206 numeric, 8 unrenderable, 33 Watch/not-applicable (247 total); one structurally invalid candidate is explicitly not scored. 125/206 scores >=0.9 and 137/206 >=0.5, unlabelled descriptive counts only, never accuracy/recall or admission. Code gates caused rejection; NLI stayed score-only. S1 finding instances across attempts: S-1 6, S-2 5, S-4 12, S-5 2, S-7 6; W11.expansion 2, W11.repeat 1, W14.team 2, W17.length 6. S-3/S-6/S-9 unjudged, not passes.
+- Artifact check: `python .local/p2-2/build-run4-review.py` verifies frozen inputs still match, ledger counts, both stop predicates, score-only mode and sentence counts, and reproduces the raw report from saved records after normalizing token-dictionary display order. Exact text comparison initially differed only in token-dictionary key display order after canonical JSON cache writes; token values and all other report lines matched. Raw report SHA-256 `4982155a844cf9dcff4d4240f499d6deae883d3744ee1fc7ec89b513529a0544`; local audit `.local/p2-2/run4-audit.json`.
+- Report-only limitation: raw `shown text` length for a rejected case measures the returned rules report, whereas the comparison displays separate rendered rule/model lengths. Frozen harness was not edited. No schema/decision/contract/tolerance/xfail changes. No tests or CI are claimed for these new review drafts; no commit made. Prepared report/handoff wait for owner review; any later commit follows D35.
+- Stop here: owner reviews the incomplete dev pass. Do not retry the four remaining cases or launch forty-case B1 without a new instruction.
+
 ### 2026-10-30 — P2.2 ten-dev input freeze (no provider calls)
 
 - Prior task committed as `c1f91b6`; CI 41149408053 success, verified by `gh run watch --exit-status` (site 41 s, components 46 s, pytest 3m7s), before starting the freeze task.
