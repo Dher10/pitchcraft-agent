@@ -1,0 +1,95 @@
+{
+  "base_commit": "c1f91b6fcae5b5416b18a8cd2dbcdf74e12b5fd5",
+  "experiment_calls_before": 105,
+  "inputs": {
+    "dev_cases": [
+      {
+        "findings_sha256": "b5f63d200d64414b4859415884d271ef53db885ef1ccda028a1632de0170931f",
+        "id": "postseason-849842",
+        "packet_sha256": "bcb192978ffb5e05ee72bdb052d30987e51fa72d90097617633b83f4bfb30b9c"
+      },
+      {
+        "findings_sha256": "1ecf88b8511b893e9ebd0f0d2a7d509e58ee61a2f057da0f3dbe4b5fef46c607",
+        "id": "postseason-849849",
+        "packet_sha256": "c12958401ff07620b41fbd81fdb99c31dbcbc9b86d8dc3a6b88a3ed26110e3c3"
+      },
+      {
+        "findings_sha256": "87e34d1cbc91f8753db4fea87a8196cf295ddcec94d660f0f6207571c8893a3c",
+        "id": "opener-824280",
+        "packet_sha256": "f36bb84d7010cca2514f0768c1b9f17d9035caa7b13c2f06fc18a2fbd2b59389"
+      },
+      {
+        "findings_sha256": "f6f68f4801666244c0b58c2073bfa37821a1549de280b415cac47163182eefa5",
+        "id": "opener-823769",
+        "packet_sha256": "06ff926d6673ff3cf79c81f572c9899999b8fcefd7a2134754fb50138eca6d0b"
+      },
+      {
+        "findings_sha256": "8289f1611d9942c97603b0aa99bd37787e5fbdf70e81d523f41862278cc84ca1",
+        "id": "limited-823836",
+        "packet_sha256": "491a21bebf42d451dae72a97391b2aabc82587f3b5b76b8aedfdf5a729687d15"
+      },
+      {
+        "findings_sha256": "537c22ae1d4097397075ef76f9c1e4925d6997c930c5721ecd9b586248905de4",
+        "id": "limited-825104",
+        "packet_sha256": "af02ae9de2a3866c67b73156c017125396f3abac65c61f48c8f6776868471467"
+      },
+      {
+        "findings_sha256": "08b60d1ae3f25177788c6af87a21c4552d3565661b7cbd2cc807df36a3dd50c6",
+        "id": "limited-823863",
+        "packet_sha256": "d8f223db8d1194d1d026ab0ff4dcd9172085e4626145cf67e2645369125635d8"
+      },
+      {
+        "findings_sha256": "696e6bdf7ce378476fbdababe18297ad53a5e6d2578180f09aa117639a5ad23e",
+        "id": "veteran-824027",
+        "packet_sha256": "c655e8b302ff342ae60fd4282d741859cc3efe76321e0d288be2397425b55178"
+      },
+      {
+        "findings_sha256": "55b0f28ba3c4f793365767e51cee4f9e59f458486b0a3755f253227df4e50802",
+        "id": "veteran-823938",
+        "packet_sha256": "c44d45064d7eb2a758f7f279bcd1d3aa1bcdb9d132afaac2610d0be8bad7711c"
+      },
+      {
+        "findings_sha256": "f0d4ca5eec6e5ee156d5c34fe2ae3684767f77c490070dbc696084a7efd9365b",
+        "id": "veteran-824803",
+        "packet_sha256": "55b7a427de7e5b016a6b288059753e3c6b020e0f56ee62f7650a8d2c021c5fba"
+      }
+    ],
+    "evaluators": {
+      "agents/llm_report_writer.py": "ce62b6d06e017bd307017eaca79420c3d631c1a46cddb19cc52264bf4cb0bb0d",
+      "agents/nli_admission.py": "532794d611d8d630e81d5e70e82f8e2162865b4a4265d4f8281dc05b0e7e50d3",
+      "agents/writer_checks.py": "923ac7cfc607b1a5d892c1b6a83bfc03ad48d19856b7b13da9428c3c21e83b29",
+      "agents/writer_input.py": "203532305e80545d7ce553d947b92166b81f880b8ad9dff6bfcf96284991ed63",
+      "agents/writer_policy.py": "46f7e43d7db184866728588a44d9266238983b190ae53f09ecda2239531c4e7a",
+      "evals/run_b1.py": "5b83ce10e7ac24e0a225c02a87cc229ad5572ad83fae6a073858aeb344430c08"
+    },
+    "experiment_cap": 400,
+    "glossary": {
+      "sha256": "f7a22da784278170c617cd03c18f27db6a14236620608fe3f8f77c70e6d58b8d",
+      "version": "1.1"
+    },
+    "guide": {
+      "sha256": "84a87b387c260fd05c0277b8fb19c9abe867c9cf64920643056805df5aef972c",
+      "version": "0.4"
+    },
+    "nli_identity": "e2b62f3bcab147b4dacbe170b202498092e316f9fae70e636e4640980d39ecba",
+    "nli_mode": "score_only",
+    "packets_manifest_sha256": "0d906f78d42ab013568be535db1716fd329d72033a002a414b1f29625bdc4a25",
+    "prompt": {
+      "sha256": "db509483d528e1453349501bffcd1e6aa26bee40e2a19192ec21cbed13e44d3c",
+      "version": "p2.2-3"
+    },
+    "renderer_identity": "p2.3-2:00c0f8b1b4eb3da8",
+    "writer": {
+      "backoff_seconds": 3,
+      "models": [
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash"
+      ],
+      "pacing_seconds": 20,
+      "temperature": "default",
+      "thinking": "LOW",
+      "timeout": 120
+    }
+  },
+  "run_cap": 30
+}

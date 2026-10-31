@@ -1,5 +1,16 @@
 # PitchCraft v2 — Status archive
 
+### 2026-10-30 — P2.2 ten-dev input freeze (no provider calls)
+
+- Prior task committed as `c1f91b6`; CI 41149408053 success, verified by `gh run watch --exit-status` (site 41 s, components 46 s, pytest 3m7s), before starting the freeze task.
+- Approved frozen-input enforcement lives in `evals/experiment_freeze.py`, called by the runner before key loading/provider creation. It reads only guide/glossary and manifest ids/hashes; dev packet loaders retain their independent content/hash guards. No held-out contents read. The frozen artifact records the unchanged guide 0.4/glossary 1.1/prompt p2.2-3, exact ten dev ids and packet/findings hashes, configuration and evaluator identities. Full digests are in STATUS and the artifact.
+- Red-first: `python -m pytest tests/test_experiment_freeze.py -q` -> **6 failed** (missing freeze implementation); separate tests for guide, glossary, prompt-version and packets-manifest drift plus unchanged/committed-record controls. The CLI >30 cap guard was seen failing in **1 test** before implementation; invalid frozen cap (31, string, boolean) was seen failing in **3 tests** before boundary validation. No actual key or provider is used by these tests.
+- Targeted command `python -m pytest tests/test_experiment_freeze.py tests/test_run_b1.py -q` verifies the four drift guards, frozen controls, cap enforcement and existing runner behavior. Full five-suite results and reviewer verdict follow below before commit.
+- Targeted result: **24 passed in 2.04 s**. Full verification, sequential default terminal without PATH/locale changes: `python -m pytest` -> **5559 passed, 2 skipped, 2 existing warnings, 584.75 s**; `npm test` -> **296 passed / 20 files, 14.78 s**; `npx tsc --noEmit`, `npm run lint`, `npm run build` -> **exit 0 each** (Next 16.4.1). Approved sandbox escalation used. `git diff --check` exit 0; protected-path diff empty.
+- Fresh independent reviewer **PASS**, no findings or optional items; independently repeated the freeze/runner command -> **24 passed in 2.14 s**. Final read-only freeze verification matched; ledger **0/30 run, 105/400 experiment**. Prior commit CI reconfirmed completed/success via `gh run view 41149408053 --json conclusion,headSha,status`. Freeze commit includes this handoff; its CI must pass before the session ends. No dev execution or quota-reset waiting authorized in this session.
+- Self-review: contract rules 1-8 unchanged (internal experiment artifact only; production rules, evidence/unknown/scope/policy checks and sanitized public errors remain). No schema/public copy, golden file, tolerance entry, xfail, workflow or protected data changed. NLI/renderer source identities and LF-normalized text/prompt identities are portable across checkouts; contributing source files were checked to contain no CRLF before freeze. No findings rejected.
+- Stop without dev execution or quota waiting; baseline remains 105/400 and run 4 is 0/30. Next owner gate is the separate capped dev-pass start message; forty-case B1 remains unstarted.
+
 ### 2026-10-30 — P2.3 D54-D57 follow-up (implementation)
 
 - Approved plan: `docs/plans/P2.3-score-only-dev.md`, including both owner-approved safeguards (capacity stop and frozen-input rejection). This session stops before dev execution; no quota waiting.

@@ -207,7 +207,7 @@ two red CI runs or two review rounds without PASS. Nonce/dynamic/style-attribute
 - [ ] P2.6 Shared code/NLI evaluators and bundled cross-family judge, calibrated on dev humans; separate verdicts/denominators, >=85% agreement per judged dimension, S1 applicable report-rule denominator with per-rule/report-summary breakdowns. Freeze before test evidence. Exact frozen judge stays the same for official A/B1/B2; no fallback rescue after freeze. Held-out trust is measured in P2.7, not this task.
 - [ ] P2.7 A/B1/B2: first attempts primary, retry/fallback separate; dev-only R1/S1 error analysis, owner-approved one-change B2 hypothesis, B2 on frozen test. Gates: groundedness 19/20, policy 20/20, R1 20/20, U1 wins-or-ties 14/20, >=85% trust separately per judged dimension. F1 length after ten A reports; missing evidence keeps rules. Independent Antigravity QA before P3.
 
-- [ ] P2.3-followup [gated] D54-D57 experiment boundary and ten-dev input
+- [x] P2.3-followup [gated] D54-D57 experiment boundary and ten-dev input
   freeze (`docs/plans/P2.3-score-only-dev.md`, owner approved): score-only
   NLI, flash-lite primary, rules production, unchanged caps, average and
   capacity stops, frozen-input enforcement. Dev execution waits for a

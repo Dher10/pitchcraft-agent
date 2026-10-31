@@ -316,6 +316,15 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point
         return 0
     if not args.owner_pc_offline:
         parser.error("--owner-pc-offline is required to make requests")
+    from evals import experiment_freeze as freeze
+    try:
+        frozen = freeze.verify_frozen(freeze.FREEZE_PATH, DATASET, case_ids)
+    except freeze.FrozenInputsChanged:
+        print(json.dumps({"stopped": "frozen_inputs_changed"}))
+        return 1
+    if args.run_cap > frozen["run_cap"]:
+        print(json.dumps({"stopped": "run_cap_exceeds_freeze"}))
+        return 1
     from evals.local_runner import _local_key
 
     glossary = writer_input.load_glossary(DATASET / "glossary.json")
@@ -335,7 +344,8 @@ def main(argv=None) -> int:  # pragma: no cover - the network entry point
     items, stop = run_all(case_ids, DATASET, glossary, provider, budget, WORK / ITEMS_DIR, on_item=report, nli=scorer)
     finished = datetime.now(timezone.utc)
     zone = started.astimezone().tzinfo
-    run_info = {"started_utc": started.strftime("%Y-%m-%d %H:%M"), "finished_utc": finished.strftime("%Y-%m-%d %H:%M"),
+    run_info = {"freeze_sha256": lw.digest(frozen["inputs"]),
+                "started_utc": started.strftime("%Y-%m-%d %H:%M"), "finished_utc": finished.strftime("%Y-%m-%d %H:%M"),
                 "started_local": started.astimezone().strftime("%Y-%m-%d %H:%M"), "finished_local": finished.astimezone().strftime("%Y-%m-%d %H:%M"),
                 "timezone": str(zone)}
     if stop:
