@@ -93,7 +93,7 @@ def test_the_control_candidate_passes_every_rule(doc):
     ("sections.summary.0", "The Colorado Rockies visit Mike Trout at Angel Stadium.", (), "W1.entity"),
     ("sections.away_vs_home.0", "Kyle Freeland shows solid command in 41 starts.", (), "W1.number"),
     ("sections.away_vs_home.1", f"The Angels lineup has a .712 OPS (on-base plus slugging) against left-handed pitchers, over the {SCOPE}.", ("teams.home.offense_profile.scope.label", "glossary.OPS.short"), "W1.number"),
-    # W2: no arithmetic, comparisons only with both values
+    # W2: D62 forbids arithmetic and figure comparisons
     ("sections.arsenal.0", "Kyle Freeland throws his Four-seam twice as often as his Curveball.", ("starters.away_starter.pitching_profile.primary_pitch",), "W2.arithmetic"),
     ("sections.arsenal.0", "Kyle Freeland throws his Four-seam more than his Curveball.", ("starters.away_starter.pitching_profile.primary_pitch",), "W2.comparison"),
     # W3: no predictions, outcomes or questions
@@ -141,9 +141,9 @@ def test_evidence_must_exist_and_carry_the_value_it_quotes(doc):
     assert "W1.no_evidence" in check(c, doc)
 
 
-def test_a_comparison_needs_both_values_quoted_with_one_scope(doc):
+def test_d62_comparison_is_forbidden_even_with_both_values_and_one_scope(doc):
     same = replace(candidate(doc), "sections.arsenal.0", "Kyle Freeland has faced fewer batters, 202 against 289 for José Soriano.", "starters.away_starter.sample.rates.batters_faced", "starters.home_starter.sample.rates.batters_faced", doc=doc)
-    assert "W2.comparison" not in check(same, doc)
+    assert "W2.comparison" in check(same, doc)
 
     one = replace(candidate(doc), "sections.arsenal.0", "Kyle Freeland has faced fewer batters, 202 of them.", "starters.away_starter.sample.rates.batters_faced", doc=doc)
     assert "W2.comparison" in check(one, doc)
@@ -289,16 +289,18 @@ def test_review_round_one_variants_are_rejected(doc, where, text, paths, expecte
     assert expected in wc.check_report(c, doc, length(base))
 
 
-def test_a_comparison_must_agree_with_its_numbers_and_use_two_distinct_values(doc):
+def test_d62_true_and_false_comparisons_are_both_forbidden(doc):
     def run(text, *paths):
         return check(replace(candidate(doc), "sections.arsenal.0", text, *paths, doc=doc), doc)
 
-    assert "W2.comparison" not in run("Kyle Freeland has faced more batters, 289 against 202 for José Soriano.", *BF[::-1])
+    # The former positive swapped the two pitchers' actual counts (202/289).
+    assert "W2.comparison" in run("José Soriano has faced more batters, 289 against 202 for Kyle Freeland.", *BF[::-1])
+    assert "W2.comparison" in run("Kyle Freeland has faced more batters, 289 against 202 for José Soriano.", *BF[::-1])
     assert "W2.comparison" in run("Kyle Freeland has faced more batters, 202 against 289 for José Soriano.", *BF)
     assert "W2.comparison" in run("Kyle Freeland has faced fewer batters, 289 against 202 for José Soriano.", *BF[::-1])
     assert "W2.comparison" in run("Kyle Freeland has faced more batters: 202 and 202.", BF[0], BF[0])
     assert "W2.comparison" in run("Kyle Freeland has faced 202 batters, which exceeds 289.", *BF)
-    assert "W2.comparison" not in run("Kyle Freeland has faced 289 batters, which exceeds 202.", *BF[::-1])
+    assert "W2.comparison" in run("José Soriano has faced 289 batters, which exceeds 202.", *BF[::-1])
 
 
 def test_a_malformed_citation_rejects_the_candidate_and_never_crashes(doc):

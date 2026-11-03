@@ -40,7 +40,6 @@ _W, _P = LEX["words"], LEX["patterns"]
 _ARITHMETIC = _word(_W["arithmetic"])
 _GREATER, _LESSER = _W["greater"], _W["lesser"]
 _COMPARATIVE = _word((*_GREATER, *_LESSER, *_W["neutral"]))
-_GREATER_RE, _LESSER_RE = _word(_GREATER), _word(_LESSER)
 _OUTCOME = _word(_W["outcome"])
 _INTENSITY = re.compile(r"(?<!\w)(?:" + "|".join(_W["intensity"]) + r")(?!\w)", re.I)  # "elite-level" counts; "below-average" has no such word
 _WATCH_OUTCOME, _NUMBER_WORDS = _word(_W["watch_outcome"]), _word(_W["number_words"])
@@ -104,7 +103,7 @@ def rules_length(report: dict) -> int:
     return total
 
 
-def _structure_ok(candidate: object) -> bool:
+def _structure_ok(candidate: object, *, expanded=False) -> bool:
     try:
         sections = candidate["sections"]
         if set(candidate) != {"headline", "summary_lines", "sections"} or set(sections) != set(SECTION_KEYS):
@@ -115,7 +114,7 @@ def _structure_ok(candidate: object) -> bool:
             if not 1 <= len(sections[key]) <= MAX_PER_SECTION:
                 return False
         for s in _all_sentences(candidate):
-            if set(s) != {"text", "evidence"} or type(s["text"]) is not str or not isinstance(s["evidence"], list) or len(s["evidence"]) > MAX_EVIDENCE:
+            if set(s) != {"text", "evidence"} or type(s["text"]) is not str or not isinstance(s["evidence"], list) or len(s["evidence"]) > (MAX_EVIDENCE * 4 if expanded else MAX_EVIDENCE):
                 return False
             if any(type(e) is not dict or set(e) != {"path", "value"} or type(e["path"]) is not str or type(e["value"]) is not str for e in s["evidence"]):
                 return False
@@ -165,7 +164,12 @@ def _entity_runs(text: str) -> list[tuple[list[str], bool]]:
         if last_end is not None and match.start() - last_end == 1 and text[last_end] == " ":
             runs[-1][0].append(_strip_possessive(token))
         else:
-            runs.append(([_strip_possessive(token)], match.start() == 0))
+            prefix = text[:match.start()].rstrip(' \t\n\"\u201c\u201d\'')
+            starts = not prefix or prefix.endswith(("!", "?"))
+            if prefix.endswith("."):
+                last = prefix.split()[-1].rstrip('\"\u201d')
+                starts = last.lower() not in LEX["instrument"]["abbreviations"] and not re.fullmatch(r"[A-Z]\.", last)
+            runs.append(([_strip_possessive(token)], starts))
         last_end = match.end()
     return runs
 
@@ -233,7 +237,7 @@ def check_report_detailed(candidate: dict, doc: dict, rules_len: int) -> list[di
     This is the owner's per-sentence detail: the offending token is the writer's own text or value, kept in the local run
     record only. The informed retry still receives closed codes, never this text."""
 
-    if not _structure_ok(candidate):
+    if not _structure_ok(candidate, expanded=True):
         return [{"check": "W17.structure", "sentence": None, "token": None}]
     found: list[dict] = []
 
@@ -310,14 +314,34 @@ def _check_sentence(sentence, text, doc, index, phrases, vocab, glossary, watch_
     if not paths_ok:
         return
     cited_text = " ".join(_value_text(index[p]) for p in paths if p in index)
+    # A complete scope's cutoff supports natural month-day wording as well as ISO.
+    from datetime import date
+    for p in paths:
+        if p.endswith(".through") and isinstance(index.get(p), str):
+            try:
+                cutoff = date.fromisoformat(index[p])
+                cited_text += f" {cutoff.day} {cutoff.month}"
+            except ValueError:
+                pass
     cited_numbers = set(_numbers(cited_text))
     for token in _NUMBER.findall(text):
         if Decimal(token) not in cited_numbers:
             fail("W1.number", token)
+    for pattern, fields in LEX["instrument"]["measured_values"]:
+        for match in re.finditer(pattern, text, re.I):
+            number = Decimal(match["value"])
+            from agents.fact_table import subject_field
+            owners = _measurement_owners(text, match, fields, doc, index, paths)
+            if not owners or not all(any(p.rsplit(".", 1)[-1] in fields and number in _numbers(_value_text(index[p])) and subject_field(doc, p)[0] == owner for p in paths) for owner in owners):
+                fail("W1.number", match["value"])
+    if not _scope_time_ok(text, paths, doc, index):
+        fail("W12.time", text)
     if _NUMBER_WORDS.search(text):
         fail("W1.number", _first(_NUMBER_WORDS, text))
     if _ZERO_CLAIM.search(text) and not any(isinstance(index[p], (int, float)) and not isinstance(index[p], bool) and index[p] == 0 for p in paths):
         fail("W1.number", _first(_ZERO_CLAIM, text))
+    if any(p.endswith(".through") for p in paths):
+        vocab = vocab | set(LEX["instrument"]["months"])
     for run, starts in _entity_runs(text):
         if not _run_allowed(run, starts, phrases, vocab):
             fail("W1.entity", " ".join(run))
@@ -325,25 +349,25 @@ def _check_sentence(sentence, text, doc, index, phrases, vocab, glossary, watch_
         fail("W15.question", _first(_QUESTION_OPENER, text) or "？")
     if _ARITHMETIC.search(text):
         fail("W2.arithmetic", _first(_ARITHMETIC, text))
-    if _COMPARATIVE.search(text) and not _comparison_ok(text, cited, doc, index):
-        fail("W2.comparison", _first(_COMPARATIVE, text))
+    if forbidden := _forbidden_comparison(text, doc):
+        fail("W2.comparison", forbidden)
     if _PREDICTION.search(text) or _OUTCOME.search(text):
         fail("W3.prediction", _first(_PREDICTION, text) or _first(_OUTCOME, text))
     if _TOPIC.search(text):
         fail("W4.topic", _first(_TOPIC, text))
-    label_words = {w.lower() for p in paths if p in index and ("_label" in p or p.startswith("findings.")) for w in re.findall(r"[A-Za-z-]+", _value_text(index[p]))}
-    for match in _INTENSITY.finditer(text):
-        if match.group(0).lower() not in label_words:
-            fail("W5.intensity", match.group(0))
+    _check_label_values(text, paths, index, fail)
     for term, key in _LABEL_TERMS:
         # A lineup note may speak of swing-and-miss (W5) when the term is in the cited note itself.
         note_text = " ".join(str(index[p]).lower() for p in paths if p.startswith("findings.lineup_notes.") and index[p] is not None)
-        if term in text.lower() and not _LIMITED_WORDS.search(text) and term not in note_text and not any(p.endswith(key) for p in paths):
+        finding_text = " ".join(str(index[p]).lower() for p in paths if p.startswith("findings.") and index[p] is not None)
+        if term in text.lower() and not _LIMITED_WORDS.search(text) and term not in note_text and term not in finding_text and not any(p.endswith(key) for p in paths):
             fail("W5.label", term)
     for p in paths:
         if index.get(p) is None and p in index and not _LIMITED_WORDS.search(text):
             fail("W7.missing", p)
-    if _CAUSE.search(text):
+    if re.search(LEX["instrument"]["authority"], text, re.I):
+        fail("W1.authority", re.search(LEX["instrument"]["authority"], text, re.I).group())
+    if _CAUSE.search(text) and not _cause_ok(text, paths, doc, index):
         fail("W10.cause", _first(_CAUSE, text))
     if _UNKNOWN_TERMS.search(text):
         fail("W11.unknown_term", _first(_UNKNOWN_TERMS, text))
@@ -389,30 +413,340 @@ def _is_definition(text: str, term: str, meaning: str) -> bool:
     return False
 
 
-def _comparison_ok(text: str, cited: list[dict], doc: dict, index: dict) -> bool:
-    numeric = []
-    for e in cited:
-        value = index.get(e["path"])
-        if isinstance(value, (int, float)) and not isinstance(value, bool) and e["path"] not in [x["path"] for x in numeric]:
-            numeric.append(e)
-    if len(numeric) != 2:
+def _label_normalized(text: str) -> str:
+    return " ".join(re.findall(r"[^\W_]+", _nfc(text).casefold()))
+
+
+def _label_phrase(quality, dimension, prefix):
+    dim = _label_normalized(dimension)
+    if dim == LEX["instrument"]["w5_generic_rate"]:
+        activities = [(m.end(), value) for activity,value in LEX["instrument"]["label_rate_activities"].items() for m in re.finditer(activity, prefix)]
+        if activities:
+            dim = max(activities)[1]
+    return f"{_label_normalized(quality)} {dim}"
+
+
+def _label_claims(text: str, known_values: set[str]):
+    qualities = sorted({_label_normalized(w) for w in (*LEX["instrument"]["label_qualities"], *_W["intensity"])}, key=len, reverse=True)
+    quality = "(?:" + "|".join(re.escape(w) for w in qualities) + ")"
+    dimension = "(?:" + LEX["instrument"]["w5_dimensions"] + ")"
+    patterns = [pattern.format(quality=quality, dimension=dimension, postpositive=LEX["instrument"]["label_postpositive"]) for pattern in LEX["instrument"]["w5_claim_patterns"]]
+    claims = []
+    for pattern in patterns:
+        for match in re.finditer(pattern, text):
+            claims.append((match.start(), match.end(), _label_phrase(match["quality"], match["dimension"], text[:match.start()])))
+    # Full enum values also cover non-adjectival style labels. Retain the
+    # longest phrase, so 'average command' cannot hide 'below-average command'.
+    claims += [(m.start(), m.end(), value) for value in known_values if value for m in re.finditer(r"(?<!\w)" + re.escape(value) + r"(?!\w)", text)]
+    return [claim for claim in sorted(set(claims)) if not any(a <= claim[0] and b >= claim[1] and b-a > claim[1]-claim[0] for a,b,_ in claims)]
+
+
+def _check_label_values(text, paths, index, fail):
+    known = {_label_normalized(value) for path,value in index.items() if path.endswith("_label") and isinstance(value, str)}
+    sources = [_label_normalized(index[p]) for p in paths if isinstance(index.get(p), str) and (p.endswith("_label") or p.startswith("findings."))]
+    supported = {phrase for source in sources for _,_,phrase in _label_claims(source, known)}
+    normalized = _label_normalized(text)
+    name_words = {word for path,value in index.items() if path.endswith(".name") and isinstance(value, str) for word in _label_normalized(value).split()}
+    comparators = {_label_normalized(word) for word in (*_GREATER, *_LESSER, *_W["neutral"])}
+    claims = _label_claims(normalized, known)
+    # Discover style forms independently of the complete enum values in
+    # this packet; an absent/reordered style must still be checked.
+    asserted = {phrase for _,_,phrase in claims}
+    # Discover a modifier even when it is absent from every known label;
+    # bare mentions (function words/verbs) do not assert a label value.
+    for pattern in LEX["instrument"]["w5_open_patterns"]:
+        for match in re.finditer(pattern, text, re.I):
+            quality = _label_normalized(match["quality"])
+            if quality in LEX["instrument"]["w5_nonqualifiers"] or quality in name_words or quality in comparators or not any(char.isalpha() for char in quality):
+                continue
+            phrase = _label_phrase(quality, match["dimension"], _label_normalized(text[:match.start()]))
+            if not any(phrase == value or phrase in value for value in asserted):
+                asserted.add(phrase)
+                if phrase not in supported:
+                    fail("W5.label", phrase)
+    for pattern in LEX["instrument"]["w5_style_patterns"]:
+        for match in re.finditer(pattern, text, re.I):
+            phrase = _label_normalized(match["value"])
+            if phrase not in asserted and phrase not in LEX["instrument"]["w5_starter_roles"]:
+                asserted.add(phrase)
+                if phrase not in supported:
+                    fail("W5.label", phrase)
+    verified = []
+    for start,end,phrase in claims:
+        if phrase not in supported:
+            fail("W5.label", phrase)
+        else:
+            verified.append((start,end))
+    for match in _INTENSITY.finditer(normalized):
+        if not any(start <= match.start() and end >= match.end() for start,end in verified):
+            fail("W5.intensity", match.group())
+
+
+def _forbidden_comparison(text: str, doc: dict) -> str | None:
+    """D62: no figure comparisons; exempt only split/matchup and movement baseline."""
+    for match in _COMPARATIVE.finditer(text):
+        if re.fullmatch(LEX["instrument"]["versus_token"], match.group(), re.I):
+            if re.match(LEX["instrument"]["split_versus"], text[match.start():], re.I):
+                continue
+            # A matchup joins two adjacent named participants, never figures.
+            mentions = _subject_mentions(text, doc)
+            before = {name for _, end, name in mentions if end <= match.start() and not text[end:match.start()].strip()}
+            after = {name for start, _, name in mentions if start >= match.end() and not text[match.end():start].strip()}
+            if any(left != right for left in before for right in after):
+                continue
+        if _MOVEMENT_CLAUSE.match(text, match.start()):
+            continue
+        return match.group()
+    return None
+
+
+def _subject_mentions(text, doc):
+    mentions = []
+    aliases = wi.name_aliases(doc)
+    for group, keys in (("starters", wi.SLOTS), ("teams", wi.SIDES)):
+        for key in keys:
+            name = doc[group][key]["name"]
+            for alias in [name, *aliases[key]]:
+                mentions.extend((m.start(), m.end(), name) for m in re.finditer(r"(?<!\w)" + re.escape(alias) + r"(?!\w)", text, re.I))
+    for key, pattern in LEX["instrument"]["subject_roles"].items():
+        group = "starters" if key in wi.SLOTS else "teams"
+        mentions.extend((m.start(), m.end(), doc[group][key]["name"]) for m in re.finditer(pattern, text, re.I))
+    return sorted(set(mentions))
+
+
+def _mentioned_subjects(text, doc):
+    return list(dict.fromkeys(name for _, _, name in _subject_mentions(text, doc)))
+
+
+def _measurement_after(text, doc):
+    for entry in doc["glossary"].values():
+        if entry["short"] and (short := re.match(r"\s*\(" + re.escape(entry["short"]) + r"\)", text, re.I)):
+            return text[short.end():]
+    return text
+
+
+def _post_measurement_owner(after, doc, eligible):
+    after = _measurement_after(after, doc)
+    owners = set()
+    last_end = None
+    for start,end,name in _subject_mentions(after, doc):
+        if last_end is not None:
+            if start < last_end:
+                continue
+            if re.fullmatch(LEX["instrument"]["measurement_owner_conjunction"], after[last_end:start], re.I) and not re.match(LEX["instrument"]["measurement_new_claim"], after[end:], re.I):
+                owners.add(name)
+                last_end = end
+                continue
+            break
+        if name not in eligible:
+            continue
+        if re.fullmatch(LEX["instrument"]["measurement_after_owner"], after[:start], re.I) or (
+            re.fullmatch(LEX["instrument"]["measurement_relative_owner_head"], after[:start], re.I)
+            and re.match(LEX["instrument"]["measurement_relative_owner_verb"], after[end:], re.I)
+        ):
+            owners.add(name)
+            last_end = end
+    return owners
+
+
+def _measurement_owners(text, match, fields, doc, index, paths):
+    """Bind this numeric claim locally, rather than pooling named owners.
+
+    This is lexical ownership checking only: NLI still sees the original
+    unchanged sentence. Ambiguous joint claims need support for every owner.
+    """
+    from agents.fact_table import subject_field
+    eligible = {subject_field(doc, p)[0] for p in index if p.rsplit(".", 1)[-1] in fields}
+
+    def mentions(part):
+        return [(a,b,name) for a,b,name in _subject_mentions(part, doc) if name in eligible]
+
+    anchor = match.start("value")
+    stops = []
+    for stop in re.finditer(LEX["instrument"]["measurement_stops"], text):
+        word = text[:stop.end()].split()[-1]
+        if word.lower() not in LEX["instrument"]["abbreviations"] and not re.fullmatch(r"[A-Z]\.", word):
+            stops.append(stop)
+    start = max((s.end() for s in stops if s.end() <= anchor), default=0)
+    end = min((s.start() for s in stops if s.start() >= anchor), default=len(text))
+    region = text[start:end]
+    local_anchor = anchor - start
+    joins = list(re.finditer(LEX["instrument"]["measurement_joiners"], region, re.I))
+    bounds = [0, *(j.end() for j in joins), len(region)]
+    chunk = max(i for i in range(len(bounds)-1) if bounds[i] <= local_anchor)
+    chunks = [region[bounds[i]:(joins[i].start() if i < len(joins) else len(region))] for i in range(len(bounds)-1)]
+    clause = chunks[chunk]
+    offset = local_anchor - bounds[chunk]
+    direction = _word((*_GREATER, *_LESSER)).search(clause)
+    counterparts = [m for m in re.finditer(LEX["instrument"]["measurement_counterpart"], clause, re.I) if m.end() <= offset]
+    prefix = clause[:offset]
+    for group, pattern in LEX["instrument"]["measurement_shared_roles"].items():
+        if re.search(pattern, prefix, re.I):
+            shared = {item["name"] for item in doc[group].values()}
+            return eligible & shared
+    if counterparts:
+        prefix = clause[counterparts[-1].end():offset]
+    elif direction:
+        prefix = clause[:min(offset, direction.start())]
+    before = mentions(prefix)
+    if not before and _subject_mentions(prefix, doc) and re.search(LEX["instrument"]["measurement_ownership"], prefix, re.I):
+        return set()  # an explicit owner of another measure type is not anonymous
+    first = next((m for m in _NUMBER.finditer(region) if any(Decimal(m[0]) in _numbers(_value_text(index[p])) for p in paths if p.rsplit(".",1)[-1] in fields)), None)
+    initial = mentions(region[:first.start()]) if first else []
+    joint = {name for _,_,name in initial}
+    if len(joint) > 1 and re.search(LEX["instrument"]["measurement_joint_predicate"], region[initial[-1][1]:first.start()], re.I):
+        return joint
+    if before:
+        return {before[-1][2]}
+    after = _measurement_after(text[match.end():start + bounds[chunk] + len(clause)], doc)
+    if following := _post_measurement_owner(text[match.end():end], doc, eligible):
+        return following
+    # A relative clause refers to the nearby comparison object, rather than
+    # inheriting the earlier clause's primary subject.
+    if re.match(LEX["instrument"]["measurement_relative_actor"], clause, re.I):
+        prior = mentions(region[:bounds[chunk]])
+        if prior:
+            return {prior[-1][2]}
+    # Coordinated comparison-object figures can share one trailing owner:
+    # "... compared with the ERA and WHIP of Gausman".
+    object_markers = list(re.finditer(LEX["instrument"]["measurement_counterpart"], region[:local_anchor], re.I))
+    if object_markers and (counterparts or not direction):
+        tail = region[object_markers[-1].end():]
+        tail_owners = set()
+        for a,b,name in _subject_mentions(tail, doc):
+            if name in eligible and re.search(LEX["instrument"]["measurement_tail_owner"], tail[:a], re.I):
+                tail_owners.add(name)
+        if len(tail_owners) == 1:
+            return tail_owners
+    # Inherit a subject across coordinated measures, not across another
+    # player's comparison-object mention ("... than Gausman and a lower...").
+    inherited = set()
+    for previous in reversed(chunks[:chunk]):
+        comparison = _word((*_GREATER, *_LESSER)).search(previous)
+        actors = mentions(previous[:comparison.start()] if comparison else previous)
+        if actors:
+            inherited = {actors[-1][2]}
+            break
+    other_after = {name for a,b,name in _subject_mentions(after, doc) if name not in eligible and re.fullmatch(LEX["instrument"]["measurement_after_owner"], after[:a], re.I)}
+    if other_after:
+        # "... WHIP for Houston" is an affiliation when its named starter is
+        # already established, not a new owner of the pitcher measurement.
+        affiliated = {doc["starters"][slot]["name"] for slot in wi.SLOTS if doc["teams"][slot.removesuffix("_starter")]["name"] in other_after}
+        return inherited if inherited and inherited <= affiliated else set()
+    if inherited:
+        return inherited
+    regional = {name for _,_,name in mentions(region)}
+    if len(regional) == 1:
+        return regional
+    global_owners = {name for _,_,name in mentions(text)}
+    if len(global_owners) == 1:
+        return global_owners
+    if global_owners:
+        return set()  # no unambiguous antecedent for this particular claim
+    cited = {subject_field(doc,p)[0] for p in paths if p.rsplit(".",1)[-1] in fields}
+    return cited  # every possible cited owner must independently support it
+
+
+def _scope_time_ok(text, paths, doc, index):
+    from agents.fact_table import scope_path, subject_field
+    subjects = _mentioned_subjects(text, doc)
+    # The handedness split is part of a cited lineup value's scope too.
+    hand_matches = list(re.finditer(LEX["instrument"]["split_claim"], text, re.I))
+    side_paths = {p.split(".")[1] for p in paths if p.startswith("teams.") and ".offense_profile." in p}
+    side_paths |= {p.rsplit(".", 1)[-1] for p in paths if p.startswith("findings.lineup_notes.")}
+    previous = 0
+    for match in hand_matches:
+        named = _mentioned_subjects(text[previous:match.start()], doc)
+        named_sides = {side for side in side_paths if doc["teams"][side]["name"] in named}
+        sides = named_sides or side_paths
+        actual = {doc["teams"][side]["offense_profile"]["vs_pitcher_hand"] for side in sides}
+        if actual != {LEX["instrument"]["split_hands"][match["hand"].lower()]}:
+            return False
+        previous = match.end()
+    matches = list(re.finditer(LEX["instrument"]["through_date"], text, re.I))
+    claimed_kind = _scope_kind(text) if matches or re.search(LEX["instrument"]["scope_claim_context"], text, re.I) else None
+    if not matches and claimed_kind is None:
+        return True
+    scopes = {scope_path(p) for p in paths if scope_path(p) and index.get(scope_path(p) + ".label") is not None}
+    scopes.discard(None)
+    if not scopes:
         return False
-    first, second = numeric[0]["path"], numeric[1]["path"]
-    values = [Decimal(str(index[first])).copy_abs(), Decimal(str(index[second])).copy_abs()]
-    in_text = [n for n in _numbers(text) if n in values]
-    if sorted(set(in_text)) != sorted(set(values)) and len(set(values)) == 2 or len(in_text) < 2:
+    supported = {subject_field(doc, base + ".label")[0] for base in scopes}
+    for slot in wi.SLOTS:
+        if doc["starters"][slot]["name"] in supported:
+            supported.add(doc["teams"][slot.removesuffix("_starter")]["name"])
+    if subjects and not set(subjects) <= supported:
         return False
-    # The values are compared in the order they appear in the sentence.
-    x, y = in_text[0], in_text[1]
-    greater, lesser = _GREATER_RE.search(text), _LESSER_RE.search(text)
-    if greater and lesser:
+    broad = re.search(LEX["instrument"]["broad_scope"], text, re.I)
+    relevant = {p.rsplit(".",1)[0] for p in index if p.endswith(".through")} if broad else scopes
+    if claimed_kind is not None and any(_scope_kind(str(index.get(base + ".label"))) != claimed_kind for base in relevant):
         return False
-    if greater and not x > y:
+    years = re.findall(LEX["instrument"]["scope_year"], text, re.I)
+    if years and any(not str(index.get(base + ".label")).startswith(year) for year in years for base in relevant):
         return False
-    if lesser and not x < y:
+    if broad and len({str(index.get(base + ".label")).split(LEX["instrument"]["scope_joiner"])[0] for base in relevant}) != 1:
         return False
-    scopes = wi.scope_label(doc, first), wi.scope_label(doc, second)
-    return scopes[0] is not None and scopes[0] == scopes[1] and _terminal(first) == _terminal(second)
+    cited_dates = {str(index.get(base + ".through")) for base in relevant}
+    for match in matches:
+        raw = match["date"]
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw):
+            if cited_dates != {raw}:
+                return False
+        else:
+            words = raw.split()
+            month = LEX["instrument"]["month_numbers"].get(words[0].rstrip(".").lower())
+            if not month or any(date[5:] != f"{month:02d}-{int(words[1]):02d}" for date in cited_dates):
+                return False
+    return True
+
+
+def _scope_kind(text):
+    return next((kind for kind, pattern in LEX["instrument"]["scope_kinds"].items() if re.search(pattern, text, re.I)), None)
+
+
+def _cause_ok(text, paths, doc, index):
+    from agents.fact_table import limitation_paths
+    lower = text.lower()
+    # A finding states a specific cause/consequence for a specific starter.
+    for path in paths:
+        match = re.fullmatch(r"findings\.(away_starter|home_starter)_(?:risks|strengths)", path)
+        if not match or not isinstance(index.get(path), str):
+            continue
+        slot = match[1]
+        names = [doc["starters"][slot]["name"], *wi.name_aliases(doc)[slot]]
+        if not any(re.search(r"\b" + re.escape(n.lower()) + r"\b", lower) for n in names):
+            continue
+        for finding in index[path].split(";"):
+            cause = re.fullmatch(LEX["instrument"]["finding_cause"], finding.strip(), re.I)
+            if cause and cause[1].lower() in lower and cause[2].lower() in lower:
+                # No unrelated extra causal clause or asserted consequence.
+                connector = _CAUSE.search(lower)
+                name_pattern = "(?:" + "|".join(re.escape(n.lower()) for n in sorted(names, key=len, reverse=True)) + ")"
+                frame = LEX["instrument"]["finding_consequence_frame"].format(name=name_pattern, effect=re.escape(cause[2].lower()))
+                if connector and len(list(_CAUSE.finditer(text))) == 1 and re.fullmatch(frame, lower[:connector.start()].strip(" .")) and re.fullmatch(LEX["instrument"]["finding_reason_only"], lower[connector.end():].strip(" .")):
+                    return True
+    # Limited-sample label availability is the only code-derived cause.
+    if len(list(_CAUSE.finditer(text))) != 1 or not re.search(LEX["instrument"]["limited_reason"], lower) or not re.search(LEX["instrument"]["missing_label"], lower):
+        return False
+    cause = _CAUSE.search(lower)
+    reason = lower[cause.end():].strip(" .")
+    if re.fullmatch(LEX["instrument"]["sample_reason_only"], reason) is None:
+        return False
+    dims = [dim for dim, pattern in LEX["instrument"]["label_dimensions"].items() if re.search(pattern, lower)]
+    slots = [slot for slot in wi.SLOTS if any(re.search(r"\b" + re.escape(n.lower()) + r"\b", lower) for n in [doc["starters"][slot]["name"], *wi.name_aliases(doc)[slot]])]
+    if re.search(LEX["instrument"]["both_starters"], lower):
+        slots = list(wi.SLOTS)
+    if not (dims and slots) or not all((proof := limitation_paths(doc, slot, dim)) and set(proof) <= set(paths) for slot in slots for dim in dims):
+        return False
+    # A rule proves label unavailability only, never an additional baseball
+    # consequence or a negation of the supported missing-label claim.
+    consequence = lower[:cause.start()]
+    names = [n for slot in slots for n in [doc["starters"][slot]["name"], *wi.name_aliases(doc)[slot]]]
+    for name in sorted(names, key=len, reverse=True):
+        consequence = re.sub(r"\b" + re.escape(name.lower()) + r"\b", "", consequence)
+    for pattern in [*LEX["instrument"]["label_dimensions"].values(), *LEX["instrument"]["limited_claim_parts"]]:
+        consequence = re.sub(pattern, "", consequence, flags=re.I)
+    return re.search(r"\w", consequence) is None
 
 
 def _movement(text: str, paths: list[str], index: dict, fail) -> None:
@@ -566,7 +900,7 @@ def lexical_failures(text: str, doc: dict) -> list[dict]:
     """Calibration only: the words the word-level checks flag in text that carries no citations (the rules writer's report).
 
     Evidence, number-matching and glossary checks need citations and are not run. A hit is a word or shape a check flags;
-    whether it would be a violation depends on the citations (a comparison word is allowed when both values are quoted, and an
+    whether it would be a violation depends on context (split/matchup versus is allowed, and an
     entity run such as a sentence-opening question word is a limit of the heuristic, not a forbidden pattern)."""
 
     index = wi.evidence_index(doc)

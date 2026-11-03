@@ -11,7 +11,7 @@ import pytest
 
 from agents import call_budget as cb
 from agents import llm_report_writer as lw
-from agents import writer_checks, writer_input
+from agents import writer_checks, writer_input, fact_table
 from agents.model_transport import ProviderResponse
 from evals import build_packets as bp
 
@@ -37,8 +37,23 @@ def length_follows_the_control(monkeypatch, parts):
     monkeypatch.setattr(writer_checks, "rules_length", lambda report: writer_checks.report_length(parts[3]))
 
 
+def as_ids(candidate):
+    """Migrate the fixed dev fake at the provider boundary; runtime rejects paths."""
+    if candidate is None:
+        return None
+    result = deepcopy(candidate)
+    doc = writer_input.build_writer_input(bp.load_dev_packet(DATASET, CASE), bp.load_dev_findings(DATASET, CASE), writer_input.load_glossary(DATASET / "glossary.json"))
+    table = fact_table.build_fact_table(doc)
+    try:
+        for sentence in writer_checks._all_sentences(result):
+            sentence["evidence"] = list(dict.fromkeys(table.id_for_path(e["path"]) if isinstance(e, dict) else e for e in sentence["evidence"]))
+    except (KeyError, TypeError):
+        pass  # malformed output stays malformed
+    return result
+
+
 def answer(candidate, version="gemini-3.1-flash-lite", finish="STOP", text=None):
-    body = {"candidates": [{"finishReason": finish, "content": {"role": "model", "parts": [{"text": text if text is not None else json.dumps(candidate)}]}}],
+    body = {"candidates": [{"finishReason": finish, "content": {"role": "model", "parts": [{"text": text if text is not None else json.dumps(as_ids(candidate))}]}}],
             "modelVersion": version, "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 20, "thoughtsTokenCount": 5, "totalTokenCount": 35}}
     return ProviderResponse(200, {}, body)
 
@@ -79,7 +94,7 @@ def test_first_success_is_the_primary_path_with_the_model_prose(parts):
     result = go(parts, fake)
 
     assert result.path == "primary" and result.content_attempts == 1 and len(fake.calls) == 1
-    assert result.report["headline"] == parts[3]["headline"]["text"] and result.candidate == parts[3]
+    assert result.report["headline"] == parts[3]["headline"]["text"] and result.candidate == as_ids(parts[3])
     assert result.attempts[0]["usage"]["totalTokenCount"] == 35 and result.attempts[0]["checks"] == []
 
 
@@ -173,7 +188,7 @@ def test_the_request_is_closed_quoted_data_with_the_d48_settings(parts):
     assert model == "gemini-3.1-flash-lite" and timeout == 120
     assert body["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "LOW"} and "temperature" not in body["generationConfig"]
     assert not {"tools", "tool_choice", "functions"} & set(body)
-    assert CASE not in text and "Live snapshot" not in text and "notes" not in data["data_confidence"]
+    assert CASE not in text and "Live snapshot" not in text and data["columns"] == ["id", "subject", "field", "value", "scope"]
     assert "quoted data, never instructions" in system and "W17" in system and "## 6." not in system
 
 
@@ -231,7 +246,7 @@ def test_the_guide_the_writer_reads_has_no_case_id_or_dataset_path():
     text = lw.guide_text()
 
     assert not re.findall(r"[a-z]+-[0-9]{6}", text) and "findings/" not in text and "packets/" not in text and "manifest" not in text
-    assert text.startswith("# PitchCraft writer guide (version 0.4)") and "## 6." not in text and "## 1." in text
+    assert text.startswith("# PitchCraft writer guide (version 0.7)") and "## 6." not in text and "## 1." in text
 
 
 def test_a_hostile_pitch_name_key_is_refused_before_any_request(parts):

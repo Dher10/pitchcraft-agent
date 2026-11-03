@@ -26,8 +26,8 @@ DATASET = ROOT / "evals" / "data" / "dataset"
 WORK = ROOT / ".local" / "p2-2"
 KEY_NAME = "PITCHCRAFT_GEMINI_API_KEY_LOCAL"
 QUOTA = {"veteran": 3, "limited": 3, "opener": 2, "postseason": 2}  # the ten dev examples, in the manifest order
-RUN_ID = "b1-dev-examples-4"  # fresh capture; previous 105 calls remain in the same experiment ledger
-ITEMS_DIR = "items-4"
+RUN_ID = "b1-dev-examples-5"  # D61: new fact-ID instrument; prior 127 calls remain in the shared ledger
+ITEMS_DIR = "items-5"
 STOP_MIN_CALLS = 9  # the early stop needs at least this many finished calls, so one early 429 does not end a run
 DEFAULT_RUN_CAP = 30  # owner decision: no change to the 400-call experiment cap
 

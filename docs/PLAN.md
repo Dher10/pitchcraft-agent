@@ -220,6 +220,13 @@ two red CI runs or two review rounds without PASS. Nonce/dynamic/style-attribute
   capacity stops, frozen-input enforcement. Dev execution waits for a
   separate owner message; neither P2.2 nor P2.3 is closed by this follow-up.
 
+- [ ] P2.3-instrument [gated] Owner-approved D58-D63 fact-ID instrument,
+  D62 forbidden comparisons, D63 label-value matching, red-first controls,
+  strict and replay-only estimated
+  offline replay of all 34 run-2/3/4 candidates, and final refreeze. Plan:
+  `docs/plans/P2.3-fact-id-instrument.md`. Zero Gemini calls; stop for owner
+  review before another dev pass. Parent P2.2/P2.3 remain open.
+
 ## Phase 3 — Publish (target Nov 15)
 
 - [ ] P3.1 v2.0-b decision using the eval rule.

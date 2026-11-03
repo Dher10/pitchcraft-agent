@@ -26,7 +26,7 @@ def test_the_guide_digest_equals_its_lock():
 def test_the_guide_is_the_approved_version_and_no_longer_a_draft():
     first = guide_text().splitlines()[0]
 
-    assert "version 0.4" in first
+    assert "version 0.7" in first
     assert "DRAFT" not in guide_text()
 
 
@@ -42,7 +42,7 @@ def test_the_guide_states_the_owner_decisions_that_change_what_the_writer_may_sa
     assert "strictly, with no exemptions" in text
     assert "Watch how" in text and "Watch whether" in text
     assert "within 20% above or below" in text
-    assert "same scope" in text
+    assert "own measured value, owner, scope label and through date" in text
 
 
 GLOSSARY = ROOT / "evals" / "data" / "dataset" / "glossary.json"
@@ -121,3 +121,14 @@ def test_eslint_ignores_the_untracked_local_artifacts_such_as_the_isolated_nli_e
     config = (ROOT / "eslint.config.mjs").read_text(encoding="utf-8")
 
     assert '".local/**"' in config
+
+
+def test_d62_guide_forbids_figure_comparisons_and_discloses_limitations():
+    from pathlib import Path
+    from agents import llm_report_writer as lw
+    full = (Path(__file__).resolve().parents[1] / "docs/writer-guide.md").read_text(encoding="utf-8")
+    assert "Known limitations of the code gates" in full
+    assert "Do not compare figures" in guide_text()
+    assert "Side-by-side figures" in guide_text()
+    assert "Do not compare figures" in lw.LEX["prompt"]["format"]
+    assert lw.PROMPT_VERSION == "p2.2-6"

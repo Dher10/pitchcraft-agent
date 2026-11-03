@@ -14,9 +14,9 @@ from pathlib import Path
 import re
 from typing import Any
 
-from agents import writer_input as wi
+from agents import writer_input as wi, fact_table
 
-FACT_RENDERER_VERSION = "p2.3-2"
+FACT_RENDERER_VERSION = "p2.3-3-fact-ids"
 _FACTS = json.loads((Path(__file__).with_name("writer_lexicon.json")).read_text(encoding="utf-8"))["en"]["facts"]
 _SLOT = r"(?P<slot>away_starter|home_starter)"
 _SIDE = r"(?P<side>away|home)"
@@ -37,6 +37,7 @@ def renderer_identity() -> str:
 
     digest = hashlib.sha256(json.dumps(_FACTS, sort_keys=True).encode("utf-8"))
     digest.update(Path(__file__).read_bytes())
+    digest.update(Path(fact_table.__file__).read_bytes())
     return f"{FACT_RENDERER_VERSION}:{digest.hexdigest()[:16]}"
 
 
@@ -57,7 +58,7 @@ def _team(doc: dict, side: str) -> str:
 
 
 def _scope(doc: dict, path: str) -> str:
-    return wi.scope_label(doc, path) or _FACTS["no_scope"]
+    return fact_table.scope_text(doc, path) or _FACTS["no_scope"]
 
 
 def render_fact(doc: dict, path: str) -> str | None:
@@ -69,6 +70,14 @@ def render_fact(doc: dict, path: str) -> str | None:
     value = index[path]
     parts = path.split(".")
     try:
+        scope = fact_table.scope_path(path)
+        if scope and path.startswith(scope + "."):
+            subject, field = fact_table.subject_field(doc, scope + ".label")
+            return _t("scope_subject", subject=subject, field=field.removesuffix(".label"), value=fact_table.scope_text(doc, path))
+        if len(parts) == 5 and parts[:1] == ["starters"] and parts[2:4] == ["sample", "limited"]:
+            proof = fact_table.limitation_paths(doc, parts[1], parts[4])
+            if proof:
+                return _t("limited_reason", name=_name(doc, parts[1]), dim=_FACTS["dims"][parts[4]], count=index[proof[1]], threshold=index[proof[2]])
         sentence = _dispatch(doc, index, path, parts, value)
     except (KeyError, IndexError, TypeError, ValueError):
         return None

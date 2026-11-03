@@ -60,7 +60,16 @@ def test_unchanged_frozen_inputs_pass_and_only_dev_ids_and_hashes_are_recorded(i
 def test_committed_freeze_matches_the_current_inputs():
     from evals import experiment_freeze as freeze
     record = freeze.verify_frozen(freeze.FREEZE_PATH, run_b1.DATASET, run_b1.pick_cases())
-    assert record["inputs"]["prompt"]["version"] == "p2.2-3"
+    assert record["inputs"]["prompt"]["version"] == "p2.2-6"
+
+
+def test_historical_run4_freeze_is_preserved_and_refuses_current_execution():
+    from evals import experiment_freeze as freeze
+    record = freeze.FREEZE_PATH.with_name("experiment-freeze-run4.json")
+    old = json.loads(record.read_text(encoding="utf-8"))
+    assert old["inputs"]["prompt"]["version"] == "p2.2-3"
+    with pytest.raises(freeze.FrozenInputsChanged):
+        freeze.verify_frozen(record, run_b1.DATASET, run_b1.pick_cases())
 
 
 def test_execution_cannot_raise_the_frozen_run_cap(inputs, tmp_path, monkeypatch, capsys):

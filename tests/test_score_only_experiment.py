@@ -34,6 +34,21 @@ def test_score_only_still_rejects_code_failures_and_scores_rejected_sentences(pa
     assert len(fake.calls) == 2 and all(a["nli"] for a in result.attempts)
 
 
+def test_unknown_ids_still_get_per_sentence_diagnostics_without_support(parts, monkeypatch):
+    from tests.test_llm_report_writer import as_ids
+    packet, findings, glossary, candidate = parts
+    monkeypatch.setattr(wc, "rules_length", lambda _: wc.report_length(candidate))
+    invalid = as_ids(candidate)
+    invalid["headline"]["evidence"] = ["F9999"]
+    fake = Fake(answer(invalid), answer(invalid))
+    result = lw.write(findings, packet, glossary, provider=fake,
+                      nli=na.make_scorer(cache="unused", scorer=Scorer(0.99)), sleep=lambda _: None)
+    assert result.path == "rules" and "W1.fact_id" in result.failures
+    assert len(result.attempts[0]["nli"]) == len(wc._all_sentences(candidate))
+    assert result.attempts[0]["nli"][0]["problem"] == "unrenderable"
+    assert result.attempts[0]["nli"][0]["score"] is None
+
+
 def test_explicit_gate_without_calibration_still_fails_closed(parts, monkeypatch):
     packet, findings, glossary, candidate = parts
     monkeypatch.setattr(wc, "rules_length", lambda _: wc.report_length(candidate))

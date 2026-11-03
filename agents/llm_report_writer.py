@@ -15,7 +15,7 @@ from pathlib import Path
 import re
 from typing import Any, Callable
 
-from agents import matchup_analyst, report_writer, writer_checks, writer_input, writer_policy
+from agents import matchup_analyst, report_writer, writer_checks, writer_input, writer_policy, fact_table
 from agents.language import DEFAULT_LANGUAGE
 from agents.security_policy import ModelRejected, bounded_text
 
@@ -32,7 +32,7 @@ def digest(value) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()).hexdigest()
 
 
-PROMPT_VERSION = "p2.2-3"
+PROMPT_VERSION = "p2.2-6"
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_PATH = ROOT / "docs" / "writer-guide.md"
 MAX_OUTPUT_TOKENS = 8192
@@ -41,8 +41,7 @@ ROUTED = {"gemini-3.5-flash": ("gemini-3.6-flash",)}
 
 _SENTENCE = {"type": "object", "additionalProperties": False, "required": ["text", "evidence"], "properties": {
     "text": {"type": "string"},
-    "evidence": {"type": "array", "items": {"type": "object", "additionalProperties": False, "required": ["path", "value"],
-                                            "properties": {"path": {"type": "string"}, "value": {"type": "string"}}}}}}
+    "evidence": {"type": "array", "items": {"type": "string"}}}}
 _LIST = {"type": "array", "items": _SENTENCE}
 SCHEMA = {"type": "object", "additionalProperties": False, "required": ["headline", "summary_lines", "sections"], "properties": {
     "headline": _SENTENCE, "summary_lines": _LIST,
@@ -102,7 +101,7 @@ def build_body(doc: dict, rules_len: int, failures: list[str] | None = None) -> 
     """The Gemini request body. `failures` are closed check codes from the previous content attempt (the informed retry)."""
 
     _validate_strings(doc)
-    data = {"DATA": doc}
+    data = {"DATA": fact_table.build_fact_table(doc).visible()}
     if failures:
         notes = [f"{code}: {HINTS.get(code, HINTS.get(code.split('.')[0], LEX['fallback_hint']))}" for code in failures]
         data["PREVIOUS_ATTEMPT_FAILED_THESE_CHECKS"] = notes
@@ -239,7 +238,10 @@ def write(
             failures = result.failures = ["W17.structure"]
             record["checks"] = failures
             continue
-        detail = writer_checks.check_report_detailed(candidate, doc, rules_len)
+        resolved, id_findings = fact_table.resolve_candidate(candidate, doc)
+        record["resolved_candidate"] = resolved
+        record["fact_table_identity"] = fact_table.build_fact_table(doc).identity
+        detail = id_findings + (writer_checks.check_report_detailed(resolved, doc, rules_len) if resolved is not None else [])
         gates, styles = writer_checks.split_failures(detail)
         gate_codes = list(dict.fromkeys(f["check"] for f in gates))
         record["checks"] = gate_codes  # the hard gates (accuracy, safety, policy, output shape)
@@ -250,7 +252,7 @@ def write(
             # D55: scores also cover rejected, structurally usable candidates. Explicit gate mode stays fail closed.
             record["nli_mode"] = nli_mode
             try:
-                nli_codes, record["nli"] = nli(candidate, doc)
+                nli_codes, record["nli"] = nli(resolved, doc)
             except Exception:
                 nli_codes, record["nli"] = ["NLI.unavailable"], []
             record["nli_findings"] = list(nli_codes)
@@ -264,7 +266,7 @@ def write(
                 result.failures = gate_codes
                 return rules_result(rules_report, "nli_unavailable", content_attempts=content_attempt, attempts=result.attempts, failures=gate_codes)
         if not gate_codes:
-            return WriterResult(writer_checks.to_report(candidate, rules_report), outcome.path, content_attempt, result.attempts, candidate, [], style_findings=styles)
+            return WriterResult(writer_checks.to_report(resolved, rules_report), outcome.path, content_attempt, result.attempts, candidate, [], style_findings=styles)
         # The informed retry names every failed rule, style ones included, as closed codes.
         failures = list(dict.fromkeys([f["check"] for f in detail] + nli_codes))
         result.failures = gate_codes

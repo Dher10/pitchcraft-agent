@@ -1,6 +1,6 @@
 {
-  "base_commit": "c1f91b6fcae5b5416b18a8cd2dbcdf74e12b5fd5",
-  "experiment_calls_before": 105,
+  "base_commit": "e5c95c2ba2ec7ce9388149d800dd274de25b1e83",
+  "experiment_calls_before": 127,
   "inputs": {
     "dev_cases": [
       {
@@ -55,12 +55,15 @@
       }
     ],
     "evaluators": {
-      "agents/llm_report_writer.py": "ce62b6d06e017bd307017eaca79420c3d631c1a46cddb19cc52264bf4cb0bb0d",
+      "agents/fact_renderer.py": "dca9a3b8dbc52b608de6f9dbb5785496f82ef018723c150d4c491ee661e92406",
+      "agents/fact_table.py": "71249ec70926607891911c489835179344464e0c8e5d6a67c797e5e41ee5baf9",
+      "agents/llm_report_writer.py": "396f67361627a6138989587551bd8c3dc0d7d8664d97e36031a004bed1444352",
       "agents/nli_admission.py": "532794d611d8d630e81d5e70e82f8e2162865b4a4265d4f8281dc05b0e7e50d3",
-      "agents/writer_checks.py": "923ac7cfc607b1a5d892c1b6a83bfc03ad48d19856b7b13da9428c3c21e83b29",
+      "agents/writer_checks.py": "2adb72333726fe27cc8d59d936fe62073f1b4e328b7dabb03d21a2503a174bc5",
       "agents/writer_input.py": "203532305e80545d7ce553d947b92166b81f880b8ad9dff6bfcf96284991ed63",
+      "agents/writer_lexicon.json": "17ad3ccdce19217ebf67154716f5458374c60747ae37d9ee78629440aee7d090",
       "agents/writer_policy.py": "46f7e43d7db184866728588a44d9266238983b190ae53f09ecda2239531c4e7a",
-      "evals/run_b1.py": "5b83ce10e7ac24e0a225c02a87cc229ad5572ad83fae6a073858aeb344430c08"
+      "evals/run_b1.py": "2717cd0b018b2711716bc07dabb39ba9059964937829a421528e2b0a2dac08ac"
     },
     "experiment_cap": 400,
     "glossary": {
@@ -68,17 +71,17 @@
       "version": "1.1"
     },
     "guide": {
-      "sha256": "84a87b387c260fd05c0277b8fb19c9abe867c9cf64920643056805df5aef972c",
-      "version": "0.4"
+      "sha256": "172e12b13e39b8b1a16438ea825ceafd80b96ea4c7f23bf970304ef98ec0b347",
+      "version": "0.7"
     },
     "nli_identity": "e2b62f3bcab147b4dacbe170b202498092e316f9fae70e636e4640980d39ecba",
     "nli_mode": "score_only",
     "packets_manifest_sha256": "0d906f78d42ab013568be535db1716fd329d72033a002a414b1f29625bdc4a25",
     "prompt": {
-      "sha256": "db509483d528e1453349501bffcd1e6aa26bee40e2a19192ec21cbed13e44d3c",
-      "version": "p2.2-3"
+      "sha256": "fc3d476bf3f59bad4a7d645a6e9f81658488097b44c3603e8d6c1956d89c74fd",
+      "version": "p2.2-6"
     },
-    "renderer_identity": "p2.3-2:00c0f8b1b4eb3da8",
+    "renderer_identity": "p2.3-3-fact-ids:c003af4467115f76",
     "writer": {
       "backoff_seconds": 3,
       "models": [
@@ -91,5 +94,6 @@
       "timeout": 120
     }
   },
+  "instrument_decision": "D62-D63 final instrument: forbidden figure comparisons and normalized label-value matching; next dev pass requires owner approval",
   "run_cap": 30
 }

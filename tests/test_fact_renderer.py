@@ -22,21 +22,21 @@ def doc():
 
 
 def test_the_renderer_has_a_version():
-    assert fr.FACT_RENDERER_VERSION == "p2.3-2"
+    assert fr.FACT_RENDERER_VERSION == "p2.3-3-fact-ids"
 
 
 @pytest.mark.parametrize("path,expected", [
-    ("starters.away_starter.season_summary.era", "Kyle Freeland has an earned run average (ERA) of 8.08 over the 2026 regular season through May 31."),
-    ("starters.away_starter.season_summary.era_number", "Kyle Freeland has an earned run average (ERA) of 8.08 over the 2026 regular season through May 31."),
+    ("starters.away_starter.season_summary.era", "Kyle Freeland has an earned run average (ERA) of 8.08 over the 2026 regular season through 2026-05-31."),
+    ("starters.away_starter.season_summary.era_number", "Kyle Freeland has an earned run average (ERA) of 8.08 over the 2026 regular season through 2026-05-31."),
     ("starters.home_starter.pitching_profile.command_label", "José Soriano shows below-average command."),
     ("starters.home_starter.pitching_profile.contact_risk_label", "No contact-risk rating is available for José Soriano."),
-    ("starters.home_starter.sample.rates.batters_faced", "José Soriano has faced 289 batters over the 2026 regular season through May 31."),
+    ("starters.home_starter.sample.rates.batters_faced", "José Soriano has faced 289 batters over the 2026 regular season through 2026-05-31."),
     ("starters.away_starter.sample.thresholds.control", "170 batters faced are needed for a control read of Kyle Freeland."),
     ("pitch_movement.home_starter.Curveball.v_break", "The Curveball of José Soriano moves 6.5 in. down compared with a pitch thrown without spin."),
     ("pitch_mix.1.away_starter.overall", "Kyle Freeland throws the Curveball 22.5% of the time."),
     ("velocity_by_pitch.3.home_starter_velocity", "The Four-seam of José Soriano is thrown at 97.7 miles per hour."),
-    ("teams.home.offense_profile.ops_vs_hand", "The Los Angeles Angels lineup has an on-base plus slugging (OPS) of .712 against left-handed pitchers over the 2026 regular season through May 31."),
-    ("teams.home.offense_profile.k_rate_number", "The Los Angeles Angels lineup has a strikeout rate (K%) of 24.3% against left-handed pitchers over the 2026 regular season through May 31."),
+    ("teams.home.offense_profile.ops_vs_hand", "The Los Angeles Angels lineup has an on-base plus slugging (OPS) of .712 against left-handed pitchers over the 2026 regular season through 2026-05-31."),
+    ("teams.home.offense_profile.k_rate_number", "The Los Angeles Angels lineup has a strikeout rate (K%) of 24.3% against left-handed pitchers over the 2026 regular season through 2026-05-31."),
     ("findings.lineup_notes.home", "The Los Angeles Angels lineup has elevated swing-and-miss risk. The Los Angeles Angels lineup draws walks at an above-average rate."),
     ("findings.lineup_notes.away", "There are no lineup notes for the Colorado Rockies lineup."),
     ("glossary.OPS.short", "OPS stands for on-base plus slugging."),

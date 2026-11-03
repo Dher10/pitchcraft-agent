@@ -35,7 +35,7 @@ def current_inputs(dataset, case_ids):
     prompt = {"version": lw.PROMPT_VERSION, "lexicon": lw.LEX, "schema": lw.SCHEMA,
               "guide": lw.guide_text(), "max_output_tokens": lw.MAX_OUTPUT_TOKENS}
     return {
-        "guide": {"version": "0.4", "sha256": lw.guide_sha256()},
+        "guide": {"version": "0.7", "sha256": lw.guide_sha256()},
         "glossary": {"version": glossary["version"], "sha256": text_sha256(dataset / "glossary.json")},
         "prompt": {"version": lw.PROMPT_VERSION, "sha256": lw.digest(prompt)},
         "packets_manifest_sha256": text_sha256(dataset / "packets_manifest.json"),
@@ -48,7 +48,8 @@ def current_inputs(dataset, case_ids):
         "renderer_identity": fact_renderer.renderer_identity(),
         "evaluators": {name: text_sha256(ROOT / name) for name in
                        ("agents/writer_checks.py", "agents/writer_input.py", "agents/llm_report_writer.py",
-                        "agents/nli_admission.py", "agents/writer_policy.py", "evals/run_b1.py")},
+                        "agents/nli_admission.py", "agents/writer_policy.py", "agents/fact_table.py",
+                        "agents/fact_renderer.py", "agents/writer_lexicon.json", "evals/run_b1.py")},
     }
 
 

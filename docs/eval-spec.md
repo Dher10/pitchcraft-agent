@@ -102,6 +102,21 @@ candidate; one informed retry total, then independently validated rules.
 This does not replace the offline G2/R1 judge or guarantee accuracy. Nov 2
 proof requires the actual independent publication path, not an unset gate.
 
+**D58-D61 instrument amendment (2026-10-31):** the internal provider
+contract is `fact-ids-v1`: each sentence cites IDs from a code-built table
+(id, subject, field, value, scope including through date). Code resolves
+exact IDs to trusted paths/values; unknown IDs reject. Scope facts include
+their cutoff. Same-owner/dimension limitation facts bind only the verified
+flag/count/below-threshold/missing-label proof. NLI premises render only
+cited facts. Ordinary sentence openers, split/matchup versus and explicitly supported
+causes are checked structurally. D62 forbids figure comparisons even when
+true and cited; side-by-side measurements retain owner binding; wrong values and unverified official authority stay gates.
+Offline replay reports strict results separately from a replay-only unique
+subject/field suffix estimate; the latter is never a harness resolution rule.
+Guide 0.7 and prompt p2.2-6 are the final instrument revision before test
+generation. Another dev pass needs owner approval. Public schema and
+production rules writer remain unchanged.
+
 ## 4. Dimensions (binary pass/fail per report)
 
 | Dim | Evaluator | Pass when |
@@ -279,3 +294,6 @@ Postgame validation of "what to watch", multi-model comparison, latency or cost 
 - Nov 8 target: B2/comparison; Nov 9-10 independent Antigravity QA/contingency.
 - Nov 11 at 18:00: final evidence freeze; missing gates mean no ship.
 - Nov 15: honest case study; branch/PR migration gets its own later task.
+
+D63: W5 matches complete normalized asserted label phrases to cited values,
+including lineup-note labels. Label-field presence alone is insufficient.

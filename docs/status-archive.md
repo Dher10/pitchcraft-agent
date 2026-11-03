@@ -1,5 +1,154 @@
 # PitchCraft v2 — Status archive
 
+### 2026-11-02 - D63 narrow W5 label-value fix
+
+Owner authorized one narrow W5 fix and scoped review, with one further W5-only correction/review if needed; other noticed gaps are limitations, not blockers. D63 appended and plan amended, no earlier decision edited. Red-first stored Freeland and all label-type/intensity/lineup tests: 10 failed / 3 controls passed. First green 13 passed. Lineup rate-context test then observed 1 failure and fixed within W5. Initial affected run exposed a catalog key collision with existing limited-cause dimensions and D6 regex text; W5 keys/patterns moved to their own catalog entries, limited-cause dimension mapping retained. Final writer/guide-0.4/catalog/instrument controls: 329 passed in 11.54 s. Full affected readiness (including guide/fact-table/replay/freeze/provider/no-tolerance controls): 417 passed in 21.66 s.
+
+W5 now compares complete normalized phrases (NFC, casefold, word/hyphen/whitespace/punctuation normalization), retaining the longest phrase to avoid average matching inside below-average. Prefix and postpositive label forms are checked; enum style labels also use exact normalized values. Intensity needs a verified whole label phrase, not a word borrowed from a different note. Lineup walk-rate and strikeout-rate labels remain distinct. Missing-label/cause controls and single-measurement ownership unchanged. D6 wording remains in the catalog; no public/schema/production changes, no tolerance/xfail/skip added or removed.
+
+Offline replay: strict 1 accepted / 33 rejected; estimate 2 / 32, all 34 original texts and capture/ledger hashes unchanged. Path counts 42/26 plus five missing-citation sentences each; five original structure rejects. W5.label now 3 findings / 3 candidates. Non-mapping findings 118 strict / 108 estimated; fully mapped 90. Both real-error controls still fail. Reused exactly identical 538 pinned local NLI premise/text scores, zero provider calls. Experiment remains 127/400, future run cap30, no dev pass or B1. Guide 0.7 / unchanged glossary1.1 / prompt p2.2-6 refrozen; full current digests in STATUS. Historical freeze unchanged. All five full suites ran sequentially in the default terminal, with no PATH/locale changes, all exit 0. Actual output from `.local/instrument-d63-*.log`:
+
+```text
+python -m pytest
+=========== 5685 passed, 3 skipped, 2 warnings in 476.48s (0:07:56) ===========
+npm test
+Test Files  20 passed (20)
+Tests  296 passed (296)
+Duration  14.01s
+npx tsc --noEmit: exit 0
+npm run lint: exit 0
+npm run build: exit 0
+Generating static pages using 6 workers (5/5) in 610ms
+(Dynamic) server-rendered on demand
+```
+
+The Nov 2 calendar-dependent third skip and two existing pandas warnings are unchanged; no skip or tolerance added. PowerShell's redirected npm stderr notices are NativeCommandError display records, but each command actually exited 0. `git diff --check` is clean, protected-path/workflow diff empty. Previous exact-commit CI e5c95c2 run41205331886 was rechecked completed/success. Scoped W5 review round 1 returned BLOCK: style detection depends on the complete value already occurring in document labels, so absent reversed curveball-four-seam starter is not detected. Existing negative Sinker-Curveball starter happened to be another known label. Directly within D63 every-label-type scope; no broader search or optional finding. Reviewer inspected all five full logs and independently ran writer instrument/checks/v0.3/no-tolerance controls: 219 passed in 6.72 s after normal temp access. No edit/provider call/test-split content access. No finding rejected. The owner already authorizes one additional W5-only correction/review; use it for independent style-form recognition, absent-value negative and lowercase positive, then rerun all five suites and scoped round 2. Second BLOCK must stop uncommitted. Nothing staged/committed.
+
+
+
+The one additional W5 correction authorized by D63: style-form recognition no longer depends on complete known values. Red absent/reversed style controls: 4 failed / 3 controls passed; then 336 writer/catalog controls passed. The same absent-value class on unlisted command modifiers (erratic, solid-esque, postpositive erratic) observed 3 failures and fixed with open modifier detection. An intermediate affected run exposed numeric OPS values as adjectives (26 controls failed); numbers and bare measurement words are excluded without changing W1 checks. W5 replay inspection also exposed team-name, handedness-role and numeric-comparator classification false positives; three stored-form positive controls observed red, then corrected within W5. No broad gap search or policy relaxation. Final writer/catalog set: 342 passed in 9.58 s; all affected writer/guide/replay/freeze/provider/no-tolerance controls: **430 passed in 22.28 s**. Matching lowercase/normalized styles and plain starter roles pass; absent styles/labels reject. Source text/captures/ledger unchanged; exact 538 local NLI scores reused. Refreeze refreshed (guide unchanged c79af7..., prompt 097ddad0..., inputs ce2787e4...; full STATUS digests). Replay remains strict1/33, estimate2/32; non-mapping findings118/108, fully-mapped90. Final full five-suite verification and last scoped W5 review follow below.
+
+
+### 2026-11-02 - D62 final comparison prohibition amendment
+
+Owner approved replacing comparison parsing with a W2 prohibition after round-3 BLOCK. D62 is appended, earlier decisions unchanged. Plan amended in the same uncommitted task. Red-first comparison tests: 13 failed / 5 controls passed; guide requirement: 1 failed. New comparison controls then 18 passed. Full affected-set check found historical split/matchup controls accidentally classified as forbidden in the updated test expectation (restored their explicit allowed expectations), and stale version/lock assertions; implementation never rejected the split/matchup controls. D62 supersedes old true-comparison positives without altering original 47-finding provenance. Comparison pair/relation validator removed, local per-measurement owner binding retained. All language remains in D6 catalog.
+
+Replay unchanged-text strict 1/34 accepted and estimated 2/34; 42/26 unmappable paths plus five missing-citation sentences each; five original structure rejects. W2 now 15 findings / 10 candidates, 13 on fully mapped text. Non-mapping totals 116 strict / 106 estimated; fully mapped 88. Both original real errors still fail. Reused 538 exactly equal raw premise/text pinned CPU NLI scores; source/ledger hashes unchanged, zero Gemini, 127/400. Guide 0.6, glossary 1.1 unchanged, prompt p2.2-5 refrozen; full digests in STATUS. Historical freeze retained. Production rules, caps and both stops unchanged. Theoretical lexical/entity/owner-binding/uncalibrated-score limitations are documented in guide and STATUS; structured comparisons backlog. Final review scope is exactly D62; BLOCK stops, no further repair round.
+
+Final affected-set readiness: 303 passed in 16.64 s. The first full Python run found two remaining legacy guide-0.4 comparison-positive expectations: 5669 passed, 3 skipped, 2 failed, 2 existing warnings in 487.11 s. D62 intentionally supersedes these expectations; both tests now assert W2 rejection, with no implementation or frozen-input change. Full verification restarts from Python after the focused guide-0.4 check.
+
+Final sequential verification (default terminal, no PATH/locale changes), all exit 0. Actual terminal excerpts from `.local/instrument-d62-*.log`:
+
+```text
+python -m pytest
+=========== 5671 passed, 3 skipped, 2 warnings in 468.73s (0:07:48) ===========
+npm test
+Test Files  20 passed (20)
+Tests  296 passed (296)
+Duration  13.10s
+npx tsc --noEmit: exit 0
+npm run lint: exit 0
+npm run build: exit 0
+Generating static pages using 6 workers (5/5) in 636ms
+(Dynamic) server-rendered on demand
+```
+
+Existing Nov 2 month-boundary skip and pandas warnings as recorded below; no new skip/tolerance/xfail. `git diff --check` is clean; protected-path/workflow diff empty. Self-review: D62 is an internal experiment restriction, no public schema, fan text or production path change; all prior contract checks remain, numeric owners and null/zero controls unchanged. Known limitations are disclosed, no claim of general semantic completeness. Independent final review under D62: **BLOCK**, last authorized round. Checklist 1/6/7 have the strict-label finding; 2-5 and 8-11 are ok. Reviewer reported `python -m pytest tests/test_fact_table.py tests/test_replay_writer.py tests/test_writer_instrument_regressions.py tests/test_experiment_freeze.py tests/test_no_tolerance.py -q` -> **131 passed in 24.07 s**, after normal temporary-folder access. Reviewer inspected all five full-suite logs. Concrete blocker at writer_checks.py:358-367: the actual stored run-2 veteran-824027 attempt-2 form "Kyle Freeland brings solid command to the mound for Colorado." (replay record line 50091) admits replacing solid with below-average while citing the unchanged command_label value "Solid command". The W5 field-existence/intensity checks do not validate that asserted label value. This satisfies the D62 actual-sentence-form blocking scope and violates W5/D59; it is not classified as a theoretical limitation. Read-only reproduction through the existing pytest helper:
+
+```text
+python -m pytest tests/test_writer_instrument_regressions.py::test_wrong_value_stays_a_real_error --trace -q
+(Pdb) p findings(document('veteran-824027'), 'Kyle Freeland brings below-average command to the mound for Colorado.', ['starters.away_starter.pitching_profile.command_label'])
+[]
+(Pdb) p document('veteran-824027')['starters']['away_starter']['pitching_profile']['command_label']
+'Solid command'
+(Pdb) p findings(document('veteran-824027'), 'Kyle Freeland brings solid command to the mound for Colorado.', ['starters.away_starter.pitching_profile.command_label'])
+[]
+```
+
+Nonblocking limitations considered: lowercase invented entities, unlisted comparison paraphrases, unfamiliar pronoun/ellipsis attachments and uncalibrated score-only NLI; already documented in guide/STATUS. No additional blocking finding without a stored/guide form. Reviewer made no edits/provider calls and opened no test-split contents. No findings rejected.
+
+**STOP under the owner's final-round instruction.** Do not fix the W5 blocker or stage/commit/push in this cycle. No new CI exists; HEAD/origin remain e5c95c2 and prior CI 41205331886 is green only for that revision. Preserve the plan, D62, code, replay report and freeze as an uncommitted draft. Current digests in STATUS are provisional, not generation clearance. Zero Gemini, ledger unchanged at 127/400; no dev pass or B1. Await owner disposition without requesting another round.
+
+
+
+
+### 2026-10-31 ? D58-D61 fact-ID measurement instrument (parent e5c95c2)
+
+Approved plan: `docs/plans/P2.3-fact-id-instrument.md`, including the replay-only suffix estimate. One writer, one atomic commit with plan/code/replay/freeze. No Gemini/provider call or dev pass. `gh run view 41205331886 --json headSha,status,conclusion,url` confirmed prior e5c95c2 CI completed/success.
+
+Red-first evidence (default terminal): initial new modules absent (three collection failures); gate controls 8 failed / 7 passed; owner/measure/cutoff/extra-cause controls 8 failed / 15 passed; broad scope/team attribution 2 failed / 23 passed; changing comparison subjects 1 failed. Passing controls named: unknown entities, wrong 10.4, unsupported/reversed pairs, differing cutoff. The former comparison-positive fixture incorrectly assigned Soriano's 289 batters to Freeland (202); corrected the fixture, and retained that swap as a must-fail. Final targeted gate/fact tests: 100 passed; broader writer/NLI/security 222 passed plus two intentionally stale guide-lock failures before the explicit refreeze; score-only/earlier-guide/calibration checks 68 passed. Historical freeze guard observed red for current inputs; historical-rejection control passed. New 47-finding provenance tests exercise every prior check-specific rigidity verdict; the supported cause with complete proof passes while unchanged official authority still fails.
+
+Replay: 34 candidates (20/2/12), 18 captures / 35 attempt records, one transport-only attempt, five original structure rejects retained. Strict 1/34 accepted, estimate 2/34; 42 versus 26 unmappable citation occurrences (structure failures counted separately). Sixteen estimated normalizations; no text repair. NLI exact rendered premise/text pairs were scored by the installed pinned CPU worker (538 unique successful pairs), reused only by exact pair under the same model/runtime/renderer for final code recheck. Strict: 551 scored fields, 87 Watch/not applicable, 15 unrenderable; per-sentence estimated detail also in the replay record. Both real-error candidates remain rejected in both modes: W1.number 10.4 versus actual 10.6; W1.authority official. Capture/ledger hashes unchanged, 0 Gemini, 127/400 experiment, next dev cap 30. No dev pass or held-out content opened.
+
+Refreeze after replay: guide 0.5 c1ecb98ede0314f81e9c7d8e1d7d63226e1afd53df57ce65617060b85f57588b; glossary 1.1 f7a22da784278170c617cd03c18f27db6a14236620608fe3f8f77c70e6d58b8d; prompt p2.2-4 0b13d55bf93520f3532f7f3f83390999a087aaea72c758722e00d0636d96da8f; packets manifest 0d906f78d42ab013568be535db1716fd329d72033a002a414b1f29625bdc4a25. Inputs digest 61cb921442d02c14d79c1fc37dd987b0e6a96d47e4a5fb35ae41ed911d315815. Former freeze retained byte-for-byte. This is the final instrument change before test generation, not permission to generate.
+
+Self-review: DATA_CONTRACT rule 1 sources stay the closed projection; rule 2 null/zero unchanged and explicit; rule 3 scope binds label/cutoff/subject; rule 4 internal IDs resolve to code-owned evidence, no public schema change; rule 5 rules fallback unchanged; rule 6 rules production unchanged; rule 7 cutoff/date checks retained and strengthened; rule 8 no internals reach public files. No tolerance, skip or xfail introduced/removed; no public data, workflows, frontend or model provisioning changed. No rejected review findings so far. The unrelated research draft is excluded.
+
+Further self-review red controls: 3 failed for opponent-fact borrowing, comparison role swaps and missing unknown-ID sentence diagnostics. Fixed, then 160 targeted writer/NLI/strict-gate tests passed. The initial full Python run was interrupted for those fixes (at 27%, no test failure); final verification restarts from a fresh process after replay/freeze refresh.
+
+The next full Python run found exactly two D6 catalog violations (scope joiner and both-starters regex): 5610 passed, 2 skipped, 2 failed, 2 existing pandas warnings in 528.22 s. Both literals moved to writer_lexicon.json without weakening the guard; 95 targeted catalog/instrument tests then passed. Exact raw premise/text pair matching under the pinned NLI model/runtime verified all 538 cached scores still apply after the catalog-only move; renderer/calibration and freeze identities were refreshed. The owner requested additional non-mapping rejection counts: red-first counter regression observed failing before implementation; the report now shows both modes and a fully-mapped-text subset to distinguish residual mapping effects.
+
+Final readiness check after the D6 catalog move and refreshed freeze: `python -m pytest tests/test_agents_language.py tests/test_replay_writer.py tests/test_experiment_freeze.py -q` -> 49 passed in 13.47 s. Non-mapping rejection counts (all 34): strict 107 findings / 71 candidate-check incidences; estimated 97 / 69; both have 85 findings on fully mapped text, retaining report-level and original structure checks. These are gate findings, not independent factual-error labels. Per-ID counts and affected-candidate counts are in the replay report.
+
+Pre-review full verification in sequence (default terminal, no PATH/locale changes): `python -m pytest` -> **5613 passed, 2 skipped, 2 existing pandas warnings in 499.96 s**, exit 0. `npm test` -> **20 files / 296 tests passed**, 49.46 s, exit 0; `npx tsc --noEmit` -> exit 0; `npm run lint` -> exit 0; `npm run build` -> exit 0, dynamic routes `/`, `/_not-found`, `/quality`. Npm notices on stderr are displayed by PowerShell as NativeCommandError records in redirected logs, but all four commands returned exit 0; no PATH or locale change. Actual terminal tails:
+
+```text
+python -m pytest
+=========== 5613 passed, 2 skipped, 2 warnings in 499.96s (0:08:19) ===========
+npm test
+Test Files  20 passed (20)
+Tests  296 passed (296)
+npx tsc --noEmit: exit 0
+npm run lint: exit 0
+npm run build: exit 0
+? (Dynamic) server-rendered on demand
+```
+
+Independent D35 review round 1: **BLOCK**, two correctness findings, no optional items. The reviewer independently ran 73 targeted tests and inspected all five full-verification logs. Findings: unsupported consequences before a causal connector, and an asserted postseason scope not compared to the regular-season evidence. Both are within the approved D59 controls. Regression run: 10 failed / 37 passed (added/reversed/negated consequences, named/broad/no-date season kinds, positive combined scope versus false subset, and wrong lineup-handedness scope). Fixed by validating the whole consequence and season kind/year/split against cited fact context; patterns remain in the D6 catalog. Two additional positives caught false rejection of genuine postseason game context and a lineup finding's existing handedness context; both observed red and fixed. Final targeted command across instrument/earlier guides/score-only/catalog: **199 passed in 10.10 s**. No review finding rejected. Replay refreshed under the same exact pinned-model premise/text scores; strict/estimated results and rejection counts unchanged. Freeze refreshed after these fixes.
+
+Post-review-fix full verification, one at a time in the default terminal, all exit 0:
+
+```text
+python -m pytest
+=========== 5625 passed, 2 skipped, 2 warnings in 481.74s (0:08:01) ===========
+npm test
+Test Files  20 passed (20)
+Tests  296 passed (296)
+Duration  13.03s
+npx tsc --noEmit: exit 0
+npm run lint: exit 0
+npm run build: exit 0
+? (Dynamic) server-rendered on demand
+```
+
+Review round 2: **BLOCK**, two remaining plan/contract findings, no optional items. Fresh reviewer inspected all five post-fix verification logs and independently ran **117 targeted tests in 8.42 s** (normal temp access after sandbox setup errors). Static counterexamples: `Gausman has a 2.86 ERA; Pivetta has a 4.51 ERA.` can swap actual owners because writer_checks skips owner matching when multiple subjects are mentioned; replay migration does not mark original empty evidence lists unmappable (run 2 / opener-824280 / attempt 2 has four empty-citation sentences yet mapping_complete true). Therefore the fully-mapped-text report subset is provisional and must be regenerated after fixing missing-citation accounting. No finding rejected. D35's two-round limit reached without PASS: STOP for owner authorization of another fix/review cycle. No staging, commit, push or new CI; HEAD e5c95c2 and its prior CI 41205331886 remain unchanged. Current source/replay/freeze are uncommitted drafts. Zero Gemini; ledger still 127/400. No test contents opened or protected data modified.
+
+Owner authorized **one additional fix-and-review cycle** after round 2. Red tests for owner swaps across semicolons, physical sentences, coordination, role names, reverse ownership phrasing and lineup rates, plus missing-citation accounting: 9 failed / 56 passed. Shared-owner and wrong-subject-type controls were also observed red and fixed. Nine historical supported owner/comparison/affiliation examples initially exposed false positives in the local binder; recorded as `owner-binding-regressions.json`, observed red, and fixed by preserving explicit postpositive/relative owners, coordinated comparison objects and team affiliations. Wrong-value counterparts remain must-fail. Targeted controls: 228 passed / one intentionally stale replay-identity test deselected before regeneration; final ownership fixture tests 75 passed before adding three corresponding wrong-value frame controls (all passed). No NLI claim splitting: the NLI still sees original unchanged sentence text. Both missing-citation modes now mark five empty-citation sentences unmappable (including all four in run 2 opener-824280 attempt 2); the fully-mapped-text subset excludes their findings. Final replay remains strict 1/34 accepted and estimate 2/34; path-unmappable counts 42/26 are separate from five missing-citation sentences. Current non-mapping counts are 107 strict / 97 estimated; fully-mapped-text findings are **80** in each mode (the earlier 85 incorrectly included empty citations and is superseded by this accounting). Exact original scored premise/text pairs under the pinned NLI identity were reused only on exact equality; all source captures and the call ledger remain unchanged. Freeze refreshed after this cycle's changes. Final trailing shared-owner control also observed red and fixed (each owner in a postpositive list must support the value). The first verification attempt of this added cycle was interrupted for that control before completion, not counted as a passed full run. Final targeted set: 232 passed / one stale replay-identity test deselected before regeneration. Current replay identity, freeze and all controls are checked again below. Full verification and the owner-authorized review round 3 follow below.
+
+Final cycle-3 readiness: `python -m pytest tests/test_agents_language.py tests/test_replay_writer.py tests/test_experiment_freeze.py -q` -> 126 passed in 6.22 s. Nov 2 checkpoint and revised owner schedule are recorded in STATUS: code gates with fact-ID citations enforce the prose/evidence boundary; NLI and judge score only until owner labels; Nov 3 fact-ID live dev pass, then B1, owner labels Nov 5-7 plus Nov 8. Existing owner approval stops remain.
+
+Final cycle-3 full verification, default terminal, sequential, no PATH/locale changes; all five exit 0. Actual terminal output (logs `.local/instrument-*-cycle3*.log`):
+
+```text
+python -m pytest
+=========== 5652 passed, 3 skipped, 2 warnings in 562.44s (0:09:22) ===========
+npm test
+Test Files  20 passed (20)
+Tests  296 passed (296)
+Duration  45.66s
+npx tsc --noEmit: exit 0
+npm run lint: exit 0
+npm run build: exit 0
+Generating static pages using 6 workers (5/5) in 655ms
+(Dynamic) server-rendered on demand
+```
+
+The additional skip versus the Oct 31 run is the existing calendar-dependent Savant empty-cache control (its four-day range crosses a month boundary on Nov 2); no skip marker or tolerance was added. The two pandas date-parsing warnings are unchanged. PowerShell renders npm notices on stderr as NativeCommandError records in the redirected logs; all four frontend commands actually exited 0. Independent round 3 is the last authorized review; a BLOCK means stop with the uncommitted draft.
+
+Independent D35 review round 3: **BLOCK**, the last owner-authorized round. Checklist 1 and 7 have the comparison-owner finding; remaining items 2-6 and 8-11 are ok. No optional items or rejected findings. Reviewer independently ran `python -m pytest tests/test_fact_table.py tests/test_replay_writer.py tests/test_writer_instrument_regressions.py tests/test_experiment_freeze.py tests/test_no_tolerance.py -q` -> **113 passed in 6.99 s** after normal temporary-folder access, and inspected all five full-verification log tails. At `agents/writer_checks.py:470`, `_comparison_ok` checks only `subjects[0]`, leaving the named comparison object unverified. Reproduced read-only on dev postseason-849842 with both starters' ERA facts: `Pivetta has a lower ERA (2.86 vs 4.51) than the home starter.` returns no findings, although home starter Pivetta is 2.86 and away starter Gausman is 4.51. The valid away-starter control and unsupported `than Chicago` also return no findings. Violates D59, plan wrong-owner comparison requirement and ENGINEERING section 6. No reviewer edit, provider call or test-split content access.
+
+**STOP as explicitly instructed after BLOCK.** No further fix, staging, commit, push or new CI in this cycle. HEAD/origin remain e5c95c2, whose prior CI 41205331886 is green; that CI does not validate this uncommitted draft. Plan, replay report and freeze remain uncommitted and provisional. Current replay totals remain 1/34 strict and 2/34 estimated; remaining findings 107/97 (80 on fully mapped text), subject to this known blocker. The Nov 2 checkpoint and revised Nov 3 / Nov 5-8 schedule are in STATUS; no dev pass or B1 executed. Zero Gemini, ledger unchanged at 127/400. Await owner disposition without requesting another cycle in this session.
+
 ### 2026-10-31 — Owner-requested run-4 docs commit and gate audit
 
 - Fresh independent reviewer **PASS**, no findings or optional items. It checked the raw report's 47 gate lines, 12 candidates, 32 candidate/check incidences, all fifteen traced examples and gate mechanisms, plus actual terminal excerpts. Terminal excerpts (all exit 0):

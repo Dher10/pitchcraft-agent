@@ -193,21 +193,21 @@ def test_a5_numeric_twins_exist_for_the_five_figures_and_not_for_innings(doc):
     assert wc.wi.scope_label(doc, f"{A}.season_summary.era_number") == "2026 regular season through May 31"
 
 
-def test_a5_a_comparison_on_the_numeric_twins_is_verified_in_order_and_scope(doc):
+def test_d62_supersedes_a5_comparison_permission_even_on_numeric_twins(doc):
     def run(text, *paths):
         return codes(put(candidate(doc), "sections.arsenal.0", text, *paths, "glossary.ERA.short", doc=doc), doc)
 
     twins = (f"{H}.season_summary.era_number", f"{A}.season_summary.era_number")
-    assert "W2.comparison" not in run("José Soriano has a lower ERA (earned run average) than Kyle Freeland, 2.65 to 8.08.", *twins)
+    assert "W2.comparison" in run("José Soriano has a lower ERA (earned run average) than Kyle Freeland, 2.65 to 8.08.", *twins)
     assert "W2.comparison" in run("José Soriano has a higher ERA (earned run average) than Kyle Freeland, 2.65 to 8.08.", *twins)
     strings = (f"{H}.season_summary.era", f"{A}.season_summary.era")
     assert "W2.comparison" in run("José Soriano has a lower ERA (earned run average) than Kyle Freeland, 2.65 to 8.08.", *strings)
 
 
-def test_a5_k_rate_and_ops_comparisons_use_their_twins(doc):
+def test_d62_k_rate_and_ops_comparisons_are_forbidden_even_with_twins(doc):
     c = put(candidate(doc), "sections.arsenal.0", "The Angels have the higher K% (strikeout rate), 24.3% to 22.7%.", "teams.home.offense_profile.k_rate_number", "teams.away.offense_profile.k_rate_number", "glossary.K%.short", doc=doc)
 
-    assert "W2.comparison" not in codes(c, doc)
+    assert "W2.comparison" in codes(c, doc)
 
 
 def test_a9_the_finding_lists_are_one_string_each_and_none_when_empty(doc):
