@@ -416,7 +416,8 @@ def test_snapshot_records_the_first_day_an_item_is_seen_labeled_and_never_moves_
     rows = [{"item": "I1", "label": "supported"}, {"item": "I2", "label": ""}, {"item": "I3", "label": "unsupported"}]
     log = ls.snapshot_log({}, rows, "2026-11-06")
     assert log == {"I1": "2026-11-06", "I3": "2026-11-06"}
-    log = ls.snapshot_log(log, rows + [{"item": "I2", "label": "supported"}], "2026-11-07")
+    later = [rows[0], {"item": "I2", "label": "supported"}, rows[2]]
+    log = ls.snapshot_log(log, later, "2026-11-07")
     assert log == {"I1": "2026-11-06", "I3": "2026-11-06", "I2": "2026-11-07"}
 
 
@@ -439,7 +440,7 @@ def test_join_rejects_unknown_labels_and_counts_blanks_and_not_a_claim():
     assert [j["item"] for j in joined] == ["I1", "I3"]
     assert summary == {"labeled": 2, "unlabeled": 1, "not_a_claim": 1, "unsure": 1}
     with pytest.raises(ValueError):
-        ls.join_labels(manifest, [{"item": "I1", "label": "Supported ", "unsure": "", "note": ""}])
+        ls.join_labels(manifest, [{"item": "I1", "label": "supportd", "unsure": "", "note": ""}])
     with pytest.raises(ValueError):
         ls.join_labels(manifest, [{"item": "I9", "label": "supported", "unsure": "", "note": ""}])
 

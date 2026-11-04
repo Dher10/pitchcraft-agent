@@ -10,6 +10,7 @@ computes the metrics from the labels. Nothing here calls a model. The test outpu
     python -m evals.labeling_sheet test       # test sheet and test U1 pairs (refused until FROZEN exists)
     python -m evals.labeling_sheet snapshot --split dev|test   # log which items are labeled today
     python -m evals.labeling_sheet relabel --split test        # blind re-label sheet from earlier days only
+    python -m evals.labeling_sheet check --split dev|test      # validate a saved sheet; writes nothing
     python -m evals.labeling_sheet metrics --split dev|test
 """
 from __future__ import annotations
@@ -17,10 +18,12 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import io
 import json
 import math
 import random
 import sys
+import unicodedata
 from datetime import date
 from pathlib import Path
 
@@ -226,13 +229,22 @@ def build_split(items, tables, glossary, split, seed=SEED, source_hashes=None, p
                       "cited_facts": cited_text(r["cited"], by_id), "label": "", "unsure": "", "note": ""})
         manifest_items[item_id] = {k: r[k] for k in ("key", "case_id", "attempt", "pos", "stratum", "group", "classes",
                                                      "findings", "score", "p", "accepted")}
+        # The canonical text of the read-only columns: Excel edits to them are ignored and never reach a later sheet.
+        manifest_items[item_id]["shown"] = {k: sheet[-1][k] for k in ("case_group", "sentence", "cited_facts")}
     glossary_rows = [{"id": "GLOSSARY", "subject": t["term"], "field": _s(t.get("short")), "value": t["definition"], "scope": ""}
                      for t in glossary]
     facts = {group_of[c]: [_fact_row(x) for x in fact_rows[c]] + glossary_rows for c in cases}
     manifest = {"protocol": "planB-labeling-v1", "protocol_sha256": protocol_sha256, "seed": seed, "split": split,
+                "facts_sha256": {g: facts_digest(rows) for g, rows in facts.items()},
                 "quotas": q, "source_hashes": dict(source_hashes or {}), "groups": {g: c for c, g in group_of.items()},
                 "items": manifest_items}
     return {"sheet": sheet, "manifest": manifest, "facts": facts}
+
+
+def facts_digest(rows):
+    """SHA-256 of a facts table as issued (all cells as text), to detect an edited facts file."""
+
+    return hashlib.sha256(json.dumps([[_s(r.get(k)) for k in FACT_FIELDS] for r in rows], ensure_ascii=True).encode()).hexdigest()
 
 
 def write_csv(target, rows, fields):
@@ -248,9 +260,47 @@ def write_csv(target, rows, fields):
             dump(handle)
 
 
+def decode_bytes(raw):
+    """UTF-8 with or without a BOM (Excel 'CSV UTF-8'), else Windows-1252 (Excel plain 'CSV' on a Spanish PC)."""
+
+    try:
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return raw.decode("cp1252", errors="replace")
+
+
+def sniff_delimiter(text):
+    """Comma, semicolon (Spanish-locale Excel) or tab, chosen from the header line."""
+
+    header = text.split("\n", 1)[0]
+    counts = {d: header.count(d) for d in (",", ";", "\t")}
+    best = max(counts, key=lambda d: (counts[d], d == ","))
+    return best if counts[best] else ","
+
+
 def read_csv(path):
-    with open(path, encoding="utf-8-sig", newline="") as handle:
-        return list(csv.DictReader(handle))
+    """Tolerant reader: BOM, delimiter, Windows line endings, header case and spaces. Cells become plain strings."""
+
+    text = decode_bytes(Path(path).read_bytes())
+    table = csv.reader(io.StringIO(text, newline=""), delimiter=sniff_delimiter(text))
+    header = None
+    out = []
+    for cells in table:
+        if not any(c.strip() for c in cells):
+            continue
+        if header is None:
+            header = [c.strip().lower() for c in cells]
+            continue
+        cells = [c.replace("\r\n", "\n").replace("\r", "\n") for c in cells]
+        cells = (cells + [""] * len(header))[: len(header)]
+        out.append(dict(zip(header, cells)))
+    return out
+
+
+def normalize_label(value):
+    """Case and spacing only (Excel autocapitalizes); a misspelled label stays invalid."""
+
+    return " ".join((value or "").split()).lower()
 
 
 # ------------------------------------------------------------------ U1 pairs
@@ -286,7 +336,7 @@ def build_pairs(items, split, seed=SEED):
 def u1_summary(manifest, rows):
     win = tie = loss = unanswered = 0
     for row in rows:
-        choice = (row.get("more_useful") or "").strip()
+        choice = normalize_label(row.get("more_useful"))
         if choice == "":
             unanswered += 1
             continue
@@ -294,7 +344,7 @@ def u1_summary(manifest, rows):
             raise ValueError(f"unknown choice {choice!r}")
         if choice == "tie":
             tie += 1
-        elif (choice == "left") == (manifest["pairs"][row["pair"]]["left_source"] == "b1"):
+        elif (choice == "left") == (manifest["pairs"][row["pair"].strip()]["left_source"] == "b1"):
             win += 1
         else:
             loss += 1
@@ -330,11 +380,25 @@ def write_freeze(root):
 
 # ------------------------------------------------------------------ re-label (self agreement)
 
+def clean_labels(rows, id_col="item"):
+    """{id: (label or None, unsure)} with the normalization `check` uses: trimmed ids, case-folded labels, invalid labels
+    are None, duplicated ids are refused."""
+
+    out = {}
+    for row in rows:
+        i = (row.get(id_col) or "").strip()
+        if i in out:
+            raise ValueError(f"duplicated item {i!r}")
+        label = normalize_label(row.get("label"))
+        out[i] = (label if label in LABELS else None, normalize_label(row.get("unsure")) == "y", bool(label))
+    return out
+
+
 def snapshot_log(log, rows, today):
     out = dict(log)
-    for row in rows:
-        if (row.get("label") or "").strip() and row["item"] not in out:
-            out[row["item"]] = today
+    for i, (label, _, _) in clean_labels(rows).items():
+        if label and i not in out:
+            out[i] = today
     return out
 
 
@@ -361,11 +425,16 @@ def build_relabel(built, ids, seed=SEED):
 
 def join_labels(manifest, rows):
     joined, unlabeled, nac, unsure = [], 0, 0, 0
+    seen = set()
     for row in rows:
+        row = dict(row, item=row["item"].strip())
         meta = manifest["items"].get(row["item"])
         if meta is None:
             raise ValueError(f"unknown item {row['item']!r}")
-        label = row.get("label", "")
+        if row["item"] in seen:
+            raise ValueError(f"duplicated item {row['item']!r}")
+        seen.add(row["item"])
+        label = normalize_label(row.get("label", ""))
         if label == "":
             unlabeled += 1
             continue
@@ -503,14 +572,13 @@ def acceptance(counts):
 def reliability(first_rows, second_rows, origin):
     """Self-agreement of the re-labeled items (second sheet ids map to first sheet ids) and the unsure share."""
 
-    first = {r["item"]: r for r in first_rows}
-    pairs = [(first[origin[r["item"]]]["label"], r["label"]) for r in second_rows
-             if r.get("label") and origin[r["item"]] in first and first[origin[r["item"]]].get("label")]
-    labeled = [r for r in first_rows if r.get("label")]
-    unsure = sum((r.get("unsure") or "").strip().upper() == "Y" for r in labeled)
+    first, second = clean_labels(first_rows), clean_labels(second_rows)
+    pairs = [(first[origin[i]][0], label) for i, (label, _, _) in second.items()
+             if label and origin.get(i) in first and first[origin[i]][0]]
+    labeled = [v for v in first.values() if v[0]]
     return {"agreement": agreement([a for a, _ in pairs], [b for _, b in pairs]),
-            "unsure_share": unsure / len(labeled) if labeled else None,
-            "unanswered": sum(not r.get("label") for r in second_rows)}
+            "unsure_share": sum(v[1] for v in labeled) / len(labeled) if labeled else None,
+            "unanswered": sum(not v[2] for v in second.values())}
 
 
 def acceptance_from_record(record):
@@ -562,12 +630,130 @@ def _tables_for(split):
 
 
 def guard_no_answers(path, column):
-    if Path(path).exists() and any(r.get(column) for r in read_csv(path)):
+    if Path(path).exists() and any((r.get(column) or "").strip() for r in read_csv(path)):
         raise SystemExit(f"{path} already holds answers; it is not overwritten")
 
 
 def _dump(path, data):
     Path(path).write_text(json.dumps(data, indent=1, sort_keys=True), encoding="utf-8", newline="\n")
+
+
+REQUIRED = {"sheet": ("item", "label"), "pairs": ("pair", "more_useful"), "relabel": ("item", "label")}
+ANSWERS = {"sheet": ("label", "unsure", "note"), "pairs": ("more_useful", "note"), "relabel": ("label", "unsure", "note")}
+
+
+def _valid(column, value):
+    value = normalize_label(value)
+    if column == "label":
+        return value in LABELS
+    if column == "unsure":
+        return value in ("", "y")
+    if column == "more_useful":
+        return value in CHOICES
+    return True
+
+
+def _plain(value):
+    return unicodedata.normalize("NFC", (value or "").replace("\r\n", "\n").replace("\r", "\n")).strip()
+
+
+def check_rows(kind, rows, expected, shown=None):
+    """Validate a saved sheet against the ids it was issued with. Pure: reads nothing else, writes nothing."""
+
+    id_col = REQUIRED[kind][0]
+    report = {"rows": len(rows), "missing_columns": [], "missing_ids": [], "duplicate_ids": [], "unknown_ids": [],
+              "columns": {}, "readonly_cells_changed": 0}
+    if rows:
+        report["missing_columns"] = [c for c in REQUIRED[kind] if c not in rows[0]]
+    ids = [(r.get(id_col) or "").strip() for r in rows]
+    counts = {i: ids.count(i) for i in set(ids)}
+    report["duplicate_ids"] = sorted(i for i, n in counts.items() if n > 1)
+    report["unknown_ids"] = sorted(i for i in counts if i not in expected)
+    report["missing_ids"] = sorted(i for i in expected if i not in counts)
+    for column in ANSWERS[kind]:
+        stats = {"labeled": 0, "unlabeled": 0, "invalid": []}
+        for i, row in zip(ids, rows):
+            raw = row.get(column, "")
+            if not (raw or "").strip():
+                stats["unlabeled"] += 1
+            elif not _valid(column, raw):
+                stats["invalid"].append((i, raw))
+            elif column != "unsure" or normalize_label(raw) == "y":
+                stats["labeled"] += 1
+        report["columns"][column] = stats
+    if shown:
+        done = set()
+        for i, row in zip(ids, rows):
+            if i in shown and i not in done:
+                done.add(i)
+                report["readonly_cells_changed"] += sum(_plain(row.get(k)) != _plain(v) for k, v in shown[i].items())
+    return report
+
+
+def _load_json(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def check_report(out, split):
+    out = Path(out)
+    result = {}
+    manifest = _load_json(out / f"{split}_manifest.json")
+    result["sheet"] = check_rows("sheet", read_csv(out / f"{split}_sheet.csv"), set(manifest["items"]),
+                                 {i: m["shown"] for i, m in manifest["items"].items() if "shown" in m})
+    if (out / f"{split}_pairs.csv").exists():
+        pairs = _load_json(out / f"{split}_pairs_manifest.json")
+        result["pairs"] = check_rows("pairs", read_csv(out / f"{split}_pairs.csv"), set(pairs["pairs"]))
+    if (out / f"{split}_relabel.csv").exists():
+        origin = _load_json(out / f"{split}_relabel_manifest.json")["origin"]
+        result["relabel"] = check_rows("relabel", read_csv(out / f"{split}_relabel.csv"), set(origin))
+    return result
+
+
+def cmd_check(out, split):
+    """(text, exit code): 0 clean, 1 refused (columns or item ids not intact), 2 invalid values to fix."""
+
+    try:
+        reports = check_report(out, split)
+    except (FileNotFoundError, KeyError) as error:
+        return f"REFUSED: a required file is missing or unreadable ({type(error).__name__}: {error})", 1
+    lines, refused, invalid = [], False, False
+    for kind, r in reports.items():
+        lines.append(f"[{kind}] {r['rows']} rows")
+        if r["missing_columns"]:
+            refused = True
+            lines.append(f"  REFUSED: missing column(s) {', '.join(r['missing_columns'])}")
+        for key, text in (("missing_ids", "missing"), ("duplicate_ids", "duplicated"), ("unknown_ids", "unknown or altered")):
+            if r[key]:
+                refused = True
+                lines.append(f"  REFUSED: {len(r[key])} {text} id(s): {', '.join(r[key][:8])}{' ...' if len(r[key]) > 8 else ''}")
+        for column, c in r["columns"].items():
+            lines.append(f"  {column}: {c['labeled']} filled, {c['unlabeled']} blank, {len(c['invalid'])} invalid")
+            for i, raw in c["invalid"][:10]:
+                lines.append(f"    invalid {column} for {i}: {raw!r}")
+            invalid = invalid or bool(c["invalid"])
+        if r["readonly_cells_changed"]:
+            lines.append(f"  {r['readonly_cells_changed']} read-only cell(s) were changed in the file; ignored")
+    code = 1 if refused else 2 if invalid else 0
+    if code == 1:
+        lines.append("REFUSED: fix the file or restore the original ids before labeling further")
+    elif code == 2:
+        lines.append("Some values are invalid; fix them (labels: " + ", ".join(LABELS) + ")")
+    else:
+        lines.append("OK: ids intact, every filled value is valid")
+    return "\n".join(lines), code
+
+
+def require_judge_freeze(path, committed=None):
+    """The FROZEN step needs the judge freeze (prompt, schema, model, parameters) verified and committed first."""
+
+    from evals import judge_freeze as jf
+
+    try:
+        jf.verify_freeze(path)
+    except jf.JudgeFrozenChanged as error:
+        raise SystemExit(f"cannot freeze the test outputs: {error}") from None
+    if not (committed or jf.is_committed)(path):
+        raise SystemExit("cannot freeze the test outputs: the judge freeze file is not committed")
 
 
 def cmd_snapshot(out, split, today):
@@ -585,7 +771,12 @@ def cmd_relabel(out, split, today):
     if not ids:
         return 0
     guard_no_answers(out / f"{split}_relabel.csv", "label")
-    built = build_relabel({"sheet": read_csv(out / f"{split}_sheet.csv")}, ids)
+    manifest = _load_json(out / f"{split}_manifest.json")
+    rows = read_csv(out / f"{split}_sheet.csv")
+    for row in rows:       # the read-only columns come from the manifest, never from the (possibly Excel-edited) file
+        row["item"] = row["item"].strip()
+        row.update(manifest["items"].get(row["item"], {}).get("shown", {}))
+    built = build_relabel({"sheet": rows}, ids)
     write_csv(out / f"{split}_relabel.csv", built["sheet"], SHEET_FIELDS)
     _dump(out / f"{split}_relabel_manifest.json", built["manifest"])
     return len(ids)
@@ -624,7 +815,7 @@ def _write_all(split, items, out):
 
 def main(argv=None):  # pragma: no cover - owner-PC entry point
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("command", choices=["dev", "freeze", "test", "snapshot", "relabel", "metrics"])
+    parser.add_argument("command", choices=["dev", "freeze", "test", "snapshot", "relabel", "metrics", "check"])
     parser.add_argument("--split", choices=["dev", "test"], default="dev")
     parser.add_argument("--today", default=date.today().isoformat())
     parser.add_argument("--out", type=Path, default=OUT)
@@ -632,9 +823,16 @@ def main(argv=None):  # pragma: no cover - owner-PC entry point
     if args.command == "dev":
         _write_all("dev", load_split_items(B1_ROOT, "dev"), args.out)
     elif args.command == "freeze":
+        from evals import judge_freeze
+
+        require_judge_freeze(judge_freeze.FREEZE_PATH)
         print("FROZEN written for the B1 test outputs:", write_freeze(B1_ROOT).strip())
     elif args.command == "test":
         _write_all("test", load_split_items(B1_ROOT, "test"), args.out)
+    elif args.command == "check":
+        text, code = cmd_check(args.out, args.split)
+        print(text)
+        return code
     elif args.command == "snapshot":
         print(f"{cmd_snapshot(args.out, args.split, args.today)} items logged as labeled")
     elif args.command == "relabel":
