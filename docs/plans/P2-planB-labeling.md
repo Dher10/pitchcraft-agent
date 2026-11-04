@@ -1,6 +1,6 @@
 # P2 Plan B: labeling protocol for the owner (draft for approval)
 
-Status: draft, written Nov 3-4 2026 after D64 and the B1 run on 40 cases (dev 6 of 20 accepted, test 5 of 20 accepted, 11 of 40 in all; counts only, from `evals/data/writer/b1-run-record.json`). Nothing in it has been labeled, and no agent has labeled or read any sentence for this purpose. It needs the owner's approval before any sheet is built. Under D35 the build of the tools below is a separate approved task.
+Status: **APPROVED by the owner as version 1 on Nov 3 2026, with the four amendments listed in section 10.** Its SHA-256 is recorded in `docs/STATUS.md` and, at every draw, in the sheet manifests. Definitions change only through a new protocol version. Originally drafted Nov 3-4 2026 after D64 and the B1 run on 40 cases (dev 6 of 20 accepted, test 5 of 20 accepted, 11 of 40 in all; counts only, from `evals/data/writer/b1-run-record.json`). Nothing in it has been labeled, and no agent has labeled or read any sentence for this purpose.
 
 Written for: the owner, who will do the labeling on Nov 6-7 (about 8 hours) and Nov 8 (about 3 hours).
 
@@ -27,14 +27,15 @@ Every labeled item is one model sentence, shown with the facts it cites and the 
 |---|---|
 | **supported** | Every claim in the sentence (numbers, names, teams, dates, scope, labels, pitches, causes) follows from the facts in the case's fact table, with each figure tied to its own owner and scope. Wording may paraphrase. A trivially true count ("two starters") counts as supported. |
 | **wrong-number-or-name** | A number, name, team, date, pitch or label in the sentence differs from the fact table (wrong value, wrong owner, wrong scope, misspelled or accent-stripped name, a value from the other starter or team). One wrong item is enough, even if the rest is right. |
-| **unsupported** | Nothing in the sentence contradicts the fact table, but it states something the fact table does not give: an invented cause, a prediction, a comparison, an effect on hitters, an unlisted pitch description, a claim about a starter whose data is limited or missing. |
+| **unsupported** | Nothing in the sentence contradicts the fact table, but it states something the fact table does not give: an invented cause, a prediction, an effect on hitters, an unlisted pitch description, a claim about a starter whose data is limited or missing. |
 | **not-a-claim** | The sentence asserts nothing checkable: a headline phrase, a "Watch whether ..." prompt with no factual content of its own, a section lead-in. If it also contains a checkable claim, label that claim instead. |
 
 Rules for hard cases:
 1. If a sentence is both wrong and unsupported, use **wrong-number-or-name** when a value is wrong, otherwise **unsupported**.
 2. A sentence that is true but cites the wrong fact is still **supported** (citation quality is a gate question, not a truth question). Write "citation" in the note.
 3. Judge against the fact table, never against baseball knowledge or the real game. If unsure, choose **unsupported** and write "unsure".
-4. Do not look at gate findings, NLI scores or the accepted/rejected status. The sheets do not show them.
+4. **Truth against the fact table, not policy (amendment 1).** A comparison, cause or statement that is correct according to the fact table is **supported**, even if a gate forbids it by policy (D62). **unsupported** means the fact table does not establish it. Policy violations are measured from the gate findings, never from your labels.
+5. Do not look at gate findings, NLI scores or the accepted/rejected status. The sheets do not show them.
 
 Two optional notes help the analysis: `note` (free text, one line) and `unsure` (Y/blank). Neither is required.
 
@@ -63,11 +64,12 @@ At about 1 minute per sentence once warm, and 1.5 for the first dev items:
 |---|---|---:|---:|
 | Read the definitions, label the 3 pilot items together with the notes | Nov 6 | 5 | 20 min |
 | Dev practice, all dev items | Nov 6 | about 105 | 2 h |
-| Compare your dev labels with my dev findings table (a checking aid, not labels); fix definitions only through a new protocol version | Nov 6 | | 30 min |
+| Blind pairwise sheet U1, dev pairs (section 11) | Nov 6 | 6 pairs | about 20 min |
 | Test stratum A (the false-accept question) | Nov 6-7 | about 100 | about 1.7 h |
 | Test stratum B | Nov 7 | 150 | about 2.5 h |
 | Test stratum C | Nov 8 | 90 | about 1.5 h |
-| Re-label a random 10% of items two hours later, blind (self-agreement) | Nov 8 | about 35 | 35 min |
+| Re-label a random 10% of items labeled on earlier days (Nov 6-7), blind (self-agreement) | Nov 8 | about 35 | 35 min |
+| Blind pairwise sheet U1, test pairs, drawn only after the FROZEN step (section 11) | Nov 8 | 5 pairs | about 25 min |
 | Slack, breaks, the notes | | | about 2.5 h |
 
 That is about 9 h of the 11, so there are about 2 h of slack; if the pace is slower, spend the slack before cutting anything. If the pace is slower, the order of the blocks is the order of value: A first, then B, then C; the re-label block is the first to cut. A stratum left unfinished is reported as unlabeled and its metrics are not published.
@@ -99,7 +101,7 @@ Let an *error* be a label of wrong-number-or-name or unsupported. not-a-claim it
 3. **False-accept rate** (strata A): the share of accepted reports with at least one error sentence, and the share of accepted sentences that are errors.
 4. **Gate-set recall**: among labeled errors in strata B and C, the weighted share that a hard gate flagged. Per class recall is reported only when the labeled errors of that kind number at least 10; otherwise it is "insufficient".
 5. **NLI**: AUROC of the score against supported vs error; precision and recall of "supported" at 0.5 and 0.9; the gate-by-NLI cross-table (does NLI separate the sentences the gates disagree with the owner on). The threshold, if any is proposed, is chosen on dev labels only and then reported unchanged on test.
-6. **Owner reliability**: self-agreement on the re-labeled 10% (percent and Cohen's kappa) and the share marked unsure. These bound how good any rate can be.
+6. **Owner reliability**: self-agreement on the re-labeled 10% (drawn only from items labeled on earlier days, never from the same session) (percent and Cohen's kappa) and the share marked unsure. These bound how good any rate can be.
 7. **Secondary**: B1 acceptance rate for dev (20), test (20) and all 40, with Wilson intervals.
 
 Everything is reported by split. Test numbers are produced once, after the dev numbers and the judge freeze are written, and are not used to change a gate in this task.
@@ -124,9 +126,22 @@ Judge: Groq Free `openai/gpt-oss-120b` (D46). No Groq call is made by this draft
 5. The FROZEN file for the B1 test outputs is written by running the sheet script on the owner's PC (`seal.freeze_line`), the first time anyone opens those outputs. The test sheet is then drawn and labeled; the judge runs on the test sample once.
 6. Metrics are computed by the script from the labels; the report states per split what was and was not labeled.
 
-## 9. Decisions this protocol asks the owner to confirm
+## 9. Decisions this protocol asked the owner to confirm
 
 1. The four labels and their rules (section 2), including rule 2 (a true sentence with a wrong citation is supported).
 2. Stratum sizes (section 3) and the 11-hour budget (section 4), in particular that stratum A labels every sentence of every accepted test report (5 reports).
 3. Dropping the after-publication judge, U1 and S1 judging under Plan B (section 7, item 2).
 4. That the sheets hide gate findings and NLI scores from the owner while labeling.
+
+## 10. Owner approval and amendments (Nov 3 2026, version 1)
+
+Approved as written, with the four labels (rule 2 included), the stratum sizes, the 11-hour budget, dropping the after-publication judge, U1 judge comparisons, S1 judging and B2, and blind sheets. Amendments, all applied above:
+
+1. Labels judge truth against the fact table, not policy (hard-case rule 4); "a comparison" removed from the unsupported examples.
+2. The step that compared the owner's dev labels with an agent findings table is removed; the labels stay independent of any agent verdict.
+3. A minimal U1 block is added (section 11).
+4. The self-agreement re-label sample is drawn only from items labeled on earlier days (Nov 6-7).
+
+## 11. U1 blind pairwise block (amendment 3)
+
+About 45 minutes in all, from the slack. The pairs are the 11 accepted B1 reports (6 dev, 5 test), each shown beside the rules report of the same case, in random left/right order, with no source labels. For each pair the owner chooses which report is more useful for a casual fan (`left`, `right` or `tie`) and may add a note. Dev pairs are drawn with the dev sheet; test pairs are drawn only after the FROZEN step. The win, tie and loss rate of the model report against the rules report is reported with a Wilson interval and is a **secondary** result; no judge is involved. Files: `dev_pairs.csv` and `test_pairs.csv`, with the left/right assignment only in the manifest.
