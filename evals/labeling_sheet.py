@@ -33,7 +33,9 @@ ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / ".local" / "p2-2"
 B1_ROOT = WORK / "b1-full"
 OUT = WORK / "labeling"
-PROTOCOL = ROOT / "docs" / "plans" / "P2-planB-labeling.md"
+PROTOCOL = ROOT / "docs" / "plans" / "P2-planB-labeling-v2.md"      # v1 (P2-planB-labeling.md) stays untouched: the dev sheet was drawn under it
+PROTOCOL_VERSION = "planB-labeling-v2"
+PROTOCOL_V1_SHA256 = "886bf60fd0228ff2faa9ac1b726f7b24ca73040bbe07e325bd611175e752ab29"
 SEED = 20261106
 LABELS = ("supported", "wrong-number-or-name", "unsupported", "not-a-claim")
 ERRORS = ("wrong-number-or-name", "unsupported")
@@ -234,7 +236,7 @@ def build_split(items, tables, glossary, split, seed=SEED, source_hashes=None, p
     glossary_rows = [{"id": "GLOSSARY", "subject": t["term"], "field": _s(t.get("short")), "value": t["definition"], "scope": ""}
                      for t in glossary]
     facts = {group_of[c]: [_fact_row(x) for x in fact_rows[c]] + glossary_rows for c in cases}
-    manifest = {"protocol": "planB-labeling-v1", "protocol_sha256": protocol_sha256, "seed": seed, "split": split,
+    manifest = {"protocol": PROTOCOL_VERSION, "protocol_sha256": protocol_sha256, "seed": seed, "split": split,
                 "facts_sha256": {g: facts_digest(rows) for g, rows in facts.items()},
                 "quotas": q, "source_hashes": dict(source_hashes or {}), "groups": {g: c for c, g in group_of.items()},
                 "items": manifest_items}

@@ -383,3 +383,24 @@ def test_changing_the_request_limit_changes_the_digest(monkeypatch):
     base = jf.spec_digest()
     monkeypatch.setattr(jf, "MAX_REQUEST_TOKENS", 7000)
     assert jf.spec_digest() != base
+
+
+# ---------------------------------------------------------------- protocol v2 hard-case rules (owner dev practice)
+
+def test_the_prompt_carries_the_two_v2_hard_case_rules_and_a_new_version():
+    low = jf.SYSTEM_PROMPT.lower()
+    assert jf.PROMPT_VERSION == "judge-p2"
+    assert "similar" in low and "contrast" in low and "opposite" in low and "states it explicitly" in low
+    assert "watch" in low and "asserts and evaluates nothing" in low and "maintain its walk rate" in low
+    assert low.count("unsupported") >= 5
+
+
+def test_the_v2_protocol_file_holds_the_same_two_rules_and_v1_is_untouched():
+    import hashlib
+
+    v2 = ls.PROTOCOL.read_text(encoding="utf-8")
+    assert ls.PROTOCOL.name == "P2-planB-labeling-v2.md" and ls.PROTOCOL_VERSION == "planB-labeling-v2"
+    assert "similar profiles" in v2 and "asserts and evaluates nothing" in v2 and "maintain its walk rate" in v2
+    v1 = (ls.PROTOCOL.parent / "P2-planB-labeling.md").read_bytes().replace(b"\r\n", b"\n")
+    assert hashlib.sha256(v1).hexdigest() == ls.PROTOCOL_V1_SHA256 == "886bf60fd0228ff2faa9ac1b726f7b24ca73040bbe07e325bd611175e752ab29"
+    assert ls.protocol_sha256() != ls.PROTOCOL_V1_SHA256

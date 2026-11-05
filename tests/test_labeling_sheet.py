@@ -621,3 +621,7 @@ def test_the_pairs_sheet_with_answers_is_not_overwritten(tmp_path):
     with pytest.raises(SystemExit):
         ls.guard_no_answers(pairs, "more_useful")
     ls.guard_no_answers(tmp_path / "missing.csv", "label")
+
+
+def test_the_manifest_names_protocol_version_two():
+    assert _build()["manifest"]["protocol"] == ls.PROTOCOL_VERSION == "planB-labeling-v2"
