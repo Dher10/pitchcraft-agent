@@ -20,7 +20,7 @@ def _response(verdicts, finish="stop", content=None):
 
 
 def _good(ids=IDS, label="supported", finish="stop"):
-    return _response([{"id": i, "label": label} for i in ids], finish=finish)
+    return _response([{"id": i, "label": label, "unsure": False} for i in ids], finish=finish)
 
 
 def _body(ids=IDS):
@@ -46,7 +46,7 @@ def test_the_judge_is_the_d46_groq_model_with_fixed_deterministic_parameters():
     assert jf.JUDGE_MODEL == "openai/gpt-oss-120b"
     body = _body()
     assert body["model"] == jf.JUDGE_MODEL and body["temperature"] == 0 and body["stream"] is False
-    assert body["include_reasoning"] is False and body["reasoning_effort"] == "low"
+    assert body["include_reasoning"] is False and body["reasoning_effort"] == jf.effort_for(jf.DEV_PASS_ESTIMATE_P3) == "medium"
     assert body["max_completion_tokens"] == jf.PARAMS["max_completion_tokens"]
     assert body["response_format"]["type"] == "json_schema" and body["response_format"]["json_schema"]["strict"] is True
     assert "tools" not in body and "tool_choice" not in body
@@ -112,7 +112,8 @@ def test_calls_are_paced_including_the_retry_to_respect_the_per_minute_token_lim
 def test_the_schema_is_closed_with_the_four_labels_only():
     item = jf.SCHEMA["properties"]["verdicts"]["items"]
     assert item["properties"]["label"]["enum"] == list(ls.LABELS)
-    assert item["additionalProperties"] is False and set(item["required"]) == {"id", "label"}
+    assert item["additionalProperties"] is False and set(item["required"]) == {"id", "label", "unsure"}
+    assert item["properties"]["unsure"] == {"type": "boolean"}
     assert jf.SCHEMA["additionalProperties"] is False
 
 
@@ -134,22 +135,22 @@ def test_batches_hold_one_case_group_in_order_with_at_most_eight_sentences():
 # ---------------------------------------------------------------- invalid-response rule
 
 def test_a_valid_response_is_accepted_on_the_first_attempt():
-    fake = Fake(_response([{"id": "I1", "label": "supported"}, {"id": "I2", "label": "unsupported"}, {"id": "I3", "label": "not-a-claim"}]))
+    fake = Fake(_response([{"id": "I1", "label": "supported", "unsure": False}, {"id": "I2", "label": "unsupported", "unsure": False}, {"id": "I3", "label": "not-a-claim", "unsure": False}]))
     out = jf.judge_batch(fake, _body(), IDS)
     assert out["verdicts"] == {"I1": "supported", "I2": "unsupported", "I3": "not-a-claim"} and out["attempts"] == 1
     assert len(fake.calls) == 1
 
 
 @pytest.mark.parametrize("bad", [
-    _response([{"id": "I1", "label": "supported"}]),                                           # ids missing
-    _response([{"id": "I1", "label": "supported"}, {"id": "I2", "label": "supported"}, {"id": "I3", "label": "supported"}, {"id": "I4", "label": "supported"}]),
-    _response([{"id": "I1", "label": "supported"}, {"id": "I1", "label": "supported"}, {"id": "I3", "label": "supported"}]),
-    _response([{"id": i, "label": "Supported"} for i in IDS]),                                  # label not in the enum
-    _response([{"id": i, "label": "supported", "why": "x"} for i in IDS]),                      # extra key
+    _response([{"id": "I1", "label": "supported", "unsure": False}]),                                           # ids missing
+    _response([{"id": "I1", "label": "supported", "unsure": False}, {"id": "I2", "label": "supported", "unsure": False}, {"id": "I3", "label": "supported", "unsure": False}, {"id": "I4", "label": "supported", "unsure": False}]),
+    _response([{"id": "I1", "label": "supported", "unsure": False}, {"id": "I1", "label": "supported", "unsure": False}, {"id": "I3", "label": "supported", "unsure": False}]),
+    _response([{"id": i, "label": "Supported", "unsure": False} for i in IDS]),                                  # label not in the enum
+    _response([{"id": i, "label": "supported", "unsure": False, "why": "x"} for i in IDS]),                      # extra key
     _good(finish="length"),                                                                     # truncated
     _response(None, content="not json"),
     _response(None, content='{"verdicts": [], "verdicts": []}'),                               # duplicate keys
-    _response(None, content=json.dumps({"verdicts": [{"id": i, "label": "supported"} for i in IDS], "extra": 1})),
+    _response(None, content=json.dumps({"verdicts": [{"id": i, "label": "supported", "unsure": False} for i in IDS], "extra": 1})),
     {"choices": []}, {}, [], "x",
 ])
 def test_every_invalid_response_is_retried_once_then_every_sentence_is_missing(bad):
@@ -389,7 +390,7 @@ def test_changing_the_request_limit_changes_the_digest(monkeypatch):
 
 def test_the_prompt_carries_the_two_v2_hard_case_rules_and_a_new_version():
     low = jf.SYSTEM_PROMPT.lower()
-    assert jf.PROMPT_VERSION == "judge-p2"
+    assert jf.PROMPT_VERSION == "judge-p3"
     assert "similar" in low and "contrast" in low and "opposite" in low and "states it explicitly" in low
     assert "watch" in low and "asserts and evaluates nothing" in low and "maintain its walk rate" in low
     assert low.count("unsupported") >= 5
@@ -404,3 +405,47 @@ def test_the_v2_protocol_file_holds_the_same_two_rules_and_v1_is_untouched():
     v1 = (ls.PROTOCOL.parent / "P2-planB-labeling.md").read_bytes().replace(b"\r\n", b"\n")
     assert hashlib.sha256(v1).hexdigest() == ls.PROTOCOL_V1_SHA256 == "886bf60fd0228ff2faa9ac1b726f7b24ca73040bbe07e325bd611175e752ab29"
     assert ls.protocol_sha256() != ls.PROTOCOL_V1_SHA256
+
+
+# ---------------------------------------------------------------- judge-p3 (owner decision after dev pass 1)
+
+def test_the_judge_has_no_unsupported_tiebreak_but_picks_the_most_likely_label_and_flags_unsure():
+    low = jf.SYSTEM_PROMPT.lower()
+    assert "if unsure, choose unsupported" not in low and "choose unsupported" not in low
+    assert "most likely label" in low and "unsure" in low and "true" in low
+
+
+def test_the_prompt_makes_the_judge_verify_every_item_against_the_facts_before_labeling():
+    low = jf.SYSTEM_PROMPT.lower()
+    assert "before labeling" in low
+    for word in ("number", "name", "team", "date", "pitch", "label"):
+        assert word in low.split("before labeling", 1)[1].split("rules for hard cases", 1)[0]
+    assert "any mismatch" in low and "wrong-number-or-name" in low
+
+
+def test_the_asymmetry_with_the_owners_rule_3_is_recorded_in_the_spec():
+    asym = jf.spec()["owner_rule_3_asymmetry"]
+    assert asym["owner_rule_3_unchanged"] is True and asym["judge_tiebreak"] == "most_likely_label_with_unsure_flag"
+    assert "labeling convention" in asym["why"] and "15 of 32" in asym["why"]
+
+
+def test_an_unsure_flag_is_recorded_as_a_count_never_changes_the_label():
+    fake = Fake(_response([{"id": "I1", "label": "supported", "unsure": True}, {"id": "I2", "label": "unsupported", "unsure": False},
+                           {"id": "I3", "label": "supported", "unsure": True}]))
+    out = jf.judge_batch(fake, _body(), IDS)
+    assert out["verdicts"] == {"I1": "supported", "I2": "unsupported", "I3": "supported"} and out["unsure"] == 2
+
+
+@pytest.mark.parametrize("bad_flag", ["true", 1, None])
+def test_a_non_boolean_unsure_flag_is_invalid(bad_flag):
+    bad = _response([{"id": i, "label": "supported", "unsure": bad_flag} for i in IDS])
+    out = jf.judge_batch(Fake(bad, bad), _body(), IDS)
+    assert set(out["verdicts"].values()) == {"missing"} and out["unsure"] == 0
+
+
+def test_reasoning_effort_is_medium_only_when_the_corrected_estimate_fits_under_190k():
+    assert jf.PASS_TOKEN_BUDGET == 190_000 and jf.OBSERVED_UNDERESTIMATE == 1.17
+    assert jf.effort_for(120_000) == "medium"            # 140,400
+    assert jf.effort_for(162_393) == "medium"            # 189,999.8
+    assert jf.effort_for(162_394) == "low"
+    assert jf.effort_for(200_000) == "low"

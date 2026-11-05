@@ -11,7 +11,7 @@ def _batch(group, ids):
 
 
 def _ok(ids, label="supported"):
-    return {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps({"verdicts": [{"id": i, "label": label} for i in ids]})}}],
+    return {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps({"verdicts": [{"id": i, "label": label, "unsure": False} for i in ids]})}}],
             "usage": {"total_tokens": 90}}
 
 
@@ -27,8 +27,16 @@ def test_a_pass_compares_with_owner_labels_and_keeps_counts_only():
 
 
 def test_a_non_200_status_is_a_transport_failure_then_missing_never_a_pass():
-    record = rjd.run_pass(lambda body: (429, {}, None), [_batch("G01", ["a"])], {"a": "supported"})
-    assert record["missing"] == 1 and record["attempts"] == 2 and record["agreement"] == 0
+    answers = iter([(200, {}, _ok(["a"])), (429, {}, None), (429, {}, None)])
+    record = rjd.run_pass(lambda body: next(answers), [_batch("G01", ["a"]), _batch("G02", ["b"])], {"a": "supported", "b": "supported"})
+    assert record["missing"] == 1 and record["attempts"] == 3 and record["agreement"] == 0.5
+
+
+def test_pacing_continues_between_the_first_batch_and_the_rest():
+    waits = []
+    ids = iter([["a"], ["b"], ["c"]])
+    rjd.run_pass(lambda body: (200, {}, _ok(next(ids))), [_batch("G01", ["a"]), _batch("G02", ["b"]), _batch("G03", ["c"])], {"a": "supported"}, sleep=waits.append)
+    assert waits == [jf.PACING_SECONDS, jf.PACING_SECONDS]
 
 
 def test_only_valid_owner_labels_are_used():
@@ -46,3 +54,17 @@ def test_a_pass_record_is_written_once_and_no_per_sentence_file_exists(tmp_path)
         rjd.write_record(tmp_path, 1, {"pass": 1, "agreement": 1.0})
     assert json.loads((tmp_path / "judge_dev_pass1.json").read_text(encoding="utf-8")) == record
     assert [p.name for p in tmp_path.iterdir()] == ["judge_dev_pass1.json"]
+
+
+def test_a_first_batch_that_cannot_be_judged_aborts_the_pass_without_a_record():
+    import pytest
+
+    calls = []
+
+    def refuse(body):
+        calls.append(1)
+        return 429, {}, None
+
+    with pytest.raises(rjd.PassAborted):
+        rjd.run_pass(refuse, [_batch("G01", ["a"]), _batch("G02", ["b"])], {"a": "supported", "b": "supported"})
+    assert len(calls) == 2           # the declared retry only; the second batch is never sent
