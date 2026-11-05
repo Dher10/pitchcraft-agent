@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FREEZE_PATH = ROOT / "evals" / "data" / "writer" / "judge-freeze.json"
 JUDGE_MODEL = "openai/gpt-oss-120b"            # D46; the transport pins provider and user agent
 PROMPT_VERSION = "judge-p3"
-PARAMS = {"temperature": 0, "max_completion_tokens": 1024, "reasoning_effort": "medium", "include_reasoning": False, "stream": False}
+PARAMS = {"temperature": 0, "max_completion_tokens": 1024, "reasoning_effort": "low", "include_reasoning": False, "stream": False}
 MAX_REQUEST_TOKENS = 6000                       # per request, estimated input plus expected output (Groq Free: 8,000 tokens/minute)
 CHARS_PER_TOKEN = 3.5
 OUTPUT_BASE_TOKENS = 40
@@ -37,10 +37,16 @@ OBSERVED_UNDERESTIMATE = 1.17                   # dev pass 1: actual 139,516 aga
 DEV_PASS_ESTIMATE_P3 = 121_560                  # estimated tokens of one dev pass with judge-p3 (23 calls), measured with the code at this commit
 
 
-def effort_for(estimated_pass_tokens):
-    """medium reasoning only if the estimated pass, corrected by the observed underestimate, stays under the budget."""
+MEDIUM_VERIFIED = False                         # Nov 5: medium at the 1024 cap answered HTTP 400 on the first dev batch (reasoning used the cap); low answered valid.
+                                                # A larger cap would put one request over the 8,000 tokens/minute limit (about 6.0K input plus the cap).
 
-    return "medium" if estimated_pass_tokens * OBSERVED_UNDERESTIMATE < PASS_TOKEN_BUDGET else "low"
+
+def effort_for(estimated_pass_tokens):
+    """medium reasoning only if the estimated pass, corrected by the observed underestimate, stays under the budget AND medium was
+    shown to work within the output cap and the per-minute limit; otherwise the current setting (low)."""
+
+    fits = estimated_pass_tokens * OBSERVED_UNDERESTIMATE < PASS_TOKEN_BUDGET
+    return "medium" if fits and MEDIUM_VERIFIED else "low"
 
 
 SCHEMA = {
@@ -321,9 +327,10 @@ def spec():
                 "owner_rule_3_unchanged": True, "judge_tiebreak": "most_likely_label_with_unsure_flag",
                 "why": "The 'if unsure, choose unsupported' tie-break is a human labeling convention; for the judge it inflated unsupported "
                        "(15 of 32 disagreements in dev pass 1), so the judge picks the most likely label and may set unsure to true."},
-            "effort_rule": {"medium_only_if": "estimated pass x observed underestimate < budget", "observed_underestimate": OBSERVED_UNDERESTIMATE,
+            "effort_rule": {"medium_only_if": "estimated pass x observed underestimate < budget, and medium_verified", "observed_underestimate": OBSERVED_UNDERESTIMATE,
                             "pass_token_budget": PASS_TOKEN_BUDGET, "dev_pass_estimate": DEV_PASS_ESTIMATE_P3,
-                            "decision": effort_for(DEV_PASS_ESTIMATE_P3)},
+                            "decision": effort_for(DEV_PASS_ESTIMATE_P3), "medium_verified": MEDIUM_VERIFIED,
+                            "medium_rejected_because": "HTTP 400 at max_completion_tokens 1024 on the first dev batch; a larger cap exceeds 8,000 tokens per minute"},
             "invalid_rule": {"max_retries": RETRY_MAX, "retry_is_identical_request": True, "missing_is_pass": False,
                              "keeps_response_text": False, "triggers": ["transport", "response_shape", "finish_reason", "json", "schema", "ids"]},
             "protocol_sha256": ls.protocol_sha256()}

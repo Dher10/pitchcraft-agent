@@ -46,7 +46,7 @@ def test_the_judge_is_the_d46_groq_model_with_fixed_deterministic_parameters():
     assert jf.JUDGE_MODEL == "openai/gpt-oss-120b"
     body = _body()
     assert body["model"] == jf.JUDGE_MODEL and body["temperature"] == 0 and body["stream"] is False
-    assert body["include_reasoning"] is False and body["reasoning_effort"] == jf.effort_for(jf.DEV_PASS_ESTIMATE_P3) == "medium"
+    assert body["include_reasoning"] is False and body["reasoning_effort"] == jf.effort_for(jf.DEV_PASS_ESTIMATE_P3) == "low"
     assert body["max_completion_tokens"] == jf.PARAMS["max_completion_tokens"]
     assert body["response_format"]["type"] == "json_schema" and body["response_format"]["json_schema"]["strict"] is True
     assert "tools" not in body and "tool_choice" not in body
@@ -443,8 +443,11 @@ def test_a_non_boolean_unsure_flag_is_invalid(bad_flag):
     assert set(out["verdicts"].values()) == {"missing"} and out["unsure"] == 0
 
 
-def test_reasoning_effort_is_medium_only_when_the_corrected_estimate_fits_under_190k():
+def test_reasoning_effort_is_medium_only_when_it_fits_the_budget_and_was_shown_to_work(monkeypatch):
     assert jf.PASS_TOKEN_BUDGET == 190_000 and jf.OBSERVED_UNDERESTIMATE == 1.17
+    assert jf.MEDIUM_VERIFIED is False                   # Groq answered HTTP 400 for medium at the 1024 cap (Nov 5)
+    assert jf.effort_for(120_000) == "low" and jf.spec()["effort_rule"]["decision"] == "low"
+    monkeypatch.setattr(jf, "MEDIUM_VERIFIED", True)
     assert jf.effort_for(120_000) == "medium"            # 140,400
     assert jf.effort_for(162_393) == "medium"            # 189,999.8
     assert jf.effort_for(162_394) == "low"
