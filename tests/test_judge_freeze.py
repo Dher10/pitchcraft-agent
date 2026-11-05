@@ -13,6 +13,14 @@ from tests.test_labeling_sheet import GLOSSARY, _build
 IDS = ["I1", "I2", "I3"]
 
 
+def _passes(p3=0.8, p2=0.7, p3_status="complete"):
+    """The dev calibration passes the freeze records: judge-p2 (pass 1) and judge-p3 (pass 2)."""
+    out = [{"prompt_version": "judge-p2", "status": "complete", "agreement": p2, "missing": 0}]
+    if p3 is not None:
+        out.append({"prompt_version": "judge-p3", "status": p3_status, "agreement": p3, "missing": 0})
+    return out
+
+
 def _response(verdicts, finish="stop", content=None):
     text = json.dumps({"verdicts": verdicts}) if content is None else content
     return {"choices": [{"finish_reason": finish, "message": {"role": "assistant", "content": text}}],
@@ -245,11 +253,11 @@ def test_changing_any_frozen_part_changes_the_digest(monkeypatch):
 
 def test_the_freeze_file_is_written_once_and_verified_against_the_runtime(tmp_path, monkeypatch):
     path = tmp_path / "judge-freeze.json"
-    passes = [{"prompt_version": jf.PROMPT_VERSION, "agreement": 0.8, "missing": 0}]
-    record = jf.write_freeze(path, passes, chosen=jf.PROMPT_VERSION)
+    passes = _passes(0.8)
+    record = jf.write_freeze(path, passes, chosen="judge-p3")
     assert json.loads(path.read_text(encoding="utf-8")) == record and record["spec_digest"] == jf.spec_digest()
     with pytest.raises(jf.FreezeExists):
-        jf.write_freeze(path, passes, chosen=jf.PROMPT_VERSION)
+        jf.write_freeze(path, passes, chosen="judge-p3")
     assert jf.verify_freeze(path)["spec_digest"] == jf.spec_digest()
     monkeypatch.setattr(jf, "SYSTEM_PROMPT", jf.SYSTEM_PROMPT + " tuned after the freeze")
     with pytest.raises(jf.JudgeFrozenChanged):
@@ -257,35 +265,25 @@ def test_the_freeze_file_is_written_once_and_verified_against_the_runtime(tmp_pa
 
 
 def test_the_freeze_allows_at_most_three_dev_passes_and_a_chosen_one_among_them(tmp_path):
-    p = {"prompt_version": jf.PROMPT_VERSION, "agreement": 0.7, "missing": 0}
+    p = _passes()[1]
     with pytest.raises(ValueError):
-        jf.write_freeze(tmp_path / "a.json", [p] * 4, chosen=jf.PROMPT_VERSION)
+        jf.write_freeze(tmp_path / "a.json", _passes() + [p, p], chosen="judge-p3")
     with pytest.raises(ValueError):
-        jf.write_freeze(tmp_path / "b.json", [p], chosen="other")
+        jf.write_freeze(tmp_path / "b.json", _passes(), chosen="other")
     with pytest.raises(ValueError):
-        jf.write_freeze(tmp_path / "c.json", [], chosen=jf.PROMPT_VERSION)
+        jf.write_freeze(tmp_path / "c.json", [], chosen="judge-p3")
 
 
 def test_a_missing_or_tampered_freeze_file_is_refused(tmp_path):
     with pytest.raises(jf.JudgeFrozenChanged):
         jf.verify_freeze(tmp_path / "nope.json")
     path = tmp_path / "f.json"
-    jf.write_freeze(path, [{"prompt_version": jf.PROMPT_VERSION, "agreement": 1, "missing": 0}], chosen=jf.PROMPT_VERSION)
+    jf.write_freeze(path, _passes(1), chosen="judge-p3")
     data = json.loads(path.read_text(encoding="utf-8"))
     data["spec"]["params"]["temperature"] = 1
     path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(jf.JudgeFrozenChanged):
         jf.verify_freeze(path)
-
-
-def test_the_test_freeze_step_requires_a_verified_and_committed_judge_freeze(tmp_path):
-    path = tmp_path / "judge-freeze.json"
-    with pytest.raises(SystemExit):
-        ls.require_judge_freeze(path, committed=lambda p: True)
-    jf.write_freeze(path, [{"prompt_version": jf.PROMPT_VERSION, "agreement": 1, "missing": 0}], chosen=jf.PROMPT_VERSION)
-    with pytest.raises(SystemExit):
-        ls.require_judge_freeze(path, committed=lambda p: False)
-    ls.require_judge_freeze(path, committed=lambda p: True)
 
 
 def test_committed_means_tracked_and_unmodified():
@@ -306,7 +304,7 @@ def test_committed_means_tracked_and_unmodified():
 
 def test_the_dev_calibration_record_is_pinned_too(tmp_path):
     path = tmp_path / "f.json"
-    jf.write_freeze(path, [{"prompt_version": jf.PROMPT_VERSION, "agreement": 0.6, "missing": 0}], chosen=jf.PROMPT_VERSION)
+    jf.write_freeze(path, _passes(0.6), chosen="judge-p2")
     data = json.loads(path.read_text(encoding="utf-8"))
     data["dev_calibration"]["passes"][0]["agreement"] = 0.99
     path.write_text(json.dumps(data), encoding="utf-8")
@@ -452,3 +450,134 @@ def test_reasoning_effort_is_medium_only_when_it_fits_the_budget_and_was_shown_t
     assert jf.effort_for(162_393) == "medium"            # 189,999.8
     assert jf.effort_for(162_394) == "low"
     assert jf.effort_for(200_000) == "low"
+
+
+# ---------------------------------------------------------------- the pre-freeze (owner decision Nov 5): both candidates, the rule, the scope
+
+PASS1 = {"agreement": 0.7168141592920354, "kappa": 0.33296439771259917, "record_sha256": "a" * 64}
+
+
+def test_both_candidates_are_fixed_with_their_own_digests_and_the_schema_difference():
+    assert set(jf.CANDIDATES) == {"judge-p2", "judge-p3"}
+    p2, p3 = jf.spec("judge-p2"), jf.spec("judge-p3")
+    assert p2["prompt_version"] == "judge-p2" and p3["prompt_version"] == "judge-p3"
+    assert jf.spec_digest("judge-p2") != jf.spec_digest("judge-p3") and jf.spec_digest() == jf.spec_digest("judge-p3")
+    assert p2["system_prompt_sha256"] != p3["system_prompt_sha256"] and p2["schema_sha256"] != p3["schema_sha256"]
+    assert p2["model"] == p3["model"] == jf.JUDGE_MODEL and p2["params"] == p3["params"] == jf.PARAMS and p2["batching"] == p3["batching"]
+    assert p2["unsure_flag"] is False and p3["unsure_flag"] is True and "owner_rule_3_asymmetry" not in p2
+    assert "if unsure, choose unsupported" in jf.candidate("judge-p2")["system_prompt"].lower()      # p2 keeps the owner's tie-break verbatim
+
+
+def test_judge_p2_text_is_the_one_used_in_dev_pass_1():
+    import hashlib
+
+    # SHA-256 of the 112d3f3 prompt text that dev pass 1 ran with; a change here would be a different candidate
+    assert hashlib.sha256(jf.candidate("judge-p2")["system_prompt"].encode("utf-8")).hexdigest() == jf.JUDGE_P2_PROMPT_SHA256
+    assert len(jf.JUDGE_P2_PROMPT_SHA256) == 64
+
+
+def test_a_request_and_a_parse_follow_the_candidate_asked_for():
+    rows = [{"id": "F001", "subject": "Ace", "field": "era", "value": "2.5", "scope": "2026"}]
+    items = [{"id": "I1", "sentence": "s", "cited_facts": ""}]
+    p2 = jf.build_request(rows, GLOSSARY, items, "judge-p2")
+    assert p2["messages"][0]["content"] == jf.candidate("judge-p2")["system_prompt"]
+    assert p2["response_format"]["json_schema"]["schema"]["properties"]["verdicts"]["items"]["required"] == ["id", "label"]
+    old = _response([{"id": "I1", "label": "supported"}])
+    assert jf.judge_batch(Fake(old), p2, ["I1"], "judge-p2")["verdicts"] == {"I1": "supported"}
+    assert jf.judge_batch(Fake(old, old), jf.build_request(rows, GLOSSARY, items), ["I1"])["verdicts"] == {"I1": "missing"}
+
+
+def test_selection_rule_is_mechanical_higher_dev_agreement_wins_and_p2_is_the_default():
+    sel = jf.select_candidate
+    assert sel(_passes(p3=0.80, p2=0.72)) == "judge-p3"
+    assert sel(_passes(p3=0.60, p2=0.72)) == "judge-p2"
+    assert sel(_passes(p3=0.72, p2=0.72)) == "judge-p2"                  # a tie keeps the earlier candidate
+    assert sel(_passes(p3=None)) == "judge-p2"                           # pass 2 absent
+    assert sel(_passes(p3=0.95, p3_status="aborted")) == "judge-p2"      # failed or aborted: p2, no further attempt
+    assert sel(_passes(p3=None, p2=0.1)) == "judge-p2"
+
+
+def test_the_freeze_must_record_the_candidate_the_rule_selects(tmp_path):
+    with pytest.raises(ValueError):
+        jf.write_freeze(tmp_path / "a.json", _passes(p3=0.5), chosen="judge-p3")
+    with pytest.raises(ValueError):
+        jf.write_freeze(tmp_path / "b.json", _passes(p3=0.9), chosen="judge-p2")
+    record = jf.write_freeze(tmp_path / "c.json", _passes(p3=0.5), chosen="judge-p2")
+    assert record["spec"]["prompt_version"] == "judge-p2" and record["spec_digest"] == jf.spec_digest("judge-p2")
+    assert jf.verify_freeze(tmp_path / "c.json")["spec"]["prompt_version"] == "judge-p2"
+
+
+def test_the_prefreeze_pins_both_candidates_the_rule_the_scope_and_the_dev_pass_1_result(tmp_path):
+    path = tmp_path / "judge-prefreeze.json"
+    record = jf.write_prefreeze(path, PASS1)
+    assert set(record["candidates"]) == {"judge-p2", "judge-p3"}
+    for name, entry in record["candidates"].items():
+        assert entry["spec_digest"] == jf.spec_digest(name) and entry["spec"] == jf.spec(name)
+    assert record["selection_rule"]["higher_dev_agreement_wins"] is True and record["selection_rule"]["on_failure_or_abort"] == "judge-p2"
+    assert record["selection_rule"]["further_attempts"] == 0 and record["selection_rule"]["tie"] == "judge-p2"
+    assert record["test_scope"]["strata"] == ["A", "B", "C"] and record["test_scope"]["judged_once"] is True
+    assert record["test_scope"]["estimated_tokens"] == {"low": 370_000, "high": 400_000} and record["test_scope"]["quota_days"] == 2
+    assert record["dev_pass1"] == PASS1 and record["protocol_sha256"] == ls.protocol_sha256()
+    with pytest.raises(jf.FreezeExists):
+        jf.write_prefreeze(path, PASS1)
+    assert jf.verify_prefreeze(path)["dev_pass1"] == PASS1
+
+
+def test_a_missing_or_changed_prefreeze_is_refused(tmp_path, monkeypatch):
+    with pytest.raises(jf.JudgeFrozenChanged):
+        jf.verify_prefreeze(tmp_path / "nope.json")
+    path = tmp_path / "p.json"
+    jf.write_prefreeze(path, PASS1)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["test_scope"]["strata"] = ["A", "B"]
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(jf.JudgeFrozenChanged):
+        jf.verify_prefreeze(path)
+    path2 = tmp_path / "q.json"
+    jf.write_prefreeze(path2, PASS1)
+    monkeypatch.setattr(jf, "SYSTEM_PROMPT", jf.SYSTEM_PROMPT + " tuned")      # a candidate drifting after the pre-freeze
+    with pytest.raises(jf.JudgeFrozenChanged):
+        jf.verify_prefreeze(path2)
+
+
+def test_the_frozen_step_accepts_a_verified_committed_prefreeze_and_nothing_else(tmp_path):
+    path = tmp_path / "judge-prefreeze.json"
+    with pytest.raises(SystemExit):
+        ls.require_judge_freeze(path, committed=lambda p: True)
+    jf.write_prefreeze(path, PASS1)
+    with pytest.raises(SystemExit):
+        ls.require_judge_freeze(path, committed=lambda p: False)
+    ls.require_judge_freeze(path, committed=lambda p: True)
+    final = tmp_path / "judge-freeze.json"                       # the final freeze is NOT what the FROZEN gate reads
+    jf.write_freeze(final, _passes(0.9), chosen="judge-p3")
+    with pytest.raises(SystemExit):
+        ls.require_judge_freeze(final, committed=lambda p: True)
+
+
+def test_the_frozen_command_reads_the_prefreeze_path():
+    import inspect
+
+    assert jf.PREFREEZE_PATH.name == "judge-prefreeze.json"
+    source = inspect.getsource(ls.main)
+    assert "PREFREEZE_PATH" in source and "judge_freeze.FREEZE_PATH" not in source
+
+
+def test_the_committed_prefreeze_verifies_against_the_code_and_records_the_real_dev_pass_1():
+    record = jf.verify_prefreeze(jf.PREFREEZE_PATH)
+    assert record["dev_pass1"]["agreement"] == pytest.approx(81 / 113) and record["dev_pass1"]["kappa"] == pytest.approx(0.3329644, abs=1e-6)
+    assert record["candidates"]["judge-p2"]["spec_digest"] == jf.spec_digest("judge-p2")
+    assert record["candidates"]["judge-p3"]["spec_digest"] == jf.spec_digest("judge-p3")
+
+
+def test_the_real_pass_1_record_shape_without_a_status_key_is_a_complete_judge_p2_result():
+    # the exact key set of the dev pass 1 record written by the runner at 57601af (no "status", no "unsure")
+    legacy = {"prompt_version": "judge-p2", "spec_digest": "x" * 64, "calls": 23, "attempts": 23, "sentences": 113, "labeled": 113,
+              "agreement": 0.7168141592920354, "agreement_answered": 0.7168141592920354, "kappa": 0.33, "missing": 0,
+              "confusion": {}, "error_vs_supported": {"n": 103, "agree": 81}, "tokens": {}, "headers": [], "batches": [], "pass": 1}
+    assert "status" not in legacy
+    assert jf.select_candidate([legacy]) == "judge-p2"                                              # pass 2 absent
+    assert jf.select_candidate([legacy, {"prompt_version": "judge-p3", "status": "aborted", "reason": "x"}]) == "judge-p2"
+    assert jf.select_candidate([legacy, _passes(p3=0.9)[1]]) == "judge-p3"
+    assert jf.select_candidate([legacy, _passes(p3=0.5)[1]]) == "judge-p2"
+    with pytest.raises(ValueError):
+        jf.select_candidate([{**legacy, "missing": 3}])                                              # a partial legacy record is not a result

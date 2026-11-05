@@ -1,0 +1,179 @@
+{
+ "batching": {
+  "fact_table_and_glossary_once_per_call": true,
+  "max_request_tokens": 6000,
+  "max_sentences": 8,
+  "one_case_group_per_call": true,
+  "split_group_when_over": true
+ },
+ "candidates": {
+  "judge-p2": {
+   "spec": {
+    "batching": {
+     "fact_table_and_glossary_once_per_call": true,
+     "max_request_tokens": 6000,
+     "max_sentences": 8,
+     "one_case_group_per_call": true,
+     "split_group_when_over": true
+    },
+    "invalid_rule": {
+     "keeps_response_text": false,
+     "max_retries": 1,
+     "missing_is_pass": false,
+     "retry_is_identical_request": true,
+     "triggers": [
+      "transport",
+      "response_shape",
+      "finish_reason",
+      "json",
+      "schema",
+      "ids"
+     ]
+    },
+    "labels": [
+     "supported",
+     "wrong-number-or-name",
+     "unsupported",
+     "not-a-claim"
+    ],
+    "model": "openai/gpt-oss-120b",
+    "pacing_seconds": 60,
+    "params": {
+     "include_reasoning": false,
+     "max_completion_tokens": 1024,
+     "reasoning_effort": "low",
+     "stream": false,
+     "temperature": 0
+    },
+    "prompt_version": "judge-p2",
+    "protocol_sha256": "4f627a80c835c69cdb739c502dcc301e6ad44dc965ebcf604f425e7063253778",
+    "schema_sha256": "e192e4dac1bec46bbdb18cb007ddd6a62f4c9961f7a6ff996be5db374fe8c16a",
+    "system_prompt_sha256": "078402af769702874d54a8da3a9b56e677834adefdf36bc869039cbd6bf6a836",
+    "token_estimate": {
+     "characters_per_token": 3.5,
+     "confirm_against": "Groq response headers in the first dev pass",
+     "counts": "system and user messages, response schema, expected output",
+     "output_base_tokens": 40,
+     "output_per_sentence_tokens": 25
+    },
+    "unsure_flag": false,
+    "user_preamble_sha256": "9adabe2e118256edcdcfc34e341d0edc52a0618d7ccced05b48b760bca82569a",
+    "version": 1
+   },
+   "spec_digest": "6fbe9ec1c7ccccd6a0c9f764e5e80a1c6cc71dca141278e8f29c277e3179884d"
+  },
+  "judge-p3": {
+   "spec": {
+    "batching": {
+     "fact_table_and_glossary_once_per_call": true,
+     "max_request_tokens": 6000,
+     "max_sentences": 8,
+     "one_case_group_per_call": true,
+     "split_group_when_over": true
+    },
+    "effort_rule": {
+     "decision": "low",
+     "dev_pass_estimate": 121560,
+     "medium_only_if": "estimated pass x observed underestimate < budget, and medium_verified",
+     "medium_rejected_because": "HTTP 400 at max_completion_tokens 1024 on the first dev batch; a larger cap exceeds 8,000 tokens per minute",
+     "medium_verified": false,
+     "observed_underestimate": 1.17,
+     "pass_token_budget": 190000
+    },
+    "invalid_rule": {
+     "keeps_response_text": false,
+     "max_retries": 1,
+     "missing_is_pass": false,
+     "retry_is_identical_request": true,
+     "triggers": [
+      "transport",
+      "response_shape",
+      "finish_reason",
+      "json",
+      "schema",
+      "ids"
+     ]
+    },
+    "labels": [
+     "supported",
+     "wrong-number-or-name",
+     "unsupported",
+     "not-a-claim"
+    ],
+    "model": "openai/gpt-oss-120b",
+    "owner_rule_3_asymmetry": {
+     "judge_tiebreak": "most_likely_label_with_unsure_flag",
+     "owner_rule_3_unchanged": true,
+     "why": "The 'if unsure, choose unsupported' tie-break is a human labeling convention; for the judge it inflated unsupported (15 of 32 disagreements in dev pass 1), so the judge picks the most likely label and may set unsure to true."
+    },
+    "pacing_seconds": 60,
+    "params": {
+     "include_reasoning": false,
+     "max_completion_tokens": 1024,
+     "reasoning_effort": "low",
+     "stream": false,
+     "temperature": 0
+    },
+    "prompt_version": "judge-p3",
+    "protocol_sha256": "4f627a80c835c69cdb739c502dcc301e6ad44dc965ebcf604f425e7063253778",
+    "schema_sha256": "fcf140f8de1e0f05d73279e79315cae123d3e4c92f7b2b25b88b9cad951510e4",
+    "system_prompt_sha256": "18dc1dd7a2785895923d4a1766a635ac57eb5ca05fbc0cbb8c8efffedfb4e48e",
+    "token_estimate": {
+     "characters_per_token": 3.5,
+     "confirm_against": "Groq response headers in the first dev pass",
+     "counts": "system and user messages, response schema, expected output",
+     "output_base_tokens": 40,
+     "output_per_sentence_tokens": 30
+    },
+    "unsure_flag": true,
+    "user_preamble_sha256": "9adabe2e118256edcdcfc34e341d0edc52a0618d7ccced05b48b760bca82569a",
+    "version": 1
+   },
+   "spec_digest": "78405d98439edb8532729dce5e2044837304a9c0bf4ab79f65f17a6933fc6880"
+  }
+ },
+ "dev_pass1": {
+  "agreement": 0.7168141592920354,
+  "kappa": 0.33296439771259917,
+  "record_sha256": "bf2a164b0c3171f8c4212825fd7cfafdc54241d75a89696476941334f9bfb094"
+ },
+ "kind": "judge-prefreeze",
+ "model": "openai/gpt-oss-120b",
+ "pacing_seconds": 60,
+ "params": {
+  "include_reasoning": false,
+  "max_completion_tokens": 1024,
+  "reasoning_effort": "low",
+  "stream": false,
+  "temperature": 0
+ },
+ "prefreeze_sha256": "509e5129b7461ad85f1927b38ae04072f293b98e9884d48800c73607889988a5",
+ "protocol_sha256": "4f627a80c835c69cdb739c502dcc301e6ad44dc965ebcf604f425e7063253778",
+ "selection_rule": {
+  "earlier_incomplete_attempt_counts": false,
+  "further_attempts": 0,
+  "higher_dev_agreement_wins": true,
+  "judge_p3_pass": "dev pass 2 after 03:30 UTC Nov 6 2026, status complete or it counts as failed",
+  "measure": "dev agreement with the owner over all 113 dev sentences (missing counts against the judge)",
+  "on_failure_or_abort": "judge-p2",
+  "tie": "judge-p2"
+ },
+ "test_scope": {
+  "basis": "about 5.0K tokens fixed per call plus about 210 per sentence, 340 to 370 sentences, 60 s pacing",
+  "calls": "about 60 to 65",
+  "estimated_tokens": {
+   "high": 400000,
+   "low": 370000
+  },
+  "if_it_did_not_fit": "strata A and B only",
+  "judged_once": true,
+  "quota_days": 2,
+  "quota_days_available": 4,
+  "strata": [
+   "A",
+   "B",
+   "C"
+  ]
+ },
+ "version": 1
+}

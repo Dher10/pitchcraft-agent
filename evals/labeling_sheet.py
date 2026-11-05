@@ -746,16 +746,16 @@ def cmd_check(out, split):
 
 
 def require_judge_freeze(path, committed=None):
-    """The FROZEN step needs the judge freeze (prompt, schema, model, parameters) verified and committed first."""
+    """The FROZEN step needs the judge pre-freeze (both candidate specs, the selection rule, the test scope) verified and committed first."""
 
     from evals import judge_freeze as jf
 
     try:
-        jf.verify_freeze(path)
+        jf.verify_prefreeze(path)
     except jf.JudgeFrozenChanged as error:
         raise SystemExit(f"cannot freeze the test outputs: {error}") from None
     if not (committed or jf.is_committed)(path):
-        raise SystemExit("cannot freeze the test outputs: the judge freeze file is not committed")
+        raise SystemExit("cannot freeze the test outputs: the judge pre-freeze file is not committed")
 
 
 def cmd_snapshot(out, split, today):
@@ -827,7 +827,7 @@ def main(argv=None):  # pragma: no cover - owner-PC entry point
     elif args.command == "freeze":
         from evals import judge_freeze
 
-        require_judge_freeze(judge_freeze.FREEZE_PATH)
+        require_judge_freeze(judge_freeze.PREFREEZE_PATH)
         print("FROZEN written for the B1 test outputs:", write_freeze(B1_ROOT).strip())
     elif args.command == "test":
         _write_all("test", load_split_items(B1_ROOT, "test"), args.out)
