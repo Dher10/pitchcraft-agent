@@ -26,12 +26,12 @@ def owner_labels(rows):
     return {i: v[0] for i, v in ls.clean_labels(rows).items() if v[0] is not None}
 
 
-class PassAborted(RuntimeError):
-    """The first batch could not be judged (for example the daily quota is spent): no record is written, the pass number stays free."""
+ABORT_AFTER = 2          # consecutive failed batches (every sentence missing after the declared retry) that stop a pass
 
 
 def run_pass(call, batches, owner, sleep=None):
-    """Judge every batch, then compare with the owner's labels. `call(body)` returns (status, rate_headers, body).
+    """Judge every batch in order, then compare with the owner's labels. `call(body)` returns (status, rate_headers, body).
+    A pass stops after ABORT_AFTER consecutive failed batches and is recorded as aborted: no agreement, no calibration result.
     Returns the record only: per-sentence verdicts are not kept, so the owner's labels cannot be reconstructed from it."""
 
     seen = []
@@ -43,24 +43,31 @@ def run_pass(call, batches, owner, sleep=None):
             raise RuntimeError("transport")
         return value
 
-    verdicts, records = jf.judge_all(plain, batches[:1], sleep=sleep)
-    if all(v == jf.MISSING for v in verdicts.values()):
-        raise PassAborted("the first batch was not judged; nothing was recorded")
-    if sleep is not None and batches[1:]:
-        sleep(jf.PACING_SECONDS)                 # the pacing continues across the split
-    more_verdicts, more_records = jf.judge_all(plain, batches[1:], sleep=sleep)
-    verdicts, records = {**verdicts, **more_verdicts}, records + more_records
-    scored = {i: owner[i] for i in owner if i in verdicts}
-    agreement = jf.judge_agreement(scored, verdicts)
+    verdicts, records, streak, aborted = {}, [], 0, False
+    for n, batch in enumerate(batches):
+        if n and sleep is not None:
+            sleep(jf.PACING_SECONDS)             # pacing between batches; judge_all paces a retry inside one batch
+        got, recs = jf.judge_all(plain, [batch], sleep=sleep)
+        verdicts.update(got)
+        records += recs
+        streak = streak + 1 if all(v == jf.MISSING for v in got.values()) else 0
+        if streak >= ABORT_AFTER:
+            aborted = True
+            break
     estimated = sum(r["estimated_tokens"] for r in records)
     actual = sum(r["tokens"] for r in records)
-    return {"prompt_version": jf.PROMPT_VERSION, "spec_digest": jf.spec_digest(), "calls": len(records),
-            "attempts": sum(r["attempts"] for r in records), "sentences": len(verdicts), "labeled": len(scored),
+    base = {"prompt_version": jf.PROMPT_VERSION, "spec_digest": jf.spec_digest(), "calls": len(records),
+            "attempts": sum(r["attempts"] for r in records), "tokens": {"estimated": estimated, "actual": actual,
+            "largest_estimated": max((r["estimated_tokens"] for r in records), default=0)}, "headers": seen, "batches": records}
+    if aborted:
+        return {**base, "status": "aborted", "reason": "two_consecutive_failed_batches", "batches_judged": len(records),
+                "batches_total": len(batches), "sentences_missing": sum(v == jf.MISSING for v in verdicts.values())}
+    scored = {i: owner[i] for i in owner if i in verdicts}
+    agreement = jf.judge_agreement(scored, verdicts)
+    return {**base, "status": "complete", "sentences": len(verdicts), "labeled": len(scored),
             "agreement": agreement["percent_of_all"], "agreement_answered": agreement["percent_of_answered"],
-            "kappa": agreement["kappa"], "missing": agreement["missing"], "unsure": sum(r["unsure"] for r in records), "confusion": agreement["confusion"],
-            "error_vs_supported": agreement["error_vs_supported"],
-            "tokens": {"estimated": estimated, "actual": actual, "largest_estimated": max((r["estimated_tokens"] for r in records), default=0)},
-            "headers": seen, "batches": records}
+            "kappa": agreement["kappa"], "missing": agreement["missing"], "unsure": sum(r["unsure"] for r in records),
+            "confusion": agreement["confusion"], "error_vs_supported": agreement["error_vs_supported"]}
 
 
 def write_record(out, number, record):
@@ -99,7 +106,7 @@ def main(argv=None):  # pragma: no cover - owner-PC entry point
     key = local_runner._local_key(local_runner.KEY_NAMES["groq"])
     record = run_pass(groq_call(key), batches, owner, sleep=time.sleep)
     record["pass"] = args.number
-    summary = {k: record[k] for k in ("prompt_version", "calls", "attempts", "sentences", "labeled", "agreement", "agreement_answered", "kappa", "missing", "unsure", "confusion", "error_vs_supported", "tokens")}
+    summary = {k: v for k, v in record.items() if k not in ("headers", "batches")}
     print(json.dumps(summary, indent=1, sort_keys=True), flush=True)     # printed first: a failed write must not lose a spent quota-day pass
     write_record(args.out, args.number, record)
 
