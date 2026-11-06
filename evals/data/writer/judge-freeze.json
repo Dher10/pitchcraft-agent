@@ -1,0 +1,162 @@
+{
+ "dev_calibration": {
+  "chosen": "judge-p3",
+  "passes": [
+   {
+    "agreement": 0.7168141592920354,
+    "agreement_answered": 0.7168141592920354,
+    "attempts": 23,
+    "calls": 23,
+    "confusion": {
+     "not-a-claim": {
+      "not-a-claim": 1,
+      "unsupported": 1
+     },
+     "supported": {
+      "not-a-claim": 5,
+      "supported": 71,
+      "unsupported": 15
+     },
+     "unsupported": {
+      "not-a-claim": 3,
+      "unsupported": 4,
+      "wrong-number-or-name": 1
+     },
+     "wrong-number-or-name": {
+      "supported": 7,
+      "wrong-number-or-name": 5
+     }
+    },
+    "error_vs_supported": {
+     "agree": 81,
+     "n": 103
+    },
+    "kappa": 0.33296439771259917,
+    "labeled": 113,
+    "missing": 0,
+    "pass": 1,
+    "prompt_version": "judge-p2",
+    "record_sha256": "bf2a164b0c3171f8c4212825fd7cfafdc54241d75a89696476941334f9bfb094",
+    "sentences": 113,
+    "spec_digest": "6370e10384bad1a7a1d69ae363eda439189f8b3cddafba939051d0ff21d92950",
+    "tokens": {
+     "actual": 139516,
+     "estimated": 119025,
+     "largest_estimated": 5716
+    }
+   },
+   {
+    "agreement": 0.7787610619469026,
+    "agreement_answered": 0.7787610619469026,
+    "attempts": 23,
+    "calls": 23,
+    "confusion": {
+     "not-a-claim": {
+      "not-a-claim": 1,
+      "unsupported": 1
+     },
+     "supported": {
+      "not-a-claim": 6,
+      "supported": 75,
+      "unsupported": 10
+     },
+     "unsupported": {
+      "not-a-claim": 3,
+      "unsupported": 5
+     },
+     "wrong-number-or-name": {
+      "supported": 5,
+      "wrong-number-or-name": 7
+     }
+    },
+    "error_vs_supported": {
+     "agree": 87,
+     "n": 102
+    },
+    "kappa": 0.46262126688225225,
+    "labeled": 113,
+    "missing": 0,
+    "pass": 2,
+    "prompt_version": "judge-p3",
+    "record_sha256": "284088baa92b67bc8fd9f9aa24ce29a6887edfedd2c8f662c3719500fccb3778",
+    "sentences": 113,
+    "spec_digest": "78405d98439edb8532729dce5e2044837304a9c0bf4ab79f65f17a6933fc6880",
+    "status": "complete",
+    "tokens": {
+     "actual": 142146,
+     "estimated": 121560,
+     "largest_estimated": 5842
+    },
+    "unsure": 0
+   }
+  ]
+ },
+ "dev_calibration_sha256": "e20fd318e42eef175eeab0d7cbf9d8e42fb2cafcf2f85e7616df546607e39fba",
+ "spec": {
+  "batching": {
+   "fact_table_and_glossary_once_per_call": true,
+   "max_request_tokens": 6000,
+   "max_sentences": 8,
+   "one_case_group_per_call": true,
+   "split_group_when_over": true
+  },
+  "effort_rule": {
+   "decision": "low",
+   "dev_pass_estimate": 121560,
+   "medium_only_if": "estimated pass x observed underestimate < budget, and medium_verified",
+   "medium_rejected_because": "HTTP 400 at max_completion_tokens 1024 on the first dev batch; a larger cap exceeds 8,000 tokens per minute",
+   "medium_verified": false,
+   "observed_underestimate": 1.17,
+   "pass_token_budget": 190000
+  },
+  "invalid_rule": {
+   "keeps_response_text": false,
+   "max_retries": 1,
+   "missing_is_pass": false,
+   "retry_is_identical_request": true,
+   "triggers": [
+    "transport",
+    "response_shape",
+    "finish_reason",
+    "json",
+    "schema",
+    "ids"
+   ]
+  },
+  "labels": [
+   "supported",
+   "wrong-number-or-name",
+   "unsupported",
+   "not-a-claim"
+  ],
+  "model": "openai/gpt-oss-120b",
+  "owner_rule_3_asymmetry": {
+   "judge_tiebreak": "most_likely_label_with_unsure_flag",
+   "owner_rule_3_unchanged": true,
+   "why": "The 'if unsure, choose unsupported' tie-break is a human labeling convention; for the judge it inflated unsupported (15 of 32 disagreements in dev pass 1), so the judge picks the most likely label and may set unsure to true."
+  },
+  "pacing_seconds": 60,
+  "params": {
+   "include_reasoning": false,
+   "max_completion_tokens": 1024,
+   "reasoning_effort": "low",
+   "stream": false,
+   "temperature": 0
+  },
+  "prompt_version": "judge-p3",
+  "protocol_sha256": "4f627a80c835c69cdb739c502dcc301e6ad44dc965ebcf604f425e7063253778",
+  "schema_sha256": "fcf140f8de1e0f05d73279e79315cae123d3e4c92f7b2b25b88b9cad951510e4",
+  "system_prompt_sha256": "18dc1dd7a2785895923d4a1766a635ac57eb5ca05fbc0cbb8c8efffedfb4e48e",
+  "token_estimate": {
+   "characters_per_token": 3.5,
+   "confirm_against": "Groq response headers in the first dev pass",
+   "counts": "system and user messages, response schema, expected output",
+   "output_base_tokens": 40,
+   "output_per_sentence_tokens": 30
+  },
+  "unsure_flag": true,
+  "user_preamble_sha256": "9adabe2e118256edcdcfc34e341d0edc52a0618d7ccced05b48b760bca82569a",
+  "version": 1
+ },
+ "spec_digest": "78405d98439edb8532729dce5e2044837304a9c0bf4ab79f65f17a6933fc6880"
+}
