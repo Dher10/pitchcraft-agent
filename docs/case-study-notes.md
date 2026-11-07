@@ -25,3 +25,8 @@ Code computes the story angles as citable facts, and the LLM narrates them as on
 - the lineup's main weakness.
 
 Still no predictions. The angles are facts with ids, so the existing citation and gate machinery applies to them unchanged. Not started; it needs its own plan and decision.
+
+## U1 result: stated versus revealed preference (Nov 7 2026, owner)
+
+Owner statement: after labeling the sentences, the general impression was that the LLM prose reads better; comparing whole reports side by side, the owner chose the rules report in 7 of 10 non-tie pairs (model report 3 wins, 1 tie, 7 losses over 11 pairs). The rules reports are about 25% longer and carry more information. Both can hold: the LLM writes better sentences but says less. The mapping and computation were verified (hash evidence, orientation test; `docs/results-planB.md` section 12.1) and the owner checked the filled files. The result stands as computed, with the blinding limitation above.
+

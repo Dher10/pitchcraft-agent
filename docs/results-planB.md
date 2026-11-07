@@ -1,6 +1,6 @@
 # Plan B results: how accurate are the gates and the NLI score, by the owner's labels
 
-Written for: the owner, and for anyone who reads the case study or the Kaggle writeup later. Computed Nov 6 2026 from the owner's complete labels. **The judge agreement is not here yet** (section 8 is a placeholder until the test judging run finishes).
+Written for: the owner, and for anyone who reads the case study or the Kaggle writeup later. Computed Nov 6 2026 from the owner's complete labels. The judge agreement is in section 8.
 
 Sources: protocol `docs/plans/P2-planB-labeling-v2.md` (section 6 defines every metric), decision D64, the B1 run on 40 cases (20 dev, 20 test). Dev and test are reported apart. The test numbers were computed once, after the dev numbers, and nothing here changes a gate.
 
@@ -10,7 +10,8 @@ Sources: protocol `docs/plans/P2-planB-labeling-v2.md` (section 6 defines every 
 - **The gates do not make an accepted report safe.** Of the 5 accepted test reports, 3 contained at least one sentence the owner labeled unsupported (60%, interval 23% to 88%). Across the 104 accepted test sentences that count, 3 were errors (2.9%, interval 1.0% to 8.1%). All 3 are "unsupported" (a claim the fact table does not establish), none is a wrong number or name. On dev the same measure as labeled was 3 of 3 reports and 10 of 65 sentences (15.4%), but 6 of those 10 are one boilerplate phrase that the owner's later re-labels and all test labels treat as supported; without it dev reads 2 of 3 reports and 4 of 65 sentences (6.2%) (section 12).
 - **Most real errors carry no gate flag.** In the test sample, 12 sentences were labeled errors: 4 had a gate flag, 8 did not (3 inside accepted reports, 5 among the clean sentences of rejected reports). This is a count of the sample, not a population rate, and all 12 are "unsupported". I did not check which kind of unsupported claim they are.
 - **NLI is not a usable gate yet.** On dev its ranking of supported against error sentences is close to chance (AUROC 0.55). On test it is better (0.73) but rests on only 7 scored error sentences. No threshold is proposed.
-- **The model report lost more pairs than it won in U1** (3 wins, 1 tie, 7 losses over 11), with a wide interval and a blinding problem (section 7). I would not read it as a finding about report quality.
+- **The model report lost more pairs than it won in U1** (3 wins, 1 tie, 7 losses over 11), with a wide interval and the blinding limitation of section 7. The owner reads it as a stated-versus-revealed preference: the LLM sentences read better, but whole reports were chosen less often than the longer, more informative rules reports (section 12.1).
+- **The judge (judge-p3) agrees with the owner on 79.6% of the 235 test sentences, kappa 0.17**, under the 85% target. It found 5 of the owner's 12 errors and flagged 29 sentences the owner calls supported.
 - **Overall acceptance** of the model report by the gates: 11 of 40 (27.5%, interval 16.1% to 42.8%).
 
 ## 2. Method in short
@@ -148,7 +149,34 @@ Excluding the tie, 3 wins against 7 losses has an exact two-sided sign test p of
 
 ## 8. Judge vs owner (test)
 
-**Pending.** The test judging run (judge-p3, strata A, B and C, 235 sentences, 39 batches) was paused again by the Groq daily token limit on Nov 7 after 29 batches (177 sentences judged, 10 batches left); it resumes when the quota refills. This section will hold agreement, kappa and the confusion matrix of the judge against the owner's test labels. Dev judge results (judge-p3: 77.9% agreement, kappa 0.46, below the 85% target) are in `docs/STATUS.md`.
+Judge judge-p3 (`openai/gpt-oss-120b`, temperature 0, reasoning low, frozen spec `evals/data/writer/judge-freeze.json`), judged once on the 235 test sentences (strata A, B and C), 39 batches, 43 calls (47 attempts, the 4 failed attempts were retried or resumed, no batch left unjudged, 0 missing, `unsure` flagged 0 times), 252,837 tokens, in two quota-limited sessions (Nov 6 and Nov 7, resumed from the state file after the abort rule paused it). The judge never saw the owner's labels. Computed with `jf.judge_agreement` against the owner's test labels; unweighted, over the sample as drawn, not stratum-weighted.
+
+| Measure | Value |
+|---|---|
+| Agreement, all four labels | **187 of 235 = 79.6%** (95% Wilson 74.0% to 84.2%) |
+| Cohen's kappa | **0.17** |
+| Error versus supported, claim sentences only (not-a-claim excluded) | 188 of 220 = 85.5% |
+| By stratum (agreement; kappa) | A 86 of 105 = 81.9% (0.17); B 27 of 40 = 67.5% (0.17); C 74 of 90 = 82.2% (0.15) |
+| Target | 85% per judged dimension (`docs/eval-spec.md`); **not met** on the four-label agreement |
+
+Confusion matrix (rows: owner label; columns: judge label; counts):
+
+| Owner \ Judge | supported | wrong-number-or-name | unsupported | not-a-claim | Total |
+|---|---:|---:|---:|---:|---:|
+| supported | 183 | 8 | 21 | 10 | 222 |
+| wrong-number-or-name | 0 | 0 | 0 | 0 | 0 |
+| unsupported | 3 | 1 | 4 | 4 | 12 |
+| not-a-claim | 0 | 0 | 1 | 0 | 1 |
+| Total | 186 | 9 | 26 | 14 | 235 |
+
+Reading, from the counts only:
+
+- The owner labeled 222 of 235 sentences supported (94.5%), so a judge that said "supported" every time would agree on 94.5%; the judge's 79.6% is below that trivial baseline and kappa is low (0.17) for the same reason. Treat the agreement percentage and the kappa together.
+- Of the owner's 12 errors the judge flagged 5 as an error (4 unsupported, 1 wrong-number-or-name) and passed 3 as supported (4 more were read as not-a-claim). Of the 35 sentences the judge called an error (9 wrong-number-or-name, 26 unsupported), 5 are errors by the owner's label, 29 are owner-supported (8 + 21) and 1 is owner not-a-claim: judge error precision 5 of 35 = 14.3%, recall 5 of 12 = 41.7%.
+- The judge called 9 sentences wrong-number-or-name; the owner found no wrong number or name anywhere in the test sheet (8 of the 9 are owner-supported sentences).
+- Dev (judge-p3 on the 113 dev sentences, labels of protocol v1): 77.9% agreement, kappa 0.46, so the test result is similar in percent and lower in kappa.
+
+The judge stays a secondary, score-only result (D17, D64): it never gates or approves a report, and it does not reach the 85% target on this sample.
 
 ## 9. Limitations
 
@@ -161,7 +189,7 @@ Excluding the tie, 3 wins against 7 losses has an exact two-sided sign test p of
 - **NLI AUROC is unweighted across strata** and the test AUROC rests on 7 error sentences.
 - **U1**: blinding, one rater, 11 pairs (section 7).
 - **Known limitations of the code gates** (`docs/STATUS.md`): finite word lists and lexical patterns do not prove entailment, so unlisted or implied comparisons can escape W2; capitalization-based entity checks can miss lowercase invented names and packet vocabulary can hide a wrong name; per-measurement owner binding does not cover every ellipsis, pronoun or attachment; W5 style-label detection has known holes; **no gate catches similarity or contrast claims between the starters or lineups**. The results above are consistent with this: most errors that exist carry no flag.
-- **Judge**: not evaluated here; on dev it agreed with the owner 77.9% of the time, under the 85% target, so it stays a secondary result.
+- **Judge**: evaluated in section 8 on the same single-labeler ground truth; the test sheet has only 12 owner errors, so judge recall on errors (5 of 12) is very uncertain, and the agreement is dominated by the 222 supported sentences.
 
 ## 10. What the gates catch and miss
 
@@ -205,7 +233,7 @@ Check run on the saved `dev_pairs.csv` and `test_pairs.csv` (the files you fille
 | P980308 | postseason-849830 | left | left | win | 686154c9 / 53b74d38 |
 | P790885 | veteran-823012 | left | right | loss | 839e37b3 / 341eeea6 |
 
-**There is no bug.** The result stands: 3 wins, 1 tie, 7 losses. In 7 of the 10 non-tie pairs the saved choice is the side that carries the rules template phrase, which contradicts the recollection recorded before seeing the data (that the elaborate prose was chosen almost always). I cannot tell from the files why: the saved file is what was computed, and nothing in the repository can show how the sheet looked on your screen (for example a sheet sorted or filtered in the spreadsheet; the join uses the `pair` id, not the row position, so sorting would not change the result). If you think the choices were entered against another orientation or another copy of the file, tell me which file and I will recompute from it; I will not change a choice. Regression test added: `test_u1_orientation_survives_the_csv_round_trip_end_to_end` (an owner who always picks the model side scores only wins, the opposite owner only losses, through a CSV round trip); it fails when the orientation in `u1_summary` is flipped (verified by a one-off mutation).
+**There is no bug, and the owner confirmed the result (Nov 7).** The result stands: 3 wins, 1 tie, 7 losses. The owner states having checked the filled files and found no orientation issue (columns pair, left, right, more_useful, note). The owner's reading is a stated-versus-revealed preference: the general impression from sentence labeling was that the LLM prose reads better, but comparing whole reports the rules report was chosen in 7 of 10 non-tie pairs; the rules reports are about 25% longer and carry more information. Both can hold: the LLM writes better sentences but says less. The earlier recollection recorded before the data (that the elaborate prose was chosen almost always) was therefore not borne out. Regression test added: `test_u1_orientation_survives_the_csv_round_trip_end_to_end` (an owner who always picks the model side scores only wins, the opposite owner only losses, through a CSV round trip); it fails when the orientation in `u1_summary` is flipped (verified by a one-off mutation).
 
 ### 12.2 The 8 unflagged test errors and the 3 accepted-report errors, by kind
 
@@ -220,7 +248,7 @@ I read the 12 test sentences labeled as errors and your notes. All 8 unflagged e
 
 The 4 flagged test errors are one "Watch" line (a lineup strikeout rate with no benchmark) and three sentences about the scope wording or a framing the facts do not give ("two starters looking to settle in", "both teams look for offensive production", "different approaches"); the last one is also a contrast judgment, caught by a time-scope rule by coincidence. Consequence: **no code gate covers the kinds that account for all 8 misses**, which is the known limitation recorded in `docs/STATUS.md`, now measured: on test, every unflagged error was a similarity/contrast or "Watch" sentence.
 
-### 12.3 Why the dev self-agreement moved, and a template problem in the dev labels
+### 12.3 Why the dev self-agreement moved, and a template problem in the dev labels (the sensitivity table is a separate analysis; the as-labeled dev numbers stay official, owner decision Nov 7)
 
 Of the 5 dev sentences whose label changed on re-label, 4 are the same template and one is a "Watch"/evaluation case:
 
