@@ -539,6 +539,25 @@ def test_u1_summary_counts_model_wins_ties_and_losses_with_an_interval():
         ls.u1_summary(manifest, [{"pair": "P1", "more_useful": "both"}])
 
 
+def test_u1_orientation_survives_the_csv_round_trip_end_to_end():
+    """An owner who always picks the side that shows the model text scores only wins, and the opposite owner only losses.
+
+    The choice is written to the pairs CSV, read back as the owner's saved file, and summarised against the manifest."""
+
+    world = _world()
+    built = ls.build_pairs(world, "dev")
+    for prefer_model, expected in ((True, "win"), (False, "loss")):
+        rows = []
+        for row in built["sheet"]:
+            model_side = "left" if "model" in row["left"] else "right"
+            other_side = "right" if model_side == "left" else "left"
+            rows.append(dict(row, more_useful=model_side if prefer_model else other_side))
+        saved = list(csv.DictReader(io.StringIO(_csv_text_pairs(rows))))
+        out = ls.u1_summary(built["manifest"], saved)
+        assert out[expected] == len(rows) and out["n"] == len(rows)
+        assert out["tie"] == 0 and out["win" if expected == "loss" else "loss"] == 0
+
+
 # ---------------------------------------------------------------- review round 1 fixes
 
 def test_a_sentence_flagged_by_two_classes_is_drawn_from_its_rarest_class_with_its_true_probability():

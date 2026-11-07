@@ -47,7 +47,6 @@ def test_a_second_run_resumes_after_the_last_completed_batch_and_does_not_call_i
 
     def call(body):
         calls.append(body)
-        ids = [s["id"] for s in json.loads(body["messages"][1]["content"].split("\n", 1)[1])["sentences"]] if False else None
         return 200, {}, _ok(["b"] if len(calls) == 1 else ["c"])
 
     out = rjt.run(call, batches, state, lambda s: None)

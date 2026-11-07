@@ -7,7 +7,7 @@ Sources: protocol `docs/plans/P2-planB-labeling-v2.md` (section 6 defines every 
 ## 1. In plain language
 
 - **On test, the hard gates reject far more sentences than they should, driven by 2 reports.** On test, 40 sentences were flagged by a hard gate (all of them were taken, none sampled out) and the owner judged 36 of them supported. Only 4 flagged sentences (10.0%, 95% interval 4.0% to 23.1%) were really unsupported. Most of the noise comes from the entity check W1.entity: 19 flagged test sentences, 19 supported, and all 19 sit in just 2 reports.
-- **The gates do not make an accepted report safe.** Of the 5 accepted test reports, 3 contained at least one sentence the owner labeled unsupported (60%, interval 23% to 88%). Across the 104 accepted test sentences that count, 3 were errors (2.9%, interval 1.0% to 8.1%). All 3 are "unsupported" (a claim the fact table does not establish), none is a wrong number or name. On dev the same measure was 3 of 3 reports and 10 of 65 sentences (15.4%), but the dev labels turned out unstable (section 5).
+- **The gates do not make an accepted report safe.** Of the 5 accepted test reports, 3 contained at least one sentence the owner labeled unsupported (60%, interval 23% to 88%). Across the 104 accepted test sentences that count, 3 were errors (2.9%, interval 1.0% to 8.1%). All 3 are "unsupported" (a claim the fact table does not establish), none is a wrong number or name. On dev the same measure as labeled was 3 of 3 reports and 10 of 65 sentences (15.4%), but 6 of those 10 are one boilerplate phrase that the owner's later re-labels and all test labels treat as supported; without it dev reads 2 of 3 reports and 4 of 65 sentences (6.2%) (section 12).
 - **Most real errors carry no gate flag.** In the test sample, 12 sentences were labeled errors: 4 had a gate flag, 8 did not (3 inside accepted reports, 5 among the clean sentences of rejected reports). This is a count of the sample, not a population rate, and all 12 are "unsupported". I did not check which kind of unsupported claim they are.
 - **NLI is not a usable gate yet.** On dev its ranking of supported against error sentences is close to chance (AUROC 0.55). On test it is better (0.73) but rests on only 7 scored error sentences. No threshold is proposed.
 - **The model report lost more pairs than it won in U1** (3 wins, 1 tie, 7 losses over 11), with a wide interval and a blinding problem (section 7). I would not read it as a finding about report quality.
@@ -21,6 +21,8 @@ Sources: protocol `docs/plans/P2-planB-labeling-v2.md` (section 6 defines every 
 - **Dev and test use different rules.** Dev was labeled under protocol v1 (digest `886bf60f...`), test under v2 (digest `4f627a80...`), which adds hard-case rules 6 (similarity or contrast between starters is unsupported) and 7 ("Watch" lines). The dev labels reflect the owner's practice before those rules were written down.
 - **Commands.** `python -m evals.labeling_sheet check --split dev` and `--split test` (both: ids intact, every filled value valid; dev re-label 12 filled, test re-label 24 filled), then `python -m evals.labeling_sheet metrics --split dev` and `--split test`. A few counts the tool does not print (label mix per stratum, re-label transitions, pooled U1, pair lengths, how many W1.entity sentences sit in how many reports) come from a read-only one-off script that calls the same functions; it is not in the repo.
 - **"insufficient".** For gate classes: fewer than 5 labeled claim sentences (the raw counts are shown anyway). For recall: fewer than 10 labeled errors, as the protocol says. This 5 is my choice for this report, applied identically to dev and test.
+
+**Correction (section 12): all 12 dev `wrong-number-or-name` labels are the same sentence template (the gloss "compared with a pitch thrown without spin" after a movement figure), not a wrong number or a wrong name.** The table shows the labels as given.
 
 Label mix (owner, unweighted):
 
@@ -71,7 +73,7 @@ Label mix (owner, unweighted):
 | W7.missing | 1 | 0 / 0 / 1 | insufficient | insufficient | insufficient |
 | W8.form | 1 | 0 / 0 / 1 | insufficient | insufficient | insufficient |
 
-Reading: only W1.number (dev), W1.entity and W12.time (test) have enough sentences to state a rate, and W1.entity's 19 sentences come from 2 reports (13 from one case, 6 from another), so its evidence is closer to 2 independent observations than 19. On dev, W1.entity flagged 3 supported sentences from 3 reports. Over both splits W1.entity flagged 22 claim sentences and none was an error. W8.form and W8.value are the only classes whose dev flags were mostly right (3 of 4 flagged claim sentences were wrong numbers or names), too few to rate.
+Reading: only W1.number (dev), W1.entity and W12.time (test) have enough sentences to state a rate, and W1.entity's 19 sentences come from 2 reports (13 from one case, 6 from another), so its evidence is closer to 2 independent observations than 19. On dev, W1.entity flagged 3 supported sentences from 3 reports. Over both splits W1.entity flagged 22 claim sentences and none was an error. The 3 dev wrong-number-or-name labels in B (W8.form 2, W8.value 1) are the gloss template of section 12; counting that gloss as supported, as the owner's re-labels and the test labels do, W8.form and W8.value have 0 errors in 4 flagged claim sentences and dev B precision falls to 2 of 24 (5.4% [1.0%, 24.7%]).
 
 ## 4. False-accept rate (stratum A)
 
@@ -122,7 +124,7 @@ Reading: where the gates and the owner disagree (a flagged sentence the owner ca
 | Dev | 12 | 58.3% [32.0%, 80.7%] | −0.07 | 4 wrong-number-or-name → supported, 1 supported → unsupported, 7 unchanged |
 | Test | 24 | 91.7% [74.2%, 97.7%] | 0.70 | 2 supported → unsupported, 22 unchanged |
 
-All 4 dev sentences first labeled wrong-number-or-name that were re-labeled came back supported, so the dev wrong-number labels (6 in A, 3 in B, 3 in C) are not stable, and the dev false-accept figure above partly depends on them. The unsure flag was never used (0 in both splits), so the unsure share says nothing about confidence. Kappa on test is held down by the label imbalance (21 of the 24 first labels were supported). I did not inspect the re-labeled sentences, so I cannot say whether the dev shift comes from learning during practice, the new hard-case rules or noise.
+All 4 dev sentences first labeled wrong-number-or-name that were re-labeled came back supported. They are 4 of the 12 dev sentences that carry the same gloss ("compared with a pitch thrown without spin"), which the owner first marked wrong with the note that the phrase "wasn't necessary"; on re-label the figures were judged right and the sentence supported. The fifth change (supported → unsupported) is "They maintain a 22.3% K% ... and a 9.0% BB% ... in this split", where "maintain" implies an evaluation, which is what hard-case rule 7 later wrote down. So rules 6 and 7 explain at most 1 of the 5 dev changes; the other 4 are a convention change about one gloss phrase (section 12). The unsure flag was never used (0 in both splits), so the unsure share says nothing about confidence. Kappa on test is held down by the label imbalance (21 of the 24 first labels were supported).
 
 **U1 (blind pairwise: model report against rules report, "more useful for a casual fan")**:
 
@@ -146,13 +148,13 @@ Excluding the tie, 3 wins against 7 losses has an exact two-sided sign test p of
 
 ## 8. Judge vs owner (test)
 
-**Pending.** The test judging run (judge-p3, strata A, B and C, 235 sentences, 39 batches) is paused after batch 11 by the Groq daily token limit and resumes after 03:45 UTC Nov 7. This section will hold agreement, kappa and the confusion matrix of the judge against the owner's test labels. Dev judge results (judge-p3: 77.9% agreement, kappa 0.46, below the 85% target) are in `docs/STATUS.md`.
+**Pending.** The test judging run (judge-p3, strata A, B and C, 235 sentences, 39 batches) was paused again by the Groq daily token limit on Nov 7 after 29 batches (177 sentences judged, 10 batches left); it resumes when the quota refills. This section will hold agreement, kappa and the confusion matrix of the judge against the owner's test labels. Dev judge results (judge-p3: 77.9% agreement, kappa 0.46, below the 85% target) are in `docs/STATUS.md`.
 
 ## 9. Limitations
 
 - **One labeler, who is also the product's designer.** The owner's labels are the ground truth and nothing checks them except the owner's own re-labels (24 test items, 12 dev items). There is no inter-rater agreement. Dev self-agreement is poor and test self-agreement is acceptable, both on very few items.
 - **Small samples, clustered.** 20 cases per split, 11 accepted reports in all. Sentences inside a report are correlated (W1.entity: 19 test flags in 2 reports), so the Wilson intervals, which treat sentences as independent, are too narrow, most of all for the per-class rows. Treat them as lower bounds on the uncertainty.
-- **Dev and test are not comparable.** Different labeling rules (v1 against v2), unstable dev wrong-number labels, a dev accepted stratum of only 3 reports. The gates and prompts were developed looking at the dev outputs, so dev numbers are not clean estimates of future performance. The test split is the clean read, and it holds few errors (12 in 235 sentences), none a wrong number or name.
+- **Dev and test are not comparable.** Different labeling rules (v1 against v2), dev wrong-number labels that are all one gloss phrase later treated as supported (section 12), a dev accepted stratum of only 3 reports. The gates and prompts were developed looking at the dev outputs, so dev numbers are not clean estimates of future performance. The test split is the clean read, and it holds few errors (12 in 235 sentences), none a wrong number or name.
 - **Test stratum B is a census, not a sample**, and recall on test is "insufficient" (9 errors).
 - **The sample is stratified, not random.** The raw counts in sections 1 and 5 describe the sample; only the weighted figures estimate rates, and they inherit the wide weights of stratum C.
 - **Report-level presence checks (W6, W13, W14, W17) are not labeled**; they are covered by unit tests and the run record.
@@ -163,7 +165,7 @@ Excluding the tie, 3 wins against 7 losses has an exact two-sided sign test p of
 
 ## 10. What the gates catch and miss
 
-*Catch.* The gates' catch of wrong numbers and names cannot be measured on test, because none occurred: the owner found no wrong number or name in any of the 235 test sentences, flagged or not, so the zero may be the writer's doing and not the gates'. On dev, wrong numbers and names did occur (12 in 113 sentences, though their labels proved unstable): 3 sat in the flagged stratum, each with a form or value (W8) flag, and 6 passed the gates inside accepted reports, with 3 more among unflagged clean sentences. The evidence for a protective effect of the number and entity gates is therefore absent on test and negative on dev.
+*Catch.* The gates' catch of wrong numbers and names cannot be measured: the owner found no real wrong number or name in any of the 348 labeled sentences. On test none was labeled; on dev the 12 `wrong-number-or-name` labels are all the movement-gloss phrase of section 12, which the owner's own re-labels and the test labels count as supported. The number and entity gates therefore have no measured catch here, and no measured miss either.
 
 *Over-reject.* A gate flag is a weak sign of an actual error: on test 36 of 40 flagged sentences were fine. The entity check is the main source (all 19 flagged sentences supported, from 2 reports). This is why only 27.5% of the model reports are accepted, and why a rejection tells little about whether the report text was wrong.
 
@@ -174,3 +176,66 @@ Excluding the tie, 3 wins against 7 losses has an exact two-sided sign test p of
 ## 11. Reproduce
 
 `python -m evals.labeling_sheet check --split dev`, `... check --split test`, `... metrics --split dev`, `... metrics --split test`. They read the untracked `.local/p2-2/labeling/` files, so they run on the owner's PC only. No file under `public/data/` or `evals/live/` was read or changed.
+
+## 12. Follow-ups of Nov 7 (owner questions; no label was changed)
+
+The hash, content and sensitivity figures of this section come from read-only one-off scripts that call the same `evals.labeling_sheet` functions; they are not in the repo (only the orientation test is).
+
+### 12.1 U1 integrity: the mapping and the computation are correct; your recollection and the saved data disagree
+
+Check run on the saved `dev_pairs.csv` and `test_pairs.csv` (the files you filled), the stored pairs manifests and the B1 outputs, without printing any report text:
+
+- The stored manifests equal the manifests regenerated from the B1 outputs with the same seed, and the saved sheet text equals the regenerated text, for all 11 pairs.
+- For every pair the accepted B1 attempt (checks empty, run record: 6 dev and 5 test accepted) exists, and all of its resolved sentences (20 to 23 per report) appear in the side recorded as "model" and in none of the side recorded as "rules".
+- The SHA-256 of the rendered model report and of the rendered rules report each equal the SHA-256 of the corresponding side in the saved sheet (whitespace-normalized); hash prefixes below.
+- Independent content check: the rules-writer template phrase "brings this strength" occurs twice on the side recorded as "rules" and nowhere on the side recorded as "model", in all 11 pairs.
+- The win/loss computation (`u1_summary`) was recomputed independently from the raw saved choice and the manifest and gave the same totals (3 / 1 / 7). It reads `left`/`right` as the columns of the saved sheet.
+
+| Pair | Case | Model side | Your saved choice | Outcome | Hash model / rules (SHA-256 prefix) |
+|---|---|---|---|---|---|
+| P103434 | veteran-824803 | right | tie | tie | eb079fe0 / 7b65049d |
+| P810778 | opener-824280 | right | left | loss | 255bdc88 / 0ba37135 |
+| P363860 | veteran-823938 | left | right | loss | e5a8b935 / 60ce9bed |
+| P439026 | veteran-823940 | left | right | loss | 5844b0c1 / 5911e20a |
+| P943895 | postseason-849831 | right | left | loss | c044e7a9 / ca912c11 |
+| P694780 | limited-823836 | right | left | loss | 21ef8a8b / f69db022 |
+| P499663 | opener-822954 | right | left | loss | b3bf10a8 / 4dd71f7b |
+| P348241 | postseason-849851 | left | left | win | 94c776f6 / f4f93da3 |
+| P565743 | veteran-823979 | left | left | win | 66318fb9 / 8add0ad5 |
+| P980308 | postseason-849830 | left | left | win | 686154c9 / 53b74d38 |
+| P790885 | veteran-823012 | left | right | loss | 839e37b3 / 341eeea6 |
+
+**There is no bug.** The result stands: 3 wins, 1 tie, 7 losses. In 7 of the 10 non-tie pairs the saved choice is the side that carries the rules template phrase, which contradicts the recollection recorded before seeing the data (that the elaborate prose was chosen almost always). I cannot tell from the files why: the saved file is what was computed, and nothing in the repository can show how the sheet looked on your screen (for example a sheet sorted or filtered in the spreadsheet; the join uses the `pair` id, not the row position, so sorting would not change the result). If you think the choices were entered against another orientation or another copy of the file, tell me which file and I will recompute from it; I will not change a choice. Regression test added: `test_u1_orientation_survives_the_csv_round_trip_end_to_end` (an owner who always picks the model side scores only wins, the opposite owner only losses, through a CSV round trip); it fails when the orientation in `u1_summary` is flipped (verified by a one-off mutation).
+
+### 12.2 The 8 unflagged test errors and the 3 accepted-report errors, by kind
+
+I read the 12 test sentences labeled as errors and your notes. All 8 unflagged errors fall in the two kinds that hard-case rules 6 and 7 name; none is an invented cause or a wrong number.
+
+| Kind | Unflagged (8) | Of which in accepted reports (3) | Paraphrase |
+|---|---:|---:|---|
+| Similarity or contrast judgment between the starters | 4 | 1 | "Both starters have distinct (different) pitching profiles", resting only on two style labels; in the accepted case "each starter features a distinct primary pitch", while both cited primary pitches are the same Four-seam |
+| "Watch" line with an evaluation or an unlisted detail | 4 | 2 | "Watch if the pitcher locates his fastball", "whether the lineup can manage the strike zone" (evaluation); "how a pitcher uses his sinker early in counts", "how often he throws his slider" (the facts give a count, not a usage share or a count-by-count split) |
+| Invented cause | 0 | 0 | |
+| Other | 0 | 0 | |
+
+The 4 flagged test errors are one "Watch" line (a lineup strikeout rate with no benchmark) and three sentences about the scope wording or a framing the facts do not give ("two starters looking to settle in", "both teams look for offensive production", "different approaches"); the last one is also a contrast judgment, caught by a time-scope rule by coincidence. Consequence: **no code gate covers the kinds that account for all 8 misses**, which is the known limitation recorded in `docs/STATUS.md`, now measured: on test, every unflagged error was a similarity/contrast or "Watch" sentence.
+
+### 12.3 Why the dev self-agreement moved, and a template problem in the dev labels
+
+Of the 5 dev sentences whose label changed on re-label, 4 are the same template and one is a "Watch"/evaluation case:
+
+- All 12 dev sentences labeled `wrong-number-or-name` carry the movement gloss "compared with a pitch thrown without spin" after the two movement figures (e.g. "moves 9.1 in. sideways and 16.3 in. up compared with a pitch thrown without spin"). Your note on each says the phrase "wasn't necessary". No dev sentence is labeled wrong-number-or-name for any other reason. On re-label, the 4 re-labeled ones came back supported. In the test sheet the same gloss appears in 18 sentences and all 18 are labeled supported. The labeling convention for this phrase therefore changed between dev (first pass) and re-label and test.
+- The one other change (supported → unsupported) is a "maintain a ... K% and a ... BB%" sentence, an implied evaluation: the rule-7 kind. Rules 6 and 7 explain 1 of the 5 changes, not the shift as a whole.
+
+Sensitivity, labels untouched: treating the 12 gloss sentences as supported in the dev metrics (an analysis, not a relabel; the metric code and the dev manifest are unchanged) gives:
+
+| Dev measure | As labeled | Gloss counted as supported |
+|---|---|---|
+| Accepted reports with an error | 3 of 3 | 2 of 3 [20.8%, 93.9%] |
+| Accepted sentences that are errors | 10 of 65, 15.4% | 4 of 65, 6.2% [2.4%, 14.8%] |
+| Flagged sentences (B) that are errors | 5 of 24, 23.6% | 2 of 24, 5.4% [1.0%, 24.7%] |
+| W8.form / W8.value precision | 2 of 3 / 1 of 1 | 0 of 3 / 0 of 1 |
+| Labeled errors in B and C | 10 (recall 10.1%) | 4 (recall insufficient) |
+| NLI AUROC; precision at 0.5 | 0.548; 80.1% | 0.493; 86.7% |
+
+With this reading dev and test tell the same story: the errors are unsupported claims (contrast and "Watch" sentences), the gates flag very little of them, and NLI does not separate supported from error sentences. Only you can decide which reading of the gloss is the intended label; the as-labeled numbers above stay the official dev numbers until you say otherwise.
