@@ -1,6 +1,6 @@
 # PitchCraft v2 — PRD
 
-Owner: Daniel Herdenez · Status: Draft v0.1 · Date: 2026-10-10
+Owner: Daniel Herdenez · Status: Draft v0.1 · Date: 2026-10-10 · Rollout and FR8 updated 2026-11-07 (D65)
 Related: `eval-spec.md`, `DECISIONS.md`, `PLAN.md`
 
 ## 1. Summary
@@ -52,7 +52,10 @@ Scouts and analysts are not users: they already have better tools (D5).
 - **FR5 Source signals.** Each report shows its origin (AI-written / Rules-based) and any limited-data dimensions (D3).
 - **FR6 Postgame.** Grade yesterday's starters (Game Score) automatically.
 - **FR7 Postseason layer.** In postseason games, add series context and cited biographical facts: draft year and round, MLB debut, birthplace (D7). International signings have no draft record and must be handled.
-- **FR8 Automation and offseason.** A daily scheduled job runs the full pipeline and publishes. On days with no games it exits cleanly and the site shows the archive.
+- **FR8 Automation and offseason.** A daily scheduled job runs the full pipeline and publishes. On days with no games it exits cleanly and the site shows the archive. From the offseason of 2026 (D65) the archive becomes the product, in two steps, both built on static JSON files plus an index (no database):
+  - **R4 Offseason experience.** The archive shows each game's real final result (the Grade column is hidden while no row has a grade, because automated postgame was cut by D41). Every archived game has its own page, `/game/<id>`, with its report, its result and its series context. A page "Notable duels of 2026" lists games chosen by fixed, explainable criteria (postseason games, series-ending games, both starters with strong strikeout labels, veteran starts), each shown with the reasons that qualified it; it starts from the reports already published and extends to the full 2026 postseason. Simple filters by team and by date. A report written after its game from data up to the day before (`as_of = game_date - 1`) says so; it is never presented as published on the day. Plan: `docs/plans/R4.md`.
+  - **R5 Team pages.** "The rotation, explained" for each team: every 2026 starter with arsenal, labels and season line (innings, ERA, WHIP, K%), split before and after the All-Star Game, rookies marked, links to each game page. Starters only; relievers later.
+  - **Order.** The visual identity and design system (owner with Claude Design, D65) is approved before any new page is built; the data work of R4 runs in parallel. Every rule of the data contract (D34) applies to the new files.
 - **FR9 Quality page.** Shows offline eval results (the decision) and daily monitoring (operations).
 
 ## 7. Out of scope
@@ -72,7 +75,7 @@ Scouts and analysts are not users: they already have better tools (D5).
 - **Data:** MLB Stats API (schedule, probable pitchers, player bio, series status) and Statcast via pybaseball.
 - **Models:** writer on Gemini (Google AI Studio free tier); judge on a different model family via GitHub Models free tier. Provider swappable by env var. Public MLB data only (D9).
 - **Runtime:** GitHub Actions on a daily cron; writes JSON to the repo; Vercel redeploys. No servers, $0.
-- **Storage:** append-only JSONL per day for monitoring; no database.
+- **Storage:** append-only JSONL per day for monitoring; static JSON files plus an index for the archive and the game pages; no database (D65: about 2,700 reports a season fit in static files; a database is reconsidered only when user data or cross-season queries require it).
 - **i18n:** no user-facing strings hardcoded in agents; language is a parameter for writer and eval.
 
 ## 9. Success metrics
@@ -101,9 +104,16 @@ This year's live history will be short (a few postseason weeks). Operational met
 
 ## 11. Rollout
 
-- **v2.0-a (target Oct 25):** Phase 0 fixes, daily automation, rules-based writer, source signals, postseason layer.
-- **v2.0-b (target Nov 15):** LLM writer enabled only if it passes the eval; case study published.
-- **v2.1:** Spanish.
+- **v2.0-a (released):** Phase 0 fixes, daily automation, rules-based writer, source signals, postseason series context (D41, D42; release 3 is PR #3, `5be0aa4`). Production is rules-only.
+- **v2.0-b (D65):** the Nov 15 target and the v2.0-b date of D10 are dropped. It is decided by the Plan B evidence (`docs/results-planB.md`): the LLM writer stays off in production and production stays rules-only (D56). The formal decision is written in the v2 close.
+- **Roadmap after release 3, in order (D65):**
+  1. Visual identity and design system (owner with Claude Design; audit in `docs/design-audit.md`), in parallel with the data work of R4 and before any new page is built.
+  2. R4 Offseason experience (FR8).
+  3. R5 Team pages (FR8).
+  4. v2 close: formal v2.0-b decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, and the full case study (Kaggle v1, v2, the Plan B evaluation, the offseason experience).
+  5. v2.1: Spanish.
+  6. 2027 season readiness: several games per day (P1.3), previous-season carry-over for April, visible K%, starter bio and recent form, season-calendar refresh, Groq key renewal and Gemini fallback migration before 2027-05-07.
+  7. Writer v3, after Opening Day: code-computed story angles as citable facts and a multi-model judge jury calibrated on the owner's labels.
 
 ## 12. Open questions
 

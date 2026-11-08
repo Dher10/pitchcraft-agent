@@ -4,9 +4,9 @@ Living plan. Agents tick checkboxes and update `STATUS.md` after every task (see
 
 ## Rollout (decision D10)
 
-- **v2.0-a — before Oct 25, 2026:** Phase 0 + daily automation + source signals + postseason layer, with the rules-based writer.
-- **v2.0-b — Nov 15, 2026:** LLM writer enabled only if it passes the eval; case study published.
-- **v2.1:** Spanish.
+- **v2.0-a — released** (three releases, D41, D42; release 3 is PR #3, `5be0aa4`): Phase 0 + daily automation + source signals + postseason series context, with the rules-based writer. Production is rules-only.
+- **v2.0-b — decided by the Plan B evidence (D65):** the Nov 15 target and the v2.0-b date of D10 are dropped. The LLM writer stays off in production; production stays rules-only (D56). The formal decision is written in the v2 close.
+- **Roadmap after release 3, in order (D65; no dates):** design system (owner with Claude Design, in parallel with R4's data work) -> R4 Offseason experience -> R5 Team pages -> v2 close -> v2.1 Spanish -> 2027 season readiness -> Writer v3 after Opening Day. Tasks below, section "Offseason roadmap (D65)".
 
 **Build order inside v2.0-a:** core first (Phase 0, daily job, badges, offseason state), then the postseason layer. The postseason layer is in scope and worked daily; it is built last only because the core must be live first.
 
@@ -187,7 +187,7 @@ Order: P1-R3 -> P2-SEC -> P2.1 -> P2.4 -> owner-approved real-dev writer
 guide -> P2.2 -> P2.3 -> A/B1 capture -> P2.5 (Nov 4-6) -> P2.6 -> P2.7
 -> independent Phase 2 QA by Antigravity -> P3. Judge A immediately after
 P2.4, before B1; keep held-out outputs/labels/aggregates sealed until
-B2/judge freeze. Branch/PR migration is a separate task after Nov 15.
+B2/judge freeze. Branch/PR migration is a separate task after Nov 15 (done by the PR flow of D42; the date is dropped, D65).
 
 Owner D35 autonomy includes Codex: observed red code tests, sequential
 five-suite verification, reviewer PASS, prior green CI and empty protected
@@ -227,11 +227,40 @@ two red CI runs or two review rounds without PASS. Nonce/dynamic/style-attribute
   `docs/plans/P2.3-fact-id-instrument.md`. Zero Gemini calls; stop for owner
   review before another dev pass. Parent P2.2/P2.3 remain open.
 
-## Phase 3 — Publish (target Nov 15)
+## Offseason roadmap (D65, 2026-11-07)
 
-- [ ] P3.1 v2.0-b decision using the eval rule.
+Order of the owner's direction. No dates. Each task needs an approved plan in `docs/plans/` before code (D35); gated unless the plan says otherwise.
+
+- [ ] DS Visual identity and design system (owner with Claude Design; not an agent task). Input: `docs/design-audit.md` and its screenshots. Deliverables: PitchCraft's own identity (type, color, spacing, cards, tables, badges, states) and designs for the game page, the notable duels, the filters and the team page. **Gate:** no new page is built before the owner approves it; code then implements the approved design system.
+- [ ] R4 Offseason experience. Plan `docs/plans/R4.md` (proposed 2026-11-07, awaiting the owner's approval). Two parts.
+  - **Data part (can start before the design is approved):**
+    - [ ] R4-D1 Plan, D65, PRD, PLAN, design audit (docs only).
+    - [ ] R4-D2 D66 (request ceilings of the backfill, archive file family and version, new closed codes) and the contract text. Owner approval of D66.
+    - [ ] R4-D3 Game identity (`gamePk`), results from the schedule, the five published World Series reports recovered from the history of `main`.
+    - [ ] R4-D4 One-game builder for the rest of the 2026 postseason, with per-source request ceilings, cache and resume.
+    - [ ] R4-D5 Index, notable-duel tags and manifest (pure code).
+    - [ ] R4-D6 Publish script for a set of files and workflow `archive-backfill.yml`. Owner approval of the workflow diff.
+    - [ ] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
+    - [ ] R4-D8 Release A (owner's PR), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
+  - **UI part (waits for the design system):**
+    - [ ] R4-U0 Gate: the design system and the final strings approved.
+    - [ ] R4-U1 Readers, real results in the archive, Grade column hidden while no row has a grade.
+    - [ ] R4-U2 `/game/<gamePk>`.
+    - [ ] R4-U3 `/notable`.
+    - [ ] R4-U4 `/archive` with filters by team and date.
+    - [ ] R4-U5 Analytics per route, accessibility, phone and desktop checks, independent QA (D27).
+    - [ ] R4-U6 Release B (owner's PR).
+- [ ] R5 Team pages: "the rotation, explained" for each team: every 2026 starter with arsenal, labels and season line (innings, ERA, WHIP, K%), split before and after the All-Star Game, rookies marked, links to each game page. Starters only; relievers later. Static files. Plan to be written after R4's data layout is proven.
+- [ ] v2 close: Phase 3 below (formal v2.0-b decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, full case study).
+- [ ] v2.1 Spanish: L10N.1 below.
+- [ ] 2027 season readiness: several games per day (P1.3), previous-season carry-over for April, visible K%, starter bio and recent form, season-calendar refresh before opening day, Groq key renewal, Gemini fallback migration before 2027-05-07 (D54). Items are in the backlog below.
+- [ ] Writer v3, after Opening Day: code-computed story angles as citable facts (profile type, pitch-family mix, key matchup, lineup weakness; `docs/case-study-notes.md`) and a multi-model judge jury from different families (no Gemini), calibrated on the owner's labels as the gold set and used only if it beats the single judge; pairwise comparisons in both orders with length controlled.
+
+## Phase 3 — v2 close (D65; no date)
+
+- [ ] P3.1 Formal v2.0-b decision from the Plan B evidence (`docs/results-planB.md`, D64, D65): the LLM writer stays off in production; production stays rules-only.
 - [ ] P3.2 Quality page on the site.
-- [ ] P3.3 Case study on danielherdenez.com and pm-ai-playbook — owner task.
+- [ ] P3.3 Case study on danielherdenez.com and pm-ai-playbook — owner task. Scope (D65): Kaggle v1, v2, the Plan B evaluation and the offseason experience.
 - [ ] P3.4 README, ARCHITECTURE, RUNBOOK, CHANGELOG.
 
 ## v2.1 — Spanish (after v2.0-b)
@@ -245,14 +274,14 @@ two red CI runs or two review rounds without PASS. Nonce/dynamic/style-attribute
 - [ ] Refresh the MLB season-calendar reference once per season before opening day, using one seasons-endpoint request with source URL/SHA-256 retained; keep prior years. Missing seasons keep through-date labels and never use a guessed end date (owner amendment, P1-R2-f).
 - [ ] Hide pitches by selected-side usage only after retaining raw per-side counts and totals (schema change in a later release). P1-R2 F8 orders published side shares, then overall raw count, then name; it hides only overall count 0 and retains rounded per-side zeros (owner amendment, 2026-10-23).
 - [ ] Ground-ball rate as the replacement for the contact-risk label (D24 leaves contact risk as a count), next season (owner, P1-R2). It stabilizes at about 70 balls in play (FanGraphs Sample Size); Statcast supplies batted-ball type. Needs its own threshold decision.
-- [ ] Starter bio and recent form from the MLB Stats API people and game logs (owner, P1-R2); not built in release 2.
-- [ ] Visible K% next season (owner, P1-R2); not built in release 2.
+- [ ] Starter bio and recent form from the MLB Stats API people and game logs (owner, P1-R2); not built in release 2. **Scheduled in 2027 season readiness (D65).**
+- [ ] Visible K% next season (owner, P1-R2); not built in release 2. **Scheduled in 2027 season readiness (D65).**
 - [ ] Venue city and state (owner, P1-R2); requires a schema change, not built in release 2.
 - [ ] Fan-friendly prose and movement explanations with the Phase 2 LLM writer (owner, P1-R2); not built in release 2.
 - [ ] Credit other data sites only if their data is ever used (owner, P1-R2).
-- [ ] Carry-over of the previous season for April. D24 uses current-season data only, so early in the season most starters are flagged (April: 26% of starts flagged on arsenal, 58% on strikeout, 100% on control). Needs a decision on how to weight the previous season.
+- [ ] Carry-over of the previous season for April. D24 uses current-season data only, so early in the season most starters are flagged (April: 26% of starts flagged on arsenal, 58% on strikeout, 100% on control). Needs a decision on how to weight the previous season. **Scheduled in 2027 season readiness (D65).**
 - [ ] Automatic monthly summary of visits per route: the Hobby reporting window is one month (D26), so the numbers should be saved each month (for example into `evals/live/`) before they age out.
-- [ ] Per-game routes (for example `/game/<id>`), so that views per game can be measured with page views alone (D26).
+- [ ] Per-game routes (for example `/game/<id>`), so that views per game can be measured with page views alone (D26). **Scheduled as R4 (D65).**
 
 ## Open questions (owner)
 
