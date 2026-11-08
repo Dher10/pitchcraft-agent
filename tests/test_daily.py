@@ -92,6 +92,30 @@ def run(out: Path, *extra: str) -> int:
     return daily.main(["--date", GAME_DAY, "--out", str(out), *extra])
 
 
+def test_production_defaults_to_rules_even_with_model_credentials(sources, out, monkeypatch):
+    from agents import llm_report_writer, model_transport, report_writer
+
+    monkeypatch.setenv("PITCHCRAFT_GEMINI_API_KEY", "synthetic-test-credential")
+    monkeypatch.setenv("PITCHCRAFT_GEMINI_API_KEY_LOCAL", "synthetic-local-credential")
+    expected = []
+    original = report_writer.run
+
+    def rules(*args, **kwargs):
+        report = original(*args, **kwargs)
+        expected.append(report)
+        return report
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("production called a model")
+
+    monkeypatch.setattr(report_writer, "run", rules)
+    monkeypatch.setattr(llm_report_writer, "write", forbidden)
+    monkeypatch.setattr(model_transport, "post_json", forbidden)
+    assert run(out) == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert expected and [m["report"] for m in payload["matchups"]] == expected
+
+
 def last_failure(capsys) -> dict:
     """The `{source, code}` the run printed on stderr, as the workflow summary will read it."""
 

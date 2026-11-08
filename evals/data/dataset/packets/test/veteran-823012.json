@@ -1,0 +1,577 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 572,
+     "overall": 22.7,
+     "total": 2516,
+     "vs_lhh": 16.5,
+     "vs_rhh": 25.0
+    },
+    "home_starter": {
+     "count": 722,
+     "overall": 30.4,
+     "total": 2376,
+     "vs_lhh": 27.7,
+     "vs_rhh": 31.3
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 563,
+     "overall": 22.4,
+     "total": 2516,
+     "vs_lhh": 30.7,
+     "vs_rhh": 19.4
+    },
+    "home_starter": {
+     "count": 11,
+     "overall": 0.5,
+     "total": 2376,
+     "vs_lhh": 1.9,
+     "vs_rhh": 0.0
+    },
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter": {
+     "count": 436,
+     "overall": 17.3,
+     "total": 2516,
+     "vs_lhh": 35.8,
+     "vs_rhh": 10.7
+    },
+    "home_starter": {
+     "count": 193,
+     "overall": 8.1,
+     "total": 2376,
+     "vs_lhh": 15.8,
+     "vs_rhh": 5.6
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 424,
+     "overall": 16.9,
+     "total": 2516,
+     "vs_lhh": 10.8,
+     "vs_rhh": 19.0
+    },
+    "home_starter": {
+     "count": 92,
+     "overall": 3.9,
+     "total": 2376,
+     "vs_lhh": 5.1,
+     "vs_rhh": 3.5
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 361,
+     "overall": 14.3,
+     "total": 2516,
+     "vs_lhh": 0.0,
+     "vs_rhh": 19.5
+    },
+    "home_starter": {
+     "count": 314,
+     "overall": 13.2,
+     "total": 2376,
+     "vs_lhh": 0.3,
+     "vs_rhh": 17.5
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 160,
+     "overall": 6.4,
+     "total": 2516,
+     "vs_lhh": 6.1,
+     "vs_rhh": 6.4
+    },
+    "home_starter": {
+     "count": 623,
+     "overall": 26.2,
+     "total": 2376,
+     "vs_lhh": 39.2,
+     "vs_rhh": 21.9
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 2516,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 412,
+     "overall": 17.3,
+     "total": 2376,
+     "vs_lhh": 10.0,
+     "vs_rhh": 19.8
+    },
+    "pitch": "Curveball"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 14.4,
+     "v_break": 0.0
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": -1.2,
+     "v_break": 6.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 7.3,
+     "v_break": 15.1
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": 16.1,
+     "v_break": 5.1
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -4.1,
+     "v_break": -4.2
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": -12.8,
+     "v_break": 0.5
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 14.8,
+     "v_break": 9.5
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -9.8,
+     "v_break": -17.2
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": -1.6,
+     "v_break": 11.3
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 6.2,
+     "v_break": 16.6
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": 13.0,
+     "v_break": 13.8
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -4.2,
+     "v_break": 0.5
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": -10.9,
+     "v_break": 2.0
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 86.1,
+    "home_starter_velocity": 88.6,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 91.7,
+    "home_starter_velocity": 90.5,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 95.8,
+    "home_starter_velocity": 94.4,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 95.2,
+    "home_starter_velocity": 94.3,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 86.3,
+    "home_starter_velocity": 86.1,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": 82.8,
+    "home_starter_velocity": 85.1,
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 79.6,
+    "pitch": "Curveball"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for veteran-823012."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-09-11",
+ "game": {
+  "away_team_id": "145",
+  "broadcast_note": null,
+  "home_team_id": "138",
+  "start_time_local": null,
+  "start_time_utc": "2026-09-12T00:15:00Z",
+  "timezone": null,
+  "title": "Chicago White Sox vs St. Louis Cardinals",
+  "venue": "Busch Stadium"
+ },
+ "id": "veteran-823012",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.44,
+     "y": 0.497
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.274,
+     "y": 0.681
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.635,
+     "y": 0.621
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.302,
+     "y": 0.597
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.365,
+     "y": 0.763
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.468,
+     "y": 0.496
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.449,
+     "y": 0.653
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.535,
+     "y": 0.651
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.302,
+     "y": 0.529
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.613,
+     "y": 0.815
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.413,
+     "y": 0.818
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.372,
+     "y": 0.572
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.297,
+     "y": 0.717
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.346,
+     "y": 0.735
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.552,
+     "y": 0.595
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.327,
+     "y": 0.596
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.171,
+     "y": 0.737
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.523,
+     "y": 0.473
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.425,
+     "y": 0.682
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.404,
+     "y": 0.723
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.621,
+     "y": 0.67
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.522,
+     "y": 0.588
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.406,
+     "y": 0.477
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "641743",
+   "name": "Anthony Kay",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Sweeper",
+    "style_label": "Four-seam-Sweeper starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 2516,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 633,
+     "home_runs": 20,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     },
+     "source": "mlb_api",
+     "strikeouts": 116,
+     "walks": 50
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "4.47",
+    "home_runs_allowed": 20,
+    "innings": "141.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     }
+    },
+    "strikeouts": 116,
+    "walks": 50,
+    "whip": "1.36"
+   },
+   "team": "CWS",
+   "throws": "L"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "669461",
+   "name": "Matthew Liberatore",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 2376,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 608,
+     "home_runs": 25,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     },
+     "source": "mlb_api",
+     "strikeouts": 144,
+     "walks": 49
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "5.57",
+    "home_runs_allowed": 25,
+    "innings": "139.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 10",
+      "through": "2026-09-10"
+     }
+    },
+    "strikeouts": 144,
+    "walks": 49,
+    "whip": "1.47"
+   },
+   "team": "STL",
+   "throws": "L"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "CWS",
+   "id": "145",
+   "name": "Chicago White Sox",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.4%",
+    "k_rate_vs_hand": "24.8%",
+    "ops_vs_hand": ".732",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Sep 10",
+     "through": "2026-09-10"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "STL",
+   "id": "138",
+   "name": "St. Louis Cardinals",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.2%",
+    "k_rate_vs_hand": "18.9%",
+    "ops_vs_hand": ".712",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Sep 10",
+     "through": "2026-09-10"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  }
+ }
+}

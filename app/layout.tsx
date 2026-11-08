@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata as NextMetadata } from "next";
 import localFont from "next/font/local";
+import { headers } from "next/headers";
 import "./globals.css";
 
 const plexSans = localFont({
@@ -28,11 +29,13 @@ export const metadata: NextMetadata = {
   description: "Starting-pitcher matchup reports for MLB fans, checked against public data. No predictions, no betting.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Nonces belong to individual requests; static/CDN HTML cannot reuse them.
+  await headers();
   return (
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body className="min-h-screen bg-neutral-100 font-sans text-neutral-900 antialiased">

@@ -1,0 +1,47 @@
+{
+ "away_data_notes": [
+  "Control data for Randy V\u00e1squez is limited (90 batters faced; 170 needed), so no command claim is made.",
+  "Randy V\u00e1squez has allowed 1 home run over 90 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Four-seam to set up, Cutter to finish"
+ ],
+ "away_style": "Four-seam to set up, Cutter to finish",
+ "away_vs_home_offense": "Randy V\u00e1squez works off a four-seam-cutter combination. He shows above-average swing-and-miss ability. Control data for Randy V\u00e1squez is limited (90 batters faced; 170 needed), so no command claim is made. Randy V\u00e1squez has allowed 1 home run over 90 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.715 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach.",
+ "home_data_notes": [
+  "Strikeout data for Jimmy Herget is limited (43 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for Jimmy Herget is limited (43 batters faced; 170 needed), so no command claim is made.",
+  "Jimmy Herget has allowed 0 home runs over 43 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Sweeper to set up, Cutter to finish"
+ ],
+ "home_style": "Sweeper to set up, Cutter to finish",
+ "home_vs_away_offense": "Jimmy Herget works off a sweeper-cutter combination. Strikeout data for Jimmy Herget is limited (43 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Jimmy Herget is limited (43 batters faced; 170 needed), so no command claim is made. Jimmy Herget has allowed 0 home runs over 43 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against RHP pitching (.695 OPS), which gives Jimmy Herget an edge if he gets ahead. They draw walks at an above-average rate, so Jimmy Herget needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "115": [
+   "has elevated swing-and-miss risk"
+  ],
+  "135": [
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Four-seam-Cutter starter against Sweeper-Cutter starter",
+ "matchup_summary": "This matchup features Four-seam-Cutter starter against Sweeper-Cutter starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Randy V\u00e1squez and Jimmy Herget: all pitcher figures cover the 2026 regular season through Apr 20.",
+  "Team offense splits cover the 2026 regular season through Apr 20."
+ ],
+ "three_things_to_watch": [
+  "Can Randy V\u00e1squez land the cutter early in counts?",
+  "Can Jimmy Herget keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

@@ -1,0 +1,148 @@
+{
+ "by_model": {
+  "gemini-3.1-flash-lite": {
+   "calls": 57,
+   "capacity": 3
+  }
+ },
+ "capacity_failures": 3,
+ "decision": "D64",
+ "dev": {
+  "accepted": 6,
+  "cases": {
+   "limited-823715": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "limited-823836": {
+    "content_attempts": 1,
+    "path": "primary"
+   },
+   "limited-823863": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "limited-824344": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "limited-825104": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "opener-823164": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "opener-823605": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "opener-823769": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "opener-824280": {
+    "content_attempts": 1,
+    "path": "primary"
+   },
+   "opener-824384": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "postseason-849803": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "postseason-849827": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "postseason-849831": {
+    "content_attempts": 1,
+    "path": "primary"
+   },
+   "postseason-849842": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "postseason-849849": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "veteran-822840": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "veteran-823938": {
+    "content_attempts": 2,
+    "path": "primary"
+   },
+   "veteran-823940": {
+    "content_attempts": 1,
+    "path": "primary"
+   },
+   "veteran-824027": {
+    "content_attempts": 2,
+    "path": "rules"
+   },
+   "veteran-824803": {
+    "content_attempts": 2,
+    "path": "primary_retry"
+   }
+  },
+  "content_attempts": 36,
+  "not_attempted": 0,
+  "paths": {
+   "primary": 5,
+   "primary_retry": 1,
+   "rules": 14
+  },
+  "rejected": 14,
+  "reused_from_run5": 10
+ },
+ "experiment_calls": 203,
+ "experiment_cap": 400,
+ "finished_calls": 57,
+ "finished_utc": "2026-11-04 00:43",
+ "freeze_sha256": "5622f95b567a643cf73ea5b57a025beba85190b8b0dc5e0ab39a796f267f6b93",
+ "frozen_at": "0426c02",
+ "held_out": {
+  "accepted": 5,
+  "cases": 20,
+  "content_attempts": 36,
+  "not_attempted": 0,
+  "paths": {
+   "primary": 5,
+   "rules": 15
+  },
+  "rejected": 15,
+  "sealed_file_sha256": {
+   "limited-823531.json": "137bbc73dba4b600a4cb491f5fec4b159d8500ea23f73458ebc4446960bf6a4c",
+   "limited-823633.json": "7f4a6cd818f9f975d8d98fdc4fbe4ed744f05b190a79ae89dff4d57d01f9ed96",
+   "limited-823953.json": "69ed2b631d986fa2ef6afe61bb6adb40d9c00a5f29770e7d68946041220cf374",
+   "limited-824012.json": "0d1745eec00ff520d68b94025ee180401b2593810d6bba4d1068b02eae6af503",
+   "limited-824594.json": "ba4e74c4ee13186a3c746ffa12baed1dd6bddbad2ed344d9c4507b7c07ed7099",
+   "opener-822954.json": "21a9d4b3be040df1c4366e7737cc6dacbd461d91da2b464c6df86e3131e618a5",
+   "opener-823662.json": "2d11093cdd13765d41f56411c89c7b881ef9a74ff006be3ca82906b18bc758a4",
+   "opener-824365.json": "c9df9f5b5b7fdce4076a11a0e58621aafc7b53c9c1cb3fca0c0f86814ebc160c",
+   "opener-824369.json": "5a26c2d71f9c19b70d2105dd52fff75ee26b0db0976873ce7a71ccd664abe670",
+   "opener-824842.json": "da8f2ee7247ea42269cc1877fe22a7d8c6de8a1a4fcb66d9101050ceff676e75",
+   "postseason-849823.json": "ed68446d486f655f5230207fdcaa20d47d6cc72cd3eacfbba00ef3d8d700e6f6",
+   "postseason-849830.json": "74fbf1fddf787445b37f2d5a6cd246671963663db91fe8d427a6651e144f7aa4",
+   "postseason-849833.json": "3e217f801c113072bcc8cde3ae1dbf703e8844df07c45bb7c97a2668389262d8",
+   "postseason-849841.json": "8c7b68906b1e9070b5d62ba68a13877c5e55342443b4c572ca8377764a89e221",
+   "postseason-849851.json": "4114b6a72f9c3a14d30a5ca05fddee3677e7bb3bca868e1b389235f513438740",
+   "veteran-822870.json": "02d93d7a61865ad8da65d43601d50113104a0b1bfd54f5d79082d51b68a7eb2c",
+   "veteran-823012.json": "fcc2f8e7176c1ecf3d47e13304d93a72d3dc0d57c0c8aa24acbd5a09bf2a940a",
+   "veteran-823979.json": "fba105e0992382a028f757040c206dec2ee68395fe6198af163cfe0e32f31b24",
+   "veteran-824543.json": "6dc9a0145315a22bf1ab404ea9dc03722a02d7771454d17755d948ffbfab108a",
+   "veteran-824785.json": "1fb4d61c78490dd9a6e90fac1101dfd9df4f41f9c7042530087f04e3df8c5033"
+  }
+ },
+ "run": "b1-full-1",
+ "run_calls": 57,
+ "run_cap": 100,
+ "started_utc": "2026-11-04 00:21",
+ "stopped": null
+}

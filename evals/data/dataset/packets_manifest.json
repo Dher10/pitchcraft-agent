@@ -1,0 +1,1166 @@
+{
+ "build": {
+  "as_of": "official date minus one day (D29)",
+  "season_line": "gameLog rows dated before the game date",
+  "series": "the standing recorded in selection.json, checked by build_dataset.case_series",
+  "status_as_of": "upcoming",
+  "writer_and_critic_run": false
+ },
+ "cases": [
+  {
+   "findings_sha256": "4aa0ff269606ed6bfd08be4968d2f00b0089cd8e33410faecf05f244daf5552b",
+   "id": "postseason-849823",
+   "inputs": {
+    "history_sha256": [
+     "1d1d9b91c27d4bab8e764cf41f45cc10a8f1439a103e61fef9418ac7cc5f81ce",
+     "769d6123b749aff9d3bcc37c10aeb51b971a10f4e8693abd453aba262746ce35"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [
+     {
+      "code": "malformed_rows",
+      "source": "statcast_pitcher"
+     }
+    ],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "ee070fb10fda2b27e1fa6480a538eddf83b2ca4c3411d83fcb62f28b6c8891c4",
+   "selection_sha256": "1b64e22a8fbbfbef32fc7d9d380f8eeb076aaa5f87cb0c086517e90cd4675124",
+   "split": "test",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "8f0a667ca99befb1a42e934dd2fc967f68c2ce090eefcca912596c05552c6048",
+   "id": "postseason-849830",
+   "inputs": {
+    "history_sha256": [
+     "c09a32d8d25e270bac8f08b7a567581c14b96d6fc54ed5f43409bdea7bb786fe",
+     "2eab85431c828c858626048bb0759cab59fb80bb16d5f316b4b8c8a89ea1d5bf"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "c3cef0ccbd146953defd8474095df7a1cf97ff7680fb4429821c08901b3bec77",
+   "selection_sha256": "44793a97958b1f4ea3f332c325cbd93c49c678efcc005b96a1bb3d9090be226c",
+   "split": "test",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "d59b288955aa46603a7dc72bc9bb396217115cb1cdb1604efd660f6b6265d6b1",
+   "id": "postseason-849851",
+   "inputs": {
+    "history_sha256": [
+     "80fbd2f261e8acf360792bc9ba0cac64c9e740093a0f3b815c23a0eb7208ae34",
+     "e53d8f810eb1d5f8a643577e838acf951e4f53d0eb8476c046ffe25d5bd0bf26"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": [
+     {
+      "code": "unmapped_pitch_type",
+      "source": "statcast_pitcher"
+     }
+    ]
+   },
+   "packet_sha256": "5635d7364a95a6cfbab1a935bd251387fd71c03e64c08faf2a971f2ba6187822",
+   "selection_sha256": "bdbb6334207e1ab70912cc96c434f6a08f939f4737b4fbef62acf9d891b3f922",
+   "split": "test",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "b5f63d200d64414b4859415884d271ef53db885ef1ccda028a1632de0170931f",
+   "id": "postseason-849842",
+   "inputs": {
+    "history_sha256": [
+     "7c07ce0dc4c7d0c822c1060057d05d5a80ee4379962b93efdb8e8f3f58d6d3ff",
+     "b3f05f22bc417efcb9422c332ae997ab95f98b216f49b080932e60725224e955"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "bcb192978ffb5e05ee72bdb052d30987e51fa72d90097617633b83f4bfb30b9c",
+   "selection_sha256": "2dd9e72f2d433ae6de8d29a146fb5cbd47fa10234628a0879e95cadf47db9c65",
+   "split": "dev",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "82ed80b86418f976a4d508e11aa8133a9be986d3f7bea94bc18cfbc9ceb7be6f",
+   "id": "postseason-849833",
+   "inputs": {
+    "history_sha256": [
+     "684d2474995c6cac1d84610fd4a29e9640171527499727190ac541c9a4ee245f",
+     "138dcc416eaf55ec26c06c0aa5286f57ec43f42bafa260b6442e66f20b2cd9c1"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "02c0ea344e781f5a501ea4904d7299c91f192449f124bba5dd4d8cf2d64bf5ec",
+   "selection_sha256": "e42dc17ecb9d7d911774c860f60b389fc0d8d9006c88bae042ee17f026a3dd22",
+   "split": "test",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "1ecf88b8511b893e9ebd0f0d2a7d509e58ee61a2f057da0f3dbe4b5fef46c607",
+   "id": "postseason-849849",
+   "inputs": {
+    "history_sha256": [
+     "c37646cf0aaaecb0e1e11f8afea57d21b712717d3c4f63a95d531d05600f9211",
+     "d5168f43de1751d4611403001e827c469f2e5d5dee96f790f147be86e350b3a7"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "c12958401ff07620b41fbd81fdb99c31dbcbc9b86d8dc3a6b88a3ed26110e3c3",
+   "selection_sha256": "46b71aba793bb744bc1626434b4fd1c93f96c2e5025d4cb8ba63106193a67143",
+   "split": "dev",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "4e5f02ef044d7f8e630a5acdca7b332a4e7c15354e23860c26a40b7028a258b7",
+   "id": "postseason-849831",
+   "inputs": {
+    "history_sha256": [
+     "9fdf8f71f88b5043068bd4d340742bef14523c3d8111b1c45a86643b552d4b52",
+     "3c4e027e743527eb6ad61f46fce6648c73a909903011a824f6c746761d9b4328"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "403326978abaede2e2e53278e5e606cbe1531663544918f0a0f2303946aaae68",
+   "selection_sha256": "bb293a0f5ff549e1bc89afe46469e5661996aafe8d2234c5429b75c52c69f98a",
+   "split": "dev",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "9cc8a70cd9f714dc0662e44ac50f931b39e6380fcf5ffda20976d893f715b923",
+   "id": "postseason-849827",
+   "inputs": {
+    "history_sha256": [
+     "e8ba1948432225fde9d2fcddf175d7750703717ea7b18d1fc2263e85f6e813c1",
+     "10e6ec8d7679dbe712d46b8212365aff247b9371f939e9365791e55c84028b0a"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [
+     {
+      "code": "incomplete_sample",
+      "source": "statcast_pitcher"
+     }
+    ],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "8665278f3f228b6554be89320d1fd7fb8d5099bc3f6eb5d0b8a2ef06bf5303d6",
+   "selection_sha256": "cb4c313f09598c37f5b0c8ba6e11ba0c7e6bbc11c739c04db28e51ce3a9dc45e",
+   "split": "dev",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "80b57dcdafaf194958599bbfaea68c85cf83b5ee66050f31aef71f17b6bcfb4b",
+   "id": "postseason-849803",
+   "inputs": {
+    "history_sha256": [
+     "e795e6d73ded18c4c8f12d6cc0b6d225101cdb30516ef1b8257023e013b7d448",
+     "d750e072c2e51fb51c563a17f80f3f96ff391de0828395be647471ea068388ac"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": [
+     {
+      "code": "unmapped_pitch_type",
+      "source": "statcast_pitcher"
+     }
+    ]
+   },
+   "packet_sha256": "2ac04d8bc9a98ddbed666936115c32011744c72f913a4aa3e2fa57a701f5d0c3",
+   "selection_sha256": "5a32e0659ad5ef66970fbe65439671a80f3133c2621763fca196814d0670ccf2",
+   "split": "dev",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "57c7e9f3421b97a20bad133097c98199233aa1cd005ad89f646afb0b01fcf0fb",
+   "id": "postseason-849841",
+   "inputs": {
+    "history_sha256": [
+     "4833ca0bb50be7efcf45c7ec0f13b1ad000cbafab4840047b17e418f48461e74",
+     "c8baac4917ffedb63ded29d5bc1dfd8612dc1f449c04fc12e5ae8849e9116a66"
+    ],
+    "schedule_file": "schedule_2026-09-28_2026-10-29_FDLW.json",
+    "schedule_sha256": "f66181daa695657930140f761fcf5512dd9a02e3f8a974fa28b0aa70c564817c"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ]
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "2e73f208c758c5d50c2842c704620ee50cbb0843239fdd761d9e24e0b2007c76",
+   "selection_sha256": "52f901580966fd9bc264a7e744364e34c06e4e073d992df51b2e844debd89c91",
+   "split": "test",
+   "stratum": "postseason"
+  },
+  {
+   "findings_sha256": "87e34d1cbc91f8753db4fea87a8196cf295ddcec94d660f0f6207571c8893a3c",
+   "id": "opener-824280",
+   "inputs": {
+    "history_sha256": [
+     "fdeeeb58011534dd84693dc60c57c56471fa3a71edef78057eb6daf2a74ec179",
+     "7912f987b36e6496dd6463c1dd2a7a6cba9df9c4ac6962870c0e124a8b005751"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "f36bb84d7010cca2514f0768c1b9f17d9035caa7b13c2f06fc18a2fbd2b59389",
+   "selection_sha256": "e55fe80849844dfb7fdf2cefce42b6a5ec30ff1c84a1669c871f64d8c61ac53d",
+   "split": "dev",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "3e355894d8811211e99a229046d9c8c61e1c05b7abd806a90c3d5906d517d7eb",
+   "id": "opener-824369",
+   "inputs": {
+    "history_sha256": [
+     "7a108f5c0e39c8273fac4d74b3ae37468c02344ffb772c01eca8ba6b7e6ef024",
+     "54acebe5bf357e3fbe57ced0535adc8126846471a30ecb52f83de262b6201aab"
+    ],
+    "schedule_file": "schedule_2026-04-01_2026-04-30_R.json",
+    "schedule_sha256": "41aed803d334f050e396c9e4f84e4c74318956af3b5d8167c5b7ad432ff82595"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "fc151e916828e5583208e69a9b8d3b487d5c825497591e2750dd7bc2046af9f2",
+   "selection_sha256": "73fff3dc99fef4fb47ec11d7e5cbbfc68100300c4c7f34495f3c288234b53f78",
+   "split": "test",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "a4c62b086b31b5e0263f7cd18f3813435938103bfa0cabf6315bc44dff487eee",
+   "id": "opener-822954",
+   "inputs": {
+    "history_sha256": [
+     "b7cc894fdf3007d6b0df3581737266ecba1f5536197908e8d11a197fc1c888f3",
+     "a99a794b32d77cf016849c4881a6a05c98af73c6cc6fa23e7dcbc76e9086a4fb"
+    ],
+    "schedule_file": "schedule_2026-07-01_2026-07-31_R.json",
+    "schedule_sha256": "46df1c64a12aab326e54fe98af9d7aaa3c386fd97cb35fbb19d1ae3183d40391"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": [
+     {
+      "code": "unmapped_pitch_type",
+      "source": "statcast_pitcher"
+     }
+    ]
+   },
+   "packet_sha256": "2f0ad42a4f304c72614f34e4a36eb0a847f00e52245cb2d1da8578f4d2af4775",
+   "selection_sha256": "a63169589fddbd4ba0f3634626607cced3b9db5438ca6eddf3396bf37747af7f",
+   "split": "test",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "f6f68f4801666244c0b58c2073bfa37821a1549de280b415cac47163182eefa5",
+   "id": "opener-823769",
+   "inputs": {
+    "history_sha256": [
+     "1e928984f92ca82f79640aec89343522dbc1f84ad6b18944e7db173cc08e5604",
+     "6d2609026974fdb9cc96007c2692b15ac98f02c005f2b8a4b17d3a823537974e"
+    ],
+    "schedule_file": "schedule_2026-06-01_2026-06-30_R.json",
+    "schedule_sha256": "0d033ef107392bc217f556d357c79b197c65f0042e6d799e9c2a9c0ad9d97b51"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "06ff926d6673ff3cf79c81f572c9899999b8fcefd7a2134754fb50138eca6d0b",
+   "selection_sha256": "1b357b17d8644203aa3aa422926c7074f0c190e78c117408289f2265379e90a9",
+   "split": "dev",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "01295c0946fffb0de5b99b0b0aa4777c668246b35f9e993a825ad20b3e712241",
+   "id": "opener-824365",
+   "inputs": {
+    "history_sha256": [
+     "94fe7fe14a545b96086b17a497d5c5ac4dd7bcadfef86e2c6c728460e0cdf478",
+     "fd396e509ffecf58d04b9773bb9e74162e35344356b4f239f4f10f8ddd568d53"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "5f2b5d39538b3cbabc41d1cf4393c4aa3e1db2e05138e0b46940a4f062e79bea",
+   "selection_sha256": "ea008cae0fb50ccdfc09c0668ebbb110ede0b0c4f10bd787d6f22e106db6922c",
+   "split": "test",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "37402d956ebd101bc8a698479881d7faf374778e58fae57c14b1aef3dff652bd",
+   "id": "opener-824384",
+   "inputs": {
+    "history_sha256": [
+     "5e9ca93be3cb160ded7674053eb8452654290956f6e36cb4e76e861c4790971b",
+     "37900ccaeb3eaa503052b4b30207619233245f8f4f19629d2a5b937080e46d50"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ]
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "ffd9f2bb4722eff1e62c83ffa7d67b57a2f61f1d85c1d14843c09fc59e9809ed",
+   "selection_sha256": "8495116cd3dbc4a42eca9313974b4dc3333088ce930994fd2541b10ba61f7361",
+   "split": "dev",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "128d09a88624a3b8607abf4b1e0a6b44438f72493c0757217c93855979f029be",
+   "id": "opener-824842",
+   "inputs": {
+    "history_sha256": [
+     "afa8f6c39a3391923e7c0755fc53fe4f90eb331f469066871d07c388c757d4fc",
+     "ddd8e6860e7a593027f5556a51571d93c41e27a2d7660c63330441d2a9d1b582"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "e1749a900362ce7c4fbad34dd0edf8064bc8576badb7da9691238a3dcc91fcad",
+   "selection_sha256": "fea850b01042b702953ac812191e558098a2d8466f4cb6d4b282d7ebc036a3f4",
+   "split": "test",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "b33788ea0a922d60bf5f437ccc8f1f64cc23fe0798fad4008376de31c0737ce2",
+   "id": "opener-823605",
+   "inputs": {
+    "history_sha256": [
+     "1c72a9f27c934b5b9980fff873f6bf1ac016188d1fe105172156988c75917496",
+     "05a709dd8fd8c1d24e40b3c42be7bca0f2768aa88527481671210e6be40181c2"
+    ],
+    "schedule_file": "schedule_2026-07-01_2026-07-31_R.json",
+    "schedule_sha256": "46df1c64a12aab326e54fe98af9d7aaa3c386fd97cb35fbb19d1ae3183d40391"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "457be203e7e1a0c085f8dcd6b0a4a71cd7c56a7f1f2277a3edbae51d99d33398",
+   "selection_sha256": "169a5e37d0135274b4ac31aa64f76577e29e941ab13d3af7f741985bed1336ee",
+   "split": "dev",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "567bf6055daeea144536da4c66a9238b1caf893c478f51bec697f5a41298c028",
+   "id": "opener-823662",
+   "inputs": {
+    "history_sha256": [
+     "e0be6977e55410bd3be717ec99e7c0e79363a973981eca58ce1616e8bf9bae0c",
+     "7f8104bbe1e9e1e21cdb6eaa19d2b5c96ecd2842f5607520e59c51135eee3d08"
+    ],
+    "schedule_file": "schedule_2026-08-01_2026-08-31_R.json",
+    "schedule_sha256": "8801c3b1468c045089e94626711afe268a6e38cf2070d09ca5363bf713da7631"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "4257fadf6c26ebd30864ac8c4d05b676823d34cc6eead69d73d3fdfdf46fa524",
+   "selection_sha256": "355e1f535f09311561458e79d7774859a0b9f2802623179e44045bc011b6d0c9",
+   "split": "test",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "e690bf30ba56f7e94729609d4a3a4e4c92c781517c7f2e99f3314b2b8b57b1cc",
+   "id": "opener-823164",
+   "inputs": {
+    "history_sha256": [
+     "c4c8c693061ea73c29183afd1763159ba37e2bc8f51717bfabf2baa43b5017fa",
+     "f19673c201ecce2adaefbee2c6fd2a503a4bd42e8998db3072d21694bfda30cf"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "591816a91f6f6ca28936b6560d37187f63bb65d21d7c64baa1bcad96a241d941",
+   "selection_sha256": "f65d68f1daa12c2f78834607d05b3ffca7200807f898ff9de25bd4b127b1eed5",
+   "split": "dev",
+   "stratum": "opener"
+  },
+  {
+   "findings_sha256": "8289f1611d9942c97603b0aa99bd37787e5fbdf70e81d523f41862278cc84ca1",
+   "id": "limited-823836",
+   "inputs": {
+    "history_sha256": [
+     "d6b5373f796391d158addbff43cc676bcd64e52719d6191205e8491935903431",
+     "e240e2140dc96e7772f213a1053deb90d6f2ef181b2a58217626af4c0551ff2f"
+    ],
+    "schedule_file": "schedule_2026-08-01_2026-08-31_R.json",
+    "schedule_sha256": "8801c3b1468c045089e94626711afe268a6e38cf2070d09ca5363bf713da7631"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "491a21bebf42d451dae72a97391b2aabc82587f3b5b76b8aedfdf5a729687d15",
+   "selection_sha256": "53ff50f6efe7ced301ef6c3f0b714002813a573b78f9f7eb8d6517e3e9cbc440",
+   "split": "dev",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "3f44416a3c11380108948dfb03f1f75573292a175800bc6566b268fe6040bb7d",
+   "id": "limited-823531",
+   "inputs": {
+    "history_sha256": [
+     "f465c6ea7ded4fd9a46a309194b3ba4a4e8c07dcb5bf6197aa61a6f3ac17738e",
+     "cf717aeee4a3d7206361aed08ceee0469ac29fd2698b98be915a26f61505a05c"
+    ],
+    "schedule_file": "schedule_2026-06-01_2026-06-30_R.json",
+    "schedule_sha256": "0d033ef107392bc217f556d357c79b197c65f0042e6d799e9c2a9c0ad9d97b51"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "fe991ad5d166abef61d9c3a2b896d6a8af2139e32ad00fe5ccc8a7264d7b29f0",
+   "selection_sha256": "41aab58ac4bb7146edda57ed99910b8be1675297a1127f97e28013afb47fcc4b",
+   "split": "test",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "4be9015158864b6645e53e3ccc89ebbec48900519c844e7c10022a7e962d37bb",
+   "id": "limited-823953",
+   "inputs": {
+    "history_sha256": [
+     "a18c1b79912aac10c11c44fa0361820a556c723986e2df31bddf0beca70c44ff",
+     "f5e4c9ee37103c58dffb0ea074865e6317096a3f6b5ae4c5aa661452d2ce34ef"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "2f5a0e7648a2c7d3632d7df49ebce70fe4ddd24d687177faa2b0b60fbef3995d",
+   "selection_sha256": "869d8b4a0830d605b355e388874793bf9d878538d60719dfe4804dca99f78393",
+   "split": "test",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "537c22ae1d4097397075ef76f9c1e4925d6997c930c5721ecd9b586248905de4",
+   "id": "limited-825104",
+   "inputs": {
+    "history_sha256": [
+     "efd40b21d530bdec63be6096cb732617b7abcc000b5461eb9d60857ca8867a17",
+     "af581f490537d751bf53aa861ded2e9218e4cd928092bb0769a2f4f3b886224f"
+    ],
+    "schedule_file": "schedule_2026-04-01_2026-04-30_R.json",
+    "schedule_sha256": "41aed803d334f050e396c9e4f84e4c74318956af3b5d8167c5b7ad432ff82595"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "af02ae9de2a3866c67b73156c017125396f3abac65c61f48c8f6776868471467",
+   "selection_sha256": "ff644642be9518f90438c266cb69e99744b01f72bba99a10222e9ece216fba06",
+   "split": "dev",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "08b60d1ae3f25177788c6af87a21c4552d3565661b7cbd2cc807df36a3dd50c6",
+   "id": "limited-823863",
+   "inputs": {
+    "history_sha256": [
+     "11a75c3d76aae268ab9ef0b52c7b75012bae1e16d8093264a95702982f3257e4",
+     "ad9151cffa7910c3cfbe8ff26298f7401686fde263ad3225131648f55ec8b416"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "d8f223db8d1194d1d026ab0ff4dcd9172085e4626145cf67e2645369125635d8",
+   "selection_sha256": "0db036ab7060d388056b04cc2d316c3da0dc1071ec3be715f2956022dbb71c62",
+   "split": "dev",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "1cbc6a945b1a09914cfc352ad254d16d0609abafd4dcd2e1c4c699354dd69f9b",
+   "id": "limited-824012",
+   "inputs": {
+    "history_sha256": [
+     "6fc0d5c9520fcd30d217269d28a4a2482d460914d4803665db9806e3ea9fd4f2",
+     "9da72ec71bf0696cc437e8f590488c0168731a86c1769980de3228edcc024ffa"
+    ],
+    "schedule_file": "schedule_2026-07-01_2026-07-31_R.json",
+    "schedule_sha256": "46df1c64a12aab326e54fe98af9d7aaa3c386fd97cb35fbb19d1ae3183d40391"
+   },
+   "notes": {
+    "errors": [
+     {
+      "code": "malformed_rows",
+      "source": "statcast_pitcher"
+     }
+    ],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "13764d77838d41e68c1116f39995c622ae1b9bbdaa957b0efc250d5c838246e9",
+   "selection_sha256": "daffd23dcea8efbbca0577a8da0f191dc7f73b5fd85f202120c720a13c8ae776",
+   "split": "test",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "38ea228449ef86d89e0714563479a0f45e9a2aec17cfd259a809ae5f4ab5528f",
+   "id": "limited-824344",
+   "inputs": {
+    "history_sha256": [
+     "40257db6ababd3eebb23eb4dc8feb1a04d425006f2a4b5149342d47a18bc7753",
+     "9163dad5daecf0215556cec7c44d7165cb0ddf0c6480a4d61735bee7c5997858"
+    ],
+    "schedule_file": "schedule_2026-06-01_2026-06-30_R.json",
+    "schedule_sha256": "0d033ef107392bc217f556d357c79b197c65f0042e6d799e9c2a9c0ad9d97b51"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "291e398237f389dbe3272640709c8a410ae2e9173325bd271bb7d624c76a3b61",
+   "selection_sha256": "07f7a5f4589815b2e4d7a04591564c3fb5a3062e573232d7f47d1b7537fd3a71",
+   "split": "dev",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "214ebe654e0c1ce32639bd1c64559eb81a579a0af08cb3f0febee51f8534c3f0",
+   "id": "limited-824594",
+   "inputs": {
+    "history_sha256": [
+     "84d537d5bb36940483eb12881c4adc7008bb02044f5eaefb313e35dec1bcfd67",
+     "ca61404c5b41e78ff60fc50c6eaaa40462f4216e89e4e34cf9ed9a9f1bd2d787"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "7c9840e2e3ec4695f1dffe68a5d7b68436f62493605a5063e7df83dfbc77e863",
+   "selection_sha256": "4e28b2a1b03e569e1838b7787b7de4e4082176ee416aef9252f91e2c3d0ee72f",
+   "split": "test",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "edb0f7e0007daacdf509658a0d0da8f3a185eec177a1744fc3f4d39d3d4fe8eb",
+   "id": "limited-823633",
+   "inputs": {
+    "history_sha256": [
+     "5fe1b5f412693066f4c4c6df1deddb35db8f98a31c16a4c7102a86760dcf1d36",
+     "21897e19061fee03d408e8aad988394959a15c792eb13e250538ae6953c3849f"
+    ],
+    "schedule_file": "schedule_2026-04-01_2026-04-30_R.json",
+    "schedule_sha256": "41aed803d334f050e396c9e4f84e4c74318956af3b5d8167c5b7ad432ff82595"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ]
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "938cd315faf3aaf70442a3cc00c897e77b376e857122c3bee82dde38baaa70f5",
+   "selection_sha256": "51bfb247fada01d76544abd7ece0832e3d7d8e41cd0fd5b4f555a11786a01dde",
+   "split": "test",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "2817390e190776d664a09c180e7aaff657131a6ab25fb02256d3dfcb9ea69415",
+   "id": "limited-823715",
+   "inputs": {
+    "history_sha256": [
+     "ddde103b878378e8068b871396cd7f15a279c674ad9fddb304c08f18bb1dfb06",
+     "eb73b72a3e2fad8deea89da2ffa6c4b2c00e4c3683ff11828707b8a02cdd7931"
+    ],
+    "schedule_file": "schedule_2026-05-01_2026-05-31_R.json",
+    "schedule_sha256": "0118dc4050d40586fe41448a79fc5d94502b3d877375614586196f1ef0f0aa5e"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "4e81dc92c6afbb2070eb9113be2413413ecdc7d13ac738a77f9d1f1cb98530d2",
+   "selection_sha256": "ab25d5addec931343bd739b8e69c3601304699617495c35225dcfbd752a10447",
+   "split": "dev",
+   "stratum": "limited"
+  },
+  {
+   "findings_sha256": "dc166ec51fa2131b3827bc49829c5265d67a41a00b500b8bcb22cbcbbdd7389d",
+   "id": "veteran-823012",
+   "inputs": {
+    "history_sha256": [
+     "e021c1842c6e3ff56c8a00fd7375ebb40ea47633a9fe0cab3fafb4e88d41c324",
+     "66a7a951710e63894786480b04528ce3e896ddd63e5b9e59cb8d5fb833a4c99e"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "dce3b7a1cc15b15999839bd830b0fc83bf147814b94e4a8ce1fddb7c96c8c2b3",
+   "selection_sha256": "8a37d7a397b9a867720aca5f13f34f97a5ec7109c3818e51408b126d353f7d34",
+   "split": "test",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "696e6bdf7ce378476fbdababe18297ad53a5e6d2578180f09aa117639a5ad23e",
+   "id": "veteran-824027",
+   "inputs": {
+    "history_sha256": [
+     "d52fb44dd4bd125fcc44f661f9bdc91ea4e151bfe9eee67b9cedf36a94ddbd8e",
+     "7f4ba7f3ccbbbda64da0f9b99ec24bcb3b9b7878ab2f559bb7b13b9c3c7c5d8d"
+    ],
+    "schedule_file": "schedule_2026-06-01_2026-06-30_R.json",
+    "schedule_sha256": "0d033ef107392bc217f556d357c79b197c65f0042e6d799e9c2a9c0ad9d97b51"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ]
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "c655e8b302ff342ae60fd4282d741859cc3efe76321e0d288be2397425b55178",
+   "selection_sha256": "e9eb739f0ca55d15863ad9e64f42252f9fb6beb721bac15a38e5f95fd570ee33",
+   "split": "dev",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "a0d315cc8c40c954909b6c7a942555d605d48dfcaab6140c05413920ef962b59",
+   "id": "veteran-824543",
+   "inputs": {
+    "history_sha256": [
+     "661feaace501e5c55bff1fa4b0153b1c018ebe2609a7437ab2e2f3bf7dd2c734",
+     "813009fb80650392a9ef50a754f9191a6b0c47c9ed1599d8cdb564c070c13bda"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [
+     {
+      "code": "malformed_rows",
+      "source": "statcast_pitcher"
+     }
+    ],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": [
+     {
+      "code": "unmapped_pitch_type",
+      "source": "statcast_pitcher"
+     }
+    ]
+   },
+   "packet_sha256": "1691f09e5be6a530d5ba488a146fa17404b8a96381256017a4203a818a795938",
+   "selection_sha256": "46c45da19ce3786300cd43e1728d961369d69af553f8d48e0248983e66d10199",
+   "split": "test",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "55b0f28ba3c4f793365767e51cee4f9e59f458486b0a3755f253227df4e50802",
+   "id": "veteran-823938",
+   "inputs": {
+    "history_sha256": [
+     "9384ad3623979be139ba2399c48fcb85dc97c0f8f3fe70f6ecd8ee68a5632883",
+     "2096051e7b997c1bfdd71ca00ccb5a8eca4bb913aa1e70d0fcc93878629b400a"
+    ],
+    "schedule_file": "schedule_2026-06-01_2026-06-30_R.json",
+    "schedule_sha256": "0d033ef107392bc217f556d357c79b197c65f0042e6d799e9c2a9c0ad9d97b51"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     [
+      "3 2026 lines in yearByYear (more than one club)"
+     ]
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": [
+     {
+      "code": "unmapped_pitch_type",
+      "source": "statcast_pitcher"
+     }
+    ]
+   },
+   "packet_sha256": "c44d45064d7eb2a758f7f279bcd1d3aa1bcdb9d132afaac2610d0be8bad7711c",
+   "selection_sha256": "b13f668a2c622afa9cea2642047954ec75d382441e7fd56b522d7802ffa7836c",
+   "split": "dev",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "04703d1a05a7173bb7749c5c0af61e465d3f728607e4f44b203eb771c872040a",
+   "id": "veteran-824785",
+   "inputs": {
+    "history_sha256": [
+     "baaea927e53b0c017d1c88fd31b1858631751d91aa2fe97fea9f5f8140f0f96e",
+     "5827c36235ac248777d4a4f12569aaeaeb2c5f6a6af72a73bea5e417f77332c8"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "d53fcfbb1c7ea6fdc1f622372096f262d533292abac86e08e7b6740c89e4a415",
+   "selection_sha256": "ab0eb3ab118c8dd5074b5c190314779dab3d38d6acdf44dfed480e73dc939128",
+   "split": "test",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "f0d4ca5eec6e5ee156d5c34fe2ae3684767f77c490070dbc696084a7efd9365b",
+   "id": "veteran-824803",
+   "inputs": {
+    "history_sha256": [
+     "cdf0edaa2c771fab86860dbad3c8fc1fa45aa9a464c250548b5d1c989c5732af",
+     "76031122adabfd8b85b2aff8b1bfc2dacf5177a877d1d0a5164292ed25b097e4"
+    ],
+    "schedule_file": "schedule_2026-08-01_2026-08-31_R.json",
+    "schedule_sha256": "8801c3b1468c045089e94626711afe268a6e38cf2070d09ca5363bf713da7631"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": [
+     {
+      "code": "unmapped_pitch_type",
+      "source": "statcast_pitcher"
+     }
+    ]
+   },
+   "packet_sha256": "55b7a427de7e5b016a6b288059753e3c6b020e0f56ee62f7650a8d2c021c5fba",
+   "selection_sha256": "7a2cb2392872a82a38c2c3042a3844b3e3c20d95c408b78b632fcfb4c5dd0e7d",
+   "split": "dev",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "314b7e997d85f8da9f28a0396d381acf7e374831a922dd7fb9475199efffcf86",
+   "id": "veteran-822870",
+   "inputs": {
+    "history_sha256": [
+     "32db5c1e576a0029aa177ceac4967ea6e88f07eb2bbfa82c3753ac10f8cd0804",
+     "dd5834bba8e68d7aa18fadf6352abd1238301cc9f17cfbf4d65a17feca103f94"
+    ],
+    "schedule_file": "schedule_2026-07-01_2026-07-31_R.json",
+    "schedule_sha256": "46df1c64a12aab326e54fe98af9d7aaa3c386fd97cb35fbb19d1ae3183d40391"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "650bff6a32d20a107abb0262a08ecc8f4524d20ee5ed67c07cfec063d62aaa44",
+   "selection_sha256": "f44e0bd43781cb4899c02ab033c871a9e7e9bf54b2a6d0d72a27dc133140a08a",
+   "split": "test",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "24100b46e2929b1480a8202273655ed4340b4761a7e298bc82379c681e4e4bfe",
+   "id": "veteran-823940",
+   "inputs": {
+    "history_sha256": [
+     "87840d1bee17e88c9ccab431ef807aa96e6a2dd8389791ccf51d45f3282a3336",
+     "d53bf78dc1ac8793b5cd59624452c70f977b955eadf28afaac96087db39fbca8"
+    ],
+    "schedule_file": "schedule_2026-06-01_2026-06-30_R.json",
+    "schedule_sha256": "0d033ef107392bc217f556d357c79b197c65f0042e6d799e9c2a9c0ad9d97b51"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "1ae0b8660c73ab0646a97d312949d8ed6bfb93cb7054d735328a2df5e3e940f1",
+   "selection_sha256": "f1351cb60015a0b017cb62304211d9e8a2de4c96c64882d6b29d4c761f10aee1",
+   "split": "dev",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "5aa3929277b717a178d7ccb26cd55085927e95ae55d49bcee5a56fb90a1ce940",
+   "id": "veteran-823979",
+   "inputs": {
+    "history_sha256": [
+     "95203761eb6c93fcc0188807dc0a1609f09c097f8c5e2b9a41b4c5167eea9375",
+     "4fc459e65da55a9652d4667886830de4fc7c1d69b98943f7d6e270da2ee300ca"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "4886e64b79342d8786b0be3fdd6a098faaebba33af29ab0bb4ac94caa0de850d",
+   "selection_sha256": "7d6e69b4e5303a0d5340be8d966d545145ecd1e7ed53004fbf828a26bd902411",
+   "split": "test",
+   "stratum": "veteran"
+  },
+  {
+   "findings_sha256": "aee6008d99f150698b6e224d766940084fbc26f4692a8769143f3d560a46075d",
+   "id": "veteran-822840",
+   "inputs": {
+    "history_sha256": [
+     "45206b18d555aff40106a0d9f26fa3343b0de322f6271cd0c54417e3b264fc4d",
+     "e8590308a4844b22c80ff8f2b2c83b187d477db3950a5f56b19f4b59319f7734"
+    ],
+    "schedule_file": "schedule_2026-09-01_2026-09-27_R.json",
+    "schedule_sha256": "bf74c755a91f761a72601d30d79841928adebef2e5da49d471f6f3c6a1c2fbc9"
+   },
+   "notes": {
+    "errors": [],
+    "season_line_check": [
+     [],
+     []
+    ],
+    "season_line_source": "gameLog rows dated before the game date",
+    "status_as_of": "upcoming",
+    "unsafe": null,
+    "warnings": []
+   },
+   "packet_sha256": "58676094c8e722824e1f0540aaaad09614551b9a7379ef1672308b36dd83d8df",
+   "selection_sha256": "480bc39e9028c9c79e073e269c8972a21f646efa003dbf93813a893e2daea437",
+   "split": "dev",
+   "stratum": "veteran"
+  }
+ ],
+ "requests": {
+  "mlb": 0,
+  "pitcher_hand": 0,
+  "pitcher_statcast": 80,
+  "savant_closed_month": 0,
+  "savant_open_month": 58
+ },
+ "split_lock": "fd221330c1603d58250b8f41aba341435697bd1d766fa7054bb196c7baf1667c",
+ "version": 1
+}

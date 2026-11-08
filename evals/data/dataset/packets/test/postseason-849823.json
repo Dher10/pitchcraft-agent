@@ -1,0 +1,453 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 96,
+     "overall": 37.1,
+     "total": 259,
+     "vs_lhh": 26.5,
+     "vs_rhh": 43.9
+    },
+    "home_starter": {
+     "count": 162,
+     "overall": 21.9,
+     "total": 741,
+     "vs_lhh": 18.6,
+     "vs_rhh": 23.2
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 90,
+     "overall": 34.7,
+     "total": 259,
+     "vs_lhh": 22.5,
+     "vs_rhh": 42.7
+    },
+    "home_starter": {
+     "count": 367,
+     "overall": 49.5,
+     "total": 741,
+     "vs_lhh": 49.8,
+     "vs_rhh": 49.4
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 59,
+     "overall": 22.8,
+     "total": 259,
+     "vs_lhh": 47.1,
+     "vs_rhh": 7.0
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 741,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 14,
+     "overall": 5.4,
+     "total": 259,
+     "vs_lhh": 3.9,
+     "vs_rhh": 6.4
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 741,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 259,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 132,
+     "overall": 17.8,
+     "total": 741,
+     "vs_lhh": 2.8,
+     "vs_rhh": 24.0
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 259,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 80,
+     "overall": 10.8,
+     "total": 741,
+     "vs_lhh": 28.8,
+     "vs_rhh": 3.4
+    },
+    "pitch": "Slider"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -1.0,
+     "v_break": -3.6
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 0.2,
+     "v_break": 8.9
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 8.6,
+     "v_break": 14.8
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": 15.0,
+     "v_break": 10.4
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 13.1,
+     "v_break": 8.3
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -14.0,
+     "v_break": -8.7
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 5.6,
+     "v_break": 18.7
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -3.8,
+     "v_break": 7.0
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 81.0,
+    "home_starter_velocity": 79.9,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 90.6,
+    "home_starter_velocity": null,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 94.7,
+    "home_starter_velocity": 96.0,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 94.4,
+    "home_starter_velocity": null,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 84.8,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 88.8,
+    "pitch": "Slider"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for postseason-849823."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-10-04",
+ "game": {
+  "away_team_id": "144",
+  "broadcast_note": null,
+  "home_team_id": "119",
+  "start_time_local": null,
+  "start_time_utc": "2026-10-05T00:00:00Z",
+  "timezone": null,
+  "title": "Atlanta Braves vs Los Angeles Dodgers",
+  "venue": "UNIQLO Field at Dodger Stadium"
+ },
+ "id": "postseason-849823",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Curveball",
+     "x": 0.494,
+     "y": 0.737
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.36,
+     "y": 0.582
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.542,
+     "y": 0.615
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Curveball",
+     "x": 0.497,
+     "y": 0.742
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.576,
+     "y": 0.519
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.71,
+     "y": 0.549
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.17,
+     "y": 0.621
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [],
+   "vs_rhh": []
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": {
+  "game_number": 2,
+  "games_in_series": 5,
+  "series_name": "NL Division Series",
+  "standing": "LAD leads 1-0"
+ },
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "678061",
+   "name": "Ray Kerr",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Curveball",
+    "putaway_pitch": "Four-seam",
+    "style_label": "Curveball-Four-seam starter",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 259,
+     "scope": {
+      "kind": "regular_and_postseason",
+      "label": "2026 regular season and postseason through Oct 3",
+      "through": "2026-10-03"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 66,
+     "home_runs": 2,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     },
+     "source": "mlb_api",
+     "strikeouts": 11,
+     "walks": 2
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "1.47",
+    "home_runs_allowed": 2,
+    "innings": "18.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     }
+    },
+    "strikeouts": 11,
+    "walks": 2,
+    "whip": "0.60"
+   },
+   "team": "ATL",
+   "throws": "L"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "605483",
+   "name": "Blake Snell",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Curveball",
+    "style_label": "Four-seam-Curveball starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 741,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 173,
+     "home_runs": 0,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     },
+     "source": "mlb_api",
+     "strikeouts": 55,
+     "walks": 16
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "1.90",
+    "home_runs_allowed": 0,
+    "innings": "42.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-10-03"
+     }
+    },
+    "strikeouts": 55,
+    "walks": 16,
+    "whip": "1.10"
+   },
+   "team": "LAD",
+   "throws": "L"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "ATL",
+   "id": "144",
+   "name": "Atlanta Braves",
+   "offense_profile": {
+    "bb_rate_vs_hand": "7.0%",
+    "k_rate_vs_hand": "21.4%",
+    "ops_vs_hand": ".696",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season",
+     "through": "2026-10-03"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "LAD",
+   "id": "119",
+   "name": "Los Angeles Dodgers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.3%",
+    "k_rate_vs_hand": "20.0%",
+    "ops_vs_hand": ".756",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season",
+     "through": "2026-10-03"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  }
+ }
+}

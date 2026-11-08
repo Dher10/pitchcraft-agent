@@ -1,0 +1,281 @@
+"""The LLM report writer (P2.2): offline candidate reports with the fail-closed cascade.
+
+`write(...)` builds the closed input, asks Gemini under the D49 transport policy, checks the candidate against the writer guide
+(agents/writer_checks.py), makes ONE informed content retry (D2), and otherwise returns the rules writer's report. At most 8 HTTP
+calls per item; every call is counted first by the CallBudget supplied by the caller. This module reads no key and no environment:
+the caller supplies `provider(model, timeout, body) -> ProviderResponse`. Nothing here publishes anything; the candidate report is
+an internal structure and rules stay live (D44/D45).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+import hashlib
+import json
+from pathlib import Path
+import re
+from typing import Any, Callable
+
+from agents import matchup_analyst, report_writer, writer_checks, writer_input, writer_policy, fact_table
+from agents.language import DEFAULT_LANGUAGE
+from agents.security_policy import ModelRejected, bounded_text
+
+def _pairs(items):
+    value = {}
+    for key, item in items:
+        if key in value:
+            raise ValueError("duplicate key")
+        value[key] = item
+    return value
+
+
+def digest(value) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode()).hexdigest()
+
+
+PROMPT_VERSION = "p2.2-6"
+ROOT = Path(__file__).resolve().parents[1]
+GUIDE_PATH = ROOT / "docs" / "writer-guide.md"
+MAX_OUTPUT_TOKENS = 8192
+MAX_BODY_BYTES = 60_000
+ROUTED = {"gemini-3.5-flash": ("gemini-3.6-flash",)}
+
+_SENTENCE = {"type": "object", "additionalProperties": False, "required": ["text", "evidence"], "properties": {
+    "text": {"type": "string"},
+    "evidence": {"type": "array", "items": {"type": "string"}}}}
+_LIST = {"type": "array", "items": _SENTENCE}
+SCHEMA = {"type": "object", "additionalProperties": False, "required": ["headline", "summary_lines", "sections"], "properties": {
+    "headline": _SENTENCE, "summary_lines": _LIST,
+    "sections": {"type": "object", "additionalProperties": False, "required": list(writer_checks.SECTION_KEYS),
+                 "properties": {key: _LIST for key in writer_checks.SECTION_KEYS}}}}
+
+LEX = json.loads((Path(__file__).with_name("writer_lexicon.json")).read_text(encoding="utf-8"))["en"]  # English wording lives in data (D6)
+HINTS = LEX["hints"]
+_PROMPT = LEX["prompt"]
+
+
+class PromptRejected(ValueError):
+    """The writer input holds a string the P2-SEC policy rejects; no request is built."""
+
+
+def guide_text() -> str:
+    text = GUIDE_PATH.read_bytes().decode("utf-8").replace("\r\n", "\n")
+    text = text[text.index("## 1.") : text.index("## 6.")]
+    # The writer must not see case ids or the dataset's folder names (W16).
+    for pattern, replacement in _PROMPT["scrub"]:
+        text = re.sub(pattern, replacement, text)
+    return _PROMPT["guide_title"] + text.rstrip() + "\n"
+
+
+def guide_sha256() -> str:
+    return hashlib.sha256(GUIDE_PATH.read_bytes().decode("utf-8").replace("\r\n", "\n").encode("utf-8")).hexdigest()
+
+
+def system_instruction(rules_len: int) -> str:
+    low, high = int(rules_len * 0.8), int(rules_len * 1.2)
+    layout = _PROMPT["format"].replace("@LOW@", str(low)).replace("@HIGH@", str(high)).replace("@RULES@", str(rules_len))
+    return _PROMPT["preface"] + guide_text() + layout
+
+
+def _validate_strings(doc: dict) -> None:
+    def walk(node, parent=""):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                # Pitch names and glossary terms are keys and reach the prompt too: short, plain characters only.
+                pattern = LEX["patterns"]["term_key_chars" if parent == "glossary" else "key_chars"]
+                if type(key) is not str or re.fullmatch(pattern, key) is None:
+                    raise ModelRejected()
+                walk(value, key)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value, parent)
+        elif isinstance(node, str):
+            bounded_text(node, 400)
+
+    try:
+        walk(doc)
+    except ModelRejected:
+        raise PromptRejected() from None
+
+
+def build_body(doc: dict, rules_len: int, failures: list[str] | None = None) -> dict:
+    """The Gemini request body. `failures` are closed check codes from the previous content attempt (the informed retry)."""
+
+    _validate_strings(doc)
+    data = {"DATA": fact_table.build_fact_table(doc).visible()}
+    if failures:
+        notes = [f"{code}: {HINTS.get(code, HINTS.get(code.split('.')[0], LEX['fallback_hint']))}" for code in failures]
+        data["PREVIOUS_ATTEMPT_FAILED_THESE_CHECKS"] = notes
+    text = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    body = {
+        "systemInstruction": {"parts": [{"text": system_instruction(rules_len)}]},
+        "contents": [{"role": "user", "parts": [{"text": text}]}],
+        # D48/D49: default temperature (field omitted), lowest supported thinking level.
+        "generationConfig": {"maxOutputTokens": MAX_OUTPUT_TOKENS, "thinkingConfig": {"thinkingLevel": "LOW"},
+                             "responseMimeType": "application/json", "responseJsonSchema": SCHEMA},
+    }
+    if len(json.dumps(body, ensure_ascii=True).encode("utf-8")) > MAX_BODY_BYTES:
+        raise PromptRejected()
+    return body
+
+
+def request_identity(model: str, body: dict) -> str:
+    return digest({"model": model, "body": body, "prompt": PROMPT_VERSION, "guide": guide_sha256()})
+
+
+def parse_candidate(response: Any, model: str) -> tuple[dict | None, dict]:
+    """(candidate or None, usage). A malformed, truncated or blocked answer gives None."""
+
+    usage: dict = {}
+    try:
+        body = response.body
+        meta = body.get("usageMetadata", {})
+        usage = {k: meta[k] for k in ("promptTokenCount", "candidatesTokenCount", "thoughtsTokenCount", "totalTokenCount") if type(meta.get(k)) is int}
+        names = (model, *ROUTED.get(model, ()))
+        version = body.get("modelVersion")
+        if type(version) is not str or re.fullmatch("(?:" + "|".join(re.escape(n) for n in names) + r")(?:-[0-9]{3,14})?", version) is None:
+            return None, usage
+        choices = body["candidates"]
+        if type(choices) is not list or len(choices) != 1 or body.get("promptFeedback", {}).get("blockReason"):
+            return None, usage
+        choice = choices[0]
+        if choice["finishReason"] != "STOP":
+            return None, usage
+        parts = [p for p in choice["content"]["parts"] if not p.get("thought")]
+        if len(parts) != 1 or type(parts[0].get("text")) is not str:
+            return None, usage
+        value = json.loads(parts[0]["text"], object_pairs_hook=_pairs)
+        return (value if type(value) is dict else None), usage
+    except Exception:
+        return None, usage
+
+
+@dataclass
+class WriterResult:
+    report: dict
+    path: str  # primary, primary_retry, fallback, fallback_retry (model prose) or rules
+    content_attempts: int = 0
+    attempts: list = field(default_factory=list)  # one dict per content attempt: transport attempts, usage, check codes
+    candidate: dict | None = None
+    failures: list = field(default_factory=list)  # the check codes of the last rejected candidate
+    reason: str | None = None  # closed code when the rules report was used
+    style_findings: list = field(default_factory=list)  # style rules the accepted report broke: S1 inputs, never a reason to reject (D52)
+
+
+def rules_report_for(matchup_input: dict) -> dict:
+    """The rules writer's report (A) for a packet. The analyst is deterministic: on a frozen packet it reproduces the frozen
+    findings exactly (tested), and unlike the saved JSON it keeps the claim objects the rules writer reads."""
+
+    return report_writer.run(matchup_analyst.run(matchup_input), matchup_input)
+
+
+def rules_result(rules_report: dict, reason: str, **kw) -> WriterResult:
+    return WriterResult(rules_report, "rules", reason=reason, **kw)
+
+
+def write(
+    findings: dict,
+    matchup_input: dict,
+    glossary: list[dict],
+    *,
+    provider: Callable[[str, float, dict], Any] | None = None,
+    budget: Any = None,
+    item_id: str = "item",
+    sleep: Callable[[float], None] | None = None,
+    pacer: Any = None,
+    nli: Callable[[dict, dict], tuple[list[str], list[dict]]] | None = None,
+    nli_mode: str = "score_only",
+) -> WriterResult:
+    if nli_mode not in ("score_only", "gate"):
+        raise ValueError("invalid nli mode")
+    rules_report = rules_report_for(matchup_input)
+    if nli_mode == "gate" and nli is None:
+        return rules_result(rules_report, "nli_unavailable", failures=["NLI.unavailable"])
+    if provider is None:
+        return rules_result(rules_report, "no_provider")
+    try:
+        doc = writer_input.build_writer_input(matchup_input, findings, glossary)
+        rules_len = writer_checks.rules_length(rules_report)
+        body = build_body(doc, rules_len)
+    except (writer_input.WriterInputError, PromptRejected):
+        return rules_result(rules_report, "input_rejected")
+    result = WriterResult(rules_report, "rules")
+    # Every Gemini call, the D49 retries included, starts at least PACING_SECONDS after the previous one (guide 0.4, A8).
+    pacer = pacer or (writer_policy.Pacer(sleep=sleep) if sleep is not None else writer_policy.DEFAULT_PACER)
+    failures: list[str] | None = None
+    for content_attempt in (1, 2):
+        if failures is not None:
+            try:
+                body = build_body(doc, rules_len, failures)
+            except PromptRejected:
+                return rules_result(rules_report, "input_rejected", content_attempts=result.content_attempts, attempts=result.attempts)
+
+        def call(model, timeout, body=body):
+            return provider(model, timeout, body)
+
+        counted = budget.guard(item_id, call) if budget is not None else call
+
+        def guarded(model, timeout, counted=counted):
+            if budget is not None and budget.remaining_run <= 0:
+                raise writer_policy.CapReached()  # no waiting for a call that will be refused
+            pacer.wait()
+            return counted(model, timeout)
+
+        kwargs = {"sleep": sleep} if sleep is not None else {}
+        outcome = writer_policy.write_with_policy(guarded, **kwargs)
+        record: dict = {"content_attempt": content_attempt, "transport": list(outcome.attempts), "path": outcome.path}
+        result.attempts.append(record)
+        result.content_attempts = content_attempt
+        if outcome.path == "rules":
+            codes = [a["code"] for a in outcome.attempts]
+            return rules_result(rules_report, codes[-1] if codes else "unavailable", content_attempts=content_attempt, attempts=result.attempts)
+        model = writer_policy.WRITER_MODELS[0 if outcome.path.startswith("primary") else 1]
+        candidate, usage = parse_candidate(outcome.response, model)
+        record["usage"] = usage
+        record["model"] = model
+        record["request_digest"] = request_identity(model, body)
+        record["candidate"] = candidate  # kept for the owner's review of rejected attempts too (dev only, local)
+        if candidate is None:
+            failures = result.failures = ["W17.structure"]
+            record["checks"] = failures
+            continue
+        resolved, id_findings = fact_table.resolve_candidate(candidate, doc)
+        record["resolved_candidate"] = resolved
+        record["fact_table_identity"] = fact_table.build_fact_table(doc).identity
+        detail = id_findings + (writer_checks.check_report_detailed(resolved, doc, rules_len) if resolved is not None else [])
+        gates, styles = writer_checks.split_failures(detail)
+        gate_codes = list(dict.fromkeys(f["check"] for f in gates))
+        record["checks"] = gate_codes  # the hard gates (accuracy, safety, policy, output shape)
+        record["style_findings"] = styles  # scored by S1, never a reason to reject (D52)
+        record["check_detail"] = detail  # sentence, check and offending token: the local run record only, never fed back
+        nli_codes: list[str] = []
+        if nli is not None and (not gate_codes or nli_mode == "score_only") and "W17.structure" not in gate_codes:
+            # D55: scores also cover rejected, structurally usable candidates. Explicit gate mode stays fail closed.
+            record["nli_mode"] = nli_mode
+            try:
+                nli_codes, record["nli"] = nli(resolved, doc)
+            except Exception:
+                nli_codes, record["nli"] = ["NLI.unavailable"], []
+            record["nli_findings"] = list(nli_codes)
+            if nli_mode == "score_only":
+                nli_codes = []  # diagnostic only; never retry or reject on NLI scores/problems
+            else:
+                gate_codes = list(nli_codes)
+            record["checks"] = gate_codes
+            if nli_codes and set(nli_codes) <= {"NLI.uncalibrated", "NLI.unavailable"}:
+                # A missing calibration or a broken worker cannot be fixed by a second Gemini call (capacity is scarce): rules now.
+                result.failures = gate_codes
+                return rules_result(rules_report, "nli_unavailable", content_attempts=content_attempt, attempts=result.attempts, failures=gate_codes)
+        if not gate_codes:
+            return WriterResult(writer_checks.to_report(resolved, rules_report), outcome.path, content_attempt, result.attempts, candidate, [], style_findings=styles)
+        # The informed retry names every failed rule, style ones included, as closed codes.
+        failures = list(dict.fromkeys([f["check"] for f in detail] + nli_codes))
+        result.failures = gate_codes
+    return rules_result(rules_report, "checks_failed", content_attempts=2, attempts=result.attempts, failures=result.failures)
+
+
+def run(findings: dict, matchup_input: dict, language: str = DEFAULT_LANGUAGE, **kwargs) -> dict:
+    """Same signature as the rules writer; without a provider this returns the rules report."""
+
+    if language != DEFAULT_LANGUAGE:
+        raise ValueError("English only")
+    return write(findings, matchup_input, kwargs.pop("glossary", []), **kwargs).report

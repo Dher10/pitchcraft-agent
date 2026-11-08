@@ -37,7 +37,7 @@ def sample(*, pitches=1200, source="mlb_api", counts=(800, 190, 60, 20)):
 
 
 def test_the_schema_version_is_the_one_that_makes_scopes_nullable():
-    assert SCHEMA_VERSION == "0.9.0"
+    assert SCHEMA_VERSION == "0.10.0"
 
 
 def test_counts_that_are_unavailable_have_no_scope():

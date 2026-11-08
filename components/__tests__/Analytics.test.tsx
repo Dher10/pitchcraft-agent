@@ -10,6 +10,7 @@ import path from "node:path";
 
 vi.mock("@vercel/analytics/next", () => ({ Analytics: () => <span data-testid="analytics" /> }));
 vi.mock("next/font/local", () => ({ default: () => ({ variable: "font-test" }) }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const layoutSource = readFileSync(path.join(ROOT, "app", "layout.tsx"), "utf-8");
@@ -19,7 +20,7 @@ describe("the root layout", () => {
     const { default: RootLayout } = await import("@/app/layout");
 
     // A <div> container would drop <html> and <body>, so the layout is rendered to a string and read as one.
-    const html = renderToStaticMarkup(<RootLayout>{<p>page</p>}</RootLayout>);
+    const html = renderToStaticMarkup(await RootLayout({ children: <p>page</p> }));
     const body = html.slice(html.indexOf("<body"), html.indexOf("</body>"));
 
     expect(html.indexOf("<body")).toBeGreaterThan(-1);

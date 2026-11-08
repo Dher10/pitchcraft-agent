@@ -48,6 +48,9 @@ venv/
 *.egg-info/
 .pytest_cache/
 
+# Restricted local model-probe evidence; never publish or commit
+/.local/
+
 # data cache snapshots (raw and processed are gitignored, .gitkeep files kept)
 data_cache/raw/*
 data_cache/processed/*

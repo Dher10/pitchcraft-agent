@@ -121,3 +121,31 @@ The postseason starters are mostly regulars. Among the 243 pitchers with 5 or mo
 | Contact risk | — | no rate label (option a) | published point is out of reach in a season |
 
 If approved, the values go into `DECISIONS.md` and P0.5 implements them in one module.
+
+## D32 recompute, 2026 (P2.4 gate 3, Oct 29)
+
+The method was fixed in `docs/plans/P2.4.md` before any data was read: one row per team and pitcher hand from `derive_team_splits` over the whole 2026 regular season (2026-03-25 to 2026-09-27), at least 200 plate appearances per row, linear percentiles (numpy default) over the pooled rows, K% and BB% rounded half up to a whole percent and OPS half up to .005. The code is `evals/thresholds.py`; the cases of the dataset were never used.
+
+Evidence: `evals/data/d32_recompute.json` (cache file names, sizes, SHA-256 and fetch times; Python 3.14.6, numpy 2.5.0, pandas 3.0.3) and `evals/data/request_ledger.jsonl` (hash-chained: 198 closed-month Savant requests of the 210 ceiling, 0 failed, 0 pending; 12 months were already cached). 60 team-hand rows, none below 200 plate appearances.
+
+| Figure | Pooled 25th | Median | Pooled 75th | Rounded cutoff | D32 value |
+|---|---|---|---|---|---|
+| K% vs hand | 21.12 | 21.77 | 23.84 | **24.0** | 23.0 |
+| BB% vs hand | 8.31 | 8.82 | 9.35 | 9.0 | 9.0 |
+| OPS vs hand | .697 | .713 | .736 | **.735** | .750 |
+
+Two of the three rounded cutoffs differ from D32, so the draft superseding decision (D50) went to the owner, who approved it as drafted: K 24.0% / BB 9.0% / OPS .735, inclusive. The owner's rationale: the method was fixed before any data was read, so the result is adopted as computed; keeping D32 would be choosing cutoffs after seeing the data. The .700 "average" and "weak" OPS bands are not part of this decision.
+
+### Disclosed limitation: one pooled cutoff for both hands
+
+The upper quartiles differ by the pitcher's hand:
+
+| Figure | vs LHP, 75th | vs RHP, 75th |
+|---|---|---|
+| K% | 24.16 | 22.60 |
+| BB% | 9.34 | 9.32 |
+| OPS | .731 | .739 |
+
+A pooled K% cutoff of 24.0 therefore hides about 1.5 points between hands: the cutoff sits near the top quartile against left-handers but above it against right-handers, so lineups facing a right-hander are flagged less often than the quartile intends. Per-hand cutoffs would need a new decision. This is a backlog idea only; no code was changed for it.
+
+Limits of the result: retrospective, same-season calibration; it makes no accuracy promise.

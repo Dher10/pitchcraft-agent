@@ -1,0 +1,557 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 56,
+     "overall": 38.6,
+     "total": 145,
+     "vs_lhh": 44.4,
+     "vs_rhh": 32.9
+    },
+    "home_starter": {
+     "count": 128,
+     "overall": 9.0,
+     "total": 1422,
+     "vs_lhh": 11.2,
+     "vs_rhh": 6.0
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 36,
+     "overall": 24.8,
+     "total": 145,
+     "vs_lhh": 34.7,
+     "vs_rhh": 15.1
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1422,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 21,
+     "overall": 14.5,
+     "total": 145,
+     "vs_lhh": 8.3,
+     "vs_rhh": 20.5
+    },
+    "home_starter": {
+     "count": 16,
+     "overall": 1.1,
+     "total": 1422,
+     "vs_lhh": 1.0,
+     "vs_rhh": 1.3
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 16,
+     "overall": 11.0,
+     "total": 145,
+     "vs_lhh": 6.9,
+     "vs_rhh": 15.1
+    },
+    "home_starter": {
+     "count": 237,
+     "overall": 16.7,
+     "total": 1422,
+     "vs_lhh": 22.0,
+     "vs_rhh": 9.3
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 16,
+     "overall": 11.0,
+     "total": 145,
+     "vs_lhh": 5.6,
+     "vs_rhh": 16.4
+    },
+    "home_starter": {
+     "count": 362,
+     "overall": 25.5,
+     "total": 1422,
+     "vs_lhh": 21.6,
+     "vs_rhh": 30.7
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 145,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 344,
+     "overall": 24.2,
+     "total": 1422,
+     "vs_lhh": 19.9,
+     "vs_rhh": 30.1
+    },
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 145,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 335,
+     "overall": 23.6,
+     "total": 1422,
+     "vs_lhh": 24.3,
+     "vs_rhh": 22.5
+    },
+    "pitch": "Splitter"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -14.9,
+     "v_break": 4.7
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 5.8,
+     "v_break": -4.9
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -14.8,
+     "v_break": 14.2
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -14.2,
+     "v_break": 15.3
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -0.6,
+     "v_break": 1.3
+    }
+   },
+   "home_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 5.4,
+     "v_break": -11.6
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -8.8,
+     "v_break": 14.3
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -17.3,
+     "v_break": 8.5
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 0.3,
+     "v_break": 3.0
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -12.1,
+     "v_break": 1.4
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": 12.4,
+     "v_break": 1.1
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 87.2,
+    "home_starter_velocity": null,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 85.2,
+    "home_starter_velocity": 83.5,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 96.8,
+    "home_starter_velocity": 96.2,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 97.1,
+    "home_starter_velocity": 95.7,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 90.5,
+    "home_starter_velocity": 88.4,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 87.3,
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 84.2,
+    "pitch": "Sweeper"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for limited-823836."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-08-07",
+ "game": {
+  "away_team_id": "108",
+  "broadcast_note": null,
+  "home_team_id": "146",
+  "start_time_local": null,
+  "start_time_utc": "2026-08-07T23:10:00Z",
+  "timezone": null,
+  "title": "Los Angeles Angels vs Miami Marlins",
+  "venue": "loanDepot park"
+ },
+ "id": "limited-823836",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.573,
+     "y": 0.527
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.418,
+     "y": 0.643
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.836,
+     "y": 0.61
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.631,
+     "y": 0.708
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.652,
+     "y": 0.591
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.392,
+     "y": 0.757
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.803,
+     "y": 0.689
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.497,
+     "y": 0.526
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.71,
+     "y": 0.692
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.438,
+     "y": 0.666
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.505,
+     "y": 0.669
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.441,
+     "y": 0.757
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.543,
+     "y": 0.826
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.509,
+     "y": 0.546
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.461,
+     "y": 0.69
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.401,
+     "y": 0.662
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.65,
+     "y": 0.728
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.537,
+     "y": 0.768
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.574,
+     "y": 0.781
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.541,
+     "y": 0.535
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.61,
+     "y": 0.905
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "691946",
+   "name": "George Klassen",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Changeup",
+    "style_label": "Four-seam-Changeup starter",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 145,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 32,
+     "home_runs": 1,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     },
+     "source": "mlb_api",
+     "strikeouts": 6,
+     "walks": 10
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "11.57",
+    "home_runs_allowed": 1,
+    "innings": "4.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     }
+    },
+    "strikeouts": 6,
+    "walks": 10,
+    "whip": "3.64"
+   },
+   "team": "LAA",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "663969",
+   "name": "Tyler Phillips",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Sinker",
+    "putaway_pitch": "Sweeper",
+    "style_label": "Sinker-Sweeper starter",
+    "swing_miss_label": "Below-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1422,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 383,
+     "home_runs": 11,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     },
+     "source": "mlb_api",
+     "strikeouts": 66,
+     "walks": 38
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.53",
+    "home_runs_allowed": 11,
+    "innings": "89.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Aug 6",
+      "through": "2026-08-06"
+     }
+    },
+    "strikeouts": 66,
+    "walks": 38,
+    "whip": "1.35"
+   },
+   "team": "MIA",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "LAA",
+   "id": "108",
+   "name": "Los Angeles Angels",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.3%",
+    "k_rate_vs_hand": "24.9%",
+    "ops_vs_hand": ".687",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Aug 6",
+     "through": "2026-08-06"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "MIA",
+   "id": "146",
+   "name": "Miami Marlins",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.9%",
+    "k_rate_vs_hand": "21.0%",
+    "ops_vs_hand": ".734",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Aug 6",
+     "through": "2026-08-06"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

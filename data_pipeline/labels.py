@@ -51,11 +51,38 @@ LEGACY_PLACEHOLDER_LABEL = "see live data"
 PUTAWAY_MIN_USAGE_PCT = 15
 PRIMARY_MIN_USAGE_PCT = 30
 
-# D32: the lineup notes of the analyst ("strike out often", "draws walks", "hits well") and its
-# pressure points use these, at or above, on the figure the fan reads on the card.
-OFFENSE_K_NOTE_PCT = 23.0
-OFFENSE_BB_NOTE_PCT = 9.0
-OFFENSE_OPS_STRONG = 0.750  # "hits well against": OPS against the starter's hand, at or above
+# D32 set the lineup-note cut-offs and D50 moved them; D51 versions them. A cut-off set is a row of this one table,
+# keyed by decision id, so the next seasonal recalibration only adds a row and moves CURRENT_CUTOFFS. A published
+# file names the set its band claims were written with (`metadata.label_cutoffs`, schema 0.10.0); a file without the
+# field is a 0.9.0 file, written under D32 (HISTORICAL_CUTOFFS). The sets are compared at or above, on the figure
+# the fan reads on the card; D50 = the rounded 2026 pooled upper quartiles (docs/thresholds-proposal.md).
+CUTOFF_SETS = {
+    "D32": {"k": 23.0, "bb": 9.0, "ops": 0.750},
+    "D50": {"k": 24.0, "bb": 9.0, "ops": 0.735},
+}
+CURRENT_CUTOFFS = "D50"
+HISTORICAL_CUTOFFS = "D32"
+
+# What the analyst writes with today ("strike out often", "draws walks", "hits well") and its pressure points.
+OFFENSE_K_NOTE_PCT = CUTOFF_SETS[CURRENT_CUTOFFS]["k"]
+OFFENSE_BB_NOTE_PCT = CUTOFF_SETS[CURRENT_CUTOFFS]["bb"]
+OFFENSE_OPS_STRONG = CUTOFF_SETS[CURRENT_CUTOFFS]["ops"]  # "hits well against": OPS against the starter's hand, at or above
+
+
+class UnknownCutoffs(ValueError):
+    """A file names a cut-off set this code does not have: it is not judged with another one."""
+
+
+def cutoffs_for(metadata) -> dict:
+    """The cut-offs a file's band claims are judged with: the set it names, D32 when it names none, an error otherwise."""
+
+    if not isinstance(metadata, Mapping) or "label_cutoffs" not in metadata:
+        return CUTOFF_SETS[HISTORICAL_CUTOFFS]
+    named = metadata["label_cutoffs"]
+    if type(named) is not str or named not in CUTOFF_SETS:
+        raise UnknownCutoffs(f"metadata.label_cutoffs {named!r} is not one of {sorted(CUTOFF_SETS)}")
+    return CUTOFF_SETS[named]
+
 
 SCOPE_REGULAR = "regular_season"
 SCOPE_REGULAR_POSTSEASON = "regular_and_postseason"

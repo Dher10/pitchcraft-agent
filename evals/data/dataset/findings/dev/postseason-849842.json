@@ -1,0 +1,49 @@
+{
+ "away_data_notes": [
+  "Kevin Gausman has allowed 26 home runs over 750 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Solid command supports strike-zone control",
+  "Four-seam to set up, Splitter to finish"
+ ],
+ "away_style": "Four-seam to set up, Splitter to finish",
+ "away_vs_home_offense": "Kevin Gausman works off a four-seam-splitter combination. He shows average swing-and-miss ability. He shows solid command. Kevin Gausman has allowed 26 home runs over 750 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.722 OPS), with no glaring weakness to attack. They draw walks at an above-average rate, so Kevin Gausman needs efficient strikes.",
+ "home_data_notes": [
+  "Control data for Nick Pivetta is limited (140 batters faced; 170 needed), so no command claim is made.",
+  "Nick Pivetta has allowed 2 home runs over 140 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Four-seam to set up, Curveball to finish"
+ ],
+ "home_style": "Four-seam to set up, Curveball to finish",
+ "home_vs_away_offense": "Nick Pivetta works off a four-seam-curveball combination. He shows above-average swing-and-miss ability. Control data for Nick Pivetta is limited (140 batters faced; 170 needed), so no command claim is made. Nick Pivetta has allowed 2 home runs over 140 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.757 OPS), so Nick Pivetta cannot live over the middle. They draw walks at an above-average rate, so Nick Pivetta needs efficient strikes.",
+ "lineup_pressure_points": [
+  "draws walks at an above-average rate",
+  "has strong OPS against this pitcher's hand",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "112": [
+   "has strong OPS against this pitcher's hand",
+   "draws walks at an above-average rate"
+  ],
+  "135": [
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Four-seam-Splitter starter against Four-seam-Curveball starter",
+ "matchup_summary": "This matchup features Four-seam-Splitter starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Kevin Gausman and Nick Pivetta: all pitcher figures cover the 2026 regular season.",
+  "Team offense splits cover the 2026 regular season."
+ ],
+ "series_note": "This is Game 2 of the NL Wild Card Series. Before first pitch, SD leads 1-0.",
+ "three_things_to_watch": [
+  "Can Kevin Gausman land the splitter early in counts?",
+  "Can Nick Pivetta keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

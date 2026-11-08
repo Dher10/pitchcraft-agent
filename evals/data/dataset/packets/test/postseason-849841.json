@@ -1,0 +1,495 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 1402,
+     "overall": 44.4,
+     "total": 3158,
+     "vs_lhh": 58.6,
+     "vs_rhh": 40.7
+    },
+    "home_starter": {
+     "count": 17,
+     "overall": 0.7,
+     "total": 2402,
+     "vs_lhh": 0.0,
+     "vs_rhh": 1.6
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 1171,
+     "overall": 37.1,
+     "total": 3158,
+     "vs_lhh": 12.9,
+     "vs_rhh": 43.4
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 2402,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 585,
+     "overall": 18.5,
+     "total": 3158,
+     "vs_lhh": 28.5,
+     "vs_rhh": 15.9
+    },
+    "home_starter": {
+     "count": 154,
+     "overall": 6.4,
+     "total": 2402,
+     "vs_lhh": 0.6,
+     "vs_rhh": 13.5
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 3158,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 1161,
+     "overall": 48.3,
+     "total": 2402,
+     "vs_lhh": 49.5,
+     "vs_rhh": 46.8
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 3158,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 713,
+     "overall": 29.7,
+     "total": 2402,
+     "vs_lhh": 35.3,
+     "vs_rhh": 22.7
+    },
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 3158,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 357,
+     "overall": 14.9,
+     "total": 2402,
+     "vs_lhh": 14.5,
+     "vs_rhh": 15.3
+    },
+    "pitch": "Cutter"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 16.9,
+     "v_break": -0.4
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": 18.2,
+     "v_break": 4.4
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -1.2,
+     "v_break": -3.7
+    }
+   },
+   "home_starter": {
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 0.1,
+     "v_break": 9.6
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -11.4,
+     "v_break": 17.4
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -11.3,
+     "v_break": 13.8
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 4.9,
+     "v_break": 1.3
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -13.4,
+     "v_break": 4.2
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 87.0,
+    "home_starter_velocity": null,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 95.1,
+    "home_starter_velocity": 91.9,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 86.3,
+    "home_starter_velocity": 85.0,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 87.8,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 92.8,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 86.3,
+    "pitch": "Splitter"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for postseason-849841."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-09-30",
+ "game": {
+  "away_team_id": "143",
+  "broadcast_note": null,
+  "home_team_id": "144",
+  "start_time_local": null,
+  "start_time_utc": "2026-09-30T18:00:00Z",
+  "timezone": null,
+  "title": "Philadelphia Phillies vs Atlanta Braves",
+  "venue": "Truist Park"
+ },
+ "id": "postseason-849841",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.553,
+     "y": 0.619
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.513,
+     "y": 0.789
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.314,
+     "y": 0.717
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.458,
+     "y": 0.613
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.589,
+     "y": 0.753
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.405,
+     "y": 0.684
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.468,
+     "y": 0.469
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.379,
+     "y": 0.733
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.358,
+     "y": 0.565
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.587,
+     "y": 0.806
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.619,
+     "y": 0.499
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.582,
+     "y": 0.724
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.724,
+     "y": 0.66
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.767,
+     "y": 0.74
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.502,
+     "y": 0.369
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": {
+  "game_number": 2,
+  "games_in_series": 3,
+  "series_name": "NL Wild Card Series",
+  "standing": "ATL leads 1-0"
+ },
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "650911",
+   "name": "Cristopher S\u00e1nchez",
+   "pitching_profile": {
+    "command_label": "Solid command",
+    "contact_risk_label": null,
+    "primary_pitch": "Sinker",
+    "putaway_pitch": "Changeup",
+    "style_label": "Sinker-Changeup starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 3158,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 857,
+     "home_runs": 19,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     },
+     "source": "mlb_api",
+     "strikeouts": 231,
+     "walks": 45
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "2.91",
+    "home_runs_allowed": 19,
+    "innings": "207.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     }
+    },
+    "strikeouts": 231,
+    "walks": 45,
+    "whip": "1.20"
+   },
+   "team": "PHI",
+   "throws": "L"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "641816",
+   "name": "Tyler Mahle",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Splitter",
+    "style_label": "Four-seam-Splitter starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 2402,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 614,
+     "home_runs": 20,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     },
+     "source": "mlb_api",
+     "strikeouts": 137,
+     "walks": 46
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.99",
+    "home_runs_allowed": 20,
+    "innings": "149.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season",
+      "through": "2026-09-29"
+     }
+    },
+    "strikeouts": 137,
+    "walks": 46,
+    "whip": "1.23"
+   },
+   "team": "ATL",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "PHI",
+   "id": "143",
+   "name": "Philadelphia Phillies",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.6%",
+    "k_rate_vs_hand": "21.6%",
+    "ops_vs_hand": ".708",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season",
+     "through": "2026-09-29"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "ATL",
+   "id": "144",
+   "name": "Atlanta Braves",
+   "offense_profile": {
+    "bb_rate_vs_hand": "7.0%",
+    "k_rate_vs_hand": "21.4%",
+    "ops_vs_hand": ".696",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season",
+     "through": "2026-09-29"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  }
+ }
+}

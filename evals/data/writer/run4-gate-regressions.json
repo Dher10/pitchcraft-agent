@@ -1,0 +1,949 @@
+{
+ "source": "run4-gate-analysis.json and e5c95c2 audit; unchanged captured text",
+ "findings": [
+  {
+   "case": "postseason-849842",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "Both starters bring specific pitching profiles into this 2026 regular season through Sep 29 matchup.",
+   "token": "Sep",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    },
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.through",
+     "value": "2026-09-29"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "All figures cover the 2026 regular season through Sep 29.",
+   "token": "Sep",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.season_summary.scopes.season_rates.label",
+     "value": "2026 regular season"
+    },
+    {
+     "path": "starters.away_starter.season_summary.scopes.season_rates.through",
+     "value": "2026-09-29"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 1,
+   "check": "W1.evidence_path",
+   "sentence": "Control data for Nick Pivetta is limited: 140 batters faced, and 170 are needed for a read.",
+   "token": "starters.home_starter.thresholds.control",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "Model error — citation: Pivetta has 140 batters faced and a 170 control threshold, but the claimed threshold pointer is nonexistent. The correct path is starters.home_starter.sample.thresholds.control.",
+   "expectation": "citation_mechanics_strict_unmappable",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.sample.limited.control",
+     "value": "true"
+    },
+    {
+     "path": "starters.home_starter.sample.rates.batters_faced",
+     "value": "140"
+    },
+    {
+     "path": "starters.home_starter.thresholds.control",
+     "value": "170"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W1.number",
+   "sentence": "All figures in this report cover the 2026 regular season through 2026-09-29.",
+   "token": "09",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "Model error — missing date citation: this field generated two findings, '09' and '29'. The 2026-09-29 cutoff exists in the packet's .through values, but the sentence cites only the label '2026 regular season', which does not supply the month/day. The date is not invented; the supplied citation is incomplete. This does not certify the broad 'all figures' wording.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W1.number",
+   "sentence": "All figures in this report cover the 2026 regular season through 2026-09-29.",
+   "token": "29",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W2.comparison",
+   "sentence": "Pivetta has a lower ERA (2.86 vs 4.51) and a lower WHIP (1.01 vs 1.27) than Gausman.",
+   "token": "lower",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "Harness rigidity: both comparisons are true (2.86 < 4.51; 1.01 < 1.27), with all four correct numeric values cited. The checker requires exactly two numeric citations, so it rejects two valid comparisons in one sentence.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.season_summary.era_number",
+     "value": "2.86"
+    },
+    {
+     "path": "starters.away_starter.season_summary.era_number",
+     "value": "4.51"
+    },
+    {
+     "path": "starters.home_starter.season_summary.whip_number",
+     "value": "1.01"
+    },
+    {
+     "path": "starters.away_starter.season_summary.whip_number",
+     "value": "1.27"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W1.number",
+   "sentence": "That group shows a 21.2% strikeout rate (K%) and a 10.4% walk rate (BB%).",
+   "token": "10.4",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "Model error — wrong fact: the sentence says 10.4% BB%, while its cited Chicago value and the packet both say 10.6%.",
+   "expectation": "wrong_fact_must_fail",
+   "original_evidence": [
+    {
+     "path": "teams.away.offense_profile.k_rate_vs_hand",
+     "value": "21.2%"
+    },
+    {
+     "path": "teams.away.offense_profile.bb_rate_vs_hand",
+     "value": "10.6%"
+    },
+    {
+     "path": "glossary.K%.short",
+     "value": "strikeout rate"
+    },
+    {
+     "path": "glossary.BB%.short",
+     "value": "walk rate"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W8.form",
+   "sentence": "Gausman moves his Splitter 14.0 in. sideways and 4.3 in. up compared with a pitch thrown without spin.",
+   "token": null,
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "pitch_movement.away_starter.Splitter.h_break",
+     "value": "-14.0"
+    },
+    {
+     "path": "pitch_movement.away_starter.Splitter.v_break",
+     "value": "4.3"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W8.form",
+   "sentence": "Pivetta moves his Curveball 6.7 in. sideways and 15.2 in. down compared with a pitch thrown without spin.",
+   "token": null,
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "pitch_movement.home_starter.Curveball.h_break",
+     "value": "6.7"
+    },
+    {
+     "path": "pitch_movement.home_starter.Curveball.v_break",
+     "value": "-15.2"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849842",
+   "attempt": 2,
+   "check": "W1.evidence_path",
+   "sentence": "There is not enough data yet to rate the control of Nick Pivetta; his sample is limited to 140 batters faced, and 170 are needed.",
+   "token": "starters.home_starter.thresholds.control",
+   "source_sha256": "d2597b36c7d03022949762f2467442c8c017d21fbedc1d7c1b80e816a4ed8ccf",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "citation_mechanics_strict_unmappable",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.sample.limited.control",
+     "value": "true"
+    },
+    {
+     "path": "starters.home_starter.sample.rates.batters_faced",
+     "value": "140"
+    },
+    {
+     "path": "starters.home_starter.thresholds.control",
+     "value": "170"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 1,
+   "check": "W1.evidence_value",
+   "sentence": "Hagen Smith carries a 1.29 earned run average (ERA) and a 0.96 walks plus hits per inning (WHIP) over the 2026 regular season through Sep 28.",
+   "token": "starters.away_starter.season_summary.scopes.season_rates.label",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.season_summary.era",
+     "value": "1.29"
+    },
+    {
+     "path": "glossary.ERA.short",
+     "value": "earned run average"
+    },
+    {
+     "path": "starters.away_starter.season_summary.whip",
+     "value": "0.96"
+    },
+    {
+     "path": "glossary.WHIP.short",
+     "value": "walks plus hits per inning"
+    },
+    {
+     "path": "starters.away_starter.season_summary.scopes.season_rates.label",
+     "value": "2026 regular season through Sep 28"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 1,
+   "check": "W1.evidence_value",
+   "sentence": "AJ Blubaugh has a 3.66 ERA and a 1.23 WHIP over the same period.",
+   "token": "starters.home_starter.season_summary.scopes.season_rates.label",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.season_summary.era",
+     "value": "3.66"
+    },
+    {
+     "path": "starters.home_starter.season_summary.whip",
+     "value": "1.23"
+    },
+    {
+     "path": "starters.home_starter.season_summary.scopes.season_rates.label",
+     "value": "2026 regular season through Sep 28"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 1,
+   "check": "W5.intensity",
+   "sentence": "The Chicago White Sox and the Houston Astros begin their best-of-three series.",
+   "token": "best",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "teams.away.name",
+     "value": "Chicago White Sox"
+    },
+    {
+     "path": "teams.home.name",
+     "value": "Houston Astros"
+    },
+    {
+     "path": "series.games_in_series",
+     "value": "3"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 1,
+   "check": "W5.label",
+   "sentence": "Watch if AJ Blubaugh encounters deep-count traffic due to his command.",
+   "token": "command",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "findings.home_starter_risks",
+     "value": "Below-average command can create deep-count traffic"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 1,
+   "check": "W10.cause",
+   "sentence": "Watch if AJ Blubaugh encounters deep-count traffic due to his command.",
+   "token": "due to",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "Harness rigidity: the sentence cites the packet finding 'Below-average command can create deep-count traffic'. The causal relationship is explicitly provided; it was not invented by this candidate. The blanket 'due to' check rejects it anyway.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "findings.home_starter_risks",
+     "value": "Below-average command can create deep-count traffic"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 2,
+   "check": "W1.number",
+   "sentence": "All statistics cited cover the 2026 regular season through Sep 28.",
+   "token": "28",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "Model error — missing date citation: the packet cutoff is 2026-09-28, but this sentence cites only the year/season label and omits a .through path. Its month/day are true elsewhere in the packet, not supplied by the cited value. The separate 'Sep' entity finding is a different issue.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 2,
+   "check": "W1.entity",
+   "sentence": "All statistics cited cover the 2026 regular season through Sep 28.",
+   "token": "Sep",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 2,
+   "check": "W1.number",
+   "sentence": "The data for both starting pitchers and lineups is from the 2026 regular season through Sep 28.",
+   "token": "28",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 2,
+   "check": "W1.entity",
+   "sentence": "The data for both starting pitchers and lineups is from the 2026 regular season through Sep 28.",
+   "token": "Sep",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.arsenal.scope.label",
+     "value": "2026 regular season"
+    }
+   ]
+  },
+  {
+   "case": "postseason-849849",
+   "attempt": 2,
+   "check": "W10.cause",
+   "sentence": "The command rating for Hagen Smith is missing due to a limited sample.",
+   "token": "due to",
+   "source_sha256": "93135594f0323b26d6ab25947e15cfb69682ee58a664486d6c319d6a5ecdd8e3",
+   "prior_verdict": "Harness rigidity: Hagen Smith's command label is null, limited.control is true, and 110 BF is below the 170 threshold. The stated reason is the packet's documented limitation; the blanket causal-word check has no exception for it.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.limited.control",
+     "value": "true"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "The Toronto lineup records a .701 on-base plus slugging (OPS) when facing right-handed pitchers. This group maintains a 18.2% strikeout rate (K%) and a 7.3% walk rate (BB%).",
+   "token": "This",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "Harness rigidity: all three Toronto rates and the RHP scope match the packet. 'This' opens the second sentence inside one model field; the entity heuristic recognizes openers only at the field's start.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "teams.away.offense_profile.ops_number",
+     "value": "0.701"
+    },
+    {
+     "path": "teams.away.offense_profile.k_rate_number",
+     "value": "18.2"
+    },
+    {
+     "path": "teams.away.offense_profile.bb_rate_number",
+     "value": "7.3"
+    },
+    {
+     "path": "glossary.OPS.short",
+     "value": "on-base plus slugging"
+    },
+    {
+     "path": "glossary.K%.short",
+     "value": "strikeout rate"
+    },
+    {
+     "path": "glossary.BB%.short",
+     "value": "walk rate"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "The Detroit Tigers lineup shows a .725 OPS against right-handed pitchers. The group has a 22.3% K% and a 9.0% BB% and draws walks at an above-average rate.",
+   "token": "The",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "teams.home.offense_profile.ops_number",
+     "value": "0.725"
+    },
+    {
+     "path": "teams.home.offense_profile.k_rate_number",
+     "value": "22.3"
+    },
+    {
+     "path": "teams.home.offense_profile.bb_rate_number",
+     "value": "9.0"
+    },
+    {
+     "path": "findings.lineup_notes.home",
+     "value": "draws walks at an above-average rate"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "Trey Yesavage relies on a four-seam fastball 48.6% of the time and uses a splitter as his second most used pitch at 36.6%. His four-seam fastball moves 4.8 in. sideways and 19.9 in. up compared with a pitch thrown without spin.",
+   "token": "His",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "pitch_mix.0.away_starter.overall",
+     "value": "48.6"
+    },
+    {
+     "path": "pitch_mix.1.away_starter.overall",
+     "value": "36.6"
+    },
+    {
+     "path": "pitch_movement.away_starter.Four-seam.h_break",
+     "value": "-4.8"
+    },
+    {
+     "path": "pitch_movement.away_starter.Four-seam.v_break",
+     "value": "19.9"
+    },
+    {
+     "path": "glossary.put-away pitch.short",
+     "value": "second most used pitch"
+    },
+    {
+     "path": "glossary.Break.short",
+     "value": "total movement"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "Brenan Hanifee uses a sinker for 58.9% of his pitches and a slider as his second most used pitch at 18.8%. His sinker moves 16.2 in. sideways and 3.4 in. up compared with a pitch thrown without spin.",
+   "token": "His",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "pitch_mix.3.home_starter.overall",
+     "value": "58.9"
+    },
+    {
+     "path": "pitch_mix.2.home_starter.overall",
+     "value": "18.8"
+    },
+    {
+     "path": "pitch_movement.home_starter.Sinker.h_break",
+     "value": "-16.2"
+    },
+    {
+     "path": "pitch_movement.home_starter.Sinker.v_break",
+     "value": "3.4"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W1.evidence_path",
+   "sentence": "Trey Yesavage has faced 57 batters and requires 170 for a full read.",
+   "token": "starters.away_starter.thresholds.control",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "citation_mechanics_strict_unmappable",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.rates.batters_faced",
+     "value": "57"
+    },
+    {
+     "path": "starters.away_starter.thresholds.control",
+     "value": "170"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W1.evidence_path",
+   "sentence": "Brenan Hanifee has faced 33 batters and requires 170 for a full read.",
+   "token": "starters.home_starter.thresholds.control",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "citation_mechanics_strict_unmappable",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.sample.rates.batters_faced",
+     "value": "33"
+    },
+    {
+     "path": "starters.home_starter.thresholds.control",
+     "value": "170"
+    }
+   ]
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 1,
+   "check": "W6.unsaid",
+   "sentence": null,
+   "token": null,
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": []
+  },
+  {
+   "case": "opener-824280",
+   "attempt": 2,
+   "check": "W15.outcome",
+   "sentence": "Watch how the Detroit Tigers lineup manages the strikeout rate against Trey Yesavage.",
+   "token": "strikeout",
+   "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "teams.home.offense_profile.k_rate_vs_hand",
+     "value": "22.3%"
+    }
+   ]
+  },
+  {
+   "case": "opener-823769",
+   "attempt": 1,
+   "check": "W17.structure",
+   "sentence": null,
+   "token": null,
+   "source_sha256": "3bb1266df17ccdb55a35ee3e6d873f630ab98b8ff0763abb61fc4733d38a6688",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": []
+  },
+  {
+   "case": "opener-823769",
+   "attempt": 2,
+   "check": "W2.comparison",
+   "sentence": "Ryan Rolison faces Brandon Woodruff in Chicago versus Milwaukee matchup",
+   "token": "versus",
+   "source_sha256": "3bb1266df17ccdb55a35ee3e6d873f630ab98b8ff0763abb61fc4733d38a6688",
+   "prior_verdict": "Harness rigidity for this check: Chicago versus Milwaukee names the matchup, not a numerical comparison. Both starter names and team city aliases are in the packet. This verdict is about W2.comparison, not completeness of the supplied team-name citations.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.name",
+     "value": "Ryan Rolison"
+    },
+    {
+     "path": "starters.home_starter.name",
+     "value": "Brandon Woodruff"
+    }
+   ]
+  },
+  {
+   "case": "opener-823769",
+   "attempt": 2,
+   "check": "W1.evidence_path",
+   "sentence": "Control data for Rolison is limited: 114 batters faced, and 170 are needed for a read.",
+   "token": "starters.away_starter.thresholds.control",
+   "source_sha256": "3bb1266df17ccdb55a35ee3e6d873f630ab98b8ff0763abb61fc4733d38a6688",
+   "prior_verdict": "Model error — citation, not an invented numeric fact: 114 and 170 are real packet values, but the supplied threshold path does not exist. The valid threshold path includes '.sample.'. The evidence-path gate correctly enforces the contract.",
+   "expectation": "citation_mechanics_strict_unmappable",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.sample.rates.batters_faced",
+     "value": "114"
+    },
+    {
+     "path": "starters.away_starter.thresholds.control",
+     "value": "170"
+    }
+   ]
+  },
+  {
+   "case": "opener-823769",
+   "attempt": 2,
+   "check": "W1.evidence_path",
+   "sentence": "Control data for Woodruff is limited: 140 batters faced, and 170 are needed for a read.",
+   "token": "starters.home_starter.thresholds.control",
+   "source_sha256": "3bb1266df17ccdb55a35ee3e6d873f630ab98b8ff0763abb61fc4733d38a6688",
+   "prior_verdict": "Model error — citation: the sentence's 140/170 values are supported, but the model omitted '.sample.' from its threshold pointer. This is a correct evidence-contract rejection, not a factual hallucination or harness false positive.",
+   "expectation": "citation_mechanics_strict_unmappable",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.sample.rates.batters_faced",
+     "value": "140"
+    },
+    {
+     "path": "starters.home_starter.thresholds.control",
+     "value": "170"
+    }
+   ]
+  },
+  {
+   "case": "opener-823769",
+   "attempt": 2,
+   "check": "W15.outcome",
+   "sentence": "Watch whether the Milwaukee hitters can control their strikeout rate against a left-handed starter.",
+   "token": "strikeout",
+   "source_sha256": "3bb1266df17ccdb55a35ee3e6d873f630ab98b8ff0763abb61fc4733d38a6688",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "teams.home.offense_profile.k_rate_vs_hand",
+     "value": "21.8%"
+    }
+   ]
+  },
+  {
+   "case": "limited-823836",
+   "attempt": 1,
+   "check": "W12.time",
+   "sentence": "George Klassen has pitched 4.2 innings this season.",
+   "token": "this season",
+   "source_sha256": "d197dd32c0b3b40e5027bb5287cf2659d1ff3b6a3eefa977e6376cb683dbc2f9",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.name",
+     "value": "George Klassen"
+    },
+    {
+     "path": "starters.away_starter.season_summary.innings",
+     "value": "4.2"
+    }
+   ]
+  },
+  {
+   "case": "limited-823836",
+   "attempt": 2,
+   "check": "W2.comparison",
+   "sentence": "Phillips owns a lower WHIP of 1.35.",
+   "token": "lower",
+   "source_sha256": "d197dd32c0b3b40e5027bb5287cf2659d1ff3b6a3eefa977e6376cb683dbc2f9",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.home_starter.name",
+     "value": "Tyler Phillips"
+    },
+    {
+     "path": "starters.home_starter.season_summary.whip_number",
+     "value": "1.35"
+    },
+    {
+     "path": "starters.away_starter.season_summary.whip_number",
+     "value": "3.64"
+    }
+   ]
+  },
+  {
+   "case": "limited-823836",
+   "attempt": 2,
+   "check": "W12.time",
+   "sentence": "George Klassen thrown 4.2 innings this season.",
+   "token": "this season",
+   "source_sha256": "d197dd32c0b3b40e5027bb5287cf2659d1ff3b6a3eefa977e6376cb683dbc2f9",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.name",
+     "value": "George Klassen"
+    },
+    {
+     "path": "starters.away_starter.season_summary.innings",
+     "value": "4.2"
+    }
+   ]
+  },
+  {
+   "case": "limited-823836",
+   "attempt": 2,
+   "check": "W2.comparison",
+   "sentence": "The Angels lineup has a .687 OPS versus right-handed pitching.",
+   "token": "versus",
+   "source_sha256": "d197dd32c0b3b40e5027bb5287cf2659d1ff3b6a3eefa977e6376cb683dbc2f9",
+   "prior_verdict": "Harness rigidity: 'versus right-handed pitching' states the supplied batting-split scope, not a numerical comparison requiring two values. The OPS is .687 and the split is RHP.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "teams.away.name",
+     "value": "Los Angeles Angels"
+    },
+    {
+     "path": "teams.away.offense_profile.ops_vs_hand",
+     "value": ".687"
+    }
+   ]
+  },
+  {
+   "case": "limited-823836",
+   "attempt": 2,
+   "check": "W6.unsaid",
+   "sentence": null,
+   "token": null,
+   "source_sha256": "d197dd32c0b3b40e5027bb5287cf2659d1ff3b6a3eefa977e6376cb683dbc2f9",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": []
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "Bryce Elder and Michael Soroka take the mound in Phoenix",
+   "token": "Phoenix",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.name",
+     "value": "Bryce Elder"
+    },
+    {
+     "path": "starters.home_starter.name",
+     "value": "Michael Soroka"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W1.entity",
+   "sentence": "Findings indicate Atlanta has strong OPS against this pitcher's hand; draws walks at an above-average rate.",
+   "token": "Findings",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "Harness rigidity: 'Findings' is a common noun, not an invented entity. The cited Atlanta lineup finding supplies the strong-OPS and walk-rate claims.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "findings.lineup_notes.away",
+     "value": "has strong OPS against this pitcher's hand; draws walks at an above-average rate"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W5.label",
+   "sentence": "Both starters lack official ratings for command and swing-and-miss ability due to small early-season samples.",
+   "token": "swing-and-miss",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.pitching_profile.command_label",
+     "value": "null"
+    },
+    {
+     "path": "starters.home_starter.pitching_profile.command_label",
+     "value": "null"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W7.missing",
+   "sentence": "Both starters lack official ratings for command and swing-and-miss ability due to small early-season samples.",
+   "token": "starters.away_starter.pitching_profile.command_label",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.pitching_profile.command_label",
+     "value": "null"
+    },
+    {
+     "path": "starters.home_starter.pitching_profile.command_label",
+     "value": "null"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W7.missing",
+   "sentence": "Both starters lack official ratings for command and swing-and-miss ability due to small early-season samples.",
+   "token": "starters.home_starter.pitching_profile.command_label",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.pitching_profile.command_label",
+     "value": "null"
+    },
+    {
+     "path": "starters.home_starter.pitching_profile.command_label",
+     "value": "null"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W10.cause",
+   "sentence": "Both starters lack official ratings for command and swing-and-miss ability due to small early-season samples.",
+   "token": "due to",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "Harness rigidity for the causal check: both control and strikeout dimensions are limited (23/20 BF against minima 170/70), and all four labels are null; the small-sample explanation follows the documented thresholds. 'Official' is unverified wording, and the cited null command labels alone do not cover every subclaim. This verdict does not endorse that word or the whole candidate.",
+   "expectation": "cause_must_pass_with_explicit_proof_but_authority_must_fail",
+   "original_evidence": [
+    {
+     "path": "starters.away_starter.pitching_profile.command_label",
+     "value": "null"
+    },
+    {
+     "path": "starters.home_starter.pitching_profile.command_label",
+     "value": "null"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 1,
+   "check": "W6.arsenal",
+   "sentence": null,
+   "token": null,
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": []
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 2,
+   "check": "W1.entity",
+   "sentence": "Probable pitchers are listed for this matchup.",
+   "token": "Probable",
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "Harness rigidity: 'Probable' is an ordinary sentence opener. The cited lineup_status is exactly 'probable pitchers'.",
+   "expectation": "check_specific_must_pass",
+   "original_evidence": [
+    {
+     "path": "data_confidence.lineup_status",
+     "value": "probable pitchers"
+    }
+   ]
+  },
+  {
+   "case": "limited-825104",
+   "attempt": 2,
+   "check": "W6.arsenal",
+   "sentence": null,
+   "token": null,
+   "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+   "prior_verdict": "No individual binary verdict in the prior audit; preserve the original finding for replay comparison.",
+   "expectation": "preserve_and_report",
+   "original_evidence": []
+  }
+ ],
+ "count": 47,
+ "real_error_controls": [
+  "10.4 versus 10.6",
+  "unverified official authority"
+ ]
+}

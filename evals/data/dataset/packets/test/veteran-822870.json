@@ -1,0 +1,594 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 742,
+     "overall": 39.5,
+     "total": 1878,
+     "vs_lhh": 38.8,
+     "vs_rhh": 40.5
+    },
+    "home_starter": {
+     "count": 717,
+     "overall": 42.1,
+     "total": 1702,
+     "vs_lhh": 43.1,
+     "vs_rhh": 40.7
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 443,
+     "overall": 23.6,
+     "total": 1878,
+     "vs_lhh": 22.2,
+     "vs_rhh": 25.6
+    },
+    "home_starter": {
+     "count": 613,
+     "overall": 36.0,
+     "total": 1702,
+     "vs_lhh": 28.0,
+     "vs_rhh": 48.0
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 261,
+     "overall": 13.9,
+     "total": 1878,
+     "vs_lhh": 13.7,
+     "vs_rhh": 14.2
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1702,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter": {
+     "count": 149,
+     "overall": 7.9,
+     "total": 1878,
+     "vs_lhh": 4.2,
+     "vs_rhh": 13.4
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1702,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Sweeper"
+   },
+   {
+    "away_starter": {
+     "count": 136,
+     "overall": 7.2,
+     "total": 1878,
+     "vs_lhh": 9.4,
+     "vs_rhh": 4.1
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1702,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 135,
+     "overall": 7.2,
+     "total": 1878,
+     "vs_lhh": 11.4,
+     "vs_rhh": 1.0
+    },
+    "home_starter": {
+     "count": 232,
+     "overall": 13.6,
+     "total": 1702,
+     "vs_lhh": 20.7,
+     "vs_rhh": 3.1
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 3,
+     "overall": 0.2,
+     "total": 1878,
+     "vs_lhh": 0.1,
+     "vs_rhh": 0.3
+    },
+    "home_starter": {
+     "count": 109,
+     "overall": 6.4,
+     "total": 1702,
+     "vs_lhh": 8.1,
+     "vs_rhh": 3.8
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 9,
+     "overall": 0.5,
+     "total": 1878,
+     "vs_lhh": 0.1,
+     "vs_rhh": 1.0
+    },
+    "home_starter": {
+     "count": 31,
+     "overall": 1.8,
+     "total": 1702,
+     "vs_lhh": 0.1,
+     "vs_rhh": 4.4
+    },
+    "pitch": "Sinker"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -15.4,
+     "v_break": 2.3
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 17.9,
+     "v_break": -1.8
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 3.9,
+     "v_break": 11.0
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -6.0,
+     "v_break": 17.2
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -15.5,
+     "v_break": 5.9
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 1.0,
+     "v_break": -2.3
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -4.0,
+     "v_break": -3.0
+    },
+    "Sweeper": {
+     "family": "Breaking",
+     "h_break": 15.2,
+     "v_break": -3.2
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -13.4,
+     "v_break": 1.9
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 12.5,
+     "v_break": -5.4
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -8.3,
+     "v_break": 16.9
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -14.8,
+     "v_break": 12.0
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 4.8,
+     "v_break": 3.1
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 85.4,
+    "home_starter_velocity": 89.8,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 76.5,
+    "home_starter_velocity": 80.7,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 91.1,
+    "home_starter_velocity": null,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 96.0,
+    "home_starter_velocity": 97.2,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 93.1,
+    "home_starter_velocity": 96.2,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 86.4,
+    "home_starter_velocity": 91.1,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": 81.6,
+    "home_starter_velocity": null,
+    "pitch": "Splitter"
+   },
+   {
+    "away_starter_velocity": 80.7,
+    "home_starter_velocity": null,
+    "pitch": "Sweeper"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for veteran-822870."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-07-26",
+ "game": {
+  "away_team_id": "136",
+  "broadcast_note": null,
+  "home_team_id": "140",
+  "start_time_local": null,
+  "start_time_utc": "2026-07-26T18:35:00Z",
+  "timezone": null,
+  "title": "Seattle Mariners vs Texas Rangers",
+  "venue": "Globe Life Field"
+ },
+ "id": "veteran-822870",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.428,
+     "y": 0.542
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.541,
+     "y": 0.75
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.425,
+     "y": 0.789
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.597,
+     "y": 0.729
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.48,
+     "y": 0.531
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.392,
+     "y": 0.759
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.449,
+     "y": 0.5
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.537,
+     "y": 0.757
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.523,
+     "y": 0.821
+    },
+    {
+     "pitch": "Sweeper",
+     "x": 0.626,
+     "y": 0.74
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.544,
+     "y": 0.542
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.478,
+     "y": 0.745
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.715,
+     "y": 0.756
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.407,
+     "y": 0.479
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.5,
+     "y": 0.744
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.432,
+     "y": 0.743
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.447,
+     "y": 0.624
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.655,
+     "y": 0.552
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.758,
+     "y": 0.778
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.511,
+     "y": 0.821
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.724,
+     "y": 0.762
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.335,
+     "y": 0.582
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "669302",
+   "name": "Logan Gilbert",
+   "pitching_profile": {
+    "command_label": "Solid command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1878,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 472,
+     "home_runs": 15,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     },
+     "source": "mlb_api",
+     "strikeouts": 129,
+     "walks": 25
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.38",
+    "home_runs_allowed": 15,
+    "innings": "120.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     }
+    },
+    "strikeouts": 129,
+    "walks": 25,
+    "whip": "0.98"
+   },
+   "team": "SEA",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "594798",
+   "name": "Jacob deGrom",
+   "pitching_profile": {
+    "command_label": "Solid command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1702,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 424,
+     "home_runs": 16,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     },
+     "source": "mlb_api",
+     "strikeouts": 128,
+     "walks": 24
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.76",
+    "home_runs_allowed": 16,
+    "innings": "105.1",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Jul 25",
+      "through": "2026-07-25"
+     }
+    },
+    "strikeouts": 128,
+    "walks": 24,
+    "whip": "1.05"
+   },
+   "team": "TEX",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "SEA",
+   "id": "136",
+   "name": "Seattle Mariners",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.7%",
+    "k_rate_vs_hand": "22.7%",
+    "ops_vs_hand": ".701",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Jul 25",
+     "through": "2026-07-25"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "TEX",
+   "id": "140",
+   "name": "Texas Rangers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.6%",
+    "k_rate_vs_hand": "21.4%",
+    "ops_vs_hand": ".714",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Jul 25",
+     "through": "2026-07-25"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

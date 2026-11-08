@@ -1,0 +1,463 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 429,
+     "overall": 49.0,
+     "total": 876,
+     "vs_lhh": 46.4,
+     "vs_rhh": 52.0
+    },
+    "home_starter": {
+     "count": 92,
+     "overall": 53.8,
+     "total": 171,
+     "vs_lhh": 54.5,
+     "vs_rhh": 53.2
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 227,
+     "overall": 25.9,
+     "total": 876,
+     "vs_lhh": 25.1,
+     "vs_rhh": 26.8
+    },
+    "home_starter": {
+     "count": 43,
+     "overall": 25.1,
+     "total": 171,
+     "vs_lhh": 42.9,
+     "vs_rhh": 10.6
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 163,
+     "overall": 18.6,
+     "total": 876,
+     "vs_lhh": 18.7,
+     "vs_rhh": 18.5
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 171,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 38,
+     "overall": 4.3,
+     "total": 876,
+     "vs_lhh": 6.0,
+     "vs_rhh": 2.4
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 171,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 19,
+     "overall": 2.2,
+     "total": 876,
+     "vs_lhh": 3.9,
+     "vs_rhh": 0.2
+    },
+    "home_starter": {
+     "count": 36,
+     "overall": 21.1,
+     "total": 171,
+     "vs_lhh": 2.6,
+     "vs_rhh": 36.2
+    },
+    "pitch": "Changeup"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -14.4,
+     "v_break": 6.2
+    },
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": 10.9,
+     "v_break": -9.4
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -5.9,
+     "v_break": 16.1
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -13.3,
+     "v_break": 9.5
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 6.1,
+     "v_break": 2.5
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": 17.0,
+     "v_break": 9.2
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 10.2,
+     "v_break": 17.6
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -2.2,
+     "v_break": 4.8
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 84.9,
+    "home_starter_velocity": 86.5,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 78.1,
+    "home_starter_velocity": null,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 92.4,
+    "home_starter_velocity": 93.5,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 90.5,
+    "home_starter_velocity": null,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 84.5,
+    "home_starter_velocity": 86.6,
+    "pitch": "Slider"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for opener-824842."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-05-22",
+ "game": {
+  "away_team_id": "116",
+  "broadcast_note": null,
+  "home_team_id": "110",
+  "start_time_local": null,
+  "start_time_utc": "2026-05-22T23:15:00Z",
+  "timezone": null,
+  "title": "Detroit Tigers vs Baltimore Orioles",
+  "venue": "Oriole Park at Camden Yards"
+ },
+ "id": "opener-824842",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.42,
+     "y": 0.545
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.525,
+     "y": 0.776
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.472,
+     "y": 0.784
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.401,
+     "y": 0.722
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.513,
+     "y": 0.901
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.618,
+     "y": 0.612
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.713,
+     "y": 0.751
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.695,
+     "y": 0.832
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.609,
+     "y": 0.811
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.406,
+     "y": 0.509
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.428,
+     "y": 0.75
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.409,
+     "y": 0.568
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.406,
+     "y": 0.717
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.58,
+     "y": 0.694
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "656427",
+   "name": "Jack Flaherty",
+   "pitching_profile": {
+    "command_label": "Below-average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 876,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 206,
+     "home_runs": 6,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "source": "mlb_api",
+     "strikeouts": 48,
+     "walks": 29
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "5.77",
+    "home_runs_allowed": 6,
+    "innings": "43.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "strikeouts": 48,
+    "walks": 29,
+    "whip": "1.60"
+   },
+   "team": "DET",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "669211",
+   "name": "Keegan Akin",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 171,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 43,
+     "home_runs": 2,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "source": "mlb_api",
+     "strikeouts": 8,
+     "walks": 2
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "13.50",
+    "home_runs_allowed": 2,
+    "innings": "8.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through May 21",
+      "through": "2026-05-21"
+     }
+    },
+    "strikeouts": 8,
+    "walks": 2,
+    "whip": "1.96"
+   },
+   "team": "BAL",
+   "throws": "L"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "DET",
+   "id": "116",
+   "name": "Detroit Tigers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "13.7%",
+    "k_rate_vs_hand": "23.4%",
+    "ops_vs_hand": ".676",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 21",
+     "through": "2026-05-21"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "BAL",
+   "id": "110",
+   "name": "Baltimore Orioles",
+   "offense_profile": {
+    "bb_rate_vs_hand": "10.0%",
+    "k_rate_vs_hand": "24.5%",
+    "ops_vs_hand": ".710",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through May 21",
+     "through": "2026-05-21"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

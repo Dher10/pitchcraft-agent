@@ -1,0 +1,480 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 29,
+     "overall": 34.9,
+     "total": 83,
+     "vs_lhh": 19.1,
+     "vs_rhh": 55.6
+    },
+    "home_starter": {
+     "count": 8,
+     "overall": 9.0,
+     "total": 89,
+     "vs_lhh": 2.1,
+     "vs_rhh": 17.1
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 29,
+     "overall": 34.9,
+     "total": 83,
+     "vs_lhh": 31.9,
+     "vs_rhh": 38.9
+    },
+    "home_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 89,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 14,
+     "overall": 16.9,
+     "total": 83,
+     "vs_lhh": 25.5,
+     "vs_rhh": 5.6
+    },
+    "home_starter": {
+     "count": 3,
+     "overall": 3.4,
+     "total": 89,
+     "vs_lhh": 6.2,
+     "vs_rhh": 0.0
+    },
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter": {
+     "count": 7,
+     "overall": 8.4,
+     "total": 83,
+     "vs_lhh": 14.9,
+     "vs_rhh": 0.0
+    },
+    "home_starter": {
+     "count": 5,
+     "overall": 5.6,
+     "total": 89,
+     "vs_lhh": 2.1,
+     "vs_rhh": 9.8
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 4,
+     "overall": 4.8,
+     "total": 83,
+     "vs_lhh": 8.5,
+     "vs_rhh": 0.0
+    },
+    "home_starter": {
+     "count": 30,
+     "overall": 33.7,
+     "total": 89,
+     "vs_lhh": 45.8,
+     "vs_rhh": 19.5
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 83,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 43,
+     "overall": 48.3,
+     "total": 89,
+     "vs_lhh": 43.8,
+     "vs_rhh": 53.7
+    },
+    "pitch": "Slurve"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -11.8,
+     "v_break": 2.8
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 1.9,
+     "v_break": 10.1
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -3.9,
+     "v_break": 15.4
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -14.6,
+     "v_break": 7.6
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": 3.4,
+     "v_break": -3.5
+    }
+   },
+   "home_starter": {
+    "Changeup": {
+     "family": "Offspeed",
+     "h_break": -17.3,
+     "v_break": 4.3
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": 3.5,
+     "v_break": 8.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -8.7,
+     "v_break": 14.0
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -16.7,
+     "v_break": 4.9
+    },
+    "Slurve": {
+     "family": "Breaking",
+     "h_break": 9.6,
+     "v_break": -6.8
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 85.3,
+    "home_starter_velocity": 85.9,
+    "pitch": "Changeup"
+   },
+   {
+    "away_starter_velocity": 88.7,
+    "home_starter_velocity": 88.3,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": 92.5,
+    "home_starter_velocity": 93.8,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 91.1,
+    "home_starter_velocity": 93.8,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": 83.1,
+    "home_starter_velocity": null,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 80.9,
+    "pitch": "Slurve"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for limited-825104."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-04-04",
+ "game": {
+  "away_team_id": "144",
+  "broadcast_note": null,
+  "home_team_id": "109",
+  "start_time_local": null,
+  "start_time_utc": "2026-04-04T23:15:00Z",
+  "timezone": null,
+  "title": "Atlanta Braves vs Arizona Diamondbacks",
+  "venue": "Chase Field"
+ },
+ "id": "limited-825104",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.397,
+     "y": 0.63
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.451,
+     "y": 0.745
+    },
+    {
+     "pitch": "Changeup",
+     "x": 0.283,
+     "y": 0.85
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.764,
+     "y": 0.561
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.453,
+     "y": 0.585
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.631,
+     "y": 0.818
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Slurve",
+     "x": 0.58,
+     "y": 0.708
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.491,
+     "y": 0.447
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Slurve",
+     "x": 0.705,
+     "y": 0.714
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.556,
+     "y": 0.345
+    },
+    {
+     "pitch": "Sinker",
+     "x": 0.304,
+     "y": 0.496
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "693821",
+   "name": "Bryce Elder",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Sinker",
+    "putaway_pitch": "Slider",
+    "style_label": "Arsenal data limited",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 83,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     }
+    },
+    "limited": {
+     "arsenal": true,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 23,
+     "home_runs": 0,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     },
+     "source": "mlb_api",
+     "strikeouts": 5,
+     "walks": 1
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "0.00",
+    "home_runs_allowed": 0,
+    "innings": "6.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     }
+    },
+    "strikeouts": 5,
+    "walks": 1,
+    "whip": "1.00"
+   },
+   "team": "ATL",
+   "throws": "R"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "647336",
+   "name": "Michael Soroka",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Slurve",
+    "putaway_pitch": "Four-seam",
+    "style_label": "Arsenal data limited",
+    "swing_miss_label": null
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 89,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     }
+    },
+    "limited": {
+     "arsenal": true,
+     "control": true,
+     "strikeout": true
+    },
+    "rates": {
+     "batters_faced": 20,
+     "home_runs": 0,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     },
+     "source": "mlb_api",
+     "strikeouts": 10,
+     "walks": 1
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "0.00",
+    "home_runs_allowed": 0,
+    "innings": "5.0",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Apr 3",
+      "through": "2026-04-03"
+     }
+    },
+    "strikeouts": 10,
+    "walks": 1,
+    "whip": "1.00"
+   },
+   "team": "ARI",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "ATL",
+   "id": "144",
+   "name": "Atlanta Braves",
+   "offense_profile": {
+    "bb_rate_vs_hand": "9.5%",
+    "k_rate_vs_hand": "19.4%",
+    "ops_vs_hand": ".827",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Apr 3",
+     "through": "2026-04-03"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "ARI",
+   "id": "109",
+   "name": "Arizona Diamondbacks",
+   "offense_profile": {
+    "bb_rate_vs_hand": "8.7%",
+    "k_rate_vs_hand": "22.8%",
+    "ops_vs_hand": ".653",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Apr 3",
+     "through": "2026-04-03"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  }
+ }
+}

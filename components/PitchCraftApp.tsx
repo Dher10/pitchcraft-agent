@@ -25,6 +25,12 @@ export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftApp
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-7 px-4 py-10">
       <Hero metadata={data.metadata} />
+      {data.metadata.data_mode === "fetched_snapshot" && data.matchups.length === 0 &&
+      data.metadata.data_status?.live_run?.status === "no_games" ? (
+        <p className="text-sm text-neutral-600" role="status">
+          No MLB games scheduled on {data.metadata.data_status.live_run.target_date}.
+        </p>
+      ) : null}
       {selected ? (
         <>
           <GameCarousel
@@ -37,13 +43,7 @@ export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftApp
           <MatchupView matchup={selected} live={data.metadata.data_mode === "fetched_snapshot"} />
         </>
       ) : null}
-      <AgentPipeline workflow={data.agent_workflow} />
-      {data.metadata.data_mode === "fetched_snapshot" && data.matchups.length === 0 &&
-      data.metadata.data_status?.live_run?.status === "no_games" ? (
-        <p className="text-sm text-neutral-600" role="status">
-          No MLB games scheduled on {data.metadata.data_status.live_run.target_date}.
-        </p>
-      ) : null}
+      {data.matchups.length > 0 ? <AgentPipeline workflow={data.agent_workflow} /> : null}
       <ArchiveTable archive={data.archive} />
       <Disclaimer disclaimers={data.disclaimers} />
     </main>

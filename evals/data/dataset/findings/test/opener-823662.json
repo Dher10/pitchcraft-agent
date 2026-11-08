@@ -1,0 +1,46 @@
+{
+ "away_data_notes": [
+  "Jordan Hicks has allowed 3 home runs over 179 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [
+  "Below-average command can create deep-count traffic"
+ ],
+ "away_starter_strengths": [
+  "Above-average swing-and-miss ability",
+  "Sinker to set up, Sweeper to finish"
+ ],
+ "away_style": "Sinker to set up, Sweeper to finish",
+ "away_vs_home_offense": "Jordan Hicks works off a sinker-sweeper combination. He shows above-average swing-and-miss ability. He shows below-average command. Jordan Hicks has allowed 3 home runs over 179 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against RHP pitching (.739 OPS), so Jordan Hicks cannot live over the middle.",
+ "home_data_notes": [
+  "Zebby Matthews has allowed 19 home runs over 437 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Slider to finish"
+ ],
+ "home_style": "Four-seam to set up, Slider to finish",
+ "home_vs_away_offense": "Zebby Matthews works off a four-seam-slider combination. He shows average swing-and-miss ability. He shows average command. Zebby Matthews has allowed 19 home runs over 437 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.726 OPS), with no glaring weakness to attack. They draw walks at an above-average rate, so Zebby Matthews needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "142": [
+   "has strong OPS against this pitcher's hand"
+  ],
+  "145": [
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Sinker-Sweeper starter against Four-seam-Slider starter",
+ "matchup_summary": "This matchup features Sinker-Sweeper starter against Four-seam-Slider starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Jordan Hicks and Zebby Matthews: all pitcher figures cover the 2026 regular season through Aug 29.",
+  "Team offense splits cover the 2026 regular season through Aug 29."
+ ],
+ "three_things_to_watch": [
+  "Can Jordan Hicks land the sweeper early in counts?",
+  "Can Zebby Matthews keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

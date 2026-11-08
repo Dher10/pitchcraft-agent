@@ -1,0 +1,495 @@
+{
+ "availability": {
+  "away_starter": true,
+  "game": true,
+  "home_starter": true,
+  "pitch_locations": true,
+  "pitch_mix": true,
+  "pitch_movement": true,
+  "strength": true,
+  "teams": true,
+  "velocity": true
+ },
+ "charts": {
+  "pitch_mix": [
+   {
+    "away_starter": {
+     "count": 474,
+     "overall": 47.2,
+     "total": 1005,
+     "vs_lhh": 46.3,
+     "vs_rhh": 47.8
+    },
+    "home_starter": {
+     "count": 88,
+     "overall": 16.9,
+     "total": 520,
+     "vs_lhh": 23.0,
+     "vs_rhh": 9.7
+    },
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter": {
+     "count": 366,
+     "overall": 36.4,
+     "total": 1005,
+     "vs_lhh": 45.1,
+     "vs_rhh": 30.3
+    },
+    "home_starter": {
+     "count": 129,
+     "overall": 24.8,
+     "total": 520,
+     "vs_lhh": 24.1,
+     "vs_rhh": 25.6
+    },
+    "pitch": "Slider"
+   },
+   {
+    "away_starter": {
+     "count": 165,
+     "overall": 16.4,
+     "total": 1005,
+     "vs_lhh": 8.6,
+     "vs_rhh": 21.9
+    },
+    "home_starter": {
+     "count": 1,
+     "overall": 0.2,
+     "total": 520,
+     "vs_lhh": 0.4,
+     "vs_rhh": 0.0
+    },
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1005,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 175,
+     "overall": 33.7,
+     "total": 520,
+     "vs_lhh": 14.2,
+     "vs_rhh": 56.7
+    },
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1005,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 113,
+     "overall": 21.7,
+     "total": 520,
+     "vs_lhh": 33.3,
+     "vs_rhh": 8.0
+    },
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter": {
+     "count": 0,
+     "overall": 0,
+     "total": 1005,
+     "vs_lhh": 0,
+     "vs_rhh": 0
+    },
+    "home_starter": {
+     "count": 14,
+     "overall": 2.7,
+     "total": 520,
+     "vs_lhh": 5.0,
+     "vs_rhh": 0.0
+    },
+    "pitch": "Splitter"
+   }
+  ],
+  "pitch_movement": {
+   "away_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": -6.7,
+     "v_break": -16.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": 6.1,
+     "v_break": 19.7
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -3.0,
+     "v_break": 3.4
+    }
+   },
+   "home_starter": {
+    "Curveball": {
+     "family": "Breaking",
+     "h_break": null,
+     "v_break": null
+    },
+    "Cutter": {
+     "family": "Fastball",
+     "h_break": -1.1,
+     "v_break": 4.8
+    },
+    "Four-seam": {
+     "family": "Fastball",
+     "h_break": -8.3,
+     "v_break": 13.3
+    },
+    "Sinker": {
+     "family": "Fastball",
+     "h_break": -15.6,
+     "v_break": 4.9
+    },
+    "Slider": {
+     "family": "Breaking",
+     "h_break": -0.1,
+     "v_break": -6.0
+    },
+    "Splitter": {
+     "family": "Offspeed",
+     "h_break": -12.6,
+     "v_break": -1.7
+    }
+   }
+  },
+  "strength_profile": [],
+  "velocity_by_pitch": [
+   {
+    "away_starter_velocity": 80.8,
+    "home_starter_velocity": 85.6,
+    "pitch": "Curveball"
+   },
+   {
+    "away_starter_velocity": 94.1,
+    "home_starter_velocity": 97.2,
+    "pitch": "Four-seam"
+   },
+   {
+    "away_starter_velocity": 88.7,
+    "home_starter_velocity": 88.7,
+    "pitch": "Slider"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 94.4,
+    "pitch": "Cutter"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 96.6,
+    "pitch": "Sinker"
+   },
+   {
+    "away_starter_velocity": null,
+    "home_starter_velocity": 91.7,
+    "pitch": "Splitter"
+   }
+  ]
+ },
+ "data_confidence": {
+  "level": "fetched_snapshot",
+  "lineup_status": "probable_pitchers",
+  "notes": [
+   "Live snapshot fetched 2026-10-30 for opener-823164."
+  ],
+  "pitch_data_status": "fetched_snapshot"
+ },
+ "date": "2026-09-27",
+ "game": {
+  "away_team_id": "119",
+  "broadcast_note": null,
+  "home_team_id": "137",
+  "start_time_local": null,
+  "start_time_utc": "2026-09-27T19:05:00Z",
+  "timezone": null,
+  "title": "Los Angeles Dodgers vs San Francisco Giants",
+  "venue": "Oracle Park"
+ },
+ "id": "opener-823164",
+ "is_featured": true,
+ "pitch_locations": {
+  "away_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.53,
+     "y": 0.454
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.409,
+     "y": 0.634
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.474,
+     "y": 0.739
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Four-seam",
+     "x": 0.562,
+     "y": 0.458
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.496,
+     "y": 0.675
+    },
+    {
+     "pitch": "Curveball",
+     "x": 0.53,
+     "y": 0.707
+    }
+   ]
+  },
+  "home_starter": {
+   "vs_lhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.536,
+     "y": 0.577
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.509,
+     "y": 0.665
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.65,
+     "y": 0.507
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.544,
+     "y": 0.438
+    },
+    {
+     "pitch": "Splitter",
+     "x": 0.414,
+     "y": 0.76
+    }
+   ],
+   "vs_rhh": [
+    {
+     "pitch": "Sinker",
+     "x": 0.51,
+     "y": 0.606
+    },
+    {
+     "pitch": "Slider",
+     "x": 0.529,
+     "y": 0.685
+    },
+    {
+     "pitch": "Cutter",
+     "x": 0.709,
+     "y": 0.64
+    },
+    {
+     "pitch": "Four-seam",
+     "x": 0.503,
+     "y": 0.47
+    }
+   ]
+  },
+  "note": "x,y are 0-1 within the plot area, as the catcher sees it. 0,0 is the top-left corner; x grows to the catcher's right and y grows downward."
+ },
+ "postgame": null,
+ "series": null,
+ "starters": {
+  "away_starter": {
+   "bio": null,
+   "id": "676263",
+   "name": "Jack Dreyer",
+   "pitching_profile": {
+    "command_label": "Average command",
+    "contact_risk_label": null,
+    "primary_pitch": "Four-seam",
+    "putaway_pitch": "Slider",
+    "style_label": "Four-seam-Slider starter",
+    "swing_miss_label": "Above-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 1005,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": false,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 254,
+     "home_runs": 7,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     },
+     "source": "mlb_api",
+     "strikeouts": 71,
+     "walks": 23
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "3.16",
+    "home_runs_allowed": 7,
+    "innings": "62.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     }
+    },
+    "strikeouts": 71,
+    "walks": 23,
+    "whip": "1.10"
+   },
+   "team": "LAD",
+   "throws": "L"
+  },
+  "home_starter": {
+   "bio": null,
+   "id": "693313",
+   "name": "Carson Seymour",
+   "pitching_profile": {
+    "command_label": null,
+    "contact_risk_label": null,
+    "primary_pitch": "Sinker",
+    "putaway_pitch": "Slider",
+    "style_label": "Sinker-Slider starter",
+    "swing_miss_label": "Below-average swing-and-miss ability"
+   },
+   "recent_form": null,
+   "sample": {
+    "arsenal": {
+     "pitches": 520,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     }
+    },
+    "limited": {
+     "arsenal": false,
+     "control": true,
+     "strikeout": false
+    },
+    "rates": {
+     "batters_faced": 137,
+     "home_runs": 6,
+     "scope": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     },
+     "source": "mlb_api",
+     "strikeouts": 22,
+     "walks": 16
+    },
+    "thresholds": {
+     "arsenal": 100,
+     "control": 170,
+     "strikeout": 70
+    }
+   },
+   "season_summary": {
+    "era": "4.70",
+    "home_runs_allowed": 6,
+    "innings": "30.2",
+    "scopes": {
+     "counts": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     },
+     "season_rates": {
+      "kind": "regular_season",
+      "label": "2026 regular season through Sep 26",
+      "through": "2026-09-26"
+     }
+    },
+    "strikeouts": 22,
+    "walks": 16,
+    "whip": "1.53"
+   },
+   "team": "SF",
+   "throws": "R"
+  }
+ },
+ "status": "upcoming",
+ "teams": {
+  "away": {
+   "abbreviation": "LAD",
+   "id": "119",
+   "name": "Los Angeles Dodgers",
+   "offense_profile": {
+    "bb_rate_vs_hand": "10.4%",
+    "k_rate_vs_hand": "20.6%",
+    "ops_vs_hand": ".766",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Sep 26",
+     "through": "2026-09-26"
+    },
+    "summary_label": "Real season split vs RHP",
+    "vs_pitcher_hand": "RHP"
+   },
+   "record": null
+  },
+  "home": {
+   "abbreviation": "SF",
+   "id": "137",
+   "name": "San Francisco Giants",
+   "offense_profile": {
+    "bb_rate_vs_hand": "6.7%",
+    "k_rate_vs_hand": "23.7%",
+    "ops_vs_hand": ".660",
+    "recent_form": "Season split",
+    "scope": {
+     "kind": "regular_season",
+     "label": "2026 regular season through Sep 26",
+     "through": "2026-09-26"
+    },
+    "summary_label": "Real season split vs LHP",
+    "vs_pitcher_hand": "LHP"
+   },
+   "record": null
+  }
+ }
+}

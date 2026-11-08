@@ -1,0 +1,41 @@
+{
+ "away_data_notes": [
+  "Sean Manaea has allowed 23 home runs over 601 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Solid command supports strike-zone control",
+  "Four-seam to set up, Sweeper to finish"
+ ],
+ "away_style": "Four-seam to set up, Sweeper to finish",
+ "away_vs_home_offense": "Sean Manaea works off a four-seam-sweeper combination. He shows average swing-and-miss ability. He shows solid command. Sean Manaea has allowed 23 home runs over 601 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup hits well against LHP pitching (.766 OPS), so Sean Manaea cannot live over the middle.",
+ "home_data_notes": [
+  "MacKenzie Gore has allowed 19 home runs over 720 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Curveball to finish"
+ ],
+ "home_style": "Four-seam to set up, Curveball to finish",
+ "home_vs_away_offense": "MacKenzie Gore works off a four-seam-curveball combination. He shows average swing-and-miss ability. He shows average command. MacKenzie Gore has allowed 19 home runs over 720 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.682 OPS), which gives MacKenzie Gore an edge if he gets ahead.",
+ "lineup_pressure_points": [
+  "has strong OPS against this pitcher's hand"
+ ],
+ "lineup_pressure_points_by_team": {
+  "121": [],
+  "140": [
+   "has strong OPS against this pitcher's hand"
+  ]
+ },
+ "matchup_headline": "Four-seam-Sweeper starter against Four-seam-Curveball starter",
+ "matchup_summary": "This matchup features Four-seam-Sweeper starter against Four-seam-Curveball starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Sean Manaea and MacKenzie Gore: all pitcher figures cover the 2026 regular season through Sep 21.",
+  "Team offense splits cover the 2026 regular season through Sep 21."
+ ],
+ "three_things_to_watch": [
+  "Can Sean Manaea land the sweeper early in counts?",
+  "Can MacKenzie Gore keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

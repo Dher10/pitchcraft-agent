@@ -1,0 +1,156 @@
+[
+ {
+  "case": "opener-823769",
+  "run": 2,
+  "attempt": 1,
+  "text": "Chicago faces a 3.00 ERA (earned run average) for Woodruff, while Milwaukee faces a 1.82 ERA for Rolison over the 2026 regular season through Jun 27.",
+  "paths": [
+   "starters.home_starter.season_summary.era_number",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "glossary.ERA.short",
+   "starters.away_starter.season_summary.era_number",
+   "starters.away_starter.season_summary.scopes.season_rates.label",
+   "starters.away_starter.season_summary.scopes.season_rates.through"
+  ],
+  "source_sha256": "12cb5baff98651084fac6e780019a90c552a8be572a4b051114299519c4898f4",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "postseason-849849",
+  "run": 2,
+  "attempt": 2,
+  "text": "AJ Blubaugh carries a 3.66 ERA and a 1.23 WHIP for Houston.",
+  "paths": [
+   "starters.home_starter.name",
+   "starters.home_starter.season_summary.era_number",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.whip_number"
+  ],
+  "source_sha256": "4211ab14978a04d8d824aa7c7a7eac5775b8a940204811c6e8c43bfd4b94e5be",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "veteran-823938",
+  "run": 2,
+  "attempt": 1,
+  "text": "The Dodgers offense has a .806 OPS (on-base plus slugging) against right-handed pitchers, which is higher than the .685 OPS that the Rays produce against left-handed pitchers.",
+  "paths": [
+   "teams.home.offense_profile.ops_number",
+   "teams.home.offense_profile.scope.label",
+   "teams.home.offense_profile.scope.through",
+   "teams.away.offense_profile.ops_number",
+   "teams.away.offense_profile.scope.label",
+   "teams.away.offense_profile.scope.through",
+   "glossary.OPS.short"
+  ],
+  "source_sha256": "d612859f5a13423d2094d0ca631cef6c50de96ba280d9f0b4f126b47ff27ecd7",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "veteran-823938",
+  "run": 2,
+  "attempt": 2,
+  "text": "Nick Martinez has a lower 2.43 ERA (earned run average) than Eric Lauer, who holds a 5.47 ERA.",
+  "paths": [
+   "starters.away_starter.season_summary.era_number",
+   "starters.away_starter.season_summary.scopes.season_rates.label",
+   "starters.away_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.era_number",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "glossary.ERA.short"
+  ],
+  "source_sha256": "d612859f5a13423d2094d0ca631cef6c50de96ba280d9f0b4f126b47ff27ecd7",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "veteran-823938",
+  "run": 2,
+  "attempt": 2,
+  "text": "Martinez has a lower 1.16 WHIP (walks plus hits per inning) than the 1.29 WHIP posted by Lauer.",
+  "paths": [
+   "starters.away_starter.season_summary.whip_number",
+   "starters.away_starter.season_summary.scopes.season_rates.label",
+   "starters.away_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.whip_number",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "glossary.WHIP.short"
+  ],
+  "source_sha256": "d612859f5a13423d2094d0ca631cef6c50de96ba280d9f0b4f126b47ff27ecd7",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "postseason-849842",
+  "run": 3,
+  "attempt": 2,
+  "text": "Nick Pivetta carries a 2.86 ERA (earned run average) and a 1.01 WHIP (walks plus hits per inning) compared with the 4.51 ERA and 1.27 WHIP of Kevin Gausman.",
+  "paths": [
+   "starters.home_starter.season_summary.era_number",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.whip_number",
+   "starters.away_starter.season_summary.era_number",
+   "starters.away_starter.season_summary.scopes.season_rates.label",
+   "starters.away_starter.season_summary.scopes.season_rates.through",
+   "starters.away_starter.season_summary.whip_number",
+   "glossary.ERA.short",
+   "glossary.WHIP.short"
+  ],
+  "source_sha256": "61d950152d1f42a675856e1cc3a58eeaf12f3b55f6f5f21509c79402bfa6e90f",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "limited-823836",
+  "run": 4,
+  "attempt": 1,
+  "text": "Tyler Phillips has a 3.53 ERA and a 1.35 WHIP for the Marlins.",
+  "paths": [
+   "starters.home_starter.name",
+   "starters.home_starter.season_summary.era",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.whip"
+  ],
+  "source_sha256": "d197dd32c0b3b40e5027bb5287cf2659d1ff3b6a3eefa977e6376cb683dbc2f9",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "limited-825104",
+  "run": 4,
+  "attempt": 2,
+  "text": "Michael Soroka matches that 0.00 ERA and 1.00 WHIP for Arizona.",
+  "paths": [
+   "starters.home_starter.name",
+   "starters.home_starter.season_summary.era_number",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.whip_number",
+   "starters.away_starter.season_summary.era_number",
+   "starters.away_starter.season_summary.scopes.season_rates.label",
+   "starters.away_starter.season_summary.scopes.season_rates.through",
+   "starters.away_starter.season_summary.whip_number",
+   "teams.home.name"
+  ],
+  "source_sha256": "85a1ad5d8cbb906b547155bb15d0937bf2df8a0ea90f0f8fc457835a848f219d",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ },
+ {
+  "case": "opener-824280",
+  "run": 4,
+  "attempt": 2,
+  "text": "Brenan Hanifee has a 1.08 ERA and a 1.08 WHIP for the Detroit Tigers in that same period.",
+  "paths": [
+   "starters.home_starter.season_summary.era",
+   "starters.home_starter.season_summary.scopes.season_rates.label",
+   "starters.home_starter.season_summary.scopes.season_rates.through",
+   "starters.home_starter.season_summary.whip",
+   "starters.home_starter.sample.arsenal.scope.label",
+   "starters.home_starter.sample.arsenal.scope.through"
+  ],
+  "source_sha256": "3a121bb21062e18b779bc6e4589facc7aeb42ef37ad48944ca8285008dbbd040",
+  "expectation": "must_pass_W1.number; values and asserted owners verified against the dev projection"
+ }
+]

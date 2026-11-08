@@ -1,0 +1,43 @@
+{
+ "away_data_notes": [
+  "Troy Melton's arsenal data is limited (79 pitches; 100 needed), so this report makes no arsenal claim for him.",
+  "Strikeout data for Troy Melton is limited (22 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for Troy Melton is limited (22 batters faced; 170 needed), so no command claim is made.",
+  "Troy Melton has allowed 0 home runs over 22 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [],
+ "away_style": "Four-seam to set up, Slider to finish",
+ "away_vs_home_offense": "Troy Melton's arsenal data is limited (79 pitches; 100 needed), so this report makes no arsenal claim for him. Strikeout data for Troy Melton is limited (22 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Troy Melton is limited (22 batters faced; 170 needed), so no command claim is made. Troy Melton has allowed 0 home runs over 22 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.707 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Troy Melton needs efficient strikes.",
+ "home_data_notes": [
+  "Erick Fedde has allowed 12 home runs over 217 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Sweeper to set up, Sinker to finish"
+ ],
+ "home_style": "Sweeper to set up, Sinker to finish",
+ "home_vs_away_offense": "Erick Fedde works off a sweeper-sinker combination. He shows below-average swing-and-miss ability. He shows average command. Erick Fedde has allowed 12 home runs over 217 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against RHP pitching (.687 OPS), which gives Erick Fedde an edge if he gets ahead.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "116": [],
+  "145": [
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Troy Melton against Erick Fedde",
+ "matchup_summary": "This matchup features Troy Melton against Erick Fedde. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Troy Melton and Erick Fedde: all pitcher figures cover the 2026 regular season through May 28.",
+  "Team offense splits cover the 2026 regular season through May 28."
+ ],
+ "three_things_to_watch": [
+  "Can Troy Melton stay ahead of hitters early in counts?",
+  "Can Erick Fedde keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

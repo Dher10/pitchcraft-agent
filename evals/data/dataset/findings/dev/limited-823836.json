@@ -1,0 +1,42 @@
+{
+ "away_data_notes": [
+  "Strikeout data for George Klassen is limited (32 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for George Klassen is limited (32 batters faced; 170 needed), so no command claim is made.",
+  "George Klassen has allowed 1 home run over 32 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Four-seam to set up, Changeup to finish"
+ ],
+ "away_style": "Four-seam to set up, Changeup to finish",
+ "away_vs_home_offense": "George Klassen works off a four-seam-changeup combination. Strikeout data for George Klassen is limited (32 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for George Klassen is limited (32 batters faced; 170 needed), so no command claim is made. George Klassen has allowed 1 home run over 32 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.734 OPS), with no glaring weakness to attack.",
+ "home_data_notes": [
+  "Tyler Phillips has allowed 11 home runs over 383 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Sinker to set up, Sweeper to finish"
+ ],
+ "home_style": "Sinker to set up, Sweeper to finish",
+ "home_vs_away_offense": "Tyler Phillips works off a sinker-sweeper combination. He shows below-average swing-and-miss ability. He shows average command. Tyler Phillips has allowed 11 home runs over 383 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against RHP pitching (.687 OPS), which gives Tyler Phillips an edge if he gets ahead. They also strike out often, which favors a swing-and-miss approach.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk"
+ ],
+ "lineup_pressure_points_by_team": {
+  "108": [
+   "has elevated swing-and-miss risk"
+  ],
+  "146": []
+ },
+ "matchup_headline": "Four-seam-Changeup starter against Sinker-Sweeper starter",
+ "matchup_summary": "This matchup features Four-seam-Changeup starter against Sinker-Sweeper starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "George Klassen and Tyler Phillips: all pitcher figures cover the 2026 regular season through Aug 6.",
+  "Team offense splits cover the 2026 regular season through Aug 6."
+ ],
+ "three_things_to_watch": [
+  "Can George Klassen land the changeup early in counts?",
+  "Can Tyler Phillips keep the ball low?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

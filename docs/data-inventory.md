@@ -99,7 +99,8 @@ Columns: **Path** · **Producer ← source** · **Scope** · **If the source is 
 | Path | Producer ← source | Scope | If missing / empty / malformed | Fan sees | Agent text |
 |---|---|---|---|---|---|
 | `metadata.project_name` | `demo_inputs.METADATA` ← constant "PitchCraft Matchup Agent" | n/a | n/a | No (`layout.tsx` has its own title) | none |
-| `metadata.version` | constant "0.2.0" (= `SCHEMA_VERSION`, checked by the validator) | n/a | n/a | No | none |
+| `metadata.version` | constant (= `SCHEMA_VERSION`, "0.10.0"; the validator also reads "0.9.0") | n/a | n/a | No | none |
+| `metadata.label_cutoffs` | `gdj.build_payload` ← `labels.CURRENT_CUTOFFS` (schema 0.10.0, D51); absent in a 0.9.0 file, which is judged with D32 | n/a | n/a (an unknown id fails the validator) | No | none (it names the cut-off set that rule 4 judges the strong/average/weak OPS band and the strikeout and walk notes with) |
 | `metadata.data_mode` | `gdj.build_payload` ← `_resolve_live_input()`: `fetched_snapshot` \| `demo_fallback` \| `demo_cached` (`live_partial` is defined and unused) | n/a | decided by the run-level table in section 1 | **No** (F3) | none |
 | `metadata.generated_at` | live: snapshot `run_at` (UTC, `datetime.now(utc)` in the pipeline); other modes: demo constant (F9) | n/a | a snapshot without `run_at` is rejected by `_snapshot_mismatch`; a test build without it raises `KeyError` | No | none |
 | `metadata.last_updated_label` | live: "Live data fetched {fetched_date}"; fallback: "Live data unavailable; showing demo data"; demo: constant "Demo data generated for capstone submission" (all in `gdj`/`demo_inputs`, not in the catalog) | n/a | n/a | **No** | none |

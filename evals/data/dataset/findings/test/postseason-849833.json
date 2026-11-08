@@ -1,0 +1,48 @@
+{
+ "away_data_notes": [
+  "Strikeout data for Daniel Espino is limited (65 batters faced; 70 needed), so no swing-and-miss claim is made.",
+  "Control data for Daniel Espino is limited (65 batters faced; 170 needed), so no command claim is made.",
+  "Daniel Espino has allowed 3 home runs over 65 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "away_starter_risks": [],
+ "away_starter_strengths": [
+  "Four-seam to set up, Slider to finish"
+ ],
+ "away_style": "Four-seam to set up, Slider to finish",
+ "away_vs_home_offense": "Daniel Espino works off a four-seam-slider combination. Strikeout data for Daniel Espino is limited (65 batters faced; 70 needed), so no swing-and-miss claim is made. Control data for Daniel Espino is limited (65 batters faced; 170 needed), so no command claim is made. Daniel Espino has allowed 3 home runs over 65 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup is roughly average against RHP pitching (.716 OPS), with no glaring weakness to attack. They also strike out often, which favors a swing-and-miss approach; They draw walks at an above-average rate, so Daniel Espino needs efficient strikes.",
+ "home_data_notes": [
+  "Sean Newcomb has allowed 4 home runs over 372 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample."
+ ],
+ "home_starter_risks": [],
+ "home_starter_strengths": [
+  "Four-seam to set up, Slurve to finish"
+ ],
+ "home_style": "Four-seam to set up, Slurve to finish",
+ "home_vs_away_offense": "Sean Newcomb works off a four-seam-slurve combination. He shows average swing-and-miss ability (regular-season rates). He shows average command (regular-season rates). Sean Newcomb has allowed 4 home runs over 372 batters faced; no contact-risk rating is given because a home-run rate needs a far larger sample. This lineup has struggled against LHP pitching (.675 OPS), which gives Sean Newcomb an edge if he gets ahead. They draw walks at an above-average rate, so Sean Newcomb needs efficient strikes.",
+ "lineup_pressure_points": [
+  "has elevated swing-and-miss risk",
+  "draws walks at an above-average rate",
+  "draws walks at an above-average rate"
+ ],
+ "lineup_pressure_points_by_team": {
+  "114": [
+   "draws walks at an above-average rate"
+  ],
+  "145": [
+   "has elevated swing-and-miss risk",
+   "draws walks at an above-average rate"
+  ]
+ },
+ "matchup_headline": "Four-seam-Slider starter against Four-seam-Slurve starter",
+ "matchup_summary": "This matchup features Four-seam-Slider starter against Four-seam-Slurve starter. The scouting note is matchup fit, with each pressure point shaping what to watch.",
+ "scope_notes": [
+  "Daniel Espino and Sean Newcomb: ERA, WHIP, innings and the strikeout, walk and home-run counts cover the 2026 regular season; the pitch mix, velocity and movement cover the 2026 regular season and postseason through Oct 6. They are different samples.",
+  "Team offense splits cover the 2026 regular season."
+ ],
+ "series_note": "This is Game 3 of the AL Division Series. Before first pitch, CWS leads 2-0.",
+ "three_things_to_watch": [
+  "Can Daniel Espino land the slider early in counts?",
+  "Can Sean Newcomb keep the ball in the zone?",
+  "Which lineup forces more deep counts by the third inning?"
+ ]
+}

@@ -558,17 +558,17 @@ def _offense_read(c: Ctx) -> None:
     if ops is None:
         return
     band = c.key.rsplit(".", 1)[1]
-    actual = "strong" if ops >= labels.OFFENSE_OPS_STRONG else "average" if ops >= 0.700 else "weak"
+    strong = labels.cutoffs_for(c.payload.get("metadata"))["ops"]  # the set the file names (D51), D32 when it names none
+    actual = "strong" if ops >= strong else "average" if ops >= 0.700 else "weak"
     c.require(band == actual, "band", f"the lineup's OPS {ops} is {actual}, not {band}")
     if "name" in c.args:
         c.require(c.text("name") == c.starter["name"], "name", "the sentence is about another starter")
 
 
 def _offense_note(c: Ctx) -> None:
+    cutoffs = labels.cutoffs_for(c.payload.get("metadata"))  # the set the file names (D51), D32 when it names none
     field, minimum = (
-        ("k_rate_vs_hand", labels.OFFENSE_K_NOTE_PCT)
-        if c.key.endswith("strikeouts")
-        else ("bb_rate_vs_hand", labels.OFFENSE_BB_NOTE_PCT)
+        ("k_rate_vs_hand", cutoffs["k"]) if c.key.endswith("strikeouts") else ("bb_rate_vs_hand", cutoffs["bb"])
     )
     rate = _percent(c.lineup.get(field))
     c.require(rate is not None and rate >= minimum, "rate", f"the lineup's {field} is not at least {minimum}")

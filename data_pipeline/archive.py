@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from data_pipeline.schema import SCHEMA_VERSION, STATE_OF_STATUS, is_no_games_run, new_york_day
+from data_pipeline.schema import READABLE_VERSIONS, STATE_OF_STATUS, is_no_games_run, new_york_day
 
 LIMIT = 60
 KEYS = {"id", "date", "title", "status", "featured", "starter_summary", "result_label", "grade_label"}
@@ -83,7 +83,7 @@ def carry_forward(previous: Any, target: str) -> list[dict[str, Any]]:
         rows = previous["archive"]
         if not (
             mode == status["mode"] == "fetched_snapshot"
-            and metadata["version"] == SCHEMA_VERSION and status["reason"] is None
+            and metadata["version"] in READABLE_VERSIONS and status["reason"] is None
             and metadata["data_fetched_at"] == run["run_at"] and new_york_day(run["run_at"]) is not None
             and _day(prior_day) and _day(target) and isinstance(matchups, list)
             and rows_valid(rows, prior_day)

@@ -28,10 +28,10 @@ def codes(payload) -> set[str]:
     return {violation.code for violation in check_contract(payload)}
 
 
-def test_the_schema_is_0_9_0_and_a_snapshot_of_0_8_0_is_not_read():
-    assert SCHEMA_VERSION == "0.9.0"
-    assert snapshot_matches_schema("0.9.0")
-    assert not any(snapshot_matches_schema(old) for old in ("0.8.0", "0.7.0", "0.6.0", "0.5.0", "0.4.0"))
+def test_the_schema_is_0_10_0_and_a_snapshot_of_0_9_0_is_not_read():
+    assert SCHEMA_VERSION == "0.10.0"
+    assert snapshot_matches_schema("0.10.0")
+    assert not any(snapshot_matches_schema(old) for old in ("0.9.0", "0.8.0", "0.7.0", "0.6.0", "0.5.0", "0.4.0"))
 
 
 def test_the_schema_comment_names_the_version_and_the_field():
@@ -50,7 +50,7 @@ def test_every_matchup_of_every_built_payload_says_series_is_null(monkeypatch, k
 
     assert payload["matchups"]
     assert all("series" in matchup and matchup["series"] is None for matchup in payload["matchups"])
-    assert payload["metadata"]["version"] == "0.9.0"
+    assert payload["metadata"]["version"] == "0.10.0"
 
 
 @pytest.mark.parametrize("kind", ["demo", "live_complete"])

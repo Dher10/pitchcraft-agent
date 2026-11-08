@@ -61,7 +61,8 @@ describe("a day with no games", () => {
     const { container } = render(<PitchCraftApp data={empty} />);
 
     expect(container.textContent).toContain("PitchCraft Matchup Agent");
-    expect(container.textContent).toContain("How PitchCraft Works");
+    expect(container.textContent).not.toContain("How PitchCraft Works");
+    expect(container.textContent).not.toMatch(/pending/i);
     expect(container.textContent).toContain("Archive");
     expect(container.textContent).toContain("For information only.");
     expect(container.textContent).not.toContain("Games");
@@ -70,6 +71,11 @@ describe("a day with no games", () => {
 
   it("ignores a matchup id in the address when there is nothing to select", () => {
     expect(() => render(<PitchCraftApp data={empty} initialSelectedId="matchup_404" />)).not.toThrow();
+  });
+
+  it("control: an empty live page without a run makes no no-games assertion", () => {
+    const { container } = render(<PitchCraftApp data={empty} />);
+    expect(container.textContent).not.toContain("No MLB games scheduled");
   });
 
   it("shows the no-games date above the archive only for a live no-games record", () => {
@@ -85,15 +91,19 @@ describe("a day with no games", () => {
     expect(container.textContent).toContain("No MLB games scheduled on 2026-10-23.");
     expect(container.textContent).toContain("Rays vs Brewers");
     expect(container.textContent!.indexOf("No MLB games")).toBeLessThan(container.textContent!.indexOf("Archive"));
+    const hero = container.querySelector("h1")!.closest("section")!;
+    expect(hero.nextElementSibling?.textContent).toBe("No MLB games scheduled on 2026-10-23.");
     expect(container.textContent).not.toContain("Away Ace");
     expect(container.textContent).toContain("Live data");
   });
 
   it("control: a demo empty file makes no no-games assertion", () => {
     const { container } = render(<PitchCraftApp data={file({
-      featured_matchup_id: null, matchups: [], metadata: { ...metadata, data_mode: "demo_cached" },
+      featured_matchup_id: null, matchups: [],
+      metadata: { ...(noGamesLive as PitchCraftData).metadata, data_mode: "demo_cached" },
     })} />);
     expect(container.textContent).not.toContain("No MLB games scheduled");
+    expect(container.textContent).not.toContain("How PitchCraft Works");
   });
 
   it("renders the actual fake-schedule → daily → validated artifact without a demo matchup", () => {
@@ -105,13 +115,20 @@ describe("a day with no games", () => {
     expect(container.querySelectorAll("button").length).toBe(0);
     expect(container.textContent).not.toContain("Featured game has not been completed");
     expect(container.textContent).toContain("Live data · fetched 2026-07-16");
+    expect(container.textContent).not.toContain("How PitchCraft Works");
+    expect(container.textContent).not.toMatch(/pending/i);
+    const hero = container.querySelector("h1")!.closest("section")!;
+    expect(hero.nextElementSibling?.textContent).toBe("No MLB games scheduled on 2026-07-16.");
   });
 
   it("control: a file with a matchup still draws the carousel and the matchup", () => {
-    const { container } = render(<PitchCraftApp data={file()} />);
+    // Keep run evidence present so this independently exercises the matchup-count guard.
+    const { container } = render(<PitchCraftApp data={file({ metadata: (noGamesLive as PitchCraftData).metadata })} />);
 
     expect(container.textContent).toContain("Games");
     expect(container.textContent).toContain("Away Ace");
+    expect(container.textContent).toContain("How PitchCraft Works");
+    expect(container.textContent).not.toContain("No MLB games scheduled");
   });
 
   it("a null featured id marks no card as featured", () => {
@@ -132,16 +149,17 @@ describe("a day with no games", () => {
 });
 
 describe("an archive row with no result", () => {
-  it("preserves an unknown source state as a dash", () => {
+  it("omits an unknown historical source state together with the status column", () => {
     const { container } = render(<ArchiveTable archive={[row({ status: null })]} />);
-    expect(container.querySelectorAll("tbody tr td")[2].textContent).toBe("—");
+    expect(container.querySelectorAll("tbody tr td")).toHaveLength(5);
+    expect(container.querySelectorAll("tbody tr td")[2].textContent).toBe("A vs B");
   });
   it("shows the page's dash for the result and for the grade, and never 'Pending'", () => {
     const { container } = render(<ArchiveTable archive={[row()]} />);
     const cells = Array.from(container.querySelectorAll("tbody tr td")).map((cell) => cell.textContent);
 
+    expect(cells[3]).toBe("—");
     expect(cells[4]).toBe("—");
-    expect(cells[5]).toBe("—");
     expect(container.textContent).not.toContain("Pending");
   });
 
@@ -149,8 +167,8 @@ describe("an archive row with no result", () => {
     const { container } = render(<ArchiveTable archive={[row({ result_label: "BOS 5 - NYY 3" })]} />);
     const cells = Array.from(container.querySelectorAll("tbody tr td")).map((cell) => cell.textContent);
 
-    expect(cells[4]).toBe("BOS 5 - NYY 3");
-    expect(cells[5]).toBe("Pending");
+    expect(cells[3]).toBe("BOS 5 - NYY 3");
+    expect(cells[4]).toBe("Pending");
   });
 
   it("control: a result and a grade are drawn as they are", () => {
@@ -159,8 +177,8 @@ describe("an archive row with no result", () => {
     );
     const cells = Array.from(container.querySelectorAll("tbody tr td")).map((cell) => cell.textContent);
 
-    expect(cells[4]).toBe("BOS 5 - NYY 3");
-    expect(cells[5]).toBe("Starter Duel: A, B");
+    expect(cells[3]).toBe("BOS 5 - NYY 3");
+    expect(cells[4]).toBe("Starter Duel: A, B");
   });
 });
 

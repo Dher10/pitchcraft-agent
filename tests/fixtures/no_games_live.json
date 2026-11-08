@@ -1,7 +1,8 @@
 {
   "metadata": {
     "project_name": "PitchCraft Matchup Agent",
-    "version": "0.9.0",
+    "version": "0.10.0",
+    "label_cutoffs": "D50",
     "data_mode": "fetched_snapshot",
     "generated_at": "2026-07-16T15:00:00+00:00",
     "data_fetched_at": "2026-07-16T15:00:00+00:00",
