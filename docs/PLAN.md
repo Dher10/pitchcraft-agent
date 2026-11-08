@@ -232,24 +232,25 @@ two red CI runs or two review rounds without PASS. Nonce/dynamic/style-attribute
 Order of the owner's direction. No dates. Each task needs an approved plan in `docs/plans/` before code (D35); gated unless the plan says otherwise.
 
 - [ ] DS Visual identity and design system (owner with Claude Design; not an agent task). Input: `docs/design-audit.md` and its screenshots. Deliverables: PitchCraft's own identity (type, color, spacing, cards, tables, badges, states) and designs for the game page, the notable duels, the filters and the team page. **Gate:** no new page is built before the owner approves it; code then implements the approved design system.
-- [ ] R4 Offseason experience. Plan `docs/plans/R4.md` (proposed 2026-11-07, awaiting the owner's approval). Two parts.
+- [ ] R4 Offseason experience. Plan `docs/plans/R4.md` (approved by the owner 2026-11-07, `0c76059`, with the answers recorded in it). Two parts. R4-D2 to R4-D5 run under D35; stop at R4-D6 (workflow diff) and R4-D7 (dry-run command).
   - **Data part (can start before the design is approved):**
-    - [ ] R4-D1 Plan, D65, PRD, PLAN, design audit (docs only).
-    - [ ] R4-D2 D66 (request ceilings of the backfill, archive file family and version, new closed codes) and the contract text. Owner approval of D66.
+    - [x] R4-D1 Plan, D65, PRD, PLAN, design audit (docs only).
+    - [x] R4-D2 D66 (request ceilings of the backfill, archive file family and version, new closed codes) and the contract text. Owner approval of D66.
     - [ ] R4-D3 Game identity (`gamePk`), results from the schedule, the five published World Series reports recovered from the history of `main`.
     - [ ] R4-D4 One-game builder for the rest of the 2026 postseason, with per-source request ceilings, cache and resume.
     - [ ] R4-D5 Index, notable-duel tags and manifest (pure code).
     - [ ] R4-D6 Publish script for a set of files and workflow `archive-backfill.yml`. Owner approval of the workflow diff.
     - [ ] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
     - [ ] R4-D8 Release A (owner's PR), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
+    - [ ] R4-A2 Interim release before the redesign (owner's answer to OQ9): the home Archive reads the new index, shows the final score per row, hides the Grade column while no row has a grade, rows not linked; current visual style.
   - **UI part (waits for the design system):**
     - [ ] R4-U0 Gate: the design system and the final strings approved.
-    - [ ] R4-U1 Readers, real results in the archive, Grade column hidden while no row has a grade.
+    - [ ] R4-U1 Readers for the game files and the index (the archive results and the Grade rule ship earlier in R4-A2).
     - [ ] R4-U2 `/game/<gamePk>`.
-    - [ ] R4-U3 `/notable`.
+    - [ ] R4-U3 `/notable` (reasons: series-ending, strikeout duel, veteran duel, World Series game).
     - [ ] R4-U4 `/archive` with filters by team and date.
     - [ ] R4-U5 Analytics per route, accessibility, phone and desktop checks, independent QA (D27).
-    - [ ] R4-U6 Release B (owner's PR).
+    - [ ] R4-U6 Release B (owner's PR). Then the monthly visits-per-route export (OQ11), scheduled right after release B.
 - [ ] R5 Team pages: "the rotation, explained" for each team: every 2026 starter with arsenal, labels and season line (innings, ERA, WHIP, K%), split before and after the All-Star Game, rookies marked, links to each game page. Starters only; relievers later. Static files. Plan to be written after R4's data layout is proven.
 - [ ] v2 close: Phase 3 below (formal v2.0-b decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, full case study).
 - [ ] v2.1 Spanish: L10N.1 below.
