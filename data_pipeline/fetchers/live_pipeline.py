@@ -14,6 +14,7 @@ import time
 import urllib.request
 import urllib.parse
 from pathlib import Path
+from collections.abc import Callable
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -1824,6 +1825,9 @@ def build_live_snapshot(
     target_date: str | None = None,
     as_of: str | date | None = None,
     run_info: dict[str, Any] | None = None,
+    only_game_pk: int | None = None,
+    games: list[dict[str, Any]] | None = None,
+    season_stats_provider: Callable[[int, str], dict[str, Any]] | None = None,
 ) -> dict[str, Any] | None:
     """
     Fetch schedule and Statcast data, returning a generator-ready snapshot.
@@ -1833,18 +1837,29 @@ def build_live_snapshot(
     before each game (D29); an explicit `as_of` may only be earlier than that.
     `run_info`, when given, is filled with games_scheduled, games_live and
     skipped_games for the run record.
+
+    The archive backfill (R4-D4, D66) uses three optional arguments and the daily job none of them: `only_game_pk`
+    builds that one game (of the day's games, whichever place it has in the day); `games` is the day's game records
+    already read by the caller, so the schedule is not asked twice; `season_stats_provider(pitcher_id, official_date)`
+    gives a starter's season line as of the day before (`{}` = unavailable), so no per-game season request is made.
     """
 
     info = run_info if run_info is not None else {}
     target = target_date or today_eastern().isoformat()
     if as_of is not None:
         resolve_as_of(target, as_of)  # reject an as_of on or after the game day up front
-    games = fetch_todays_games(target)
+    games = fetch_todays_games(target) if games is None else games
     info.update(games_scheduled=len(games), games_live=0, skipped_games=[])
     if not games:
         return None
 
-    candidates = pick_featured_games(games, 5)
+    if only_game_pk is not None:
+        candidates = [
+            game for game in games
+            if game["game_pk"] == only_game_pk and game["away_pitcher_id"] and game["home_pitcher_id"]
+        ][:1]
+    else:
+        candidates = pick_featured_games(games, 5)
     if not candidates:
         print("[LIVE] No game with both probable pitchers found")
         info["skipped_games"] = [
@@ -1866,15 +1881,21 @@ def build_live_snapshot(
         )
 
         game_as_of = resolve_as_of(featured.get("official_date") or target, as_of).isoformat()
+        stats = {}
+        if season_stats_provider is not None:
+            for side in ("away", "home"):
+                stats[side] = season_stats_provider(featured[f"{side}_pitcher_id"], featured["official_date"])
         away_data = fetch_pitcher_statcast(
             featured["away_pitcher_id"],
             featured["away_pitcher_name"],
             as_of=game_as_of,
+            season_stats=stats.get("away"),
         )
         home_data = fetch_pitcher_statcast(
             featured["home_pitcher_id"],
             featured["home_pitcher_name"],
             as_of=game_as_of,
+            season_stats=stats.get("home"),
         )
 
         if not away_data or not home_data:
@@ -2059,6 +2080,9 @@ def reset_run_budgets() -> None:
 def run_live_pipeline(
     target_date: str | None = None,
     as_of: str | date | None = None,
+    only_game_pk: int | None = None,
+    games: list[dict[str, Any]] | None = None,
+    season_stats_provider: Callable[[int, str], dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     """
     Run the live fetch and return (run record, snapshot or None). No file I/O.
@@ -2073,7 +2097,9 @@ def run_live_pipeline(
     run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     target = target_date or today_eastern().isoformat()
     try:
-        snapshot = build_live_snapshot(target, as_of, run_info=info)
+        snapshot = build_live_snapshot(
+            target, as_of, run_info=info, only_game_pk=only_game_pk, games=games, season_stats_provider=season_stats_provider
+        )
     except Exception as exc:
         _record_failure("pipeline", exc)
         snapshot = None

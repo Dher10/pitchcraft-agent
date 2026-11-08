@@ -421,6 +421,9 @@ MUTATIONS = [
     (("starters_check", "away"), "started?"), (("starters_check", "actual"), {"away": None}),
     (("starters_check", "away"), "unknown", ),
     (("final_line", "away"), LINE),  # a line with no named starter who started
+    (("starter_facts",), None), (("starter_facts", "away"), {"id": 1}), (("starter_facts", "away"), {"id": 0, "prior_mlb_seasons": 3}),
+    (("starter_facts", "away"), {"id": 1, "prior_mlb_seasons": -1}), (("starter_facts", "away"), {"id": 1, "prior_mlb_seasons": 2.5}),
+    (("starter_facts", "away"), {"id": 1, "prior_mlb_seasons": True}), (("starter_facts", "away"), {"id": 1, "prior_mlb_seasons": 3, "x": 1}),
     (("payload",), None),
 ]
 

@@ -400,6 +400,7 @@ def build_game_file(
     origin: Mapping[str, Any],
     starters_check: Mapping[str, Any] | None = None,
     final_line: Mapping[str, Any] | None = None,
+    starter_facts: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The game file of a played game: the envelope around the payload, which is copied unchanged."""
 
@@ -425,6 +426,8 @@ def build_game_file(
         "origin": dict(origin),
         "starters_check": deepcopy(dict(starters_check)) if starters_check is not None else unknown_starters_check(),
         "final_line": deepcopy(dict(final_line)) if final_line is not None else {"away": None, "home": None},
+        # The report's own starters and how many earlier MLB seasons each pitched in (the veteran rule): None = unknown.
+        "starter_facts": deepcopy(dict(starter_facts)) if starter_facts is not None else {"away": None, "home": None},
         "payload": deepcopy(dict(payload)),
     }
 
@@ -504,7 +507,7 @@ def validate_game_file(document: Any) -> list[str]:
         return ["document"]
     expected = {
         "archive_version", "game_pk", "season", "date", "round", "series", "teams", "result", "origin",
-        "starters_check", "final_line", "payload",
+        "starters_check", "final_line", "starter_facts", "payload",
     }
     if set(document) != expected:
         bad("keys")
@@ -590,6 +593,21 @@ def validate_game_file(document: Any) -> list[str]:
             elif line[side] is not None and isinstance(check, Mapping) and isinstance(check.get("actual"), Mapping) \
                     and check["actual"].get(side) is None:
                 bad(f"final_line.{side}")  # a line belongs to a named pitcher who started
+    facts = document.get("starter_facts")
+    if not (isinstance(facts, Mapping) and set(facts) == set(SIDES)):
+        bad("starter_facts")
+    else:
+        for side in SIDES:
+            fact = facts[side]
+            if fact is None:
+                continue
+            seasons = fact.get("prior_mlb_seasons") if isinstance(fact, Mapping) else None
+            if not (
+                isinstance(fact, Mapping) and set(fact) == {"id", "prior_mlb_seasons"}
+                and isinstance(fact["id"], int) and not isinstance(fact["id"], bool) and fact["id"] > 0
+                and (seasons is None or (isinstance(seasons, int) and not isinstance(seasons, bool) and 0 <= seasons <= 40))
+            ):
+                bad(f"starter_facts.{side}")
     if not isinstance(document.get("payload"), Mapping):
         bad("payload")
     return problems
