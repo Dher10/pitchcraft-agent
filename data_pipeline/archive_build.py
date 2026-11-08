@@ -196,6 +196,16 @@ def report_starters(payload: Mapping[str, Any]) -> dict[str, int | None]:
     return out
 
 
+def _is_report(payload: Any) -> bool:
+    """False for a daily file that holds no report (a day with no games) or is not live (a demo file); anything else is
+    judged, and refused with a closed code if it is not a sound single live report."""
+
+    try:
+        return bool(payload["matchups"]) and payload["metadata"]["data_mode"] == "fetched_snapshot"
+    except (KeyError, TypeError):
+        return True  # malformed: let the lineage check refuse it, never skip it silently
+
+
 def published_by_game(
     published: Sequence[tuple[dict[str, Any], str, str]], day: str, day_records: Sequence[Mapping[str, Any]]
 ) -> tuple[dict[int, tuple[dict[str, Any], str, str]], list[dict[str, Any]]]:
@@ -208,6 +218,8 @@ def published_by_game(
     failed: list[dict[str, Any]] = []
     for item in published:
         payload = item[0]
+        if not _is_report(payload):
+            continue  # a no-games day or a demo file is not a report: nothing to match, nothing to refuse
         try:
             if ag.published_lineage_problems(payload):
                 raise ag.ArchiveError(ag.GAME_NOT_FOUND)

@@ -443,8 +443,27 @@ def test_a_published_report_of_another_day_is_left_for_its_day(tmp_path):
 
 def test_a_published_payload_that_is_not_a_live_single_report_is_refused(tmp_path):
     bad = deepcopy(PUBLISHED)
-    bad["metadata"]["data_mode"] = "demo_cached"
+    bad["matchups"][0]["postgame"] = {"final_score": {}}  # a published report never carries a postgame (D41)
     summary = ab.run([DAY], tmp_path, World().deps(published=[(bad, COMMIT, "ab" * 32)]), ab.Ledger())
+    assert {"game_pk": None, "code": "game_not_found"} in summary["failed"]
+
+
+def test_a_no_games_day_and_a_demo_file_are_not_reports_and_are_skipped_silently(tmp_path):
+    no_games = deepcopy(PUBLISHED)
+    no_games["matchups"] = []
+    demo = deepcopy(PUBLISHED)
+    demo["metadata"]["data_mode"] = "demo_cached"
+    items = [(no_games, COMMIT, "ab" * 32), (demo, COMMIT, "cd" * 32), (deepcopy(PUBLISHED), COMMIT, "ef" * 32)]
+    summary = ab.run([DAY], tmp_path, World().deps(published=items), ab.Ledger())
+    assert summary["failed"] == [] and summary["built"] == [849805]
+    document = json.loads((tmp_path / "games" / "849805.json").read_text(encoding="utf-8"))
+    assert document["origin"]["source"]["sha256"] == "ef" * 32  # the one real report
+
+
+def test_a_malformed_daily_file_is_never_skipped_silently(tmp_path):
+    broken = deepcopy(PUBLISHED)
+    del broken["metadata"]
+    summary = ab.run([DAY], tmp_path, World().deps(published=[(broken, COMMIT, "ab" * 32)]), ab.Ledger())
     assert {"game_pk": None, "code": "game_not_found"} in summary["failed"]
 
 
