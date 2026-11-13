@@ -377,6 +377,27 @@ def test_the_full_report_still_needs_the_boxscores_and_the_summaries(tmp_path, c
     assert dr.main(["--out", str(out), "--veteran-sweep", "5"]) == 2
 
 
+def test_a_summary_file_with_the_pipelines_log_in_another_encoding_is_still_read(tmp_path, capsys):
+    """The builder's stdout carries the pipeline's log lines ("Cristopher S\xe1nchez" in a Windows code page): the real dry
+    run of Nov 12 failed on them. Only the `archive:` line matters."""
+
+    out, raw, _ = make_dir(tmp_path)
+    summary = tmp_path / "mixed.txt"
+    summary.write_bytes(b"[LIVE] Starters: Cristopher S\xe1nchez vs Tyler Mahle\n" + LINE_A.encode("ascii") + b"\n")
+    assert dr.main(argv(out, raw, summary, "5")) == 0
+    assert "mlb: 12 of 319" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("line", [b'archive: {"built": [1,', b'archive: {"bui\xe1lt": [1]}'])
+def test_a_corrupted_archive_line_is_still_refused_not_read_as_clean(line, tmp_path):
+    """Control for the lenient decoding above: a damaged summary line must fail, never look like a clean run."""
+
+    out, raw, _ = make_dir(tmp_path)
+    summary = tmp_path / "damaged.txt"
+    summary.write_bytes(line + b"\n")
+    assert dr.main(argv(out, raw, summary, "5")) == 2
+
+
 def test_the_report_is_refused_without_game_files(tmp_path):
     assert dr.main(argv(tmp_path / "empty", tmp_path, tmp_path / "x", "5")) == 2
 

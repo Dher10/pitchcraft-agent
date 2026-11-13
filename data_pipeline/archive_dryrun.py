@@ -293,7 +293,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             path = args.raw_dir / f"{document['game_pk']}.json"
             if path.exists():
                 raws[document["game_pk"]] = json.loads(path.read_text(encoding="utf-8"))
-        summaries = [s for path in args.summary for s in parse_summaries(path.read_text(encoding="utf-8"))]
+        # The builder's stdout also carries the pipeline's log lines, in the console's code page on Windows; only the ASCII
+        # `archive:` lines are read, so undecodable bytes elsewhere are replaced, never fatal.
+        summaries = [s for path in args.summary for s in parse_summaries(path.read_text(encoding="utf-8", errors="replace"))]
         totals = total_requests(summaries)
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(f"dryrun: failed usage {type(exc).__name__}", file=sys.stderr)
