@@ -146,6 +146,12 @@ def write_atomically(path: Path, text: str) -> None:
         raise
 
 
+def write_raw_boxscore(directory: Path, game_pk: int, data: Any) -> None:
+    """Keep one boxscore answer exactly as received (compact JSON), for the dry run's report."""
+
+    write_atomically(directory / FILE_NAME.format(game_pk=game_pk), json.dumps(data, separators=(",", ":"), sort_keys=True) + "\n")
+
+
 def existing_valid(path: Path, game_pk: int) -> bool:
     """True when `path` already holds a valid file of this game: it is skipped, at no cost."""
 
@@ -173,11 +179,15 @@ class Dependencies:
         fetch_boxscore: Callable[[int], Any],
         prior_seasons: Callable[[int], int | None],
         published: Sequence[tuple[dict[str, Any], str, str]] | None = None,
+        save_boxscore: Callable[[int, Any], None] | None = None,
     ) -> None:
         self.fetch_day = fetch_day
         self.build_report = build_report
         self.fetch_boxscore = fetch_boxscore
         self.prior_seasons = prior_seasons
+        # Optional (the dry run of R4-D7): keeps each boxscore answer as received, so a parser mismatch can be told from
+        # data MLB did not give. A real run does not use it.
+        self.save_boxscore = save_boxscore
         # The reports the daily job published, as (payload, commit, sha256 of the committed bytes). Their `gamePk` is not
         # in the file; it is found by matching each to the schedule of its day (`ag.match_published_report`).
         self.published = list(published or [])
@@ -254,6 +264,8 @@ def build_one(
         box = deps.fetch_boxscore(record["game_pk"])
     except Exception:
         box = None  # an unreadable boxscore is `unknown`, never `started`
+    if box is not None and deps.save_boxscore is not None:
+        deps.save_boxscore(record["game_pk"], box)
     check, line = archive_boxscore.starters_and_lines(box, starters)
     facts = {}
     for side in ag.SIDES:
@@ -327,7 +339,9 @@ def _read_published(directory: Path) -> list[tuple[dict[str, Any], str, str]]:
     return items
 
 
-def real_dependencies(ledger: Ledger, history_dir: Path, season: int, published: list[tuple[dict[str, Any], str, str]]):
+def real_dependencies(
+    ledger: Ledger, history_dir: Path, season: int, published: list[tuple[dict[str, Any], str, str]], raw_dir: Path | None = None
+):
     """The pipeline, the schedule, the boxscore and the history store, all through the charged HTTP layer."""
 
     from data_pipeline import daily
@@ -358,7 +372,8 @@ def real_dependencies(ledger: Ledger, history_dir: Path, season: int, published:
     def fetch_boxscore(game_pk: int) -> Any:
         return live_pipeline._get_json(archive_boxscore.boxscore_url(game_pk))
 
-    return Dependencies(fetch_day, build_report, fetch_boxscore, history.prior_seasons, published)
+    saver = None if raw_dir is None else (lambda pk, data: write_raw_boxscore(raw_dir, pk, data))
+    return Dependencies(fetch_day, build_report, fetch_boxscore, history.prior_seasons, published, saver)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -369,6 +384,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--game-pk", type=int, help="build only this game (its day must be inside --start/--end)")
     parser.add_argument("--published-dir", type=Path, help="the committed daily files, one `<40-hex commit>.json` each")
     parser.add_argument("--history-dir", type=Path, help="cache of the per-pitcher answers (default: OUT/history)")
+    parser.add_argument("--raw-dir", type=Path, help="keep every boxscore answer here as received (the dry run of R4-D7; never under public/data)")
     parser.add_argument("--no-resume", action="store_true")
     return parser
 
@@ -376,7 +392,7 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     repo_root = Path(__file__).resolve().parents[1]
-    if not out_dir_allowed(args.out, repo_root):
+    if not out_dir_allowed(args.out, repo_root) or (args.raw_dir is not None and not out_dir_allowed(args.raw_dir, repo_root)):
         print("archive: failed out_under_published_paths", file=sys.stderr)
         return 2
     try:
@@ -392,7 +408,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     ledger = Ledger()
     season = int(days[0][:4])
     with enforced(ledger, live_pipeline, pause=time.sleep):
-        deps = real_dependencies(ledger, args.history_dir or args.out / "history", season, published)
+        deps = real_dependencies(ledger, args.history_dir or args.out / "history", season, published, args.raw_dir)
         summary = run(days, args.out, deps, ledger, only=args.game_pk, resume=not args.no_resume)
     print("archive: " + json.dumps(summary, sort_keys=True))
     return 1 if summary["failed"] or summary["stopped"] else 0

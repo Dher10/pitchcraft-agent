@@ -487,3 +487,37 @@ def test_the_runner_reads_no_sealed_set_and_nothing_under_the_published_paths():
         assert forbidden not in source, forbidden
     # it names the published paths only to refuse them
     assert source.count('"public/data"') == 1 and ab.OUT_FORBIDDEN == ("public/data", "evals/live")
+
+
+# --- R4-D7: the raw boxscore is kept for the dry run (red first, no network) --------------------------------------------
+
+def test_a_fetched_boxscore_is_handed_to_the_saver_once_exactly_as_received(tmp_path):
+    saved = []
+    deps = World().deps()
+    deps.save_boxscore = lambda pk, data: saved.append((pk, data))
+    ab.run([DAY], tmp_path, deps, ab.Ledger())
+    assert saved == [(849805, box())]
+
+
+def test_a_boxscore_that_could_not_be_fetched_is_not_saved(tmp_path):
+    saved = []
+    deps = World(boxes={849805: None}).deps()
+    deps.save_boxscore = lambda pk, data: saved.append(pk)
+    ab.run([DAY], tmp_path, deps, ab.Ledger())
+    assert saved == []
+
+
+def test_there_is_no_saver_unless_one_is_given():
+    assert World().deps().save_boxscore is None
+
+
+def test_the_raw_boxscore_is_written_under_its_game_and_is_the_answer_unchanged(tmp_path):
+    ab.write_raw_boxscore(tmp_path / "raw", 849805, box())
+    assert json.loads((tmp_path / "raw" / "849805.json").read_text(encoding="utf-8")) == box()
+    assert not list(tmp_path.rglob("*.tmp"))
+
+
+def test_main_refuses_a_raw_dir_under_the_published_paths(tmp_path, capsys):
+    argv = ["--out", str(tmp_path), "--raw-dir", str(REPO / "public" / "data" / "raw"), "--start", DAY, "--end", DAY]
+    assert ab.main(argv) == 2
+    assert "out_under_published_paths" in capsys.readouterr().err
