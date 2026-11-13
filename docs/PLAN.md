@@ -239,7 +239,7 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
     - [x] R4-D3 Game identity (`gamePk`), results from the schedule, the five published World Series reports recovered from the history of `main`.
     - [x] R4-D4 One-game builder for the rest of the 2026 postseason, with per-source request ceilings, cache and resume.
     - [x] R4-D5 Index, notable-duel tags and manifest (pure code).
-    - [ ] R4-D6 Publish script for a set of files and workflow `archive-backfill.yml`. Owner approval of the workflow diff.
+    - [x] R4-D6 Publish script for a set of files and workflow `archive-backfill.yml`. Owner approval of the workflow diff.
     - [ ] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
     - [ ] R4-D8 Release A (owner's PR), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
     - [ ] R4-A2 Interim release before the redesign (owner's answer to OQ9): the home Archive reads the new index, shows the final score per row, hides the Grade column while no row has a grade, rows not linked; current visual style.

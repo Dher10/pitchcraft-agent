@@ -1,0 +1,204 @@
+name: archive-backfill
+
+# R4-D6 (docs/plans/R4.md 4.5; D66, D15, D16, D42): build the game files of the 2026 postseason archive once, by hand, and
+# publish them to main under public/data/archive/.
+#
+# Same two-job shape as daily.yml. `build` has no secret and no write access: it reads the committed history, fetches past
+# games within the ceilings of D66 (MLB Stats API 319 requests, Baseball Savant 190, enforced in the code), builds, judges
+# the folder again with no network, rehearses the publication in a temporary clone and uploads the candidate folder.
+# `publish` runs only on main, only after `build`, only when the run is not a dry run, and only there is the deploy key (the
+# one secret of the environment `data-publish`) available: it judges the downloaded folder again and hands it to
+# scripts/publish_archive.py, which commits the owner's identity with the subject `data: archive backfill YYYY` and pushes to
+# main with the deploy key.
+#
+# Manual only: no schedule, no push trigger, so no code push to v2 can ever spend a request. The daily workflow stays
+# disabled and untouched. A run is resumable: the files already published are copied into the candidate folder first and are
+# skipped by the builder, and the per-pitcher answers are cached between runs.
+#
+# `veteran_min` has no default: V of the veteran rule is approved by the owner after the dry run of R4-D7. A dry run needs
+# a provisional V to run at all; it is never published (a real run is `dry_run: false`, with the approved V).
+#
+# The base is always `origin/main`, whichever ref the run starts from: the published daily files, the files already under
+# public/data/archive/ and the repository of the publication rehearsal all come from `origin/main`, so a dry run started
+# from `v2` judges the same base as the real run on `main`. The games built before a failed or stopped run are kept in the
+# Actions cache and found again by the next run **of the same ref**: a cache made on one ref is not visible to another, so
+# the dry run and the real run should both be started from `main` (the file only exists there after release A). A game
+# restored from the cache or copied from the published archive is not rebuilt, even if the builder changed since; the folder
+# is judged again by `check`, so the contract is not at risk, only freshness (delete the cache to rebuild). A push the remote
+# rejected (another commit reached main meanwhile) is safe, and the answer is to run again.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and rehearse only; do not publish
+        type: boolean
+        default: true
+      start_date:
+        description: First day, YYYY-MM-DD
+        type: string
+        default: "2026-09-28"
+      end_date:
+        description: Last day, YYYY-MM-DD
+        type: string
+        default: "2026-10-31"
+      veteran_min:
+        description: V, the earlier MLB seasons both starters need for a veteran duel (approved by the owner; no default)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: archive-backfill
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Check the inputs
+        env:
+          INPUT_START: ${{ inputs.start_date }}
+          INPUT_END: ${{ inputs.end_date }}
+          INPUT_V: ${{ inputs.veteran_min }}
+        run: |
+          for value in "$INPUT_START" "$INPUT_END"; do
+            printf '%s' "$value" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || { echo "bad date input"; exit 2; }
+          done
+          printf '%s' "$INPUT_V" | grep -Eq '^[0-9]{1,2}$' || { echo "bad veteran_min input"; exit 2; }
+      - name: Restore the data cache and the games built by earlier runs
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            data_cache/raw
+            ${{ runner.temp }}/candidate
+          key: archive-cache-${{ github.run_id }}
+          restore-keys: |
+            archive-cache-
+            data-cache-
+      - name: Start from what is already published on main, and take the published reports out of its history
+        run: |
+          git fetch --no-tags origin main
+          mkdir -p "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/published" "$RUNNER_TEMP/base"
+          if git cat-file -e origin/main:public/data/archive 2>/dev/null; then
+            git archive origin/main public/data/archive | tar -x -C "$RUNNER_TEMP/base"
+            cp -R "$RUNNER_TEMP/base/public/data/archive/." "$RUNNER_TEMP/candidate/"
+          fi
+          rm -f "$RUNNER_TEMP/candidate/manifest.json" "$RUNNER_TEMP"/candidate/index-*.json
+          find "$RUNNER_TEMP/candidate" -name '.*.tmp' -delete
+          for sha in $(git log origin/main --format=%H --grep='^data: daily update' -- public/data/pitchcraft-demo.json); do
+            git show "$sha:public/data/pitchcraft-demo.json" > "$RUNNER_TEMP/published/$sha.json"
+          done
+          echo "published daily files found: $(ls "$RUNNER_TEMP/published" | wc -l)"
+      - name: Build the game files
+        env:
+          INPUT_START: ${{ inputs.start_date }}
+          INPUT_END: ${{ inputs.end_date }}
+        run: |
+          status=0
+          python -m data_pipeline.archive_build --out "$RUNNER_TEMP/candidate" --start "$INPUT_START" --end "$INPUT_END" \
+            --published-dir "$RUNNER_TEMP/published" --history-dir data_cache/raw/archive_history \
+            > "$RUNNER_TEMP/build.out" 2> "$RUNNER_TEMP/build.err" || status=$?
+          cat "$RUNNER_TEMP/build.out"
+          cat "$RUNNER_TEMP/build.err" >&2
+          {
+            echo "### Archive build (exit $status)"
+            echo '```'
+            grep -h '^archive: ' "$RUNNER_TEMP/build.out" "$RUNNER_TEMP/build.err" | cut -c1-3000
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Save the data cache and the games built so far
+        if: always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            data_cache/raw
+            ${{ runner.temp }}/candidate
+          key: archive-cache-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Write the index and the manifest, then judge the folder again with no network
+        env:
+          INPUT_V: ${{ inputs.veteran_min }}
+        run: |
+          status=0
+          {
+            python -m data_pipeline.archive_finalize build --dir "$RUNNER_TEMP/candidate" --veteran-min "$INPUT_V" &&
+            python -m data_pipeline.archive_finalize check --dir "$RUNNER_TEMP/candidate" --veteran-min "$INPUT_V"
+          } > "$RUNNER_TEMP/finalize.out" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/finalize.out"
+          {
+            echo "### Finalize and check (exit $status)"
+            echo '```'
+            cat "$RUNNER_TEMP/finalize.out"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: Rehearse the publication in a temporary clone of origin/main
+        run: |
+          status=0
+          git worktree add --detach "$RUNNER_TEMP/main-tree" origin/main
+          python scripts/publish_archive.py "$RUNNER_TEMP/candidate" --repo "$RUNNER_TEMP/main-tree" --dry-run > "$RUNNER_TEMP/publish.out" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/publish.out"
+          {
+            echo "### Publication rehearsal (exit $status)"
+            echo '```'
+            cat "$RUNNER_TEMP/publish.out"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: candidate
+          path: ${{ runner.temp }}/candidate
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main' && inputs.dry_run != true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: data-publish
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: candidate
+          path: ${{ runner.temp }}/candidate
+      - name: Judge the folder again, with no network
+        env:
+          INPUT_V: ${{ inputs.veteran_min }}
+        run: python -m data_pipeline.archive_finalize check --dir "$RUNNER_TEMP/candidate" --veteran-min "$INPUT_V"
+      - name: Write the deploy key to a private file
+        env:
+          DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
+        run: |
+          umask 077
+          printf '%s\n' "$DATA_DEPLOY_KEY" > "$RUNNER_TEMP/deploy_key"
+          chmod 600 "$RUNNER_TEMP/deploy_key"
+      - name: Commit and push the files
+        run: python scripts/publish_archive.py "$RUNNER_TEMP/candidate" --key-file "$RUNNER_TEMP/deploy_key"
+      - name: Remove the deploy key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deploy_key"
