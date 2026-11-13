@@ -201,6 +201,24 @@ def prior_seasons_distribution(documents: Sequence[Mapping[str, Any]]) -> dict[s
 # --- text ---------------------------------------------------------------------------------------------------------------
 
 
+def census_lines(table: Mapping[str, Any], spread: Mapping[str, Any]) -> list[str]:
+    """The NOTABLE and PRIOR MLB SEASONS sections: what the owner needs to set V."""
+
+    out = [f"NOTABLE ({table['games']} games; the rules are fixed, nothing is tuned here)"]
+    for reason, count in table["fixed"].items():
+        out.append(f"  {reason}: {count}")
+    out.append("  veteran_duel by V (both starters at least V prior MLB seasons), and games with any reason:")
+    for v, entry in table["by_v"].items():
+        share = "n/a" if entry["share"] is None else f"{entry['share'] * 100:.0f}%"
+        out.append(f"    V={v}: veteran_duel {entry['veteran_duel']}, any reason {entry['any']} ({share})")
+    out.append("")
+    out.append(f"PRIOR MLB SEASONS ({spread['starters']} distinct starters in these games)")
+    for seasons, count in spread["known"].items():
+        out.append(f"  {seasons} prior seasons: {count}")
+    out.append(f"  unknown: {spread['unknown']}")
+    return out
+
+
 def render(
     totals: Mapping[str, Mapping[str, Any]], summaries: Sequence[Mapping[str, Any]], rows: Sequence[Mapping[str, Any]],
     table: Mapping[str, Any], spread: Mapping[str, Any], stops: Sequence[str],
@@ -230,19 +248,7 @@ def render(
         )
 
     out.append("")
-    out.append(f"NOTABLE ({table['games']} games; the rules are fixed, nothing is tuned here)")
-    for reason, count in table["fixed"].items():
-        out.append(f"  {reason}: {count}")
-    out.append("  veteran_duel by V (both starters at least V prior MLB seasons), and games with any reason:")
-    for v, entry in table["by_v"].items():
-        share = "n/a" if entry["share"] is None else f"{entry['share'] * 100:.0f}%"
-        out.append(f"    V={v}: veteran_duel {entry['veteran_duel']}, any reason {entry['any']} ({share})")
-
-    out.append("")
-    out.append(f"PRIOR MLB SEASONS ({spread['starters']} distinct starters in these games)")
-    for seasons, count in spread["known"].items():
-        out.append(f"  {seasons} prior seasons: {count}")
-    out.append(f"  unknown: {spread['unknown']}")
+    out.extend(census_lines(table, spread))
 
     out.append("")
     if stops:
@@ -263,8 +269,9 @@ def _sweep(text: str) -> list[int]:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Report of the R4-D7 dry run (reads files only).")
     parser.add_argument("--out", type=Path, required=True, help="the folder the builder wrote (its games/ folder is read)")
-    parser.add_argument("--raw-dir", type=Path, required=True, help="the boxscore answers the builder kept")
-    parser.add_argument("--summary", type=Path, nargs="+", required=True, help="the builder's output, one file per run")
+    parser.add_argument("--raw-dir", type=Path, help="the boxscore answers the builder kept (not used by --census)")
+    parser.add_argument("--summary", type=Path, nargs="+", help="the builder's output, one file per run (not used by --census)")
+    parser.add_argument("--census", action="store_true", help="print only the notable counts and the prior MLB seasons, from the game files alone (the workflow's step summary)")
     parser.add_argument("--veteran-sweep", default="1,2,3,4,5,6,7,8,9,10", help="the values of V to count, increasing")
     return parser
 
@@ -276,6 +283,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         documents = [json.loads(path.read_text(encoding="utf-8")) for path in sorted((args.out / "games").glob("*.json"))]
         if not documents or any(ag.validate_game_file(document) for document in documents):
             raise ValueError("no game files, or one is not valid")
+        if args.census:
+            sys.stdout.write("\n".join(census_lines(notable_table(documents, sweep), prior_seasons_distribution(documents))) + "\n")
+            return 0
+        if args.raw_dir is None or not args.summary:
+            raise ValueError("the full report needs --raw-dir and --summary")
         raws = {}
         for document in documents:
             path = args.raw_dir / f"{document['game_pk']}.json"

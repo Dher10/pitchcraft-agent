@@ -129,6 +129,16 @@ jobs:
             data_cache/raw
             ${{ runner.temp }}/candidate
           key: archive-cache-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Census of the built starters, to set V (prior MLB seasons, and the veteran count for V = 1..10)
+        if: always()
+        run: |
+          {
+            echo "### Prior MLB seasons of the built starters and the veteran rule"
+            echo '```'
+            python -m data_pipeline.archive_dryrun --census --out "$RUNNER_TEMP/candidate" --veteran-sweep 1,2,3,4,5,6,7,8,9,10 2>&1 \
+              || echo "census unavailable (no valid game files yet)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Write the index and the manifest, then judge the folder again with no network
         env:
           INPUT_V: ${{ inputs.veteran_min }}

@@ -346,6 +346,37 @@ def test_the_clean_report_says_nothing_stops_the_work(tmp_path, capsys):
     assert "nothing stops the work" in capsys.readouterr().out
 
 
+def test_the_census_prints_only_the_notable_counts_and_the_prior_seasons_and_needs_only_the_games(tmp_path, capsys):
+    out, _raw, _summary = make_dir(tmp_path)
+    code = dr.main(["--census", "--out", str(out), "--veteran-sweep", "1,2,3,4,5,6,7,8,9,10"])
+    text = capsys.readouterr().out
+    assert code == 0
+    assert "NOTABLE" in text and "PRIOR MLB SEASONS" in text and "V=10" in text and "V=1:" in text
+    for absent in ("REQUESTS", "STARTERS", "STOP", "nothing stops"):
+        assert absent not in text
+
+
+def test_the_census_is_never_a_stop_whatever_the_boxscores_say(tmp_path, capsys):
+    out, _raw, _summary = make_dir(tmp_path)
+    assert dr.main(["--census", "--out", str(out), "--veteran-sweep", "5"]) == 0
+
+
+def test_the_census_without_game_files_is_refused(tmp_path):
+    assert dr.main(["--census", "--out", str(tmp_path / "empty"), "--veteran-sweep", "5"]) == 2
+
+
+def test_the_census_writes_nothing(tmp_path, capsys):
+    out, _raw, _summary = make_dir(tmp_path)
+    before = sorted(p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*"))
+    dr.main(["--census", "--out", str(out), "--veteran-sweep", "5"])
+    assert sorted(p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*")) == before
+
+
+def test_the_full_report_still_needs_the_boxscores_and_the_summaries(tmp_path, capsys):
+    out, _raw, _summary = make_dir(tmp_path)
+    assert dr.main(["--out", str(out), "--veteran-sweep", "5"]) == 2
+
+
 def test_the_report_is_refused_without_game_files(tmp_path):
     assert dr.main(argv(tmp_path / "empty", tmp_path, tmp_path / "x", "5")) == 2
 
