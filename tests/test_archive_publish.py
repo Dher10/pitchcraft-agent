@@ -9,6 +9,7 @@ key on `main` can prove (the first real run), and it reuses `publish_data._push`
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import date, timedelta
 import importlib.util
 import json
 from pathlib import Path
@@ -60,13 +61,20 @@ def git(repo: Path, *args: str) -> str:
 
 def published_game(pk=849805, day="2026-10-23"):
     (record,) = records(schedule_game(pk=pk, day=day))
-    origin = ag.published_origin(PUBLISHED, record, SOURCE)
-    return ag.build_game_file(record, PUBLISHED, origin, starter_facts={"away": {"id": 607259, "prior_mlb_seasons": 6},
+    payload = deepcopy(PUBLISHED)
+    payload["matchups"][0]["date"] = day
+    payload["metadata"]["data_status"]["live_run"].update(target_date=day, as_of=(date.fromisoformat(day) - timedelta(days=1)).isoformat())
+    origin = ag.published_origin(payload, record, SOURCE)
+    return ag.build_game_file(record, payload, origin, starter_facts={"away": {"id": 607259, "prior_mlb_seasons": 6},
                                                                        "home": {"id": 694819, "prior_mlb_seasons": 7}})
 
 
 def reconstructed_game(payload, pk=849806, day="2026-07-04"):
-    (record,) = records(schedule_game(pk=pk, day=day, game_type="D", series_status={"isOver": True, "result": "NYY wins 3-1"}))
+    # Use the actual validated report's identity; the former hardcoded TB/MIL
+    # schedule contradicted the matrix report's teams.
+    matchup = payload["matchups"][0]
+    (record,) = records(schedule_game(pk=pk, day=matchup["date"], game_type="D", series_status={"isOver": True, "result": "NYY wins 3-1"}))
+    record["teams"] = {s: {"id": int(matchup["teams"][s]["id"]), "name": matchup["teams"][s]["name"]} for s in ag.SIDES}
     origin = ag.published_origin(payload, record, None)
     origin["kind"], origin["published_at"] = "reconstructed", None
     return ag.build_game_file(record, payload, origin)
@@ -135,8 +143,7 @@ def test_a_file_named_by_another_game_or_unreadable_is_a_problem(folder):
 
 
 def test_two_seasons_in_one_folder_are_refused(folder, real_payload):
-    other = published_game(pk=849808)
-    other["season"], other["date"], other["origin"]["as_of"] = 2025, "2025-10-23", "2025-10-22"
+    other = published_game(pk=849808, day="2025-10-23")
     write_game(folder, other)
     assert "season" in fin.build(folder, V, BUILT_AT)["problems"]
 
@@ -193,7 +200,7 @@ def test_check_refuses_a_reconstructed_payload_that_todays_checks_refuse_and_a_p
     built_again = published_game()
     built_again["payload"]["matchups"].append(deepcopy(built_again["payload"]["matchups"][0]))
     (folder / "games" / "849805.json").write_text(ag.compact_json(built_again), encoding="utf-8")
-    assert "game:lineage:matchups" in fin.check(folder)
+    assert "game:envelope:payload.identity" in fin.check(folder)
 
 
 @pytest.mark.parametrize("stray", ["notes.txt", "games/extra.html", ".hidden", "games/sub/x.json"])

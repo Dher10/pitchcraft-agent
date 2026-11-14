@@ -1,5 +1,26 @@
 # PitchCraft v2 — Status archive
 
+### 2026-11-14 - R4 pre-release audit, group 1
+
+Owner explicitly applies D35 to Codex. Read-only independent audit at `7bbbd27`
+produced A1-A11 and the separately planned G1 guard; report and approved addendum
+are in `docs/qa/R4-data-audit-2026-11-14.md` and `docs/plans/R4-pre-release.md`.
+Group 1 fixes A1, A3-A7 and the resume half of A2. New tests were seen red:
+16 failed, one named valid-published control passed. Initial sandbox run had
+temporary-directory setup errors; the unchanged command in the default local
+environment reproduced all 16 failures. Synthetic doubleheader/index/publisher
+fixtures formerly disagreed with report dates/teams/cutoffs; corrected explicitly.
+Contract self-review: rules 1/3/6/7 bind identity, lineage and pregame cutoff;
+rule 2 keeps unavailable values and free cache reads; rule 5 strengthens resume;
+rule 8 keeps closed errors; rule 4 introduces no text. No schema change, no
+tolerance/xfail removed or added; no DECISIONS/workflow/protected-data edits.
+Verification (default terminal, in order; logs `.local/r4-g1-*`):
+`python -m pytest`: 6372 passed, 2 skipped, 2 existing date-parser warnings;
+`npm test`: 296 passed; `npx tsc --noEmit`, `npm run lint`, `npm run build`:
+exit 0. Default Turbopack build succeeds. Independent reviewer PASS, round 1,
+all 11 checklist items ok; no findings or rejected suggestions.
+Remaining findings belong to group 2. Prior CI `7bbbd27` success, run 43354799006.
+
 ### 2026-11-07 - R4-D3 and R4-D4 (archive identity, builder) review record
 
 R4-D3 (`197bcac`): reviewer round 1 BLOCK on two findings (the "byte-identical" provenance wording for a re-serialized payload; envelope fields teams.id and series.* not type-checked), both fixed, round 2 PASS. Finding recorded: today's validate_payload and check_contract refuse the published 0.9.0 World Series file (older catalogs), so published reports keep their values and record lineage (commit, SHA-256 of the committed blob) instead of being rejudged; the owner may object.

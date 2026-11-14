@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import hashlib
 import json
 import re
@@ -610,4 +610,48 @@ def validate_game_file(document: Any) -> list[str]:
                 bad(f"starter_facts.{side}")
     if not isinstance(document.get("payload"), Mapping):
         bad("payload")
+    if not problems:
+        problems.extend(_report_problems(document))
     return problems
+
+
+def _report_problems(document: Mapping[str, Any]) -> list[str]:
+    """Bind the envelope to the report it describes; shape checks alone cannot establish identity."""
+
+    problems = []
+    try:
+        payload = document["payload"]
+        if len(payload["matchups"]) != 1:
+            return ["payload.identity"]
+        matchup = payload["matchups"][0]
+        metadata = payload["metadata"]
+        run = metadata["data_status"]["live_run"]
+        origin = document["origin"]
+        cutoff = (date.fromisoformat(document["date"]) - timedelta(days=1)).isoformat()
+        if matchup["date"] != document["date"] or run["target_date"] != document["date"]:
+            problems.append("payload.identity")
+        if origin["as_of"] != cutoff or run["as_of"] != cutoff:
+            problems.append("origin.as_of")
+        if origin["built_at"] != metadata["generated_at"]:
+            problems.append("origin.built_at")
+        if origin["kind"] == "published_live":
+            instant = lambda v: datetime.fromisoformat(v.replace("Z", "+00:00"))
+            if (instant(origin["published_at"]) != instant(run["run_at"])
+                    or instant(run["run_at"]) >= instant(matchup["game"]["start_time_utc"])):
+                problems.append("origin.published_at")
+        for side in SIDES:
+            team = matchup["teams"][side]
+            if str(document["teams"][side]["id"]) != str(team["id"]) or document["teams"][side]["name"] != team["name"]:
+                problems.append("payload.identity")
+            starter = matchup["starters"][f"{side}_starter"]
+            fact = document["starter_facts"][side]
+            if fact is not None and str(fact["id"]) != str(starter["id"]):
+                problems.append(f"starter_facts.{side}")
+            check = document["starters_check"]
+            if check[side] != "unknown":
+                actual = check["actual"][side]
+                if actual is None or actual["id"] <= 0 or (str(actual["id"]) == str(starter["id"])) != (check[side] == "started"):
+                    problems.append(f"starters_check.{side}")
+    except (KeyError, TypeError, ValueError, IndexError, AttributeError, OverflowError):
+        problems.append("payload.identity")
+    return sorted(set(problems))

@@ -199,14 +199,19 @@ class HistoryStore:
         if pitcher_id in self.memory:
             return self.memory[pitcher_id]
         path = self._path(pitcher_id)
+        url = HISTORY_URL.format(pitcher_id=pitcher_id, season=self.season)
         if path.exists():
-            record = json.loads(path.read_text(encoding="utf-8"))
-            if _digest(record["response"]) != record["sha256"]:
-                raise SourceShapeError("cached history does not match its digest")
+            try:
+                record = json.loads(path.read_text(encoding="utf-8"))
+                valid = (isinstance(record, dict) and set(record) == {"url", "fetched_at", "sha256", "response"}
+                         and record["url"] == url and _digest(record["response"]) == record["sha256"])
+            except (ValueError, TypeError):
+                valid = False
+            if not valid:
+                raise SourceShapeError("cached history identity or digest is invalid")
             response = record["response"]
             _blocks(response)
         else:
-            url = HISTORY_URL.format(pitcher_id=pitcher_id, season=self.season)
             self.lookups += 1  # counted before the request: a failed one used the ceiling too
             response = self._fetch(url)
             _blocks(response)  # a malformed answer raises here and is never written

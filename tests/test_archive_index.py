@@ -7,6 +7,7 @@ weakened; an unknown input never makes a tag.
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import date, timedelta
 
 import pytest
 
@@ -32,12 +33,14 @@ def payload_with(away=ABOVE, home=ABOVE, away_limited=False, home_limited=False)
 def doc(pk=849805, day="2026-10-23", game_type="W", over=False, payload=None, facts=(8, 9), season=2026, **kwargs):
     after = "MIL wins 4-1" if over else "MIL leads 1-0"
     (record,) = records(schedule_game(pk=pk, day=day, game_type=game_type, series_status={"isOver": over, "result": after}, **kwargs))
+    report = deepcopy(payload if payload is not None else payload_with())
+    report["matchups"][0]["date"] = day
+    report["metadata"]["data_status"]["live_run"].update(target_date=day, as_of=(date.fromisoformat(day) - timedelta(days=1)).isoformat())
     document = ag.build_game_file(
-        record, payload or payload_with(), ag.published_origin(PUBLISHED, record, SOURCE),
+        record, report, ag.published_origin(report, record, SOURCE),
         starter_facts={side: None if n is False else {"id": 607259 if side == "away" else 694819, "prior_mlb_seasons": n}
                        for side, n in zip(("away", "home"), facts)},
     )
-    document["origin"]["as_of"] = "2026-10-01"
     document["season"] = season
     return document
 
@@ -126,7 +129,7 @@ def test_a_row_carries_what_the_list_shows_and_no_report_text():
     assert row["away"] == {"id": 139, "name": "Tampa Bay Rays", "abbreviation": PUBLISHED["matchups"][0]["teams"]["away"]["abbreviation"]}
     assert row["result"] == {"away_runs": 3, "home_runs": 5, "winner": "home"}
     assert row["starters"] == {"away": "Nick Martinez", "home": "Jacob Misiorowski"}
-    assert row["report"] == {"origin": "published_live", "as_of": "2026-10-01", "starters_check": {"away": "unknown", "home": "unknown"}}
+    assert row["report"] == {"origin": "published_live", "as_of": "2026-10-22", "starters_check": {"away": "unknown", "home": "unknown"}}
     assert row["notable"] == ["series_clincher", "strikeout_duel", "veteran_duel", "world_series"]
     assert len(str(row)) < 900  # about 0.5 KB a row: a 2,700-game season is about 1.3 MB
 

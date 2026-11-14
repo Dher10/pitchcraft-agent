@@ -99,8 +99,6 @@ def enforced(ledger: Ledger, live_pipeline: Any, pause: Callable[[float], None] 
         # this call, so that the call cannot send more requests than the ledger has left. If that cap is what stops it, the
         # pipeline would record a missing frame and go on; here it is the end of the run instead.
         remaining = ledger.ceilings["savant"] - ledger.used["savant"]
-        if remaining <= 0:
-            raise CeilingReached("savant")
         before = live_pipeline._pitcher_statcast_run["requests"]
         original_cap = live_pipeline.PITCHER_STATCAST_MAX_REQUESTS_PER_RUN
         live_pipeline.PITCHER_STATCAST_MAX_REQUESTS_PER_RUN = min(original_cap, before + remaining)
@@ -152,14 +150,30 @@ def write_raw_boxscore(directory: Path, game_pk: int, data: Any) -> None:
     write_atomically(directory / FILE_NAME.format(game_pk=game_pk), json.dumps(data, separators=(",", ":"), sort_keys=True) + "\n")
 
 
-def existing_valid(path: Path, game_pk: int) -> bool:
+def existing_valid(path: Path, game_pk: int, record: Mapping[str, Any] | None = None,
+                   published: tuple[dict[str, Any], str, str] | None = None) -> bool:
     """True when `path` already holds a valid file of this game: it is skipped, at no cost."""
 
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return False
-    return ag.validate_game_file(document) == [] and document.get("game_pk") == game_pk
+    from data_pipeline.archive_finalize import game_problems
+
+    if game_problems(document) or document.get("game_pk") != game_pk:
+        return False
+    if record is not None:
+        expected = ag.build_game_file(record, document["payload"], document["origin"],
+                                      document["starters_check"], document["final_line"], document["starter_facts"])
+        if expected != document:
+            return False
+        if published is not None:
+            payload, commit, digest = published
+            if document["payload"] != payload or document["origin"] != ag.published_origin(payload, record, {"commit": commit, "sha256": digest}):
+                return False
+        elif document["origin"]["kind"] == "published_live":
+            return False  # no recovered committed source proves this cached report
+    return True
 
 
 def days_between(start: str, end: str) -> list[str]:
@@ -299,7 +313,7 @@ def run(days: Sequence[str], out: Path, deps: Dependencies, ledger: Ledger, only
                 if only is not None and pk != only:
                     continue
                 path = out / "games" / FILE_NAME.format(game_pk=pk)
-                if resume and existing_valid(path, pk):
+                if resume and existing_valid(path, pk, record, matched.get(pk)):
                     skipped.append(pk)
                     continue
                 try:
@@ -392,7 +406,8 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     repo_root = Path(__file__).resolve().parents[1]
-    if not out_dir_allowed(args.out, repo_root) or (args.raw_dir is not None and not out_dir_allowed(args.raw_dir, repo_root)):
+    writable = (args.out, args.raw_dir, args.history_dir or args.out / "history")
+    if any(p is not None and not out_dir_allowed(p, repo_root) for p in writable):
         print("archive: failed out_under_published_paths", file=sys.stderr)
         return 2
     try:

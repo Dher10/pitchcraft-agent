@@ -67,7 +67,8 @@ class World:
 
 
 def two_games():
-    other = schedule_game(pk=849806, day=DAY, away=147, home=111, away_pp=1, home_pp=2, start="2026-10-24T01:00:00Z")
+    # Identity must agree with the report returned by World (a synthetic doubleheader).
+    other = schedule_game(pk=849806, day=DAY, start="2026-10-24T01:00:00Z")
     return {DAY: records(schedule_game(), other)}
 
 
@@ -120,6 +121,8 @@ def fake_pipeline(calls):
         return "csv"
 
     def frame(*args, **kwargs):
+        if ns._pitcher_statcast_run["requests"] + 3 > ns.PITCHER_STATCAST_MAX_REQUESTS_PER_RUN:
+            raise ns.PitcherStatcastBudgetExceeded("cap")
         ns._pitcher_statcast_run["requests"] += 3  # one call may send several HTTP requests
         calls.append(("frame", args))
         return "frame"
@@ -322,10 +325,12 @@ def test_an_unreadable_boxscore_makes_the_starters_unknown_and_the_file_is_still
 
 def test_a_second_run_skips_a_valid_file_and_asks_for_nothing_else(tmp_path):
     world = World()
-    ab.run([DAY], tmp_path, world.deps(), ab.Ledger())
+    # This legacy report is accepted by lineage, not today's reconstructed catalogs.
+    source = [(deepcopy(PUBLISHED), "a" * 40, "b" * 64)]
+    ab.run([DAY], tmp_path, world.deps(published=source), ab.Ledger())
     again = World()
     ledger = ab.Ledger()
-    summary = ab.run([DAY], tmp_path, again.deps(ledger=ledger), ledger)
+    summary = ab.run([DAY], tmp_path, again.deps(published=source, ledger=ledger), ledger)
     assert summary["skipped"] == [849805] and summary["built"] == [] and again.asked.builds == [] and again.asked.boxes == []
     assert ledger.used == {"mlb": 1, "savant": 0}  # only the day's schedule
 
