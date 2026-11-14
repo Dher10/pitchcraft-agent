@@ -22,49 +22,12 @@ from typing import Any
 
 from data_pipeline import archive_games as ag
 from data_pipeline import archive_index as ai
-from data_pipeline.archive_boxscore import _FIELDS, _line, _side, _starter
+from data_pipeline.archive_boxscore import classify_side, line_mismatches
 
 SOURCES = ("mlb", "savant")
 FIXED_REASONS = tuple(reason for reason in ai.REASONS if reason != "veteran_duel")
 STOP_CLASSES = ("parser_mismatch", "boxscore_not_fetched")
 EXIT_STOP, EXIT_USAGE = 3, 2
-
-
-def _is_id(value: Any) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
-def classify_side(raw: Any, side: str, probable_id: Any) -> str:
-    """
-    Why a side is, or is not, readable from `raw` (a boxscore answer as received, or None when none was kept):
-    `readable`, `boxscore_not_fetched`, `no_probable_starter`, `mlb_lacks_data` (the answer says no pitcher was listed) or
-    `parser_mismatch` (anything else: there is data, or a shape, that the parser does not read).
-    """
-
-    if raw is None:
-        return "boxscore_not_fetched"
-    # The boxscore side is judged first: a report with no probable starter must not hide a shape the parser cannot read.
-    node = _side(raw, side)
-    if _starter(node) is not None:
-        return "readable" if _is_id(probable_id) else "no_probable_starter"
-    if node is not None and isinstance(node.get("pitchers"), list) and node["pitchers"] == []:
-        return "mlb_lacks_data"  # a judgment: the answer itself lists no pitcher for this side
-    return "parser_mismatch"
-
-
-def line_mismatches(raw: Any, side: str) -> list[str]:
-    """The final-line fields the answer gives (not null) but the parser rejects; `stats` when the starter has no stats."""
-
-    if raw is None:
-        return []
-    found = _starter(_side(raw, side))
-    if found is None:
-        return []
-    _who, stats = found
-    if stats is None:
-        return ["stats"]
-    line = _line(stats)
-    return [name for name, key in _FIELDS.items() if stats.get(key) is not None and (line is None or line[name] is None)]
 
 
 def _probable_name(document: Mapping[str, Any], side: str) -> str | None:

@@ -243,7 +243,7 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
     - [x] R4 data pre-release audit (owner 2026-11-14), `docs/plans/R4-pre-release.md`: group 1 identity/cache/resume, then group 2 publication/reruns. Separate required guard below.
       - [x] Group 1: envelope identity, protected outputs, history/cache/resume validation.
       - [x] Group 2: publication containment, immutability, manifest and reruns.
-    - [ ] R4 real-run parser guard (owner 2026-11-14): run-wide closed stop, no publication after parser mismatch or rejected source final-line data.
+    - [x] R4 real-run parser guard (owner 2026-11-14): run-wide closed stop, no publication after parser mismatch or rejected source final-line data; all five checks pass, round 1 findings fixed red-first, round 2 no remaining findings.
     - [ ] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
     - [ ] R4-D8 Release A (owner's PR), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
     - [ ] R4-A2 Interim release before the redesign (owner's answer to OQ9): the home Archive reads the new index, shows the final score per row, hides the Grade column while no row has a grade, rows not linked; current visual style.

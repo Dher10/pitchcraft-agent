@@ -84,6 +84,42 @@ def _line(stats: Mapping[str, Any] | None) -> dict[str, Any] | None:
     return line if set(line) == set(FINAL_LINE_FIELDS) else None
 
 
+def classify_side(raw: Any, side: str, probable_id: Any) -> str:
+    """Distinguish MLB's unavailable data from a shape our parser cannot read."""
+
+    if raw is None:
+        return "boxscore_not_fetched"
+    # Judge the source first: an absent probable must not hide a parser mismatch.
+    node = _side(raw, side)
+    if _starter(node) is not None:
+        return "readable" if isinstance(probable_id, int) and not isinstance(probable_id, bool) else "no_probable_starter"
+    if node is not None and isinstance(node.get("pitchers"), list) and node["pitchers"] == []:
+        return "mlb_lacks_data"
+    return "parser_mismatch"
+
+
+def line_mismatches(raw: Any, side: str) -> list[str]:
+    """Fields MLB gives (not null) that the parser rejects; `stats` for an unreadable stats block."""
+
+    if raw is None:
+        return []
+    found = _starter(_side(raw, side))
+    if found is None:
+        return []
+    _who, stats = found
+    if stats is None:
+        return ["stats"]
+    line = _line(stats)
+    return [name for name, key in _FIELDS.items() if stats.get(key) is not None and (line is None or line[name] is None)]
+
+
+def source_unconfirmed(raw: Any, probable_ids: Mapping[str, Any]) -> bool:
+    """The D7 stop rule, shared by strict builds and diagnostic evidence collection."""
+
+    return any(classify_side(raw, side, probable_ids.get(side)) in ("parser_mismatch", "boxscore_not_fetched")
+               or line_mismatches(raw, side) for side in SIDES)
+
+
 def starters_and_lines(data: Any, probable_ids: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     `(starters_check, final_line)` of a game from its boxscore and the ids of the starters the report is about.

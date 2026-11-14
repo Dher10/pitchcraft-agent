@@ -1,7 +1,7 @@
 """The backfill of the archive: one game at a time, within hard request ceilings (R4-D4; D66; docs/plans/R4.md 4.1-4.5).
 
     python -m data_pipeline.archive_build --out DIR [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--game-pk N]
-        [--published-dir DIR] [--no-resume]
+        [--published-dir DIR] [--no-resume] [--dry-run]
 
 `DIR` must not be under `public/data/` or `evals/live/` (D15): the files are candidates; only the publish job of the
 backfill workflow, on `main`, copies them to the published paths.
@@ -16,7 +16,11 @@ report as of the day before (`as_of = game_date - 1`, D29) with the same pipelin
   A request past a ceiling raises `CeilingReached`, which is a `BaseException` so no `except Exception` of the fetchers
   can swallow it and fill the game with a missing request. The game in progress is not written and the run stops; the
   games already built stay.
-- **Resume.** A game whose file exists, is valid and is the same game is skipped and costs nothing.
+- **Resume.** A complete valid game is skipped at no boxscore cost. Every restored incomplete game is rechecked,
+  including games outside the requested dates or filter; only its boxscore-derived check and line are refreshed.
+- **Parser guard.** A missing boxscore, parser mismatch or rejected source line stops the strict run. An internal
+  latch prevents finalization until a successful strict recovery checks every stopped game. `--dry-run` keeps the
+  diagnostic evidence and incomplete files but still latches parser failures against publication.
 - **Isolation (rule 5 per game file).** A game that fails validation or the critic is not written and is recorded with a
   closed code; the other games go on. Nothing that fails reaches a file.
 - **No private data.** It reads no path under `evals/` and no sealed set (D64).
@@ -44,6 +48,7 @@ MLB_PAUSE_SECONDS = 0.5
 OUT_FORBIDDEN = ("public/data", "evals/live")
 FILE_NAME = "{game_pk}.json"
 BACKFILL_START, BACKFILL_END = "2026-09-28", "2026-10-31"
+STOP_FILE = ".starter-unconfirmed.json"  # internal candidate state; never part of the public archive family
 
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -148,6 +153,18 @@ def out_dir_allowed(path: Path, repo_root: Path) -> bool:
     return True
 
 
+def _candidate_games_allowed(directory: Path) -> bool:
+    """A restored games directory must be a real child, never a link to another output tree."""
+
+    games = directory / "games"
+    try:
+        return (not directory.is_symlink() and not directory.is_junction()
+                and not games.is_symlink() and not games.is_junction()
+                and games.resolve().parent == directory.resolve())
+    except OSError:
+        return False
+
+
 def write_atomically(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     handle, temporary = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
@@ -181,11 +198,13 @@ def existing_valid(path: Path, game_pk: int, record: Mapping[str, Any] | None = 
     if record is not None:
         expected = ag.build_game_file(record, document["payload"], document["origin"],
                                       document["starters_check"], document["final_line"], document["starter_facts"])
-        if expected != document:
+        if not ag.same_json_values(expected, document):
             return False
         if published is not None:
             payload, commit, digest = published
-            if document["payload"] != payload or document["origin"] != ag.published_origin(payload, record, {"commit": commit, "sha256": digest}):
+            if not ag.same_json_values(document["payload"], payload) or not ag.same_json_values(
+                document["origin"], ag.published_origin(payload, record, {"commit": commit, "sha256": digest})
+            ):
                 return False
         elif document["origin"]["kind"] == "published_live":
             return False  # no recovered committed source proves this cached report
@@ -216,7 +235,7 @@ class Dependencies:
         self.fetch_boxscore = fetch_boxscore
         self.prior_seasons = prior_seasons
         # Optional (the dry run of R4-D7): keeps each boxscore answer as received, so a parser mismatch can be told from
-        # data MLB did not give. A real run does not use it.
+        # data MLB did not give. Recording raw data does not select diagnostic behavior.
         self.save_boxscore = save_boxscore
         # The reports the daily job published, as (payload, commit, sha256 of the committed bytes). Their `gamePk` is not
         # in the file; it is found by matching each to the schedule of its day (`ag.match_published_report`).
@@ -234,6 +253,85 @@ def report_starters(payload: Mapping[str, Any]) -> dict[str, int | None]:
         except (KeyError, TypeError, ValueError):
             out[side] = None
     return out
+
+
+class StarterUnconfirmed(ag.ArchiveError):
+    """A source parser stop, distinct from an isolated game validation failure."""
+
+    def __init__(self, game_pk: int) -> None:
+        super().__init__(ag.STARTER_UNCONFIRMED)
+        self.game_pk = game_pk
+
+
+class _Boxscores:
+    """One fetch/save per game per run, with the same source judgment in both modes."""
+
+    def __init__(self, deps: Dependencies, diagnostic: bool, on_problem: Callable[[int], None] | None = None) -> None:
+        self.deps, self.diagnostic, self.on_problem = deps, diagnostic, on_problem
+        self.raws: dict[int, Any] = {}
+
+    def parts(self, game_pk: int, payload: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+        starters = report_starters(payload)
+        first = game_pk not in self.raws
+        if first:
+            try:
+                raw = self.deps.fetch_boxscore(game_pk)
+            except CeilingReached:
+                if self.on_problem is not None:
+                    try:
+                        self.on_problem(game_pk)
+                    except StarterUnconfirmed:
+                        pass  # the ceiling remains the reason; the failed latch still blocks publication when possible
+                raise
+            except Exception:
+                raw = None
+            self.raws[game_pk] = raw
+        raw = self.raws[game_pk]
+        unconfirmed = archive_boxscore.source_unconfirmed(raw, starters)
+        if unconfirmed:
+            if self.on_problem is not None:
+                self.on_problem(game_pk)
+        # Persist the stop before optional diagnostics: an evidence-write failure
+        # must not turn a parser stop into an isolated ordinary game failure.
+        if first and raw is not None and self.deps.save_boxscore is not None:
+            try:
+                self.deps.save_boxscore(game_pk, raw)
+            except Exception:
+                if unconfirmed and not self.diagnostic:
+                    raise StarterUnconfirmed(game_pk) from None
+                raise
+        if unconfirmed and not self.diagnostic:
+            raise StarterUnconfirmed(game_pk)
+        return archive_boxscore.starters_and_lines(raw, starters)
+
+
+def _incomplete_boxscore(document: Mapping[str, Any]) -> bool:
+    return any(document["starters_check"][side] == "unknown"
+               or document["starters_check"]["actual"][side] is None
+               or document["final_line"][side] is None
+               or any(value is None for value in document["final_line"][side].values()) for side in ag.SIDES)
+
+
+def _recovered_cache_matches(document: Mapping[str, Any], published: Sequence[tuple[dict[str, Any], str, str]]) -> bool:
+    """Bind restored historical values to recovered bytes even outside the requested schedule dates."""
+
+    return document["origin"]["kind"] != "published_live" or any(
+        ag.same_json_values(document["payload"], payload)
+        and ag.same_json_values(document["origin"]["source"], {"commit": commit, "sha256": digest})
+        for payload, commit, digest in published
+    )
+
+
+def _stopped_ids(path: Path) -> set[int]:
+    if path.is_symlink() or path.is_junction():
+        raise ValueError("unreadable internal stop")
+    if not path.exists():
+        return set()
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not (isinstance(value, dict) and set(value) == {"game_pks"} and isinstance(value["game_pks"], list)
+            and value["game_pks"] and all(type(pk) is int and ag.is_game_pk(str(pk)) for pk in value["game_pks"])):
+        raise ValueError("invalid internal stop")
+    return set(value["game_pks"])
 
 
 def _is_report(payload: Any) -> bool:
@@ -279,6 +377,8 @@ def build_one(
     deps: Dependencies,
     ledger: Ledger,
     published: tuple[dict[str, Any], str, str] | None = None,
+    diagnostic: bool = False,
+    boxscores: _Boxscores | None = None,
 ) -> dict[str, Any]:
     """The game file of one played game, or an exception (`ArchiveError`, `CeilingReached`, a closed failure)."""
 
@@ -290,13 +390,7 @@ def build_one(
         origin = ag.published_origin(payload, record, None)
         origin["kind"], origin["published_at"] = "reconstructed", None
     starters = report_starters(payload)
-    try:
-        box = deps.fetch_boxscore(record["game_pk"])
-    except Exception:
-        box = None  # an unreadable boxscore is `unknown`, never `started`
-    if box is not None and deps.save_boxscore is not None:
-        deps.save_boxscore(record["game_pk"], box)
-    check, line = archive_boxscore.starters_and_lines(box, starters)
+    check, line = (boxscores or _Boxscores(deps, diagnostic)).parts(record["game_pk"], payload)
     facts = {}
     for side in ag.SIDES:
         pid = starters[side]
@@ -308,14 +402,62 @@ def build_one(
     return document
 
 
-def run(days: Sequence[str], out: Path, deps: Dependencies, ledger: Ledger, only: int | None = None, resume: bool = True) -> dict[str, Any]:
-    """Build every played game of `days` into `out`. Returns the summary; a ceiling stops the run, a failed game does not."""
+def run(days: Sequence[str], out: Path, deps: Dependencies, ledger: Ledger, only: int | None = None,
+        resume: bool = True, diagnostic: bool = False) -> dict[str, Any]:
+    """Build selected games; source parser failures and ceilings stop the run, other game failures stay isolated."""
 
     built: list[int] = []
     skipped: list[int] = []
     failed: list[dict[str, Any]] = []
     stopped: str | None = None
+    if not _candidate_games_allowed(out) or not out_dir_allowed(out, Path(__file__).resolve().parents[1]):
+        return {"built": [], "skipped": [], "failed": [{"game_pk": None, "code": ag.GAME_NOT_FOUND}],
+                "stopped": ag.GAME_NOT_FOUND, "requests": ledger.summary()}
+    stop_path = out / STOP_FILE
     try:
+        pending = _stopped_ids(stop_path)
+    except (OSError, ValueError):
+        return {"built": [], "skipped": [], "failed": [{"game_pk": None, "code": ag.STARTER_UNCONFIRMED}],
+                "stopped": ag.STARTER_UNCONFIRMED, "requests": ledger.summary()}
+    confirmed: set[int] = set()
+
+    def latch(pk: int) -> None:
+        pending.add(pk)
+        try:
+            write_atomically(stop_path, json.dumps({"game_pks": sorted(pending)}, separators=(",", ":")) + "\n")
+        except OSError:
+            # A torn/failed internal state must never look like a clean old
+            # manifest. A malformed sentinel fails closed on subsequent runs.
+            try:
+                stop_path.write_text("!", encoding="utf-8")
+            except OSError:
+                pass  # even when storage cannot retain state, this run must stop immediately with a closed reason
+            raise StarterUnconfirmed(pk) from None
+
+    boxscores = _Boxscores(deps, diagnostic, latch)
+    try:
+        from data_pipeline.archive_finalize import game_problems, load_games
+
+        # Restored artifacts may contain games beyond today's dates/filter. Judge every existing report before a
+        # complete cache is trusted, then refresh only the boxscore-derived parts of valid incomplete reports.
+        documents, _texts, _problems = load_games(out)
+        for pk, document in documents.items():
+            selected = document.get("date") in days and (only is None or pk == only)
+            if game_problems(document) or not _recovered_cache_matches(document, deps.published):
+                if selected:
+                    continue  # the ordinary full resume check removes it and attempts a rebuild from its source
+                latch(pk)
+                raise StarterUnconfirmed(pk)
+            if not _incomplete_boxscore(document) and pk not in pending:
+                continue
+            # Latch before reading: an exhausted ceiling must not leave an old valid manifest publishable.
+            latch(pk)
+            check, line = boxscores.parts(pk, document["payload"])
+            refreshed = dict(document, starters_check=check, final_line=line)
+            if game_problems(refreshed):
+                raise StarterUnconfirmed(pk)
+            write_atomically(out / "games" / FILE_NAME.format(game_pk=pk), ag.compact_json(refreshed))
+            confirmed.add(pk)
         for day in days:
             try:
                 records = list(deps.fetch_day(day))
@@ -334,17 +476,40 @@ def run(days: Sequence[str], out: Path, deps: Dependencies, ledger: Ledger, only
                     continue
                 try:
                     path.unlink(missing_ok=True)  # a rejected cache must not survive a failed rebuild
-                    document = build_one(record, deps, ledger, matched.get(pk))
+                    document = build_one(record, deps, ledger, matched.get(pk), diagnostic, boxscores)
                     write_atomically(path, ag.compact_json(document))
                     built.append(pk)
+                    confirmed.add(pk)
+                except StarterUnconfirmed:
+                    raise  # source shape failures stop the entire candidate, never just this game
                 except ag.ArchiveError as exc:
                     failed.append({"game_pk": pk, "code": exc.code})
                 except Exception:
                     # The class is not published and not even logged with a message: rule 8.
                     failed.append({"game_pk": pk, "code": "unexpected_error"})
+    except StarterUnconfirmed as exc:
+        stopped = ag.STARTER_UNCONFIRMED
+        failed.append({"game_pk": exc.game_pk, "code": ag.STARTER_UNCONFIRMED})
     except CeilingReached as exc:
         stopped = ag.CEILING_REACHED
         failed.append({"game_pk": None, "code": ag.CEILING_REACHED, "source": exc.source})
+    except OSError:
+        stopped = ag.STARTER_UNCONFIRMED
+        failed.append({"game_pk": None, "code": ag.STARTER_UNCONFIRMED})
+    # Only a successful strict run can discharge an earlier stop. A narrow run cannot forget an ID whose failed build
+    # wrote no game file, and diagnostic evidence never authorizes publication.
+    if not diagnostic and stopped is None:
+        pending.difference_update(confirmed)
+        try:
+            if pending:
+                write_atomically(stop_path, json.dumps({"game_pks": sorted(pending)}, separators=(",", ":")) + "\n")
+            else:
+                stop_path.unlink(missing_ok=True)
+        except OSError:
+            stopped = ag.STARTER_UNCONFIRMED
+            failed.append({"game_pk": None, "code": ag.STARTER_UNCONFIRMED})
+    if pending and not diagnostic and stopped is None:
+        stopped = ag.STARTER_UNCONFIRMED
     return {
         "built": built, "skipped": skipped, "failed": failed, "stopped": stopped,
         "requests": ledger.summary(),
@@ -415,7 +580,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--game-pk", type=int, help="build only this game (its day must be inside --start/--end)")
     parser.add_argument("--published-dir", type=Path, help="the committed daily files, one `<40-hex commit>.json` each")
     parser.add_argument("--history-dir", type=Path, help="cache of the per-pitcher answers (default: OUT/history)")
-    parser.add_argument("--raw-dir", type=Path, help="keep every boxscore answer here as received (the dry run of R4-D7; never under public/data)")
+    parser.add_argument("--raw-dir", type=Path, help="keep every boxscore answer here as received; does not select --dry-run (never under public/data)")
+    parser.add_argument("--dry-run", action="store_true", help="keep diagnostic incomplete games and evidence; source failures still block finalization")
     parser.add_argument("--no-resume", action="store_true")
     return parser
 
@@ -443,7 +609,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     season = int(days[0][:4])
     with enforced(ledger, live_pipeline, pause=time.sleep):
         deps = real_dependencies(ledger, args.history_dir or args.out / "history", season, published, args.raw_dir)
-        summary = run(days, args.out, deps, ledger, only=args.game_pk, resume=not args.no_resume)
+        summary = run(days, args.out, deps, ledger, only=args.game_pk, resume=not args.no_resume, diagnostic=args.dry_run)
     print("archive: " + json.dumps(summary, sort_keys=True))
     fatal = summary["stopped"] or any(item.get("game_pk") is None for item in summary["failed"])
     return 1 if fatal or (summary["failed"] and not (summary["built"] or summary["skipped"])) else 0

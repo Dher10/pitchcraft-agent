@@ -21,6 +21,7 @@ writes, or release. References below are lines at the audited head.
 | A12 | blocker | `data_pipeline/archive_build.py:87`, `data_pipeline/fetchers/live_pipeline.py:236,444` | Logical calls are charged, but urllib follows redirects. A real opener with fake transport made two sends for a 302 → 200 at ledger usage 1 / ceiling 1, for both MLB and Savant. Refuse redirects within archive enforcement. No real network used. | 2 |
 | A13 | should-fix | `data_pipeline/archive_finalize.py:100` | Finalizer build lacks the builder's protected-directory guard and can write directly beneath bot-owned paths. Guard before inspecting/writing candidates. | 2 |
 | A14 | should-fix | `data_pipeline/archive_build.py:399` | CLI accepts years and dates outside the approved 2026 postseason; D66 requires a new decision for later seasons. Refuse outside 2026-09-28..2026-10-31 before requests. | 2 |
+| A15 | blocker | `data_pipeline/archive_build.py:139,306` (audited head) | A safe `--out` can contain a `games` directory junction; atomic writes then follow its parent outside the candidate, including potentially bot-owned paths. A real temporary Windows junction reproduced an escaped `outside/849805.json` before the fix. Reject linked/escaped game directories before any request or write, and in both finalizer actions. | guard follow-up |
 | G1 | blocker (task 2) | `data_pipeline/archive_build.py:263` | Parser mismatch and rejected final-line fields stop only the dry-run reporter, not real publication. Implement the owner's required run-wide guard separately. | guard |
 
 Checks without additional findings: unique published matching; final-only scores
@@ -55,3 +56,36 @@ published are also immutable in their payload. Full default commands in order:
 pytest 6385 passed / 2 skipped, npm 296 passed, tsc/lint/default build exit 0.
 Independent review: no findings, round 1, closure documents checked before commit.
 All A1-A14 have fixes; G1 is the next separate task.
+
+Guard follow-up (initial verification, superseded by the review fixes below): A15 found by the nested-directory sweep and seen
+red before its fix. G1 shares the dry-run source judgment, stops strict builds
+with `starter_unconfirmed`, and latches the whole candidate until strict recovery.
+The preflight binds every restored published payload to recovered source values,
+including complete files outside the selected dates (A2 closure). Controls retain
+missing/null individual fields, actual zeros, changed starters, and explicit MLB
+empty pitcher lists. Red evidence: main matrix 89 failed / 26 controls passed;
+five additional cache/containment cases failed in isolated red runs; two further
+regressions (cache recovery plus an ordinary game failure, and raw-evidence write
+failure) failed before their corrections. Guard matrix then **122 passed**;
+focused archive checks **318 passed** before the final evidence-save regression.
+Full default verification: pytest **6507 passed / 2 skipped**, npm **296 passed**,
+tsc/lint/default build **exit 0**. Round 1 review BLOCK, resolved below. No production data
+touched. Audit fix commits: group 1 `6d2c293`, group 2 `d0c256e`, guard/A15 in this
+commit. All A1-A15 and G1 have fixes.
+
+### Guard review follow-ups (round 1, against the uncommitted guard)
+
+| ID | Rating | Location at review | Finding and fix |
+| --- | --- | --- | --- |
+| R1 | blocker | `archive_build.py:310`, `scripts/publish_archive.py:97` | Python equality accepted a changed JSON boolean as a numeric zero. Reproduced through nonselected/selected resume, publication and index recomputation. Shared JSON-type-aware equality now covers source matching, derived indices/manifests, duplicate records and published payloads; key order remains immaterial. |
+| R2 | blocker | `archive_build.py:288` | A stop-state write failure could be caught as an ordinary game error, allowing later requests; persistent failure could escape as an OSError. Reproduced transient/persistent writes, ceiling propagation and cached refresh/cleanup errors. Recording failure now stops immediately with a closed reason, retaining a fail-closed malformed sentinel when possible; linked state is refused before reads. |
+
+Review reds: 7 failed / one key-order control passed; ceiling propagation,
+cached-refresh I/O, and three stop-state link/cleanup cases also seen red before
+their corrections. Focused archive checks then **570 passed**. Review round 1
+BLOCK is accepted, with the reviewer's initially stated CLI-zero scenario
+withdrawn/corrected to continued requests and persistent unhandled I/O. The
+previous 6507/296 full run is superseded by fresh sequential checks: pytest
+**6520 passed / 2 skipped**, npm **296 passed**, tsc/lint/default build **exit 0**.
+All A1-A15, G1, R1 and R2 have fixes. Round 2 has no remaining findings; final
+closure documents checked before commit. No findings were rejected.

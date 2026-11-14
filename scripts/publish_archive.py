@@ -10,13 +10,15 @@ script judges it **again** (no network), then publishes it only safely, with the
   `evals/live/` (D15), else the copy is undone and nothing is committed;
 - a file the repository already has under `public/data/archive/` and the candidate lacks is a refusal (`dropped_file`): a
   backfill adds and corrects, it never deletes a published game;
+- a previously published payload keeps identical JSON values, including boolean types (`published_report_changed`);
 - the commit is the owner's, Daniel Herdenez, with the subject `data: archive backfill YYYY` (the season of the index);
 - the push is `HEAD:refs/heads/main`, never forced, from the branch `main` only, over SSH with the deploy key;
 - `--dry-run` does all of it in a temporary clone and pushes nothing.
 
 Output goes to stdout as `publish: ...` lines; a failure is `publish: failed CODE`, the code one of
 `candidate_unreadable` (a folder or file that cannot be read), `candidate_invalid` (a folder that `archive_finalize check`
-refuses, including any file the manifest does not list), `dirty_tree`, `not_on_main`, `outside_allowlist`, `dropped_file`, `git_failed`,
+refuses, including any file the manifest does not list), `dirty_tree`, `not_on_main`, `outside_allowlist`, `dropped_file`,
+`published_report_changed`, `git_failed`,
 `push_rejected`. Exit codes: 0 published, unchanged or dry run done; 1 failed; 2 usage error.
 """
 
@@ -37,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import publish_data as pd  # noqa: E402  (the same allowlist, identity, git helpers and push as the daily job)
 from data_pipeline import archive_finalize  # noqa: E402
+from data_pipeline import archive_games as ag  # noqa: E402
 
 ARCHIVE_DIR = "public/data/archive"
 SUBJECT = "data: archive backfill {season}"
@@ -94,7 +97,7 @@ def _work_in(repo: Path, files: dict[str, bytes], subject: str) -> bool:
     for name in existing:
         if name.startswith("games/") and name.endswith(".json"):
             try:
-                if json.loads(before[name])["payload"] != json.loads(files[name])["payload"]:
+                if not ag.same_json_values(json.loads(before[name])["payload"], json.loads(files[name])["payload"]):
                     raise pd.Failure("published_report_changed")
             except (ValueError, KeyError, TypeError):
                 raise pd.Failure("candidate_invalid") from None
@@ -104,7 +107,8 @@ def _work_in(repo: Path, files: dict[str, bytes], subject: str) -> bool:
             and all(before[name] == data for name, data in files.items() if name != "manifest.json")):
         try:
             old, new = (json.loads(items["manifest.json"]) for items in (before, files))
-            if {k: v for k, v in old.items() if k != "built_at"} == {k: v for k, v in new.items() if k != "built_at"}:
+            if ag.same_json_values({k: v for k, v in old.items() if k != "built_at"},
+                                   {k: v for k, v in new.items() if k != "built_at"}):
                 files = {**files, "manifest.json": before["manifest.json"]}
         except (ValueError, TypeError, AttributeError):
             pass

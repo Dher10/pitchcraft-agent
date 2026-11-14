@@ -23,6 +23,15 @@ approved R4-A2 code; stop before R4-D8 or any release.
    parser mismatch or rejected source final-line data stops the run with the
    existing closed `starter_unconfirmed` code. Cached incomplete games are
    rechecked; a stop prevents finalization/publication of the entire candidate.
+   Preflight covers the whole restored folder, including complete historical
+   payload/source equality outside the selection. Remember stopped IDs even if
+   no file was written; clear only after strict recovery. Reject linked candidate
+   game directories before requests/writes (A15 containment sweep). Ordinary
+   isolated game failures remain isolated after confirmed cache recovery.
+   Review sweep: compare JSON types when matching sources/index/published values;
+   stop immediately on latch persistence failure, preserving ceiling reasons and
+   closed errors. A malformed internal stop state requires cache repair, never
+   silent recovery or publication.
    Files: boxscore/build/dryrun/finalize modules and tests as needed.
 5. A2, red first: server reads the versioned 2026 index when present; exact
    missing-file fallback to the current daily archive; final scores, conditional

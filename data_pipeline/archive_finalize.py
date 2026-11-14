@@ -108,10 +108,14 @@ def build(directory: Path, veteran_min: Any, built_at: str | None = None) -> dic
     a game with a problem is **left out of the index** (and reported), and a folder with any problem is not clean.
     """
 
-    from data_pipeline.archive_build import out_dir_allowed
+    from data_pipeline.archive_build import STOP_FILE, _candidate_games_allowed, out_dir_allowed
 
     if not out_dir_allowed(directory, Path(__file__).resolve().parents[1]):
         raise ix.ArchiveIndexError("out_under_published_paths")
+    if (directory / STOP_FILE).exists() or (directory / STOP_FILE).is_symlink():
+        return {"problems": [ag.STARTER_UNCONFIRMED], "games": 0}
+    if not _candidate_games_allowed(directory):
+        return {"problems": [ag.GAME_NOT_FOUND], "games": 0}
     ix.check_veteran_min(veteran_min)
     documents, texts, problems = load_games(directory)
     good: dict[int, dict[str, Any]] = {}
@@ -147,6 +151,12 @@ def build(directory: Path, veteran_min: Any, built_at: str | None = None) -> dic
 def check(directory: Path, veteran_min: int | None = None) -> list[str]:
     """Every problem of a folder, read again from disk with no network; `[]` when it is clean."""
 
+    from data_pipeline.archive_build import STOP_FILE, _candidate_games_allowed
+
+    if (directory / STOP_FILE).exists() or (directory / STOP_FILE).is_symlink():
+        return [ag.STARTER_UNCONFIRMED]
+    if not _candidate_games_allowed(directory):
+        return [ag.GAME_NOT_FOUND]
     documents, texts, problems = load_games(directory)
     for pk, document in documents.items():
         problems.extend(f"game:{label}" for label in game_problems(document))

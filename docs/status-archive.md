@@ -1,5 +1,54 @@
 # PitchCraft v2 — Status archive
 
+### 2026-11-14 - R4 guard review round 1 (accepted BLOCK)
+
+R1: Python false == 0 let numeric substitutions pass historical value equality.
+R2: failure to write the stop state could continue later requests or escape as
+OSError; the reviewer corrected/withdrew its initial CLI-zero description.
+Both findings accepted and fixed. Red `.local/r4-guard-review-red.txt`: 7 failed,
+one object-key-order control passed. Additional red runs: ceiling propagation
+(included in three stop-write reds), cached refresh write (1), linked state and
+cleanup write/unlink (3). Shared JSON-type-aware equality swept source/cache,
+index/manifest recomputation, duplicate records and publisher immutability.
+Latch I/O now stops immediately; a failed atomic write uses a malformed sentinel
+when possible. Unreadable/malformed state requires cache repair and cannot be
+cleared by a narrow rerun. Ceiling reason preserved; all I/O errors stay closed.
+Focused archive checks **570 passed**. Fresh sequential default checks
+(`.local/r4-guard2-*`): pytest **6520 passed, 2 skipped, 2 existing warnings**;
+npm **296 passed**; tsc/lint/default build **exit 0**. Review round 2: no remaining
+findings, final closure documents checked before commit; no findings rejected.
+previous 6507/296 verification predates these fixes. No data/schema,
+decision, workflow or fan-visible text change, no tolerance/xfail change.
+
+### 2026-11-14 - R4 real-run guard (initial verification, superseded above)
+
+Base `d0c256e`; both audit commits and CI green, reviewer PASS for each.
+The first 115-case red run was observed by the root in the default terminal:
+89 failed / 26 controls passed (`.local/r4-guard-red.txt`). Five follow-up red
+cases were observed before their mechanisms: first cached recheck request/ceiling
+failure (2), complete changed published cache outside selection (2), and nested
+games-directory junction (1, real escaped temporary file). Root then observed
+two further interaction reds (`.local/r4-guard-isolation-red.txt`,
+`.local/r4-guard-save-red.txt`). All 122 guard cases now pass.
+Controls: absent/null individual source fields (20), measured zeros (2), changed
+actual starter (1), explicit empty MLB pitcher lists (2), complete free cache (1).
+The old unsafe unreadable-boxscore test explicitly selects diagnostic=True now.
+Implementation: shared parser judgment, strict default, optional --dry-run,
+memoized boxscores, whole-folder cache/source preflight, nonpublic stopped-ID
+latch, finalizer refusal before writes, strict recovery and linked-directory stop.
+Ordinary game failures stay isolated after confirmed recovery. No new public
+schema/code, text or version, no tolerance/xfail added or removed. Rule 1 source
+identity, rule 2 null/zero controls, rule 3 cutoff unchanged, rule 4 no fan text,
+rule 5 ordinary isolation plus owner-required source stop, rules 6/7 unchanged,
+rule 8 existing closed reason and no exception text. Full default checks in
+order (`.local/r4-guard-*`): pytest **6507 passed, 2 skipped, 2 existing warnings**;
+npm **296 passed**; tsc/lint/default Turbopack build exit 0. An initial typecheck
+yielded before completion was confirmed and lint was started; both were repeated
+to completion strictly in sequence before the build. Independent review pending.
+The usage limit interrupted the initial uncommitted implementation; resumed on
+the owner's Continue. No unverified commit was made. Owner's newly supplied
+untracked `docs/design/` remains separate and is excluded from staging.
+
 ### 2026-11-14 - R4 pre-release audit, group 2
 
 Base `6d2c293`; prior CI green (43602352361). Added A12-A14 after read-only

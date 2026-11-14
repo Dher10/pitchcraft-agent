@@ -317,7 +317,8 @@ def test_a_game_that_was_not_played_gets_no_file_and_no_boxscore(tmp_path):
 
 def test_an_unreadable_boxscore_makes_the_starters_unknown_and_the_file_is_still_valid(tmp_path):
     world = World(boxes={849805: None})
-    ab.run([DAY], tmp_path, world.deps(), ab.Ledger())
+    # Only explicit diagnostics keep incomplete evidence; the default strict run stops before writing it.
+    ab.run([DAY], tmp_path, world.deps(), ab.Ledger(), diagnostic=True)
     document = json.loads((tmp_path / "games" / "849805.json").read_text(encoding="utf-8"))
     assert document["starters_check"]["away"] == "unknown" and document["final_line"] == {"away": None, "home": None}
     assert ag.validate_game_file(document) == []

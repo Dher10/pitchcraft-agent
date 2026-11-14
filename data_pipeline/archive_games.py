@@ -26,6 +26,7 @@ from copy import deepcopy
 from datetime import date, datetime, timedelta
 import hashlib
 import json
+import math
 import re
 from typing import Any
 
@@ -260,7 +261,7 @@ def played_games(records: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
         if record["status"] != "final" or record["result"] is None:
             continue
         pk = record["game_pk"]
-        if pk in kept and kept[pk] != record:
+        if pk in kept and not same_json_values(kept[pk], record):
             conflicting.add(pk)
         kept[pk] = deepcopy(dict(record))
     return [kept[pk] for pk in kept if pk not in conflicting]
@@ -436,6 +437,29 @@ def compact_json(document: Mapping[str, Any]) -> str:
     """The text a game file is written as: compact (25.7 KB, not 48.6 KB), sorted keys, finite numbers only."""
 
     return json.dumps(document, separators=(",", ":"), sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n"
+
+
+def same_json_values(left: Any, right: Any) -> bool:
+    """JSON value equality: booleans are not numbers; object key order is immaterial."""
+
+    if isinstance(left, Mapping) or isinstance(right, Mapping):
+        return (isinstance(left, Mapping) and isinstance(right, Mapping)
+                and all(isinstance(key, str) for key in (*left, *right))
+                and left.keys() == right.keys()
+                and all(same_json_values(value, right[key]) for key, value in left.items()))
+    if isinstance(left, list) or isinstance(right, list):
+        return (isinstance(left, list) and isinstance(right, list) and len(left) == len(right)
+                and all(same_json_values(a, b) for a, b in zip(left, right)))
+    if isinstance(left, bool) or isinstance(right, bool):
+        return isinstance(left, bool) and isinstance(right, bool) and left == right
+    if left is None or right is None:
+        return left is right
+    if isinstance(left, str) or isinstance(right, str):
+        return isinstance(left, str) and isinstance(right, str) and left == right
+    if type(left) in (int, float) and type(right) in (int, float):
+        return (not (isinstance(left, float) and not math.isfinite(left))
+                and not (isinstance(right, float) and not math.isfinite(right)) and left == right)
+    return False
 
 
 def _instant(value: Any) -> bool:

@@ -177,7 +177,7 @@ def index_matches_documents(index: Any, documents: Sequence[Mapping[str, Any]]) 
     """The index is exactly what the game files give: the property that makes it recomputable."""
 
     try:
-        return index == build_index(documents, index["season"], index["veteran_min"])
+        return ag.same_json_values(index, build_index(documents, index["season"], index["veteran_min"]))
     except (KeyError, TypeError, ArchiveIndexError):
         return False
 
@@ -295,7 +295,7 @@ def verify_manifest(manifest: Any, files: Mapping[str, str]) -> list[str]:
             indices = [json.loads(files[INDEX_FILE.format(season=s)]) for s in seasons]
             expected = {"games": sum(1 for name in files if _GAME_FILE.fullmatch(name)),
                         "notable": sum(1 for index in indices for row in index["games"] if row["notable"])}
-            if counts != expected:
+            if not ag.same_json_values(counts, expected):
                 problems.append("counts")
         except (KeyError, TypeError, ValueError):
             problems.append("counts")
