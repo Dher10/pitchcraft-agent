@@ -108,6 +108,10 @@ def build(directory: Path, veteran_min: Any, built_at: str | None = None) -> dic
     a game with a problem is **left out of the index** (and reported), and a folder with any problem is not clean.
     """
 
+    from data_pipeline.archive_build import out_dir_allowed
+
+    if not out_dir_allowed(directory, Path(__file__).resolve().parents[1]):
+        raise ix.ArchiveIndexError("out_under_published_paths")
     ix.check_veteran_min(veteran_min)
     documents, texts, problems = load_games(directory)
     good: dict[int, dict[str, Any]] = {}
@@ -128,6 +132,13 @@ def build(directory: Path, veteran_min: Any, built_at: str | None = None) -> dic
     files = dict(texts, **{index_name: index_text})
     stamp = built_at or datetime.now(timezone.utc).isoformat(timespec="seconds")
     manifest = ix.build_manifest(files, index, stamp)
+    if built_at is None:
+        try:
+            previous, _ = _read(directory / MANIFEST_FILE)
+            if ix.verify_manifest(previous, files) == []:
+                manifest = previous
+        except (OSError, ValueError):
+            pass
     _write(directory / index_name, index_text)
     _write(directory / MANIFEST_FILE, ag.compact_json(manifest))
     return {"problems": problems, "games": len(good)}

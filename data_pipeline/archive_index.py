@@ -22,6 +22,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 import hashlib
+import json
 import re
 from typing import Any
 
@@ -289,6 +290,15 @@ def verify_manifest(manifest: Any, files: Mapping[str, str]) -> list[str]:
     counts = manifest["counts"]
     if not (isinstance(counts, Mapping) and set(counts) == {"games", "notable"} and all(_is_count(v) for v in counts.values())):
         problems.append("counts")
+    else:
+        try:
+            indices = [json.loads(files[INDEX_FILE.format(season=s)]) for s in seasons]
+            expected = {"games": sum(1 for name in files if _GAME_FILE.fullmatch(name)),
+                        "notable": sum(1 for index in indices for row in index["games"] if row["notable"])}
+            if counts != expected:
+                problems.append("counts")
+        except (KeyError, TypeError, ValueError):
+            problems.append("counts")
     listed = manifest["files"]
     if not isinstance(listed, Mapping):
         return sorted(set(problems + ["files"]))

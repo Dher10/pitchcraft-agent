@@ -1,5 +1,26 @@
 # PitchCraft v2 — Status archive
 
+### 2026-11-14 - R4 pre-release audit, group 2
+
+Base `6d2c293`; prior CI green (43602352361). Added A12-A14 after read-only
+transport/path/scope sweep. A12 zero-network fake urllib transport proves two
+redirect sends for one ledger charge. All 13 group-2 reproductions seen failing;
+then focused archive suite 171 passed. A real temporary Windows junction proves
+the publisher refuses before external writes. No production data touched.
+Group fixes: immutable previously published payloads, destination ancestors and
+resolved containment before copying, semantic manifest counts, unchanged manifest
+preservation including the workflow's removed-manifest case, per-game CLI exit
+policy, removal of stale invalid candidates, finalizer protected-path guard,
+archive-only redirect refusal with transport restoration, authorized 2026 window.
+Contract self-review: rule 1 manifest/source identities; rule 2 no new defaults;
+rules 3/6/7 preserve report values and approved season; rule 4 no fan text;
+rule 5 isolates ordinary game failures; rule 8 uses closed labels. No schema,
+decision, workflow or tolerance change; zero xfails removed. Default-terminal
+checks in order (logs `.local/r4-g2-*`): pytest 6385 passed, 2 skipped,
+2 existing warnings; npm 296 passed; tsc, lint and default build exit 0.
+Independent review: no findings, round 1; final closure documentation checked
+before commit. No rejected suggestions. All A1-A14 fixed; G1 remains next.
+
 ### 2026-11-14 - R4 pre-release audit, group 1
 
 Owner explicitly applies D35 to Codex. Read-only independent audit at `7bbbd27`

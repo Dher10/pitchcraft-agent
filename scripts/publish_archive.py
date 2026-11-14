@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import json
 import os
 from pathlib import Path
 import shutil
@@ -48,6 +49,8 @@ def candidate_files(candidate: Path) -> dict[str, bytes]:
     files: dict[str, bytes] = {}
     root = candidate.resolve()
     for path in sorted(candidate.rglob("*")):
+        if path.is_symlink() or path.is_junction():
+            raise pd.Failure("candidate_invalid")
         if path.is_dir():
             continue
         resolved = path.resolve()
@@ -71,11 +74,40 @@ def _season_of(candidate: Path) -> int:
 def _work_in(repo: Path, files: dict[str, bytes], subject: str) -> bool:
     """Copy, check and commit in `repo`. Returns whether a commit was made. Raises `Failure`."""
 
+    repo = repo.resolve()
     base = repo / ARCHIVE_DIR
+    if pd.outside_allowlist([f"{ARCHIVE_DIR}/{name}" for name in files]) or base.resolve() != base:
+        raise pd.Failure("outside_allowlist")
+    for name in files:
+        target = base / name
+        if base not in target.resolve().parents:
+            raise pd.Failure("outside_allowlist")
+        node = target
+        while node != repo:
+            if node.is_symlink() or node.is_junction():
+                raise pd.Failure("outside_allowlist")
+            node = node.parent
     existing = {p.relative_to(base).as_posix() for p in base.rglob("*") if p.is_file()} if base.is_dir() else set()
     if existing - set(files):
         raise pd.Failure("dropped_file")
     before = {name: (base / name).read_bytes() for name in existing}
+    for name in existing:
+        if name.startswith("games/") and name.endswith(".json"):
+            try:
+                if json.loads(before[name])["payload"] != json.loads(files[name])["payload"]:
+                    raise pd.Failure("published_report_changed")
+            except (ValueError, KeyError, TypeError):
+                raise pd.Failure("candidate_invalid") from None
+    # The workflow removes the old manifest before finalizing. A fresh timestamp
+    # alone must not turn its identical files into another publication commit.
+    if (set(files) == existing and "manifest.json" in before
+            and all(before[name] == data for name, data in files.items() if name != "manifest.json")):
+        try:
+            old, new = (json.loads(items["manifest.json"]) for items in (before, files))
+            if {k: v for k, v in old.items() if k != "built_at"} == {k: v for k, v in new.items() if k != "built_at"}:
+                files = {**files, "manifest.json": before["manifest.json"]}
+        except (ValueError, TypeError, AttributeError):
+            pass
     changed = [name for name, data in files.items() if before.get(name) != data]
     if not changed:
         return False

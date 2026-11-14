@@ -14,6 +14,9 @@ approved R4-A2 code; stop before R4-D8 or any release.
 3. Fix group 2, red first: constrain publisher destinations before writes,
    keep published payloads immutable, validate manifest counts, preserve unchanged
    manifests, and distinguish isolated game failure from fatal CLI failure.
+   Sweep additions within the audit scope: refuse uncharged urllib redirects,
+   enforce the already approved 2026 postseason window, guard finalizer output,
+   and remove invalid cached candidates before attempted rebuilds.
    Files: `data_pipeline/archive_{build,finalize,index}.py`,
    `scripts/publish_archive.py`, their tests.
 4. Real-run guard, red first: share dry-run parser diagnostics with the builder;

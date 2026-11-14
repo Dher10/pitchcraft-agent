@@ -34,6 +34,7 @@ from pathlib import Path
 import sys
 import tempfile
 import time
+import urllib.request
 from typing import Any, Iterator
 
 from data_pipeline import archive_boxscore, archive_games as ag
@@ -42,6 +43,12 @@ CEILINGS = {"mlb": 319, "savant": 190}
 MLB_PAUSE_SECONDS = 0.5
 OUT_FORBIDDEN = ("public/data", "evals/live")
 FILE_NAME = "{game_pk}.json"
+BACKFILL_START, BACKFILL_END = "2026-09-28", "2026-10-31"
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None  # a redirect is a failed request, never an uncharged second send
 
 
 class CeilingReached(BaseException):
@@ -83,6 +90,13 @@ def enforced(ledger: Ledger, live_pipeline: Any, pause: Callable[[float], None] 
     original_get = live_pipeline._get_json
     original_savant = live_pipeline._savant_get
     original_frame = live_pipeline._statcast_pitcher_frame
+    original_urlopen = urllib.request.urlopen
+
+    def urlopen(url, data=None, timeout=8, *, context=None):
+        handlers = [_NoRedirect()]
+        if context is not None:
+            handlers.append(urllib.request.HTTPSHandler(context=context))
+        return urllib.request.build_opener(*handlers).open(url, data, timeout)
 
     def get_json(url: str, *args: Any, **kwargs: Any) -> Any:
         ledger.charge("mlb")
@@ -113,12 +127,14 @@ def enforced(ledger: Ledger, live_pipeline: Any, pause: Callable[[float], None] 
             ledger.charge("savant", live_pipeline._pitcher_statcast_run["requests"] - before)
 
     live_pipeline._get_json, live_pipeline._savant_get, live_pipeline._statcast_pitcher_frame = get_json, savant_get, frame
+    urllib.request.urlopen = urlopen
     try:
         yield
     finally:
         live_pipeline._get_json, live_pipeline._savant_get, live_pipeline._statcast_pitcher_frame = (
             original_get, original_savant, original_frame,
         )
+        urllib.request.urlopen = original_urlopen
 
 
 def out_dir_allowed(path: Path, repo_root: Path) -> bool:
@@ -317,6 +333,7 @@ def run(days: Sequence[str], out: Path, deps: Dependencies, ledger: Ledger, only
                     skipped.append(pk)
                     continue
                 try:
+                    path.unlink(missing_ok=True)  # a rejected cache must not survive a failed rebuild
                     document = build_one(record, deps, ledger, matched.get(pk))
                     write_atomically(path, ag.compact_json(document))
                     built.append(pk)
@@ -414,6 +431,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         days = days_between(args.start, args.end) if args.start and args.end else None
         if days is None:
             raise ValueError("--start and --end are required")
+        if days[0] < BACKFILL_START or days[-1] > BACKFILL_END:
+            raise ValueError("outside the approved postseason window")
         published = _read_published(args.published_dir) if args.published_dir else []
     except (ValueError, OSError) as exc:
         print(f"archive: failed usage {type(exc).__name__}", file=sys.stderr)
@@ -426,7 +445,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         deps = real_dependencies(ledger, args.history_dir or args.out / "history", season, published, args.raw_dir)
         summary = run(days, args.out, deps, ledger, only=args.game_pk, resume=not args.no_resume)
     print("archive: " + json.dumps(summary, sort_keys=True))
-    return 1 if summary["failed"] or summary["stopped"] else 0
+    fatal = summary["stopped"] or any(item.get("game_pk") is None for item in summary["failed"])
+    return 1 if fatal or (summary["failed"] and not (summary["built"] or summary["skipped"])) else 0
 
 
 if __name__ == "__main__":
