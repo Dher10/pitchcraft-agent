@@ -35,6 +35,14 @@ describe("Chip", () => {
     expect(chip.className).not.toMatch(/truncate|overflow-hidden/);
   });
 
+  it("has a round variant for the board that does not also carry the light fill", () => {
+    const { container } = render(<Chip variant="round-board">World Series</Chip>);
+    const classes = (container.firstElementChild as HTMLElement).className;
+
+    expect(classes).toMatch(/bg-board-2/);
+    expect(classes).not.toMatch(/bg-brand-tint/);
+  });
+
   it("has at least a 24 px height", () => {
     const { container } = render(<Chip variant="neutral">Final</Chip>);
 

@@ -66,7 +66,7 @@ export const MODE_LINE_FETCH_UNKNOWN = "Live data · fetch time not available";
 const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 
 /** The day of an instant in America/New_York (D29's zone), written YYYY-MM-DD; null when it is not an instant. */
-function newYorkDay(instant: string | null | undefined): string | null {
+export function newYorkDay(instant: string | null | undefined): string | null {
   if (typeof instant !== "string" || !ISO_INSTANT.test(instant)) return null;
   const date = new Date(instant);
   if (Number.isNaN(date.getTime())) return null;

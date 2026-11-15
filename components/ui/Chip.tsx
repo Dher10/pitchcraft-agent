@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { CheckIcon, CrossIcon, DashIcon, WarnIcon } from "@/components/ui/Icons";
 
-export type ChipVariant = "neutral" | "ok" | "warn" | "bad" | "round" | "reason" | "feat" | "outline";
+export type ChipVariant = "neutral" | "ok" | "warn" | "bad" | "round" | "round-board" | "reason" | "feat" | "outline";
 
 const BASE = "inline-flex min-h-6 items-center gap-space-1 rounded-sm px-2 py-0.5 text-label";
 
@@ -11,6 +11,7 @@ const STYLE: Record<ChipVariant, string> = {
   warn: "bg-warn-tint text-warn",
   bad: "bg-bad-tint text-bad",
   round: "bg-brand-tint text-brand",
+  "round-board": "bg-board-2 text-on-board",
   reason: "bg-signal-tint text-signal-ink",
   feat: "bg-signal font-semibold text-ink",
   outline: "border border-line-strong bg-transparent text-ink-2",
