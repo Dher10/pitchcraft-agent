@@ -255,7 +255,7 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
     - [x] R4-U1 Tokens, fonts, guards.
     - [x] R4-U2 Shell and primitives.
     - [x] R4-U3 `/game/<gamePk>` after the game, on the 1.0.0 file.
-    - [ ] R4-U4 `/archive` with team, calendar and reason filters.
+    - [x] R4-U4 `/archive` with team, calendar and reason filters.
     - [ ] R4-U5 `/notable` with reasons as filters.
     - [ ] R4-U6 Home, off season (replaces A2).
     - [ ] R4-U7 Release B (owner's PR and external QA; the owner merges). Then the case-study screenshots and the monthly visits-per-route export (OQ11).

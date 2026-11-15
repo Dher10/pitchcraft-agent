@@ -42,7 +42,7 @@ const APPROVED_EXTERNAL_LINKS = ["https://github.com/Dher10/pitchcraft-agent", "
 const MLB_OR_SVG = /^https?:\/\/(([a-z0-9-]+\.)*mlb\.com|www\.w3\.org)(\/|$)/i;
 
 /** What is wrong with a link a component writes: a literal href must stay on the site; a computed one must come from the catalog. */
-export function linkProblem(expression: string): string | null {
+export function linkProblem(expression: string, file = ""): string | null {
   const literal = /^"([^"]*)"$|^'([^']*)'$/.exec(expression);
   if (literal) {
     const value = literal[1] ?? literal[2];
@@ -54,6 +54,12 @@ export function linkProblem(expression: string): string | null {
   // An internal path built from an id: `/segment/${id}`, never a template that starts with an interpolation.
   if (/^\{`\/[a-z][a-z-]*\/\$\{[^}`]*\}`\}$/.test(expression)) return null;
   if (/^\{(props\.)?href\}$/.test(expression)) return null; // Button: its callers' hrefs are checked at their own call
+  // The archive's links are built by lib/archiveQuery.ts from validated values and always start with "/archive"
+  // (lib/__tests__/archiveQuery.test.ts checks every link the calendar and the filters can make).
+  if (file.startsWith("components/archive/")) {
+    if (/^\{hrefFor\(/.test(expression)) return null;
+    if (/^\{(calendar\.(previous|next)|cell\.href)\}$/.test(expression)) return null;
+  }
   return `href not from the catalog or an internal path: ${expression}`;
 }
 
@@ -97,7 +103,7 @@ describe("the site's own source", () => {
     const problems: string[] = [];
     for (const file of FILES.filter((f) => f.endsWith(".tsx"))) {
       for (const match of read(file).matchAll(/href\s*=\s*(\{`[^`]*`\}|\{[^}]*\}|"[^"]*"|'[^']*')/g)) {
-        const problem = linkProblem(match[1]);
+        const problem = linkProblem(match[1], rel(file));
         if (problem) problems.push(`${rel(file)}: ${problem}`);
       }
     }
@@ -176,8 +182,14 @@ describe("the scanners themselves", () => {
     ["{url}", true],
     ["{`https://x.example/${id}`}", true],
     ["{SITE_COPY.links.author}", false],
+    ["{hrefFor(query, { page: 2 }@components/archive/ArchiveView.tsx", false],
+    ["{evil.href}@components/archive/Calendar.tsx", true],
+    ["{hrefFrom(query)}", true],
     ["{`/game/${id}`}", false],
     ['"//ads.example.net/x"', true],
+    ['{cell.href}@components/game/Other.tsx', true],
+    ['{cell.href}@components/archive/Calendar.tsx', false],
+    ['{hrefFor(query, {})}@components/ui/Other.tsx', true],
     ['"/\\ads.example.net"', true],
     ['"javascript:alert(1)"', true],
     ["{`/${host}/x`}", true],
@@ -185,7 +197,8 @@ describe("the scanners themselves", () => {
     ['"/archive"', false],
     ['"#how-pitchcraft-works"', false],
   ])("the link scanner judges href=%s (a problem: %s)", (expression, problem) => {
-    expect(linkProblem(expression) !== null).toBe(problem);
+    const [expr, file] = expression.split("@");
+    expect(linkProblem(expr, file ?? "") !== null).toBe(problem);
   });
 
   it("the external-link scanner would catch a third host", () => {

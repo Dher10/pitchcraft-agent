@@ -37,3 +37,7 @@ export function PlateIcon(props: IconProps) {
     </svg>
   );
 }
+
+export const ChevronLeftIcon = (props: IconProps) => <Svg {...props}><path d="M10 4L6 8l4 4" /></Svg>;
+export const ChevronRightIcon = (props: IconProps) => <Svg {...props}><path d="M6 4l4 4-4 4" /></Svg>;
+export const ChevronDownIcon = (props: IconProps) => <Svg {...props}><path d="M4 6l4 4 4-4" /></Svg>;
