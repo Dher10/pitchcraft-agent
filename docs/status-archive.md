@@ -1,5 +1,51 @@
 # PitchCraft v2 — Status archive
 
+### 2026-11-14 - R4-A2 code
+
+Resumed Nov 15: final independent review PASS for A2 including table tests;
+separate audit closure diff also PASS (no findings/disposition changes).
+Fresh sequential default verification: pytest 6520 passed, 2 skipped;
+npm 425 passed; tsc/lint/build exit 0 (`.local/r4-a2-resume-*.txt`).
+Owner requests two commits pushed together: A2, then audit closure only.
+
+Base `859c369`; guard review round 2 PASS and CI green (43635313689).
+Tests drafted before implementation in ignored scratch; copied into actual test
+paths only after the guard commit. Fixture pairs corrected to a coherent NL
+Division Series (MIL/LAD), World Series control uses an AL opponent/game 7;
+all scores are explicitly synthetic. Initial red: missing parser module and
+20 failures/13 controls. After minimal API stubs, meaningful rule-level red:
+**119 failed / 19 passed** (`.local/r4-a2-red.txt`); includes 9 existing table
+controls and new missing-index/empty/null behaviors. FS spy narrowed to the two
+application data paths so Vite/React module reads pass through unchanged.
+Implementation: full index boundary/version/types/counts/order/results validation,
+server-side projection to existing ArchiveItem presentation, null-only missing
+file fallback, table-only override and opt-in Grade visibility. No daily schema,
+Carousel, routes, links or visual design change. Score/state registry updated.
+Focused **138 passed** and tsc preflight exit 0. Browser command
+`node .local/r4-a2-layout.mjs`: exit 0, real component SSR + compiled CSS with
+synthetic rows; Edge headless at 375px (document375, table600 in wrapper309,
+scrollLeft291 reveals Result) and1280px (table/wrapper702). Screens inspected in
+`.local/r4-a2-375.png`, `-375-scrolled.png`, `-1280.png`. The bundled Playwright
+browser was absent; installed Edge used, no download/data request. The isolated
+harness uses Vite's native path resolver; project config is unchanged.
+Contract self-review: rules1/2 source values and null/zero labels; rule3 final-score
+scope separate from reports; rule4 approved score/empty/Grade conditions; rule5
+invalid existing index fails closed; rules6/7 no live/publication claim added;
+rule8 closed reader errors. No schema/version/decision/workflow change, no
+tolerance/xfail added or removed. Full verification ran sequentially in the
+default terminal: `python -m pytest` **6520 passed, 2 skipped, 2 existing warnings**
+(`.local/r4-a2-pytest.txt`); `npm test` **425 passed** (`r4-a2-npm.txt`);
+`npx tsc --noEmit`, `npm run lint`, `npm run build` each **exit 0**
+(`r4-a2-tsc.txt`, `r4-a2-lint.txt`, `r4-a2-build.txt`). Independent reviewer
+**PASS, round 1**, all 11 items; no findings rejected. Reviewer inspected the
+logs, red/focused evidence and browser images. Its first restricted-terminal npm
+attempt hit `spawn EPERM` before tests; the escalated default-terminal rerun
+passed **425 tests** (22 files), exit 0. Final closure documents checked before
+commit. Prior CI green; this commit's push/CI result is recorded in the session
+report. Stop after green CI, before any release. Owner's unrelated untracked
+`docs/design/` remains outside staging. R4-A2 code is ticked separately from its
+still-pending owner release; V/margin and R4-D8 remain owner steps.
+
 ### 2026-11-14 - R4 guard review round 1 (accepted BLOCK)
 
 R1: Python false == 0 let numeric substitutions pass historical value equality.

@@ -246,7 +246,9 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
     - [x] R4 real-run parser guard (owner 2026-11-14): run-wide closed stop, no publication after parser mismatch or rejected source final-line data; all five checks pass, round 1 findings fixed red-first, round 2 no remaining findings.
     - [ ] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
     - [ ] R4-D8 Release A (owner's PR), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
-    - [ ] R4-A2 Interim release before the redesign (owner's answer to OQ9): the home Archive reads the new index, shows the final score per row, hides the Grade column while no row has a grade, rows not linked; current visual style.
+    - [ ] R4-A2 Interim release before the redesign (owner's answer to OQ9).
+      - [x] Code: the home Archive reads the validated index, shows the final score per row, hides Grade while no row has a grade, rows not linked; current visual style and missing-index fallback preserved.
+      - [ ] Owner's release of A2; no merge or release in the pre-release hardening session.
   - **UI part (waits for the design system):**
     - [ ] R4-U0 Gate: the design system and the final strings approved.
     - [ ] R4-U1 Readers for the game files and the index (the archive results and the Grade rule ship earlier in R4-A2).

@@ -4,12 +4,15 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
 
 ## Current state
 
-- **R4 pre-release audit complete (Nov 14):** `6d2c293` (identity/cache) and `d0c256e` (publication/ceilings/reruns), both pushed to `v2`, reviewer PASS and CI green (43602352361 / 43605361384). Findings/fixes: `docs/qa/R4-data-audit-2026-11-14.md`.
-- **Required real-run guard complete (this commit):** parser mismatch/rejected final-line fields stop with `starter_unconfirmed`; stopped IDs block the entire candidate, old manifests and narrow reruns. Whole-folder source/cache checks, JSON type preservation and A15 nested-directory containment included.
-- **Verification, default commands sequentially:** pytest **6520 passed, 2 skipped**, npm **296 passed**, tsc/lint/default build **exit 0**. Guard/review focused checks **570 passed**. Controls retain null/zero, changed starters, missing MLB data and free complete caches.
-- **Review:** round 1 BLOCK accepted and fixed red-first (JSON false/0 equality; stop-state I/O); round 2 has no remaining findings, final closure docs checked before commit. All A1-A15, G1 and review R1/R2 resolved; no rejected findings or tolerance/xfail changes.
-- **Scope:** schemas, public codes and request ceilings unchanged; no production requests or protected-data/workflow/decision edits. Owner's untracked `docs/design/` stays outside staging.
-- **Next:** push/green CI for this guard, then approved R4-A2 code (index scores, conditional Grade, unchanged fallback/current style). Stop before release; V/margin and R4-D8 remain the owner's decisions.
+- **R4 pre-release audit complete (Nov 14):** `6d2c293` (identity/cache) and `d0c256e` (publication/ceilings/reruns), pushed to `v2`, reviewer PASS and CI green (43602352361 / 43605361384). Findings/fixes: `docs/qa/R4-data-audit-2026-11-14.md`; all A1-A15 resolved with the guard below.
+- **Required real-run guard complete:** `859c369`, reviewer round 2 PASS and CI green (43635313689). Parser mismatch/rejected final-line fields stop with `starter_unconfirmed`; stopped IDs block the whole candidate, old manifests and narrow reruns. Source/cache identity, JSON types and nested output containment included. Review R1/R2 fixed red-first; no rejected findings.
+- **R4-A2 code verified (this commit):** Home selects the validated 2026 index, shows final scores, hides Grade when ungraded and leaves rows unlinked. Missing-index fallback, Carousel and current style preserved; an existing invalid index fails closed. No release.
+- **Red/controls:** 119 failed / 19 passed before implementation; focused 138 passed. Controls cover zero/null values, missing/empty index, legacy five-column/Pending behavior and invalid files. No tolerance/xfail changes.
+- **Full verification, default commands sequentially:** pytest **6520 passed, 2 skipped**, npm **425 passed**, tsc/lint/default build **exit 0**. Logs and contract self-review: `docs/status-archive.md`.
+- **Visual check:** actual ArchiveTable SSR and compiled CSS in Edge at 375/1280px; no page overflow, phone scroll reveals Result, desktop fits. Synthetic fixtures only.
+- **Review/CI:** A2 independent reviewer PASS, round 1; full evidence and browser images inspected, independent default-terminal npm rerun **425 passed**. Prior commit CI green. Push this verified commit to `v2` and require its green CI before closure; the session report records its hash/run.
+- **Scope:** no production requests or writes to `public/data/` or `evals/live/`; decisions/workflows unchanged. Owner's untracked `docs/design/` stays outside staging. V/margin, R4-D8 and A2 release remain owner steps.
+- **Next after green CI:** stop. The owner's release/V/margin decisions precede any production workflow run; UI redesign tasks stay behind R4-U0.
 
 - **R4-D7 dry run done (Nov 12; the approved command, run on the owner's machine; `public/data/` and `evals/live/` untouched; nothing published):** 6 games built, 0 failed, none stopped; **MLB 32 of 319, Savant 73 of 190**; the real boxscore matched the parser (12 of 12 starter sides readable and started, every final line complete); the published World Series game matched as `published_live`. Report and readings: `docs/r4-d7-dry-run.md`. The approved command's report step failed once (the builder's stdout carries the pipeline's log in the Windows code page and the report read it as strict UTF-8): fixed red-first and the report re-run on the same output with no new request. **Readings for the owner:** MLB per game is about 5 requests, so the full run is estimated at 260 to 300 against 319 (thinner margin than the plan's 245); the notable rules tag 6 of 6 sample games up to V = 5 (a biased sample, nothing tuned); V is to be set from the workflow's census in its step summary. **Next:** the owner decides V and the margin; then release A (R4-D8) and the guard for the real run (never publish starters unknown through a parser mismatch), red first.
 
@@ -241,7 +244,9 @@ Separate evidence: `test_nonfinite_numbers.py` rejects malformed measurements/no
 
 ## Pending Notion sync
 
-- Nov 14 R4 pre-release audit/guard: source identity/cache/output containment hardened; published payloads immutable, unchanged reruns idempotent, ordinary game failures isolated. Strict source-parser failures block the whole candidate until recovery; public schema/codes and request ceilings unchanged. A2 code and release remain pending.
+- Nov 14 R4-A2: code prepared to read archive index scores, hide ungraded Grade, and keep the exact missing-index fallback/current visual style. No new routes or links, no grade or daily-schema change. Activation/release remains the owner's step after data is published.
+
+- Nov 14 R4 pre-release audit/guard: source identity/cache/output containment hardened; published payloads immutable, unchanged reruns idempotent, ordinary game failures isolated. Strict source-parser failures block the whole candidate until recovery; public schema/codes and request ceilings unchanged. A2 code is verified separately above; releases remain pending.
 
 - D65 (offseason roadmap, v2.0-b decided by the Plan B evidence, no database), the `PRD_v2.md` FR8 and rollout changes, the new `PLAN.md` section "Offseason roadmap", `docs/plans/R4.md` and `docs/design-audit.md` (Nov 7).
 - D63: normalized asserted label-value matching for every label type and lineup-note phrases, scoped W5 review and refreshed guide 0.7/prompt p2.2-6.
