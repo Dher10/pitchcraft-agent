@@ -1,14 +1,14 @@
 import PitchCraftApp from "@/components/PitchCraftApp";
-import { getPitchCraftData } from "@/lib/data";
+import { getArchiveItems, getPitchCraftData } from "@/lib/data";
 
 interface HomeProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function Home({ searchParams }: HomeProps) {
-  const data = await getPitchCraftData();
+  const [data, indexedArchive] = await Promise.all([getPitchCraftData(), getArchiveItems()]);
   const { matchup } = await searchParams;
   const initialSelectedId = Array.isArray(matchup) ? matchup[0] : matchup;
 
-  return <PitchCraftApp data={data} initialSelectedId={initialSelectedId} />;
+  return <PitchCraftApp data={data} initialSelectedId={initialSelectedId} indexedArchive={indexedArchive} />;
 }

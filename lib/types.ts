@@ -345,9 +345,41 @@ export interface ArchiveItem {
   status: MatchupStatus | null;
   featured: boolean;
   starter_summary: string;
-  /** `null` for a report that was published and never graded (schema 0.9.0, D43). */
+  /** Unavailable in daily carry-forward rows; indexed presentation rows carry their final score. */
   result_label: string | null;
+  /** Archive version 1.0.0 adds no grade (D41); legacy presentation values remain supported. */
   grade_label: string | null;
+}
+
+export type ArchiveStarterCheck = "started" | "did_not_start" | "unknown";
+export type ArchiveNotableReason = "series_clincher" | "strikeout_duel" | "veteran_duel" | "world_series";
+
+export interface ArchiveIndexRow {
+  game_pk: number;
+  date: string;
+  season: number;
+  round: "Wild Card Series" | "Division Series" | "League Championship Series" | "World Series";
+  series: { series_name: string | null; game_number: number | null; games_in_series: number | null };
+  away: { id: number; name: string; abbreviation: string | null };
+  home: { id: number; name: string; abbreviation: string | null };
+  status: "final";
+  result: { away_runs: number; home_runs: number; winner: "away" | "home" };
+  starters: { away: string | null; home: string | null };
+  report: {
+    origin: "published_live" | "reconstructed";
+    as_of: string;
+    starters_check: { away: ArchiveStarterCheck; home: ArchiveStarterCheck };
+  };
+  notable: ArchiveNotableReason[];
+}
+
+export interface ArchiveIndex {
+  archive_version: "1.0.0";
+  season: 2026;
+  veteran_min: number;
+  count: number;
+  notable_count: number;
+  games: ArchiveIndexRow[];
 }
 
 export interface AgentStep {

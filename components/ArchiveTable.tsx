@@ -3,9 +3,11 @@ import type { ArchiveItem } from "@/lib/types";
 
 interface ArchiveTableProps {
   archive: ArchiveItem[];
+  hideGradeWhenEmpty?: boolean;
 }
 
-export default function ArchiveTable({ archive }: ArchiveTableProps) {
+export default function ArchiveTable({ archive, hideGradeWhenEmpty = false }: ArchiveTableProps) {
+  const showGrade = !hideGradeWhenEmpty || archive.some((item) => item.grade_label !== null);
   if (archive.length === 0) {
     return (
       <section className="rounded-xl border border-neutral-200 bg-white p-4">
@@ -26,7 +28,7 @@ export default function ArchiveTable({ archive }: ArchiveTableProps) {
               <th className="px-3 py-2.5 font-semibold">Matchup</th>
               <th className="px-3 py-2.5 font-semibold">Starters</th>
               <th className="px-3 py-2.5 font-semibold">Result</th>
-              <th className="py-2.5 pl-3 pr-3 font-semibold">Grade</th>
+              {showGrade ? <th className="py-2.5 pl-3 pr-3 font-semibold">Grade</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -41,9 +43,9 @@ export default function ArchiveTable({ archive }: ArchiveTableProps) {
                 <td className="px-3 py-3 text-[12px] text-neutral-500">{item.starter_summary}</td>
                 <td className="px-3 py-3 font-mono text-[12px] font-medium text-neutral-700">{item.result_label ?? UNAVAILABLE}</td>
                 {/* A report with no result was never graded: its grade is not "pending", it is not available. */}
-                <td className="py-3 pl-3 pr-3 text-[12px] text-neutral-500">
+                {showGrade ? <td className="py-3 pl-3 pr-3 text-[12px] text-neutral-500">
                   {item.result_label === null ? UNAVAILABLE : (item.grade_label ?? "Pending")}
-                </td>
+                </td> : null}
               </tr>
             ))}
           </tbody>

@@ -1,5 +1,150 @@
 # PitchCraft v2 — Status archive
 
+### 2026-11-14 - R4-A2 code
+
+Resumed Nov 15: final independent review PASS for A2 including table tests;
+separate audit closure diff also PASS (no findings/disposition changes).
+Fresh sequential default verification: pytest 6520 passed, 2 skipped;
+npm 425 passed; tsc/lint/build exit 0 (`.local/r4-a2-resume-*.txt`).
+Owner requests two commits pushed together: A2, then audit closure only.
+
+Base `859c369`; guard review round 2 PASS and CI green (43635313689).
+Tests drafted before implementation in ignored scratch; copied into actual test
+paths only after the guard commit. Fixture pairs corrected to a coherent NL
+Division Series (MIL/LAD), World Series control uses an AL opponent/game 7;
+all scores are explicitly synthetic. Initial red: missing parser module and
+20 failures/13 controls. After minimal API stubs, meaningful rule-level red:
+**119 failed / 19 passed** (`.local/r4-a2-red.txt`); includes 9 existing table
+controls and new missing-index/empty/null behaviors. FS spy narrowed to the two
+application data paths so Vite/React module reads pass through unchanged.
+Implementation: full index boundary/version/types/counts/order/results validation,
+server-side projection to existing ArchiveItem presentation, null-only missing
+file fallback, table-only override and opt-in Grade visibility. No daily schema,
+Carousel, routes, links or visual design change. Score/state registry updated.
+Focused **138 passed** and tsc preflight exit 0. Browser command
+`node .local/r4-a2-layout.mjs`: exit 0, real component SSR + compiled CSS with
+synthetic rows; Edge headless at 375px (document375, table600 in wrapper309,
+scrollLeft291 reveals Result) and1280px (table/wrapper702). Screens inspected in
+`.local/r4-a2-375.png`, `-375-scrolled.png`, `-1280.png`. The bundled Playwright
+browser was absent; installed Edge used, no download/data request. The isolated
+harness uses Vite's native path resolver; project config is unchanged.
+Contract self-review: rules1/2 source values and null/zero labels; rule3 final-score
+scope separate from reports; rule4 approved score/empty/Grade conditions; rule5
+invalid existing index fails closed; rules6/7 no live/publication claim added;
+rule8 closed reader errors. No schema/version/decision/workflow change, no
+tolerance/xfail added or removed. Full verification ran sequentially in the
+default terminal: `python -m pytest` **6520 passed, 2 skipped, 2 existing warnings**
+(`.local/r4-a2-pytest.txt`); `npm test` **425 passed** (`r4-a2-npm.txt`);
+`npx tsc --noEmit`, `npm run lint`, `npm run build` each **exit 0**
+(`r4-a2-tsc.txt`, `r4-a2-lint.txt`, `r4-a2-build.txt`). Independent reviewer
+**PASS, round 1**, all 11 items; no findings rejected. Reviewer inspected the
+logs, red/focused evidence and browser images. Its first restricted-terminal npm
+attempt hit `spawn EPERM` before tests; the escalated default-terminal rerun
+passed **425 tests** (22 files), exit 0. Final closure documents checked before
+commit. Prior CI green; this commit's push/CI result is recorded in the session
+report. Stop after green CI, before any release. Owner's unrelated untracked
+`docs/design/` remains outside staging. R4-A2 code is ticked separately from its
+still-pending owner release; V/margin and R4-D8 remain owner steps.
+
+### 2026-11-14 - R4 guard review round 1 (accepted BLOCK)
+
+R1: Python false == 0 let numeric substitutions pass historical value equality.
+R2: failure to write the stop state could continue later requests or escape as
+OSError; the reviewer corrected/withdrew its initial CLI-zero description.
+Both findings accepted and fixed. Red `.local/r4-guard-review-red.txt`: 7 failed,
+one object-key-order control passed. Additional red runs: ceiling propagation
+(included in three stop-write reds), cached refresh write (1), linked state and
+cleanup write/unlink (3). Shared JSON-type-aware equality swept source/cache,
+index/manifest recomputation, duplicate records and publisher immutability.
+Latch I/O now stops immediately; a failed atomic write uses a malformed sentinel
+when possible. Unreadable/malformed state requires cache repair and cannot be
+cleared by a narrow rerun. Ceiling reason preserved; all I/O errors stay closed.
+Focused archive checks **570 passed**. Fresh sequential default checks
+(`.local/r4-guard2-*`): pytest **6520 passed, 2 skipped, 2 existing warnings**;
+npm **296 passed**; tsc/lint/default build **exit 0**. Review round 2: no remaining
+findings, final closure documents checked before commit; no findings rejected.
+previous 6507/296 verification predates these fixes. No data/schema,
+decision, workflow or fan-visible text change, no tolerance/xfail change.
+
+### 2026-11-14 - R4 real-run guard (initial verification, superseded above)
+
+Base `d0c256e`; both audit commits and CI green, reviewer PASS for each.
+The first 115-case red run was observed by the root in the default terminal:
+89 failed / 26 controls passed (`.local/r4-guard-red.txt`). Five follow-up red
+cases were observed before their mechanisms: first cached recheck request/ceiling
+failure (2), complete changed published cache outside selection (2), and nested
+games-directory junction (1, real escaped temporary file). Root then observed
+two further interaction reds (`.local/r4-guard-isolation-red.txt`,
+`.local/r4-guard-save-red.txt`). All 122 guard cases now pass.
+Controls: absent/null individual source fields (20), measured zeros (2), changed
+actual starter (1), explicit empty MLB pitcher lists (2), complete free cache (1).
+The old unsafe unreadable-boxscore test explicitly selects diagnostic=True now.
+Implementation: shared parser judgment, strict default, optional --dry-run,
+memoized boxscores, whole-folder cache/source preflight, nonpublic stopped-ID
+latch, finalizer refusal before writes, strict recovery and linked-directory stop.
+Ordinary game failures stay isolated after confirmed recovery. No new public
+schema/code, text or version, no tolerance/xfail added or removed. Rule 1 source
+identity, rule 2 null/zero controls, rule 3 cutoff unchanged, rule 4 no fan text,
+rule 5 ordinary isolation plus owner-required source stop, rules 6/7 unchanged,
+rule 8 existing closed reason and no exception text. Full default checks in
+order (`.local/r4-guard-*`): pytest **6507 passed, 2 skipped, 2 existing warnings**;
+npm **296 passed**; tsc/lint/default Turbopack build exit 0. An initial typecheck
+yielded before completion was confirmed and lint was started; both were repeated
+to completion strictly in sequence before the build. Independent review pending.
+The usage limit interrupted the initial uncommitted implementation; resumed on
+the owner's Continue. No unverified commit was made. Owner's newly supplied
+untracked `docs/design/` remains separate and is excluded from staging.
+
+### 2026-11-14 - R4 pre-release audit, group 2
+
+Base `6d2c293`; prior CI green (43602352361). Added A12-A14 after read-only
+transport/path/scope sweep. A12 zero-network fake urllib transport proves two
+redirect sends for one ledger charge. All 13 group-2 reproductions seen failing;
+then focused archive suite 171 passed. A real temporary Windows junction proves
+the publisher refuses before external writes. No production data touched.
+Group fixes: immutable previously published payloads, destination ancestors and
+resolved containment before copying, semantic manifest counts, unchanged manifest
+preservation including the workflow's removed-manifest case, per-game CLI exit
+policy, removal of stale invalid candidates, finalizer protected-path guard,
+archive-only redirect refusal with transport restoration, authorized 2026 window.
+Contract self-review: rule 1 manifest/source identities; rule 2 no new defaults;
+rules 3/6/7 preserve report values and approved season; rule 4 no fan text;
+rule 5 isolates ordinary game failures; rule 8 uses closed labels. No schema,
+decision, workflow or tolerance change; zero xfails removed. Default-terminal
+checks in order (logs `.local/r4-g2-*`): pytest 6385 passed, 2 skipped,
+2 existing warnings; npm 296 passed; tsc, lint and default build exit 0.
+Independent review: no findings, round 1; final closure documentation checked
+before commit. No rejected suggestions. All A1-A14 fixed; G1 remains next.
+
+### 2026-11-14 - R4 pre-release audit, group 1
+
+Owner explicitly applies D35 to Codex. Read-only independent audit at `7bbbd27`
+produced A1-A11 and the separately planned G1 guard; report and approved addendum
+are in `docs/qa/R4-data-audit-2026-11-14.md` and `docs/plans/R4-pre-release.md`.
+Group 1 fixes A1, A3-A7 and the resume half of A2. New tests were seen red:
+16 failed, one named valid-published control passed. Initial sandbox run had
+temporary-directory setup errors; the unchanged command in the default local
+environment reproduced all 16 failures. Synthetic doubleheader/index/publisher
+fixtures formerly disagreed with report dates/teams/cutoffs; corrected explicitly.
+Contract self-review: rules 1/3/6/7 bind identity, lineage and pregame cutoff;
+rule 2 keeps unavailable values and free cache reads; rule 5 strengthens resume;
+rule 8 keeps closed errors; rule 4 introduces no text. No schema change, no
+tolerance/xfail removed or added; no DECISIONS/workflow/protected-data edits.
+Verification (default terminal, in order; logs `.local/r4-g1-*`):
+`python -m pytest`: 6372 passed, 2 skipped, 2 existing date-parser warnings;
+`npm test`: 296 passed; `npx tsc --noEmit`, `npm run lint`, `npm run build`:
+exit 0. Default Turbopack build succeeds. Independent reviewer PASS, round 1,
+all 11 checklist items ok; no findings or rejected suggestions.
+Remaining findings belong to group 2. Prior CI `7bbbd27` success, run 43354799006.
+
+### 2026-11-07 - R4-D3 and R4-D4 (archive identity, builder) review record
+
+R4-D3 (`197bcac`): reviewer round 1 BLOCK on two findings (the "byte-identical" provenance wording for a re-serialized payload; envelope fields teams.id and series.* not type-checked), both fixed, round 2 PASS. Finding recorded: today's validate_payload and check_contract refuse the published 0.9.0 World Series file (older catalogs), so published reports keep their values and record lineage (commit, SHA-256 of the committed blob) instead of being rejudged; the owner may object.
+
+R4-D4: reviewer round 1 BLOCK on four findings, all accepted and fixed: the Savant pitcher-frame ceiling was checked only after the request (now checked before, by lowering the pipeline's own per-run cap for the call, and a stop by that cap is the end of the run, never a recorded missing frame); `prior_seasons` turned a missing games figure into a smaller number (now `None`); a failed day schedule escaped `run()` (now recorded with a closed code, other days go on, and the pipeline's own SCHEDULE_DAY schema also judges the answer); `starter_facts` was not in the contract text and the plan's file layout (added to both; it follows plan 4.6, which needs the prior-seasons fact stored so the index is recomputable). Also done: atomic write of the history cache. `starter_facts` is an addition to the envelope of `archive_version 1.0.0`, which is unpublished; flagged to the owner.
+
+Mutants (the code preceded its tests, a disclosed deviation; the owner accepted one such for gate 4a): 24 for D4 (frame ceiling checked first, frame cap lowered, a cap stop ends the run, a failed day isolated, unknown prior seasons, ceiling off by one, swallowable ceiling, resume trusting any file, out-dir guard, frame charge, boxscore failure fatal, published report of another day, rebuilt marked as published, ceiling not stopping the run, started compare, missing count as zero, second pitcher's line, game-date row summed, current season counted, postseason rows summed, digest not checked, only-game ignored, schedule asked again, provider ignored), all killed; 10 for D3, all killed. The boxscore shape is synthetic (no real answer recorded); R4-D7's dry run is where it is first read, and a mismatch leaves the starters `unknown`.
+
 ### 2026-11-02 - D63 narrow W5 label-value fix
 
 Owner authorized one narrow W5 fix and scoped review, with one further W5-only correction/review if needed; other noticed gaps are limitations, not blockers. D63 appended and plan amended, no earlier decision edited. Red-first stored Freeland and all label-type/intensity/lineup tests: 10 failed / 3 controls passed. First green 13 passed. Lineup rate-context test then observed 1 failure and fixed within W5. Initial affected run exposed a catalog key collision with existing limited-cause dimensions and D6 regex text; W5 keys/patterns moved to their own catalog entries, limited-cause dimension mapping retained. Final writer/guide-0.4/catalog/instrument controls: 329 passed in 11.54 s. Full affected readiness (including guide/fact-table/replay/freeze/provider/no-tolerance controls): 417 passed in 21.66 s.

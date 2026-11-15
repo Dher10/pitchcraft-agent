@@ -7,14 +7,15 @@ import Disclaimer from "@/components/Disclaimer";
 import GameCarousel from "@/components/GameCarousel";
 import Hero from "@/components/Hero";
 import MatchupView from "@/components/MatchupView";
-import type { PitchCraftData } from "@/lib/types";
+import type { ArchiveItem, PitchCraftData } from "@/lib/types";
 
 interface PitchCraftAppProps {
   data: PitchCraftData;
   initialSelectedId?: string;
+  indexedArchive?: ArchiveItem[] | null;
 }
 
-export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftAppProps) {
+export default function PitchCraftApp({ data, initialSelectedId, indexedArchive }: PitchCraftAppProps) {
   const [selectedId, setSelectedId] = useState(initialSelectedId ?? data.featured_matchup_id);
   // A day with no games has no matchup (schema 0.9.0): the page keeps the rest and draws no game.
   const selected =
@@ -44,7 +45,7 @@ export default function PitchCraftApp({ data, initialSelectedId }: PitchCraftApp
         </>
       ) : null}
       {data.matchups.length > 0 ? <AgentPipeline workflow={data.agent_workflow} /> : null}
-      <ArchiveTable archive={data.archive} />
+      <ArchiveTable archive={indexedArchive ?? data.archive} hideGradeWhenEmpty={indexedArchive != null} />
       <Disclaimer disclaimers={data.disclaimers} />
     </main>
   );

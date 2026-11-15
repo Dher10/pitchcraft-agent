@@ -86,15 +86,24 @@ def _require_live(status: Any) -> None:
         raise DailyFailure(_closed(status.get("reason") if isinstance(status, dict) else None))
 
 
-def _build_candidate(target_date: str | None) -> dict[str, Any]:
-    """The validated live payload for the day, or a `DailyFailure`. Touches nothing outside a temporary directory."""
+def _build_candidate(target_date: str | None, **only: Any) -> dict[str, Any]:
+    """
+    The validated live payload for the day, or a `DailyFailure`. Touches nothing outside a temporary directory.
+
+    `only` are the keyword arguments of `live_pipeline.run_live_pipeline` that narrow the run to one game (`only_game_pk`,
+    `games`, `season_stats_provider`); the daily job passes none. A `record_out` list, when given, receives the run record.
+    """
+
+    record_out = only.pop("record_out", None)
 
     saved_dir = cache_manager.PROCESSED_DIR
     saved_input = (gdj._live, gdj._live_status)
     with tempfile.TemporaryDirectory(prefix="pitchcraft-daily-") as scratch:
         cache_manager.PROCESSED_DIR = Path(scratch)
         try:
-            record, snapshot = live_pipeline.run_live_pipeline(target_date)
+            record, snapshot = live_pipeline.run_live_pipeline(target_date, **only)
+            if record_out is not None:
+                record_out.append(record)
             print(f"daily: requests {json.dumps(record.get('requests', {}), sort_keys=True)}")
             cache_manager.save_processed("live_run", record)
             if snapshot is not None:
