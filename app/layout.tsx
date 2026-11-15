@@ -15,6 +15,13 @@ const plexSans = localFont({
   variable: "--font-sans",
 });
 
+// Display face of the design system (D67): page titles, names in heads, the wordmark and every featured number.
+const bigShoulders = localFont({
+  src: [{ path: "./fonts/big-shoulders-display-latin-wght-normal.woff2", weight: "100 900", style: "normal" }],
+  display: "swap",
+  variable: "--font-display",
+});
+
 const plexMono = localFont({
   src: [
     { path: "./fonts/ibm-plex-mono-latin-500-normal.woff2", weight: "500", style: "normal" },
@@ -37,8 +44,8 @@ export default async function RootLayout({
   // Nonces belong to individual requests; static/CDN HTML cannot reuse them.
   await headers();
   return (
-    <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
-      <body className="min-h-screen bg-neutral-100 font-sans text-neutral-900 antialiased">
+    <html lang="en" className={`${plexSans.variable} ${plexMono.variable} ${bigShoulders.variable}`}>
+      <body className="min-h-screen bg-ground font-sans text-ink antialiased">
         {children}
         {/* Vercel Web Analytics (D26): page views only, no custom event. */}
         <Analytics />

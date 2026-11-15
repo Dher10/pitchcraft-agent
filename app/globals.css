@@ -1,8 +1,129 @@
-﻿@import "tailwindcss";
+/* Design tokens of release B (docs/design/tokens.json, D67). One definition each; a test keeps this file equal to the
+   package. Hex literals live only here and in lib/teamColors.ts. Utilities: bg-board, text-ink, font-display,
+   text-display-lg, p-space-3, rounded-lg, shadow-pop, max-w-content, min-h-tap, bp-md:, bp-lg:. */
+@import "tailwindcss";
 
+@theme {
+  /* Colors */
+  --color-ground: #F1F4EF;
+  --color-surface: #FFFFFF;
+  --color-surface-sunken: #E4EAE3;
+  --color-line: #D3DAD2;
+  --color-line-strong: #7C877F;
+  --color-ink: #0F231B;
+  --color-ink-2: #3A4A42;
+  --color-ink-3: #55645C;
+  --color-board: #0E3B2C;
+  --color-board-2: #165240;
+  --color-on-board: #F4F7F2;
+  --color-on-board-2: #B9CDC2;
+  --color-signal: #FFC93C;
+  --color-signal-tint: #FFF1C2;
+  --color-signal-ink: #6B4E00;
+  --color-stitch: #D7382C;
+  --color-brand: #177245;
+  --color-brand-strong: #0E5231;
+  --color-brand-tint: #DDEFE3;
+  --color-on-brand: #FFFFFF;
+  --color-ok: #1B6240;
+  --color-ok-tint: #DCF0E3;
+  --color-warn: #7A4A00;
+  --color-warn-tint: #FBEBC5;
+  --color-bad: #9B2219;
+  --color-bad-tint: #FBE3DF;
+  --color-focus: #0F231B;
+  --color-pitch-four-seam: #C2412B;
+  --color-pitch-sinker: #C9740F;
+  --color-pitch-cutter: #8A5A3B;
+  --color-pitch-slider: #2B6CB0;
+  --color-pitch-sweeper: #6B4FBB;
+  --color-pitch-curveball: #16868B;
+  --color-pitch-changeup: #3C8A38;
+  --color-pitch-splitter: #868E12;
+  --color-pitch-other: #6B716D;
+  --color-team-fallback: #71717A;
+
+  /* Type scale: size, line height, weight, letter spacing. 12px is the smallest text. */
+  --text-display-xl: 72px;
+  --text-display-xl--line-height: 68px;
+  --text-display-xl--font-weight: 800;
+  --text-display-xl--letter-spacing: 0.005em;
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 48px;
+  --text-display-lg--font-weight: 800;
+  --text-display-lg--letter-spacing: 0.005em;
+  --text-display-md: 36px;
+  --text-display-md--line-height: 38px;
+  --text-display-md--font-weight: 800;
+  --text-display-md--letter-spacing: 0.005em;
+  --text-title-lg: 28px;
+  --text-title-lg--line-height: 30px;
+  --text-title-lg--font-weight: 700;
+  --text-title-lg--letter-spacing: 0.01em;
+  --text-score: 88px;
+  --text-score--line-height: 80px;
+  --text-score--font-weight: 800;
+  --text-stat: 28px;
+  --text-stat--line-height: 28px;
+  --text-stat--font-weight: 700;
+  --text-stat--letter-spacing: 0.01em;
+  --text-badge: 14px;
+  --text-badge--line-height: 14px;
+  --text-badge--font-weight: 800;
+  --text-badge--letter-spacing: 0.03em;
+  --text-title-md: 17px;
+  --text-title-md--line-height: 24px;
+  --text-title-md--font-weight: 600;
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 26px;
+  --text-body-lg--font-weight: 400;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-body--font-weight: 400;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+  --text-label: 13px;
+  --text-label--line-height: 16px;
+  --text-label--font-weight: 500;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--font-weight: 400;
+
+  /* Spacing */
+  --spacing-space-1: 4px;
+  --spacing-space-2: 8px;
+  --spacing-space-3: 12px;
+  --spacing-space-4: 16px;
+  --spacing-space-5: 24px;
+  --spacing-space-6: 32px;
+  --spacing-space-7: 48px;
+  --spacing-space-8: 64px;
+
+  /* Radius by rank */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 22px;
+  --radius-full: 999px;
+
+  /* Depth: flat; the only shadow is the Help panel's */
+  --shadow-pop: 0 8px 24px rgba(23,32,27,0.14);
+
+  /* Layout. The breakpoints keep the design's names so Tailwind's md and lg, used by the pages not yet
+     redesigned, keep their widths. */
+  --container-content: 1120px;
+  --container-reading: 680px;
+  --spacing-tap: 44px;
+  --breakpoint-bp-md: 720px;
+  --breakpoint-bp-lg: 1024px;
+}
+
+/* Font families: next/font/local sets --font-display and --font-sans on <html> (app/layout.tsx). */
 @theme inline {
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --font-display: var(--font-display), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace; /* IBM Plex Mono: retired by the design; kept until U6 removes its last use */
 }
 
 * {
@@ -17,7 +138,13 @@ button {
   font: inherit;
 }
 
+/* One focus style: a 3px ink ring on light surfaces, signal on the board (the board marks itself with data-on-board). */
 :focus-visible {
-  outline: 3px solid #1d4ed8;
-  outline-offset: 3px;
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+[data-on-board] :focus-visible,
+[data-on-board]:focus-visible {
+  outline-color: var(--color-signal);
 }
