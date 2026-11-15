@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ARCHIVE_COPY } from "@/lib/copy/archive";
-import { REASON_LABELS } from "@/lib/notableReasons";
-import { REASON_ORDER, hrefFor, reasonCount, type ArchiveQuery } from "@/lib/archiveQuery";
+import { REASON_DISPLAY_ORDER, REASON_LABELS } from "@/lib/notableReasons";
+import { hrefFor, reasonCount, type ArchiveQuery } from "@/lib/archiveQuery";
 import type { ArchiveIndex } from "@/lib/types";
 
 const PILL = "inline-flex min-h-tap items-center rounded-sm border px-space-4 text-body-sm font-medium whitespace-nowrap no-underline";
@@ -24,7 +24,7 @@ export default function ReasonPills({ index, query }: { index: ArchiveIndex; que
         {ARCHIVE_COPY.anyGame}
         <span className="ml-1.5 tabular-nums opacity-75">{reasonCount(index, query, null)}</span>
       </Link>
-      {REASON_ORDER.map((reason) => {
+      {REASON_DISPLAY_ORDER.map((reason) => {
         const picked = query.reasons.includes(reason);
         const reasons = picked ? query.reasons.filter((r) => r !== reason) : [...query.reasons, reason];
         return (

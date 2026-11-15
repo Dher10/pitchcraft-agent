@@ -164,7 +164,7 @@ describe("the reason filter", () => {
     const nav = within(getByRole("navigation", { name: "Notable reason" }));
     const pills = nav.getAllByRole("link").map((link) => link.textContent);
 
-    expect(pills).toEqual(["Any game40", "Series-ending game11", "Strikeout duel15", "Veteran duel12", "World Series game5"]);
+    expect(pills).toEqual(["Any game40", "Strikeout duel15", "Veteran duel12", "Series-ending game11", "World Series game5"]);
   });
 
   it("marks Any game as current when no reason is picked, and a picked reason when it is", () => {

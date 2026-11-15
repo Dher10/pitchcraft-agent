@@ -56,6 +56,8 @@ export function linkProblem(expression: string, file = ""): string | null {
   if (/^\{(props\.)?href\}$/.test(expression)) return null; // Button: its callers' hrefs are checked at their own call
   // The archive's links are built by lib/archiveQuery.ts from validated values and always start with "/archive"
   // (lib/__tests__/archiveQuery.test.ts checks every link the calendar and the filters can make).
+  // The notable page's links are built by lib/notableQuery.ts and always start with "/notable".
+  if (file.startsWith("components/notable/") && /^\{notableHref\(/.test(expression)) return null;
   if (file.startsWith("components/archive/")) {
     if (/^\{hrefFor\(/.test(expression)) return null;
     if (/^\{(calendar\.(previous|next)|cell\.href)\}$/.test(expression)) return null;
@@ -188,6 +190,11 @@ describe("the scanners themselves", () => {
     ["{`/game/${id}`}", false],
     ['"//ads.example.net/x"', true],
     ['{cell.href}@components/game/Other.tsx', true],
+    ['{notableHref(next)}@components/notable/NotablePills.tsx', false],
+    ['{notableHref([])}@components/notable/NotableView.tsx', false],
+    ['{notableHref(next)}@components/game/Other.tsx', true],
+    ['{notableHref(next)}@components/archive/Calendar.tsx', true],
+    ['{hrefFor(query, {})}@components/notable/NotablePills.tsx', true],
     ['{cell.href}@components/archive/Calendar.tsx', false],
     ['{hrefFor(query, {})}@components/ui/Other.tsx', true],
     ['"/\\ads.example.net"', true],
