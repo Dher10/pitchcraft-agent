@@ -22,6 +22,10 @@ from tests.live_helpers import CUTOFF, GAME_DAY, RUN_AT, hand_snapshot, use_snap
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SERVED = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 GOLDEN = Path(__file__).parent / "fixtures" / "agents_en_golden.json"
+# The v2 copy of the served file as it was committed on 2026-11-14 (schema 0.9.0, demo_cached, two matchups, six archive
+# rows). The real served file is the bot's and changes on its own (D15), so a test that needs specific demo rows,
+# labels, attribution notes or critic counts reads this copy; only contract tests read `SERVED`.
+SERVED_FIXTURE = Path(__file__).parent / "fixtures" / "served_demo_0.9.0.json"
 
 KINDS = ("demo", "fallback", "live_complete", "live_debuts", "live_errors")
 GOLDEN_NAMES = list(json.loads(GOLDEN.read_text(encoding="utf-8")))
@@ -104,3 +108,7 @@ def payload_of(matchup: dict[str, Any]) -> dict[str, Any]:
 
 def served() -> dict[str, Any]:
     return json.loads(SERVED.read_text(encoding="utf-8"))
+
+
+def served_fixture() -> dict[str, Any]:
+    return json.loads(SERVED_FIXTURE.read_text(encoding="utf-8"))

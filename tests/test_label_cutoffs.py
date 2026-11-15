@@ -20,7 +20,7 @@ from data_pipeline.validators import ValidationError, validate_payload
 from tests.test_no_games_archive import previous, seed  # noqa: F401  (fixtures and helper of the archive tests)
 from tests.test_daily import no_network, sources  # noqa: F401
 
-SERVED = Path(__file__).resolve().parents[1] / "public" / "data" / "pitchcraft-demo.json"
+SERVED = Path(__file__).resolve().parent / "fixtures" / "served_demo_0.9.0.json"  # the v2 copy, not the bot's file
 
 
 def stale_served() -> dict:

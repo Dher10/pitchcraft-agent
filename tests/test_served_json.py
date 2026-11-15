@@ -15,11 +15,13 @@ import re
 
 import pytest
 
+from data_pipeline.schema import READABLE_VERSIONS
 from data_pipeline.validators import ValidationError, validate_payload
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SERVED = REPO_ROOT / "public" / "data" / "pitchcraft-demo.json"
 MODES = {"demo_cached", "demo_fallback", "fetched_snapshot"}
+CACHING_NOTE = "Requests to the data sources are cached and the data is not downloaded in bulk."
 SLOTS = ("away_starter", "home_starter")
 PITCH_WORDS = re.compile(
     r"\b(four-seam|sinker|cutter|slider|changeup|curveball|splitter|sweeper|slurve|knuckleball)\b"
@@ -61,11 +63,43 @@ def test_a_demo_file_never_says_it_is_live(payload):
     assert "live data fetched" not in payload["metadata"]["last_updated_label"].lower()
 
 
-def test_a_live_file_has_at_least_one_live_matchup_and_says_when(payload):
+def live_file_problem(payload: dict) -> str | None:
+    """What is wrong with a live file's matchups: it has one, or its run record says there were no games."""
+
+    if not live_matchups(payload):
+        run = (payload["metadata"].get("data_status") or {}).get("live_run") or {}
+        if not (run.get("status") == "no_games" and payload["matchups"] == []):
+            return "a live file with no live matchup that is not a no_games run"
+    if "live data fetched" not in payload["metadata"]["last_updated_label"].lower():
+        return "a live file that does not say when its data was fetched"
+    return None
+
+
+def test_a_live_file_has_a_live_matchup_or_is_a_no_games_run_and_says_when(payload):
     if payload["metadata"]["data_mode"] != "fetched_snapshot":
         pytest.skip("demo file")
-    assert live_matchups(payload)
-    assert "live data fetched" in payload["metadata"]["last_updated_label"].lower()
+    assert live_file_problem(payload) is None
+
+
+def test_the_served_file_is_valid_for_its_own_schema_version_whatever_its_content(payload):
+    """The file is the bot's and changes on its own: a `no_games` run with 0 matchups is as valid as a game day."""
+
+    assert payload["metadata"]["version"] in READABLE_VERSIONS
+    validate_payload(payload)
+
+
+def test_control_a_live_file_with_no_matchup_is_only_valid_as_a_no_games_run():
+    no_games = {"metadata": {"last_updated_label": "Live data fetched 2026-10-30",
+                             "data_status": {"live_run": {"status": "no_games"}}}, "matchups": []}
+    assert live_file_problem(no_games) is None
+
+    failed_run = {"metadata": {"last_updated_label": "Live data fetched 2026-10-30",
+                               "data_status": {"live_run": {"status": "ok"}}}, "matchups": []}
+    assert live_file_problem(failed_run) is not None
+
+    no_date = {"metadata": {"last_updated_label": "Demo data", "data_status": {"live_run": {"status": "no_games"}}},
+               "matchups": []}
+    assert live_file_problem(no_date) is not None
 
 
 def test_live_starters_carry_no_demo_field(payload):
@@ -127,7 +161,9 @@ def test_a_live_served_file_describes_its_data_without_demo_wording(payload):
     # skipped while the served file is a demo one; the live case is covered by tests/test_live_file_neutral_text.py
     if payload["metadata"]["data_mode"] != "fetched_snapshot":
         pytest.skip("demo file: it keeps its demo wording")
-    text = json.dumps([payload["disclaimers"], payload["metadata"]["data_sources"], payload["agent_workflow"]])
+    # The caching note says requests are cached; it is not the demo wording (P1.9; tests/test_live_file_neutral_text.py).
+    notes = [n for n in payload["disclaimers"] if n != CACHING_NOTE]
+    text = json.dumps([notes, payload["metadata"]["data_sources"], payload["agent_workflow"]])
 
     assert not re.search(r"cached|capstone|demo|judging", text, re.IGNORECASE)
 
