@@ -253,7 +253,7 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
   - **UI part, release B (D67; plan `docs/plans/R4-U.md`; replaces the earlier R4-U0 to U6 rows):**
     - [ ] R4-U0 D67, the design package in `docs/design/`, the plan `R4-U.md` (docs only). Owner approves the D67 text and the plan.
     - [x] R4-U1 Tokens, fonts, guards.
-    - [ ] R4-U2 Shell and primitives.
+    - [x] R4-U2 Shell and primitives.
     - [ ] R4-U3 `/game/<gamePk>` after the game, on the 1.0.0 file.
     - [ ] R4-U4 `/archive` with team, calendar and reason filters.
     - [ ] R4-U5 `/notable` with reasons as filters.

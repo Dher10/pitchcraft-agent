@@ -124,11 +124,9 @@ const TEXT_UNDER_12PX_EXCEPTIONS: Record<string, number> = {
   "components/GameCarousel.tsx": 4,
   "components/Hero.tsx": 1,
   "components/MatchupView.tsx": 8,
-  "components/ModeLine.tsx": 1,
   "components/PitchTrajectoryCard.tsx": 4,
   "components/ScoutingReport.tsx": 1,
   "components/StarterCard.tsx": 5,
-  "components/StatTile.tsx": 1,
   "components/StrengthProfile.tsx": 3,
 };
 const LIGHT_TEXT_EXCEPTIONS: Record<string, number> = {
@@ -142,7 +140,6 @@ const LIGHT_TEXT_EXCEPTIONS: Record<string, number> = {
   "components/PitchTrajectoryCard.tsx": 2,
   "components/ScoutingReport.tsx": 1,
   "components/StarterCard.tsx": 3,
-  "components/StatTile.tsx": 1,
   "components/StrengthProfile.tsx": 2,
 };
 const ARBITRARY_TEXT_EXCEPTIONS: Record<string, number> = {
@@ -155,11 +152,9 @@ const ARBITRARY_TEXT_EXCEPTIONS: Record<string, number> = {
   "components/GameCarousel.tsx": 5,
   "components/Hero.tsx": 2,
   "components/MatchupView.tsx": 13,
-  "components/ModeLine.tsx": 1,
   "components/PitchTrajectoryCard.tsx": 3,
   "components/ScoutingReport.tsx": 3,
   "components/StarterCard.tsx": 8,
-  "components/StatTile.tsx": 1,
   "components/StrengthProfile.tsx": 2,
 };
 const HEX_EXCEPTIONS: Record<string, number> = {

@@ -88,7 +88,7 @@ export function todayInNewYork(now: Date = new Date()): string {
 export function formatModeLine(dataMode: string, fetchedAt: string | null | undefined): string {
   if (dataMode !== "fetched_snapshot") return MODE_LINE_DEMO;
   const day = newYorkDay(fetchedAt);
-  return day ? `Live data · fetched ${day}` : MODE_LINE_FETCH_UNKNOWN;
+  return day ? `Live data, fetched ${day}` : MODE_LINE_FETCH_UNKNOWN;
 }
 
 export const SERIES_STANDING_UNAVAILABLE = "Series standing not available";
@@ -103,4 +103,31 @@ export function formatSeriesLine(series: Series | null): string | null {
   const head = `${series.series_name} · Game ${series.game_number}`;
   if (series.game_number === 1) return head;
   return `${head} · ${series.standing ?? SERIES_STANDING_UNAVAILABLE}`;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** The parts of a real calendar day written YYYY-MM-DD; anything else (a time, another format, 2026-02-30) is refused. */
+function dayParts(iso: string): { year: number; month: number; day: number } {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (match) {
+    const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+    const check = new Date(Date.UTC(year, month - 1, day));
+    if (check.getUTCFullYear() === year && check.getUTCMonth() === month - 1 && check.getUTCDate() === day) {
+      return { year, month, day };
+    }
+  }
+  throw new Error("not_an_iso_day");
+}
+
+/** A day for people: "Oct 28, 2026". Never shifted by a time zone (the day is the date, not an instant); ISO stays in `datetime` and URLs. */
+export function formatDay(iso: string): string {
+  const { year, month, day } = dayParts(iso);
+  return `${MONTHS[month - 1]} ${day}, ${year}`;
+}
+
+/** A day without its year: "Oct 28". */
+export function formatMonthDay(iso: string): string {
+  const { month, day } = dayParts(iso);
+  return `${MONTHS[month - 1]} ${day}`;
 }

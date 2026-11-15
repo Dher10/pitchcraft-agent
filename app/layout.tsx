@@ -3,6 +3,10 @@ import type { Metadata as NextMetadata } from "next";
 import localFont from "next/font/local";
 import { headers } from "next/headers";
 import "./globals.css";
+import SiteFooter from "@/components/site/SiteFooter";
+import SiteHeader from "@/components/site/SiteHeader";
+import { getPitchCraftData } from "@/lib/data";
+import { seasonMode, type SeasonMode } from "@/lib/season";
 
 const plexSans = localFont({
   src: [
@@ -36,6 +40,15 @@ export const metadata: NextMetadata = {
   description: "Starting-pitcher matchup reports for MLB fans, checked against public data. No predictions, no betting.",
 };
 
+/** The season switch reads the daily file; a file that cannot be read gives the off season, never a made-up game day. */
+async function currentSeason(): Promise<SeasonMode> {
+  try {
+    return seasonMode(await getPitchCraftData());
+  } catch {
+    return "off_season";
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -45,8 +58,10 @@ export default async function RootLayout({
   await headers();
   return (
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable} ${bigShoulders.variable}`}>
-      <body className="min-h-screen bg-ground font-sans text-ink antialiased">
-        {children}
+      <body className="flex min-h-screen flex-col bg-ground font-sans text-ink antialiased">
+        <SiteHeader season={await currentSeason()} />
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
         {/* Vercel Web Analytics (D26): page views only, no custom event. */}
         <Analytics />
       </body>
