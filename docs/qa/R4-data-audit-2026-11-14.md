@@ -87,5 +87,6 @@ BLOCK is accepted, with the reviewer's initially stated CLI-zero scenario
 withdrawn/corrected to continued requests and persistent unhandled I/O. The
 previous 6507/296 full run is superseded by fresh sequential checks: pytest
 **6520 passed / 2 skipped**, npm **296 passed**, tsc/lint/default build **exit 0**.
-All A1-A15, G1, R1 and R2 have fixes. Round 2 has no remaining findings; final
-closure documents checked before commit. No findings were rejected.
+All A1-A15, G1, R1 and R2 have fixes. Round 2 PASS, no remaining findings;
+closure documents checked before commit. No findings were rejected. Guard/A15
+and review fixes committed as `859c369`, CI green (43635313689).
