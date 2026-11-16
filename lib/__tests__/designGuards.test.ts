@@ -158,10 +158,8 @@ const ARBITRARY_TEXT_EXCEPTIONS: Record<string, number> = {
   "components/StrengthProfile.tsx": 2,
 };
 const HEX_EXCEPTIONS: Record<string, number> = {
-  "components/PitchMixChart.tsx": 5,
   "components/PitchTrajectoryCard.tsx": 4,
   "components/StrengthProfile.tsx": 7,
-  "components/VelocityChart.tsx": 5,
   "components/ZoneDiagram.tsx": 16,
 };
 

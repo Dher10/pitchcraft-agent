@@ -17,7 +17,7 @@ function nickname(team: Side): string {
  * notable reasons (docs/design/COMPONENTS.md, GameRow). The whole row is one link to the game page. The winner is marked
  * three ways, none of them color alone: a bold name, heavier runs and a triangle before the runs.
  */
-export default function GameRow({ game, maxReasons }: { game: ArchiveIndexRow; maxReasons?: number }) {
+export default function GameRow({ game, maxReasons, className = "" }: { game: ArchiveIndexRow; maxReasons?: number; className?: string }) {
   const sides = [
     { key: "away" as const, team: game.away, runs: game.result.away_runs, starter: game.starters.away },
     { key: "home" as const, team: game.home, runs: game.result.home_runs, starter: game.starters.home },
@@ -31,7 +31,7 @@ export default function GameRow({ game, maxReasons }: { game: ArchiveIndexRow; m
       href={`/game/${game.game_pk}`}
       prefetch={false}
       aria-label={name}
-      className="relative block min-h-tap border-t border-line p-space-4 text-ink no-underline first:border-t-0 hover:bg-ground hover:text-ink"
+      className={`relative block min-h-tap border-t border-line p-space-4 text-ink no-underline first:border-t-0 hover:bg-ground hover:text-ink ${className}`.trim()}
     >
       <span className="mb-space-3 flex flex-wrap items-center gap-space-2 text-label text-ink-2">
         <span className="font-medium tabular-nums text-ink">{formatDay(game.date)}</span>

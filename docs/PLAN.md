@@ -257,7 +257,7 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
     - [x] R4-U3 `/game/<gamePk>` after the game, on the 1.0.0 file.
     - [x] R4-U4 `/archive` with team, calendar and reason filters.
     - [x] R4-U5 `/notable` with reasons as filters.
-    - [ ] R4-U6 Home, off season (replaces A2).
+    - [x] R4-U6 Home, off season (replaces A2).
     - [ ] R4-U7 Release B (owner's PR and external QA; the owner merges). Then the case-study screenshots and the monthly visits-per-route export (OQ11).
   - **Frozen until February 2027 (D67 point 4):** R4-P, the after-the-game layer (`docs/plans/R4-P.md` first: game pitch rows and boxscore fields with their request budget, the `postgame` block and a new `archive_version`, pre-registered verdict and answer rules, notable v2), Today in season and the AttackCard.
 - [ ] R5 Team pages (frozen until February 2027, D67): "the rotation, explained" for each team: every 2026 starter with arsenal, labels and season line (innings, ERA, WHIP, K%), split before and after the All-Star Game, rookies marked, links to each game page. Starters only; relievers later. Static files. Plan to be written after R4's data layout is proven.

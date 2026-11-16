@@ -67,6 +67,22 @@ describe("Button", () => {
   });
 });
 
+describe("Button on the board", () => {
+  it("has a secondary variant that is transparent with a light border, and a signal primary", () => {
+    const secondary = render(<Button href="/archive" variant="secondary-board">Browse all 40 games</Button>);
+    const classes = (secondary.container.firstElementChild as HTMLElement).className;
+
+    expect(classes).toMatch(/border-on-board-2/);
+    expect(classes).toMatch(/bg-transparent/);
+    expect(classes).toMatch(/min-h-tap/);
+    expect(classes).not.toMatch(/bg-surface/);
+    secondary.unmount();
+
+    const signal = render(<Button href="/notable" variant="signal">See the notable duels</Button>);
+    expect((signal.container.firstElementChild as HTMLElement).className).toMatch(/bg-signal/);
+  });
+});
+
 describe("TeamBadge", () => {
   it("shows the abbreviation as decoration; the name is always next to it", () => {
     const { container } = render(<TeamBadge abbreviation="MIL" />);

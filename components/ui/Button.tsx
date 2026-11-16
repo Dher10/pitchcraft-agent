@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-export type ButtonVariant = "primary" | "signal" | "secondary" | "quiet";
+export type ButtonVariant = "primary" | "signal" | "secondary" | "secondary-board" | "quiet";
 
 const BASE =
   "inline-flex min-h-tap items-center justify-center gap-space-2 rounded-sm border px-space-4 text-body font-semibold no-underline cursor-pointer";
@@ -10,6 +10,7 @@ const STYLE: Record<ButtonVariant, string> = {
   primary: "border-brand bg-brand text-on-brand hover:border-brand-strong hover:bg-brand-strong hover:text-on-brand",
   signal: "border-signal bg-signal text-ink hover:border-signal-tint hover:bg-signal-tint hover:text-ink",
   secondary: "border-line-strong bg-surface text-ink hover:border-ink-2 hover:bg-surface-sunken hover:text-ink",
+  "secondary-board": "border-on-board-2 bg-transparent text-on-board hover:bg-board-2 hover:text-on-board",
   quiet: "border-transparent bg-transparent px-space-2 text-brand underline underline-offset-4 hover:bg-brand-tint hover:text-brand",
 };
 
