@@ -136,11 +136,15 @@ describe("the site footer", () => {
     ]);
   });
 
-  it("has its three links", () => {
-    const { getByRole } = render(<SiteFooter />);
+  it("has its two links, and none to /quality until that page has content (P3.2, owner 2026-11-15)", () => {
+    const { getByRole, queryByRole, container } = render(<SiteFooter />);
 
     expect(getByRole("link", { name: "How PitchCraft works" }).getAttribute("href")).toBe("/#how-pitchcraft-works");
-    expect(getByRole("link", { name: "Quality" }).getAttribute("href")).toBe("/quality");
+    expect(queryByRole("link", { name: "Quality" })).toBeNull();
+    expect(Array.from(container.querySelectorAll("nav a"), (a) => a.getAttribute("href"))).toEqual([
+      "/#how-pitchcraft-works",
+      "https://github.com/Dher10/pitchcraft-agent",
+    ]);
     expect(getByRole("link", { name: "GitHub" }).getAttribute("href")).toBe("https://github.com/Dher10/pitchcraft-agent");
   });
 

@@ -14,7 +14,6 @@ export const HOME_COPY = {
   notableTitle: "Notable duels of 2026",
   allNotable: "All notable duels",
   howTitle: "How PitchCraft works",
-  quality: "Quality",
   cards: [
     {
       title: "Before the game",

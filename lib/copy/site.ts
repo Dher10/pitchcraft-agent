@@ -20,7 +20,6 @@ export const SITE_COPY = {
   footer: {
     navLabel: "Footer",
     howItWorks: "How PitchCraft works",
-    quality: "Quality",
     github: "GitHub",
     attribution:
       "Data from the MLB Stats API and Baseball Savant (Statcast), made public by MLB Advanced Media. PitchCraft is an independent fan project and is not affiliated with MLB.",
@@ -34,7 +33,6 @@ export const SITE_COPY = {
     notable: "/notable",
     archive: "/archive",
     howItWorks: "/#how-pitchcraft-works",
-    quality: "/quality",
     github: "https://github.com/Dher10/pitchcraft-agent",
     author: "https://www.danielherdenez.com",
   },

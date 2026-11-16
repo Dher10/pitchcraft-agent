@@ -8,7 +8,7 @@ import type { SeasonMode } from "@/lib/season";
 
 type Item = "today" | "notable" | "archive";
 
-/** The item of the menu a path belongs to: a game page belongs to the Archive (after the game), `/quality` to none. */
+/** The item of the menu a path belongs to: a game page belongs to the Archive (after the game), the quality page to none. */
 function currentItem(pathname: string | null): Item | null {
   if (pathname === "/") return "today";
   if (pathname === "/notable" || pathname?.startsWith("/notable/")) return "notable";

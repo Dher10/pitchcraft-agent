@@ -14,7 +14,6 @@ export default function SiteFooter() {
       <div className="mx-auto max-w-[1184px] px-space-4 bp-lg:px-space-6">
         <nav aria-label={copy.navLabel} className="mb-space-4 flex flex-wrap gap-space-4 text-body-sm">
           <Link href={SITE_COPY.links.howItWorks} className={LINK}>{copy.howItWorks}</Link>
-          <Link href={SITE_COPY.links.quality} className={LINK}>{copy.quality}</Link>
           <a href={SITE_COPY.links.github} className={LINK}>{copy.github}</a>
         </nav>
         <p className="mb-space-2 max-w-[680px] text-on-board-2">{copy.attribution}</p>

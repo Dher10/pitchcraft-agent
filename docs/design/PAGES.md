@@ -7,7 +7,7 @@ The anatomy of each page, top to bottom, and the states it must handle. Layout d
 1. **SiteHeader** on the board: logo; Today, Notable, Archive, Teams, Pitchers. Off season: Today locked, and the off-season notice under the header.
 2. **Page head:** the title in the display face, one sentence on what the page is, and the ModeLine. On the home and on Today the head is a board band.
 3. **Content**, in the order below.
-4. **Footer** on the board: links (How PitchCraft works, Quality, GitHub), attribution, the non-commercial and no-predictions lines, the credit.
+4. **Footer** on the board: links (How PitchCraft works, GitHub; Quality comes back with P3.2, not in release B), attribution, the non-commercial and no-predictions lines, the credit.
 
 ## The season has two modes
 

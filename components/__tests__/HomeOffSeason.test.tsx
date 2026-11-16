@@ -103,12 +103,12 @@ describe("the notable duels", () => {
 
 describe("how PitchCraft works", () => {
   it("has three cards, the last one saying only what release B shows", () => {
-    const { container, getByRole } = home();
+    const { container, queryByRole } = home();
     const section = container.querySelector("#how-pitchcraft-works") as HTMLElement;
     const cards = Array.from(section.querySelectorAll("[data-how-card]"));
 
     expect(section.querySelector("h2")?.textContent).toBe("How PitchCraft works");
-    expect(getByRole("link", { name: "Quality" }).getAttribute("href")).toBe("/quality");
+    expect(queryByRole("link", { name: "Quality" })).toBeNull(); // no link to /quality until P3.2 (owner, 2026-11-15)
     expect(cards.map((card) => card.querySelector("h3")?.textContent)).toEqual(["Before the game", "Every claim is checked", "After the game"]);
     expect(text(cards[0])).toContain("A short report on both starters from public MLB data: arsenal, season figures, the lineup each one faces.");
     expect(text(cards[1])).toContain("Each statement is tested against the data before the report is published. No predictions, no betting.");

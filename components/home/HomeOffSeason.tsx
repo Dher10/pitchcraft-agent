@@ -64,12 +64,7 @@ export default function HomeOffSeason({ index }: { index: ArchiveIndex }) {
           </section>
         ) : null}
         <section id="how-pitchcraft-works">
-          <div className="mb-space-4 flex items-baseline justify-between gap-space-3">
-            <h2 className="m-0 font-display text-title-lg text-ink">{HOME_COPY.howTitle}</h2>
-            <Link href="/quality" prefetch={false} className="inline-flex min-h-tap items-center text-body-sm text-brand underline underline-offset-4">
-              {HOME_COPY.quality}
-            </Link>
-          </div>
+          <h2 className="m-0 mb-space-4 font-display text-title-lg text-ink">{HOME_COPY.howTitle}</h2>
           <div className="grid gap-space-4 bp-lg:grid-cols-3 bp-lg:gap-space-5">
             {HOME_COPY.cards.map((card) => (
               <div key={card.title} data-how-card className="rounded-lg border border-line bg-surface p-space-4 bp-lg:p-space-5">
