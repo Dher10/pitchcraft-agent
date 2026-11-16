@@ -386,7 +386,8 @@ describe("the page for a game that is not there", () => {
   it("is an empty state with the way back, not a blank page", () => {
     const { container, getByRole } = render(<GameNotFound />);
 
-    expect(container.querySelector("h2")?.textContent).toBe("We could not find that game");
+    expect(container.querySelectorAll("h1")).toHaveLength(1);
+    expect(container.querySelector("h1")?.textContent).toBe("We could not find that game");
     expect(getByRole("link", { name: "Back to the archive" }).getAttribute("href")).toBe("/archive");
     expect(getByRole("link", { name: "Notable duels of 2026" }).getAttribute("href")).toBe("/notable");
   });

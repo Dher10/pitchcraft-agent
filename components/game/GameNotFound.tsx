@@ -7,6 +7,7 @@ export default function GameNotFound() {
   return (
     <main className="mx-auto max-w-[1184px] px-space-4 py-space-7 bp-lg:px-space-6">
       <EmptyState
+        heading="h1"
         title={GAME_COPY.notFound.title}
         action={
           <div className="flex flex-wrap justify-center gap-space-3">
