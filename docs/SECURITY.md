@@ -326,3 +326,11 @@ Checked with `npm audit` and `npm audit --omit=dev`. A fix is applied only when 
 | 2026-11-17 | GHSA-g3hv-75wg-m249: minimatch denial of service via globparts amplification (`>=7.0.0 <11.0.1`), and the `typescript-eslint` packages `6.16.0 to 8.72.2` that depend on it | minimatch (through `@typescript-eslint/typescript-estree`) | moderate | dev only | No: lint tooling, not in the production tree | minimatch 11.0.1 | Fixed: `typescript-eslint` 8.73.0 (a minor update inside `eslint-config-next`'s `^8.56.0`) brings minimatch 11.0.9. the old 10.x line was inside the affected range too, so there was no fix without minimatch 11; it moves from 10 to 11 only as that tool's own dependency; no direct dependency changed major. |
 
 `npm audit` after these fixes: 0 vulnerabilities (all and `--omit=dev`). `npm audit fix` itself cannot run in this environment (npm refuses a remote tarball, `EALLOWREMOTE`), so the three updates were made with `npm update` on the named packages; `package.json` did not change.
+
+## Content Security Policy changes
+
+The document policy is built in `proxy.ts`; `lib/__tests__/securityHeaders.test.ts` pins every directive.
+
+| Date | Directive | From | To | Reason | Proof |
+|---|---|---|---|---|---|
+| 2026-11-17 | `form-action` | `'none'` | `'self'` | Codex audit of PR #6 (blocker): with JavaScript off, the archive's team filter (a plain GET form to `/archive`, `components/archive/Filters.tsx`) was blocked by the browser. Owner's decision: allow same-origin form targets only; no other directive changes. The static-asset policy in `next.config.ts` keeps `form-action 'none'` (those responses have no forms). | `scripts/check_release_b_browser.mjs csp` against the production build, JavaScript off, 375 and 1280 px: submitting MIL lists only the 13 MIL games and Chrome logs no CSP violation. The same check against a build with `'none'` fails with Chrome's "Sending form data ... violates ... form-action 'none'". |

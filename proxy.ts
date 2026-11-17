@@ -16,7 +16,8 @@ export function proxy(request: NextRequest) {
     "frame-src 'none'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
-    "form-action 'none'",
+    // Same-origin forms only: the archive filters are a plain GET form that must work without JavaScript (2026-11-17).
+    "form-action 'self'",
   ].join("; ");
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);

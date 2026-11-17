@@ -37,6 +37,28 @@ describe("P2-SEC response boundary", () => {
     expect(policy).not.toMatch(/https?:|unsafe-eval/);
   });
 
+  // Codex audit of PR #6 (2026-11-17): with JavaScript off, the archive's team form (a plain GET to /archive) was blocked by
+  // form-action 'none'. Owner's decision: form-action 'self' and nothing else in the document policy changes.
+  it("lets same-origin forms submit and keeps every other directive as it was", async () => {
+    const { proxy } = await import("../../proxy");
+    const policy = proxy(new NextRequest("http://localhost/archive")).headers.get("content-security-policy")!;
+    const directives = policy.split(";").map((part) => part.trim().replace(/'nonce-[^']+'/, "'nonce'"));
+    expect(directives).toEqual([
+      "default-src 'self'",
+      "script-src 'self' 'nonce'",
+      "style-src 'self' 'nonce'",
+      "style-src-attr 'unsafe-inline'",
+      "connect-src 'self'",
+      "font-src 'self'",
+      "img-src 'self' data:",
+      "object-src 'none'",
+      "frame-src 'none'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ]);
+  });
+
   it("sets no-cache on documents and nosniff/frame protection on all resources", async () => {
     const { proxy } = await import("../../proxy");
     const response = proxy(new NextRequest("http://localhost/quality"));
