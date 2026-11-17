@@ -2,7 +2,7 @@
 
 Like the agents' sentences, each one has a key and is written through a `Catalog`, so it is a
 `Phrase` that the claims check can record (contract rule 4, `docs/DATA_CONTRACT.md` section 3.2).
-They stay in English and outside the agents' catalog until v2.1 (decision D31); the only change is
+They stay in English and outside the agents' catalog until the Spanish release (decisions D31, D68); the only change is
 that they are now keyed templates instead of f-strings.
 """
 

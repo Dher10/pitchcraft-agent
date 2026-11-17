@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { ArchiveItem, PitchCraftData } from "./types";
+import type { ArchiveIndex, ArchiveItem, PitchCraftData } from "./types";
 import { archiveIndexItems, parseArchiveIndex } from "./archiveIndex";
 
 export async function getArchiveItems(): Promise<ArchiveItem[] | null> {
@@ -24,4 +24,14 @@ export async function getPitchCraftData(): Promise<PitchCraftData> {
     "utf-8"
   );
   return JSON.parse(file) as PitchCraftData;
+}
+
+/** The validated index of the 2026 archive, or `null` when it is missing or not valid (a page then goes without it). */
+export async function getArchiveIndex(): Promise<ArchiveIndex | null> {
+  try {
+    const file = await fs.readFile(path.join(process.cwd(), "public", "data", "archive", "index-2026.json"), "utf-8");
+    return parseArchiveIndex(JSON.parse(file));
+  } catch {
+    return null;
+  }
 }

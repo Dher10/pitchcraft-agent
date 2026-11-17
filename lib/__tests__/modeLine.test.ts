@@ -7,15 +7,15 @@ import { formatModeLine, MODE_LINE_DEMO, MODE_LINE_FETCH_UNKNOWN } from "@/lib/f
 
 describe("the mode line", () => {
   it("says the data is live and when it was fetched, in New York time", () => {
-    expect(formatModeLine("fetched_snapshot", "2026-07-04T12:00:00Z")).toBe("Live data · fetched 2026-07-04");
+    expect(formatModeLine("fetched_snapshot", "2026-07-04T12:00:00Z")).toBe("Live data, fetched 2026-07-04");
   });
 
   it("uses the New York date, not the UTC one: 01:30 UTC on the 5th is still the 4th there", () => {
-    expect(formatModeLine("fetched_snapshot", "2026-07-05T01:30:00Z")).toBe("Live data · fetched 2026-07-04");
+    expect(formatModeLine("fetched_snapshot", "2026-07-05T01:30:00Z")).toBe("Live data, fetched 2026-07-04");
   });
 
   it("reads an instant written with an offset", () => {
-    expect(formatModeLine("fetched_snapshot", "2026-07-04T20:30:00-05:00")).toBe("Live data · fetched 2026-07-04");
+    expect(formatModeLine("fetched_snapshot", "2026-07-04T20:30:00-05:00")).toBe("Live data, fetched 2026-07-04");
   });
 
   it("says demo data for a fallback and for a plain demo file", () => {

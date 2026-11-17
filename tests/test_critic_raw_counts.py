@@ -255,7 +255,8 @@ def test_a_count_larger_than_its_total_fails_publication(monkeypatch, isolated):
 
 
 def test_demo_rows_without_counts_still_validate():
-    payload = json.loads((ROOT / "public" / "data" / "pitchcraft-demo.json").read_text(encoding="utf-8"))
+    # The committed demo copy, not the bot's served file (which changes on its own).
+    payload = json.loads((ROOT / "tests" / "fixtures" / "served_demo_0.9.0.json").read_text(encoding="utf-8"))
     assert "count" not in json.dumps(payload["matchups"][0]["charts"]["pitch_mix"])
     assert failed(payload) == []
 

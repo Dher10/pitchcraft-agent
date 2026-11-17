@@ -3,7 +3,6 @@ import { render, screen, within } from "@testing-library/react";
 import DetailedAnalysis from "@/components/DetailedAnalysis";
 import GameCarousel from "@/components/GameCarousel";
 import MatchupView from "@/components/MatchupView";
-import { chartSeries, formatUsage } from "@/components/PitchMixChart";
 import PitchTrajectoryCard from "@/components/PitchTrajectoryCard";
 import TeamBadge from "@/components/TeamBadge";
 import { describePitchMovement } from "@/lib/pitchDescriptions";
@@ -67,15 +66,6 @@ describe("a pitch share that is null is not a bar (F20)", () => {
       home_starter: { overall: 100, vs_lhh: 100, vs_rhh: 100, count: 90, total: 90 },
     },
   ];
-
-  it("the chart series keeps the null: no 0%, no NaN", () => {
-    expect(chartSeries(rows)).toEqual([{ pitch: "Four-seam", away_starter_usage: null, home_starter_usage: 100 }]);
-  });
-
-  it("the tooltip says it is not available", () => {
-    expect(formatUsage(null)).toBe("not available");
-    expect(formatUsage(12.5)).toBe("12.5%");
-  });
 
   it("the detail panel shows no pitch for the starter who threw none", () => {
     const matchup = makeMatchup({

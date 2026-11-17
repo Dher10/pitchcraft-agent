@@ -392,3 +392,40 @@ export interface AgentWorkflow {
   description: string;
   steps: AgentStep[];
 }
+
+/** One side of a final line from the box score; a field is `null` when the box score does not give it (a real 0 stays 0). */
+export interface ArchiveFinalLine {
+  innings_pitched: string | null;
+  hits: number | null;
+  earned_runs: number | null;
+  walks: number | null;
+  strikeouts: number | null;
+}
+
+/** A game file of the archive, `archive_version` 1.0.0 (D66): the envelope and the payload the pipeline wrote. */
+export interface ArchiveGameFile {
+  archive_version: "1.0.0";
+  game_pk: number;
+  season: 2026;
+  date: string;
+  round: ArchiveIndexRow["round"];
+  series: { series_name: string; game_number: number; games_in_series: number | null; over: boolean; after: string | null };
+  teams: { away: { id: number; name: string }; home: { id: number; name: string } };
+  result: { away_runs: number; home_runs: number; status: "final"; winner: "away" | "home" };
+  origin: {
+    kind: "published_live" | "reconstructed";
+    as_of: string;
+    built_at: string;
+    published_at: string | null;
+    source: { commit: string; sha256: string } | null;
+  };
+  starters_check: {
+    away: ArchiveStarterCheck;
+    home: ArchiveStarterCheck;
+    actual: { away: { id: number; name: string } | null; home: { id: number; name: string } | null };
+  };
+  starter_facts: unknown;
+  final_line: { away: ArchiveFinalLine | null; home: ArchiveFinalLine | null };
+  /** The report the pipeline wrote; only `publishedReport` and the small readers of `lib/archiveGame.ts` look inside it. */
+  payload: Record<string, unknown>;
+}

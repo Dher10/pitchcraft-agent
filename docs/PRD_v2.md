@@ -24,7 +24,7 @@ PitchCraft turns each day's MLB starting-pitcher matchups into scouting reports 
 3. The system runs every day with no manual intervention.
 4. Every report is transparent about its origin and the quality of the data behind it.
 5. When the sample is thin, the report says so instead of filling the gap.
-6. Bilingual product: English in v2, Spanish in v2.1 (D6).
+6. Bilingual product: English in v2, Spanish in a later minor release (D6, D68).
 
 ## 4. Users
 
@@ -66,7 +66,7 @@ Scouts and analysts are not users: they already have better tools (D5).
 - Native mobile app.
 - Accounts, favorites, personalization.
 - Comparing several LLMs against each other.
-- Spanish: **deferred to v2.1**, not dropped.
+- Spanish: **deferred to its own release (D68)**, not dropped.
 - "Hometown connection" stories (needs geo logic beyond available fields).
 
 ## 8. Technical considerations
@@ -104,14 +104,15 @@ This year's live history will be short (a few postseason weeks). Operational met
 
 ## 11. Rollout
 
+- **Versions (D68):** SemVer for a product; every merge into `main` is a release with a tag `vX.Y.Z` made by the owner; release B is v2.1.0.
 - **v2.0-a (released):** Phase 0 fixes, daily automation, rules-based writer, source signals, postseason series context (D41, D42; release 3 is PR #3, `5be0aa4`). Production is rules-only.
-- **v2.0-b (D65):** the Nov 15 target and the v2.0-b date of D10 are dropped. It is decided by the Plan B evidence (`docs/results-planB.md`): the LLM writer stays off in production and production stays rules-only (D56). The formal decision is written in the v2 close.
+- **The writer decision (formerly "v2.0-b"; D65, D68):** there is no v2.0-b release. The Nov 15 target and the date of D10 are dropped. It is decided by the Plan B evidence (`docs/results-planB.md`): the LLM writer stays off in production and production stays rules-only (D56). The formal decision is written in the v2 close.
 - **Roadmap after release 3, in order (D65):**
   1. Visual identity and design system (owner with Claude Design; audit in `docs/design-audit.md`), in parallel with the data work of R4 and before any new page is built.
   2. R4 Offseason experience (FR8).
   3. R5 Team pages (FR8).
-  4. v2 close: formal v2.0-b decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, and the full case study (Kaggle v1, v2, the Plan B evaluation, the offseason experience).
-  5. v2.1: Spanish.
+  4. v2 close: formal writer decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, and the full case study (Kaggle v1, v2, the Plan B evaluation, the offseason experience).
+  5. The Spanish release (a minor release, D68).
   6. 2027 season readiness: several games per day (P1.3), previous-season carry-over for April, visible K%, starter bio and recent form, season-calendar refresh, Groq key renewal and Gemini fallback migration before 2027-05-07.
   7. Writer v3, after Opening Day: code-computed story angles as citable facts and a multi-model judge jury calibrated on the owner's labels.
 

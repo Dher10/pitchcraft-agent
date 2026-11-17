@@ -87,10 +87,10 @@ def test_a_live_file_names_both_sources_and_does_not_carry_the_demo_sentence(mon
         assert any(name in note for note in notes), (kind, name)
 
 
-def test_the_served_file_names_both_sources_in_its_notes():
-    from tests.corpus import served
+def test_the_committed_demo_copy_names_both_sources_in_its_notes():
+    from tests.corpus import served_fixture
 
-    notes = served()["disclaimers"]
+    notes = served_fixture()["disclaimers"]
 
     assert DEMO_ATTRIBUTION in notes
     for name in SOURCE_NAMES:

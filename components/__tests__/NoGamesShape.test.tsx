@@ -114,7 +114,7 @@ describe("a day with no games", () => {
     expect(container.textContent).toContain("Baseball Savant");
     expect(container.querySelectorAll("button").length).toBe(0);
     expect(container.textContent).not.toContain("Featured game has not been completed");
-    expect(container.textContent).toContain("Live data · fetched 2026-07-16");
+    expect(container.textContent).toContain("Live data, fetched 2026-07-16");
     expect(container.textContent).not.toContain("How PitchCraft Works");
     expect(container.textContent).not.toMatch(/pending/i);
     const hero = container.querySelector("h1")!.closest("section")!;

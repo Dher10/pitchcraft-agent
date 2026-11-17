@@ -26,7 +26,7 @@ describe("the hero", () => {
   it("shows the live mode line with the day of the fetch", () => {
     const { getByTestId } = render(<Hero metadata={LIVE} />);
 
-    expect(getByTestId("mode-line").textContent).toBe("Live data · fetched 2026-07-04");
+    expect(getByTestId("mode-line").textContent).toBe("Live data, fetched 2026-07-04");
     expect(getByTestId("mode-line").getAttribute("data-mode")).toBe("live");
   });
 
@@ -35,7 +35,7 @@ describe("the hero", () => {
     const metadata = { data_mode: "fetched_snapshot", data_fetched_at: "2026-07-04T12:00:00Z", generated_at: "2026-07-09T12:00:00Z" };
     const { getByTestId } = render(<Hero metadata={metadata} />);
 
-    expect(getByTestId("mode-line").textContent).toBe("Live data · fetched 2026-07-04");
+    expect(getByTestId("mode-line").textContent).toBe("Live data, fetched 2026-07-04");
   });
 
   it("says the fetch time is not available for a live file that has none, and does not use the build time", () => {

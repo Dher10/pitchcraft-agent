@@ -113,7 +113,7 @@ For the pages in `docs/plans/R4.md` and R5 (team pages), the current UI has none
 
 These come from the data contract and the decisions, not from taste.
 
-- **English only** until v2.1 (D31); copy must be easy to move into a catalog.
+- **English only** until the Spanish release (D31, D68); copy must be easy to move into a catalog.
 - **Every sentence that asserts something about data** is a catalog claim with a registry condition (`docs/DATA_CONTRACT.md`, rule 4). The design may restyle copy but a new sentence needs its condition.
 - **Unavailable is shown as unavailable** (a dash or a stated reason), never as zero or a blank (rule 2). **Origin and mode are always visible** (rule 6). **No demo content in live pages.**
 - **No predictions, no betting, no ads, no trackers, no cookies** (D5, D16, D26). The CSP allows only same-origin scripts, fonts and images plus data URIs (`proxy.ts`); no external font or image host.

@@ -466,8 +466,9 @@ def test_check_accepts_the_candidate_a_good_run_wrote_and_asks_nobody(candidate,
     assert "daily: check ok" in capsys.readouterr().out
 
 
-def test_check_refuses_the_committed_demo_file(sources, capsys):
-    demo = ROOT / "public" / "data" / "pitchcraft-demo.json"
+def test_check_refuses_a_committed_demo_file(sources, capsys):
+    # A copy of the demo file as it was committed; the served file is the bot's and may be a live one.
+    demo = ROOT / "tests" / "fixtures" / "served_demo_0.9.0.json"
 
     assert check(demo) == 1
 

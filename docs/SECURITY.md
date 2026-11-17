@@ -313,3 +313,24 @@ for example "shows weak" against a premise of "shows average" (some flips are un
 
 Verification results, observed red counts, controls, real-response/browser
 checks and clean-context review are recorded in STATUS/status-archive.
+
+## Dependency advisories (`npm audit`)
+
+Checked with `npm audit` and `npm audit --omit=dev`. A fix is applied only when it is not a major upgrade (never `npm audit fix --force`). No audit step runs in CI: that is a workflow change and needs its own decision.
+
+| Date | Advisory | Package | Severity | Tree | Applied to this app? | Fixed in | Status |
+|---|---|---|---|---|---|---|---|
+| 2026-11-17 | GHSA-mfr8-8qww-v76h: information disclosure across root params when a `use cache` function is called through `unstable_cache()` (affects `>=16.3.0 <=16.4.4`) | next | moderate | runtime | No: a search of `app/`, `components/`, `lib/`, `proxy.ts` and `next.config.ts` finds no `use cache`, `unstable_cache` or `cacheComponents` | 16.4.5 (pinned 16.4.6) | Fixed: `next` and `eslint-config-next` pinned to 16.4.6 (release 2.1.0). `npm audit --omit=dev` reports 0 vulnerabilities after the update. |
+| 2026-11-17 | `undici` 8.0.0 to 8.12.1: GHSA-xjj6-f33q-929c, GHSA-4w7w-5xrc-9h26, GHSA-2m5v-pch6-74hx, GHSA-qrxm-fqhp-jwvm (high); GHSA-4qv8-2p9j-2685, GHSA-f72v-6w45-q472, GHSA-9fm3-97px-rjf6, GHSA-55wc-3pg8-jfw6 (moderate) | undici (through `jsdom`, the component test environment) | high | dev only | No: not in the production tree (`npm audit --omit=dev` lists only `next`); the tests use local fixtures | 8.12.2 | Fixed: lockfile resolves 8.12.4 (within `jsdom`'s `^8.10.2`). |
+| 2026-11-17 | GHSA-mrhx-c7xc-m3w5: memory exhaustion validating oversized constrained collections (`<4.6.6`) | zod (through `eslint-plugin-react-hooks`) | high | dev only | No: lint tooling, not in the production tree | 4.6.6 | Fixed: lockfile resolves 4.6.7 (within `^4`). |
+| 2026-11-17 | GHSA-g3hv-75wg-m249: minimatch denial of service via globparts amplification (`>=7.0.0 <11.0.1`), and the `typescript-eslint` packages `6.16.0 to 8.72.2` that depend on it | minimatch (through `@typescript-eslint/typescript-estree`) | moderate | dev only | No: lint tooling, not in the production tree | minimatch 11.0.1 | Fixed: `typescript-eslint` 8.73.0 (a minor update inside `eslint-config-next`'s `^8.56.0`) brings minimatch 11.0.9. the old 10.x line was inside the affected range too, so there was no fix without minimatch 11; it moves from 10 to 11 only as that tool's own dependency; no direct dependency changed major. |
+
+`npm audit` after these fixes: 0 vulnerabilities (all and `--omit=dev`). `npm audit fix` itself cannot run in this environment (npm refuses a remote tarball, `EALLOWREMOTE`), so the three updates were made with `npm update` on the named packages; `package.json` did not change.
+
+## Content Security Policy changes
+
+The document policy is built in `proxy.ts`; `lib/__tests__/securityHeaders.test.ts` pins every directive.
+
+| Date | Directive | From | To | Reason | Proof |
+|---|---|---|---|---|---|
+| 2026-11-17 | `form-action` | `'none'` | `'self'` | Codex audit of PR #6 (blocker): with JavaScript off, the archive's team filter (a plain GET form to `/archive`, `components/archive/Filters.tsx`) was blocked by the browser. Owner's decision: allow same-origin form targets only; no other directive changes. The static-asset policy in `next.config.ts` keeps `form-action 'none'` (those responses have no forms). | `scripts/check_release_b_browser.mjs csp` against the production build, JavaScript off, 375 and 1280 px: submitting MIL lists only the 13 MIL games and Chrome logs no CSP violation. The same check against a build with `'none'` fails with Chrome's "Sending form data ... violates ... form-action 'none'". |

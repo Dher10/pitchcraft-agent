@@ -11,7 +11,7 @@ describe("release 2 build inputs", () => {
     expect(layout).toContain('from "next/font/local"');
     expect(layout).not.toMatch(/next\/font\/google|fonts\.googleapis|fonts\.gstatic/);
     const sources = [...layout.matchAll(/path:\s*"(\.\/fonts\/[^"]+\.woff2)"/g)];
-    expect(sources).toHaveLength(6);
+    expect(sources).toHaveLength(7); // four IBM Plex Sans, two IBM Plex Mono, Big Shoulders Display (D67)
     for (const [, source] of sources) {
       const bytes = readFileSync(path.join(root, "app", source));
       expect(bytes.subarray(0, 4).toString()).toBe("wOF2");
@@ -21,6 +21,8 @@ describe("release 2 build inputs", () => {
     expect(read("app/fonts/OFL.txt")).toContain("SIL OPEN FONT LICENSE");
     expect(layout).toContain('variable: "--font-sans"');
     expect(layout).toContain('variable: "--font-mono"');
+    expect(layout).toContain('variable: "--font-display"');
+    expect(fonts).toContain("LICENSE-big-shoulders-display.txt");
   });
 
   it("resolves Vitest and every mocker to the patched non-major release", () => {

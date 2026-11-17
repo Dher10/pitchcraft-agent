@@ -1,7 +1,7 @@
 """D6, minimal (QA-07): every agent that writes text takes a `language` parameter ('en' by
 default) and its text lives in a catalog, not in the code.
 
-English is the only catalog that ships (Spanish is v2.1). A pseudo-language proves the
+English is the only catalog that ships (Spanish comes in its own release, D68). A pseudo-language proves the
 point without translating anything: if every message really comes from the catalog,
 switching to it leaves no English sentence of the agents in the output.
 """

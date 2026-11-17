@@ -1,82 +1,69 @@
-# PitchCraft Matchup Agent
+# PitchCraft
 
-PitchCraft turns MLB starting-pitcher matchups into fan-friendly scouting reports, with a critic that fact-checks every claim against the same structured data the frontend renders.
+PitchCraft turns MLB starting-pitcher matchups into scouting reports a casual fan can read on a phone, and checks every claim against the same public data the page shows. It does not predict outcomes and is not a betting tool. It is free, non-commercial and independent of MLB.
 
-## Architecture
+This is version 2. Version 1 was a Kaggle capstone, kept in the tag `v1.0.0-kaggle`.
 
-PitchCraft is a deterministic multi-agent pipeline. The agents are rule-based and reproducible; no LLM is used.
+## What the site does now
 
-- Data Scout assembles the matchup packet and records data availability.
-- Matchup Analyst turns pitcher, offense, chart, and context inputs into matchup findings.
-- Report Writer produces the readable scouting report from those findings.
-- Critic / Fact-check verifies each claim against the data and flags unsupported betting, odds, or outcome language.
-- Postgame Grader adds a starter-performance readout for completed games.
+- **In season:** a daily job read the MLB schedule, built a report for the day's featured matchup and published it before first pitch. It ran through the 2026 World Series and is off until the 2027 season.
+- **Off season:** the site is the 2026 postseason in review: every postseason game played (40), each with its final score, the starters' final lines from the box score, and the pre-game report, either as it was published before the game or written after it from data through the day before. Games are tagged with fixed, explainable reasons ("notable duels").
+- **Next:** release B, a redesign on the design system in `docs/design/` (decision D67). The after-the-game layer, team and pitcher pages and the Spanish version resume in February 2027.
 
-The pipeline writes the JSON payload consumed by the Next.js frontend at `public/data/pitchcraft-demo.json`.
+## How a report is built
 
-## Postgame Grading
+A pipeline of rule-based steps, written in Python:
 
-Postgame grading uses the original Bill James Game Score (1988), the industry-standard single-game pitcher metric. PitchCraft's letter grade is a readability layer on top of the numeric Game Score, not a separate official statistic.
+- **Data scout:** fetches the schedule, probable pitchers and season lines (MLB Stats API) and pitch data and team batting splits (Baseball Savant / Statcast), with request caps, caching and pacing.
+- **Matchup analyst:** turns the data into labeled findings by fixed thresholds (for example, a strikeout rate of 25% or more is "above-average swing-and-miss ability").
+- **Report writer:** writes the report from a catalog of phrases. Production uses this rules writer.
+- **Critic:** checks each claim of the report against the data and blocks betting or prediction language. A report that fails is not published.
 
-## Data Modes
+An LLM writer (Gemini) with a separate LLM judge (Groq) was built and evaluated against the owner's sentence labels (Plan B, `docs/results-planB.md`). The evidence did not support turning it on, so it stays off in production (D65).
 
-- `demo_cached`: always works without internet and uses deterministic demo inputs.
-- `fetched_snapshot`: fetches the real MLB schedule and probable pitchers from the MLB Stats API, then pitch mix, velocity, and zone tendencies from pybaseball Statcast. The processed snapshot is saved locally.
+What the published files may say, and how each claim is checked, is the data contract: `docs/DATA_CONTRACT.md`.
 
-If any live fetch fails, PitchCraft silently falls back to demo data. The public demo runs from a committed JSON snapshot; the local live snapshot under `data_cache/` is intentionally gitignored.
+## Data
 
-## Run Locally
+- `public/data/pitchcraft-demo.json`: the daily file (schema 0.10.0), written only by the daily job.
+- `public/data/archive/`: the 2026 postseason archive (`archive_version` 1.0.0): one file per game, an index and a manifest with a SHA-256 per file, written once by a manual workflow.
 
-Install frontend dependencies:
+Both are committed to `main` by the GitHub Actions bot (D15); no person or agent edits them. The site never shows demo data as live: every page says which kind of data it shows.
+
+## Run locally
 
 ```bash
 npm install
-```
-
-Start the app:
-
-```bash
 npm run dev
 ```
 
 Open `http://127.0.0.1:3000`.
 
-Build the frontend:
+Checks, as CI runs them:
 
 ```bash
+pip install -r requirements-dev.txt
+python -m pytest
+npm test
+npx tsc --noEmit
+npm run lint
 npm run build
 ```
 
-Generate JSON from the current inputs:
+On Windows, `next build --webpack` avoids a Turbopack PostCSS panic in the local build (QA3-02).
 
-```bash
-python data_pipeline/generate_demo_json.py
-```
+## Where to read more
 
-Optionally refresh live data:
+- `docs/PRD_v2.md`: what the product is for and who it is for.
+- `docs/DECISIONS.md`: every decision, append-only.
+- `docs/PLAN.md` and `docs/STATUS.md`: the plan and where work stands.
+- `docs/design/`: the design system and page designs.
+- `AGENTS.md` and `docs/CONTRIBUTING.md`: how code and commits are made here.
 
-```bash
-python -m data_pipeline.fetchers.live_pipeline [YYYY-MM-DD]
-python data_pipeline/generate_demo_json.py
-```
+## Data use
 
-Delete `data_cache/processed/live_matchup.json` to return to demo data.
-
-## Security & QA
-
-No secrets or API keys are committed. `.env*`, build artifacts, the live snapshot, and all `data_cache/` contents are gitignored.
-
-Reports contain no betting, odds, or win-probability language. The critic explicitly scans for and flags that language while checking report claims against the structured matchup data.
-
-## Limitations
-
-PitchCraft is a capstone demo, not a betting tool. Internal "Stuff" and strength signals are PitchCraft-specific and are not official Stuff+. Live data covers the featured matchup; other archive rows are illustrative demo data.
+Data from the MLB Stats API and Baseball Savant, © MLB Advanced Media, used for a non-commercial project, cached and requested at a low rate, with attribution on every page (D16). Team colors are approximate.
 
 ## Stack
 
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- Recharts
-- Python standard library
-- pybaseball
+Next.js (App Router), TypeScript, Tailwind CSS, Vercel; Python with pandas and pybaseball for the pipeline; GitHub Actions for the scheduled and manual jobs.

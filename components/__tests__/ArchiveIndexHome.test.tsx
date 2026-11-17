@@ -1,12 +1,12 @@
 // R4-A2: mock only fs.promises.readFile. Home, reader, parser, App and table stay real.
-import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, within } from "@testing-library/react";
 import { promises as fs } from "fs";
 import path from "path";
 import Home from "@/app/page";
 import { getArchiveItems } from "@/lib/data";
 import type { ArchiveIndex, ArchiveItem, PitchCraftData } from "@/lib/types";
-import demo from "@/public/data/pitchcraft-demo.json";
+import demo from "@/tests/fixtures/served_demo_0.9.0.json";
 
 const dailyPath = path.join(process.cwd(), "public", "data", "pitchcraft-demo.json");
 const indexPath = path.join(process.cwd(), "public", "data", "archive", "index-2026.json");
@@ -17,6 +17,7 @@ beforeEach(() => {
   readFileMock.mockReset();
   readFileMock.mockImplementation(originalReadFile);
 });
+afterEach(() => vi.useRealTimers());
 afterAll(() => readFileMock.mockRestore());
 
 const legacyRow: ArchiveItem = {
@@ -147,8 +148,34 @@ describe("the server archive reader", () => {
 });
 
 describe("the real Home/App archive integration", () => {
-  it("replaces daily rows with every indexed final score, hides Grade and leaves rows unlinked", async () => {
+  it("shows the season in review, not the interim table, in the off season with the index there (R4-U6)", async () => {
     serve(JSON.stringify(indexFile()));
+
+    const { container } = await renderHome();
+
+    expect(container.querySelector("h1")?.textContent).toBe("The 2026 postseason, start by start");
+    expect(container.textContent).toContain("Browse all 2 games");
+    expect(container.querySelector("table")).toBeNull();
+    expect(container.querySelector('[data-mode="live"]')).toBeNull();
+    expect(container.textContent).not.toContain("Boston Red Sox");
+    expect(readFileMock).toHaveBeenCalledWith(indexPath, "utf-8");
+  });
+
+  it("keeps the daily view in season: every indexed final score, Grade hidden, rows unlinked (the interim home, R4-A2)", async () => {
+    // A live day in season (clock fixed) is not the off season, so the daily view and its interim table stay.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-28T16:00:00Z"));
+    const live = dailyFile();
+    live.metadata.data_mode = "fetched_snapshot";
+    live.metadata.data_status = {
+      mode: "fetched_snapshot",
+      reason: null,
+      live_run: {
+        status: "ok", run_at: "2026-10-28T15:00:00+00:00", target_date: "2026-10-28", as_of: "2026-10-27",
+        games_scheduled: 1, games_live: 1, errors: [], warnings: [],
+      },
+    };
+    serve(JSON.stringify(indexFile()), live);
 
     const { container } = await renderHome();
     const section = archiveSection(container);
@@ -167,6 +194,7 @@ describe("the real Home/App archive integration", () => {
     expect(section.querySelectorAll("a")).toHaveLength(0);
     expect(section.querySelectorAll("button")).toHaveLength(0);
     expect(section.textContent).not.toMatch(/featured|recommended/i);
+    expect(container.querySelector("h1")?.textContent).not.toBe("The 2026 postseason, start by start");
   });
 
   it("keeps an existing empty index empty instead of falling back to nonempty daily rows", async () => {

@@ -2,11 +2,14 @@
 
 Living plan. Agents tick checkboxes and update `STATUS.md` after every task (see `AGENTS.md`).
 
-## Rollout (decision D10)
+## Rollout (decisions D10, D68)
+
+App versions follow D68 (SemVer for a product; every merge into `main` is a release with a tag `vX.Y.Z` that the owner creates; the changelog is `CHANGELOG.md`). The tags `v1.0.0-kaggle` and `v2.0-a` stay as history.
 
 - **v2.0-a — released** (three releases, D41, D42; release 3 is PR #3, `5be0aa4`): Phase 0 + daily automation + source signals + postseason series context, with the rules-based writer. Production is rules-only.
-- **v2.0-b — decided by the Plan B evidence (D65):** the Nov 15 target and the v2.0-b date of D10 are dropped. The LLM writer stays off in production; production stays rules-only (D56). The formal decision is written in the v2 close.
-- **Roadmap after release 3, in order (D65; no dates):** design system (owner with Claude Design, in parallel with R4's data work) -> R4 Offseason experience -> R5 Team pages -> v2 close -> v2.1 Spanish -> 2027 season readiness -> Writer v3 after Opening Day. Tasks below, section "Offseason roadmap (D65)".
+- **The writer decision (formerly called v2.0-b; D65, D68):** there is no `v2.0-b` release. The Nov 15 target and the date of D10 are dropped. The decision is made by the Plan B evidence: the LLM writer stays off in production; production stays rules-only (D56). The formal decision is written in the v2 close.
+- **Roadmap after release 3, in order (D65; no dates):** design system (owner with Claude Design, in parallel with R4's data work) -> R4 Offseason experience -> R5 Team pages -> v2 close -> the Spanish release (a minor release, D68) -> 2027 season readiness -> Writer v3 after Opening Day. Tasks below, section "Offseason roadmap (D65)".
+- **Release B and the freeze (D67, 2026-11-15):** release A (data) is in production (PR #4, bot run `b739dbb`, 40 games). Release B (**v2.1.0** by D68: design system v2 and the R4 pages on the published archive, plan `docs/plans/R4-U.md`; covers PRs #3, #4 and #6) must be in production by **2026-12-06** for the case study. R4-P (after-the-game layer), R5, the Spanish release, writer v3, Today in season and the AttackCard are **frozen until February 2027**.
 
 **Build order inside v2.0-a:** core first (Phase 0, daily job, badges, offseason state), then the postseason layer. The postseason layer is in scope and worked daily; it is built last only because the core must be live first.
 
@@ -231,7 +234,7 @@ two red CI runs or two review rounds without PASS. Nonce/dynamic/style-attribute
 
 Order of the owner's direction. No dates. Each task needs an approved plan in `docs/plans/` before code (D35); gated unless the plan says otherwise.
 
-- [ ] DS Visual identity and design system (owner with Claude Design; not an agent task). Input: `docs/design-audit.md` and its screenshots. Deliverables: PitchCraft's own identity (type, color, spacing, cards, tables, badges, states) and designs for the game page, the notable duels, the filters and the team page. **Gate:** no new page is built before the owner approves it; code then implements the approved design system.
+- [x] DS Visual identity and design system (owner with Claude Design; not an agent task). Approved 2026-11-14; package in `docs/design/`, recorded by D67. Input: `docs/design-audit.md` and its screenshots. Deliverables: PitchCraft's own identity (type, color, spacing, cards, tables, badges, states) and designs for the game page, the notable duels, the filters and the team page. **Gate:** no new page is built before the owner approves it; code then implements the approved design system.
 - [ ] R4 Offseason experience. Plan `docs/plans/R4.md` (approved by the owner 2026-11-07, `0c76059`, with the answers recorded in it). Two parts. R4-D2 to R4-D5 run under D35; stop at R4-D6 (workflow diff) and R4-D7 (dry-run command).
   - **Data part (can start before the design is approved):**
     - [x] R4-D1 Plan, D65, PRD, PLAN, design audit (docs only).
@@ -244,33 +247,35 @@ Order of the owner's direction. No dates. Each task needs an approved plan in `d
       - [x] Group 1: envelope identity, protected outputs, history/cache/resume validation.
       - [x] Group 2: publication containment, immutability, manifest and reruns.
     - [x] R4 real-run parser guard (owner 2026-11-14): run-wide closed stop, no publication after parser mismatch or rejected source final-line data; all five checks pass, round 1 findings fixed red-first, round 2 no remaining findings.
-    - [ ] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
-    - [ ] R4-D8 Release A (owner's PR), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
-    - [ ] R4-A2 Interim release before the redesign (owner's answer to OQ9).
+    - [x] R4-D7 Local dry run on 3 dates (owner approves the command): measured requests, starter check, notable distribution, veteran threshold.
+    - [x] R4-D8 Release A (owner's PR, PR #4, `95abcd2`; bot run `b739dbb`, 40 games, 30 notable with V = 5), then the owner's manual run of the workflow on `main`; the bot writes `public/data/archive/` (D15).
+    - [x] R4-A2 Interim release before the redesign (owner's answer to OQ9).
       - [x] Code: the home Archive reads the validated index, shows the final score per row, hides Grade while no row has a grade, rows not linked; current visual style and missing-index fallback preserved.
-      - [ ] Owner's release of A2; no merge or release in the pre-release hardening session.
-  - **UI part (waits for the design system):**
-    - [ ] R4-U0 Gate: the design system and the final strings approved.
-    - [ ] R4-U1 Readers for the game files and the index (the archive results and the Grade rule ship earlier in R4-A2).
-    - [ ] R4-U2 `/game/<gamePk>`.
-    - [ ] R4-U3 `/notable` (reasons: series-ending, strikeout duel, veteran duel, World Series game).
-    - [ ] R4-U4 `/archive` with filters by team and date.
-    - [ ] R4-U5 Analytics per route, accessibility, phone and desktop checks, independent QA (D27).
-    - [ ] R4-U6 Release B (owner's PR). Then the monthly visits-per-route export (OQ11), scheduled right after release B.
-- [ ] R5 Team pages: "the rotation, explained" for each team: every 2026 starter with arsenal, labels and season line (innings, ERA, WHIP, K%), split before and after the All-Star Game, rookies marked, links to each game page. Starters only; relievers later. Static files. Plan to be written after R4's data layout is proven.
-- [ ] v2 close: Phase 3 below (formal v2.0-b decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, full case study).
-- [ ] v2.1 Spanish: L10N.1 below.
+      - [x] Owner's release of A2 (shipped with release A, PR #4).
+  - **UI part, release B (D67; plan `docs/plans/R4-U.md`; replaces the earlier R4-U0 to U6 rows):**
+    - [ ] R4-U0 D67, the design package in `docs/design/`, the plan `R4-U.md` (docs only). Owner approves the D67 text and the plan.
+    - [x] R4-U1 Tokens, fonts, guards.
+    - [x] R4-U2 Shell and primitives.
+    - [x] R4-U3 `/game/<gamePk>` after the game, on the 1.0.0 file.
+    - [x] R4-U4 `/archive` with team, calendar and reason filters.
+    - [x] R4-U5 `/notable` with reasons as filters.
+    - [x] R4-U6 Home, off season (replaces A2).
+    - [ ] R4-U7 Release B (owner's PR and external QA; the owner merges). Then the case-study screenshots and the monthly visits-per-route export (OQ11).
+  - **Frozen until February 2027 (D67 point 4):** R4-P, the after-the-game layer (`docs/plans/R4-P.md` first: game pitch rows and boxscore fields with their request budget, the `postgame` block and a new `archive_version`, pre-registered verdict and answer rules, notable v2), Today in season and the AttackCard.
+- [ ] R5 Team pages (frozen until February 2027, D67): "the rotation, explained" for each team: every 2026 starter with arsenal, labels and season line (innings, ERA, WHIP, K%), split before and after the All-Star Game, rookies marked, links to each game page. Starters only; relievers later. Static files. Plan to be written after R4's data layout is proven.
+- [ ] v2 close: Phase 3 below (formal writer decision, quality page, README, ARCHITECTURE, RUNBOOK, CHANGELOG, full case study).
+- [ ] Spanish release: L10N.1 below (frozen until February 2027, D67).
 - [ ] 2027 season readiness: several games per day (P1.3), previous-season carry-over for April, visible K%, starter bio and recent form, season-calendar refresh before opening day, Groq key renewal, Gemini fallback migration before 2027-05-07 (D54). Items are in the backlog below.
-- [ ] Writer v3, after Opening Day: code-computed story angles as citable facts (profile type, pitch-family mix, key matchup, lineup weakness; `docs/case-study-notes.md`) and a multi-model judge jury from different families (no Gemini), calibrated on the owner's labels as the gold set and used only if it beats the single judge; pairwise comparisons in both orders with length controlled.
+- [ ] Writer v3, after Opening Day (frozen until February 2027, D67): code-computed story angles as citable facts (profile type, pitch-family mix, key matchup, lineup weakness; `docs/case-study-notes.md`) and a multi-model judge jury from different families (no Gemini), calibrated on the owner's labels as the gold set and used only if it beats the single judge; pairwise comparisons in both orders with length controlled.
 
 ## Phase 3 — v2 close (D65; no date)
 
-- [ ] P3.1 Formal v2.0-b decision from the Plan B evidence (`docs/results-planB.md`, D64, D65): the LLM writer stays off in production; production stays rules-only.
+- [ ] P3.1 Formal writer decision (formerly "v2.0-b") from the Plan B evidence (`docs/results-planB.md`, D64, D65): the LLM writer stays off in production; production stays rules-only.
 - [ ] P3.2 Quality page on the site.
 - [ ] P3.3 Case study on danielherdenez.com and pm-ai-playbook — owner task. Scope (D65): Kaggle v1, v2, the Plan B evaluation and the offseason experience.
 - [ ] P3.4 README, ARCHITECTURE, RUNBOOK, CHANGELOG.
 
-## v2.1 — Spanish (after v2.0-b)
+## Spanish release (after the v2 close; a minor release, D68)
 
 - [ ] L10N.1 Finish D6 as scoped by D31. Separate a label's identifier from its visible text in `labels.py` (today the English text is also the value that code compares, and that is stored in the JSON); move the generator's texts (data mode and its reasons, confidence note, agent workflow, archive labels, offense split labels) and the frontend copy into catalogs; add the Spanish catalog of the five agents (`agents/messages_es.py`, same keys as `messages_en.py`); the writer and the eval take `language` end to end, and the eval checks Spanish reports (D6).
 
