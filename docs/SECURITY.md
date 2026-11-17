@@ -313,3 +313,11 @@ for example "shows weak" against a premise of "shows average" (some flips are un
 
 Verification results, observed red counts, controls, real-response/browser
 checks and clean-context review are recorded in STATUS/status-archive.
+
+## Dependency advisories (`npm audit`)
+
+Checked with `npm audit` and `npm audit --omit=dev`. A fix is applied only when it is not a major upgrade (never `npm audit fix --force`). No audit step runs in CI: that is a workflow change and needs its own decision.
+
+| Date | Advisory | Package | Severity | Tree | Applied to this app? | Fixed in | Status |
+|---|---|---|---|---|---|---|---|
+| 2026-11-17 | GHSA-mfr8-8qww-v76h: information disclosure across root params when a `use cache` function is called through `unstable_cache()` (affects `>=16.3.0 <=16.4.4`) | next | moderate | runtime | No: a search of `app/`, `components/`, `lib/`, `proxy.ts` and `next.config.ts` finds no `use cache`, `unstable_cache` or `cacheComponents` | 16.4.5 (pinned 16.4.6) | Fixed: `next` and `eslint-config-next` pinned to 16.4.6 (release 2.1.0). `npm audit --omit=dev` reports 0 vulnerabilities after the update. |

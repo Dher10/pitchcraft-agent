@@ -24,6 +24,7 @@ Offseason experience: a new visual identity and the pages that read the publishe
 
 ### Security
 - Nonce-based Content Security Policy and security headers.
+- Next.js updated from 16.4.1 to 16.4.6, which includes the fix (16.4.5) for GHSA-mfr8-8qww-v76h (moderate, information disclosure across root params through `unstable_cache()` with `use cache`). The app uses neither, so it was not reachable; the update clears the advisory. `eslint-config-next` moves with it.
 - The LLM writer cannot run in production; production stays rules-only.
 
 ### Not included
