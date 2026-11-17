@@ -8,3 +8,5 @@ Approved by the owner's message of 2026-11-17 ("merge after fixes"). Fix all fiv
    For 2 and 3, a measured check at 375, 430 and 1280 px that fails if any interactive element on the release B pages is under 44x44; any exception is asked for before it is kept.
 4. **Empty index** crashes `calendarMonth()` (`components/archive/ArchiveView.tsx`, `lib/archiveQuery.ts`): handle it before the mode line and calendar, with an empty-state text from `docs/plans/R4-U.md` section 5 (if none fits, propose one and stop). Red regression test with an empty index.
 5. **Game 404 without JavaScript** (`app/game/[gamePk]/page.tsx`, `not-found.tsx`): the heading and links appear only after hydration. Render the not-found content on the server; test the real route with JavaScript off against the production build.
+
+**Owner's decision on item 5 (2026-11-17): option D.** No change to `proxy.ts` or the build in 2.1.0; listed as a known limitation in the PR text and recorded in `docs/STATUS.md` as the first item for 2.1.1 with the findings and two candidate fixes.
