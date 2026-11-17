@@ -25,6 +25,7 @@ Offseason experience: a new visual identity and the pages that read the publishe
 ### Fixed
 - The archive's team filter works without JavaScript: the Content Security Policy now allows same-origin form submissions (`form-action 'self'`).
 - The archive view shows its "not available" notice for a valid archive index with no games, instead of failing while building the calendar (the `/archive` page already guarded this case).
+- Every link and button on the release pages is a target of at least 44 by 44 px at 375, 430 and 1280 px: the series board on a phone puts each club's games on their own row, the calendar days are wider on a phone, and the footer links, the logo, the archive table's game links and the notable page's "Clear" link are taller or wider, with the same look.
 
 ### Security
 - Nonce-based Content Security Policy and security headers.

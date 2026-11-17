@@ -20,7 +20,7 @@ export default function SiteHeader({ season }: { season: SeasonMode }) {
               aria-label={SITE_COPY.logo.name}
               // The wordmark is 26 px (docs/design/COMPONENTS.md, Logo): a logo size, not a text style of the scale.
               style={{ fontSize: 26, lineHeight: "26px", letterSpacing: "0.02em" }}
-              className="inline-flex items-center gap-2.5 font-display font-extrabold text-on-board no-underline hover:text-on-board"
+              className="inline-flex min-h-tap items-center gap-2.5 font-display font-extrabold text-on-board no-underline hover:text-on-board"
             >
               <Logo />
             </Link>

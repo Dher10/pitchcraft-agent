@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { SITE_COPY } from "@/lib/copy/site";
 
-const LINK = "text-on-board underline underline-offset-4 hover:text-signal";
+// Each link is a 44 px tall target (the tap size), with the look of a plain underlined link.
+const LINK = "inline-flex min-h-tap items-center text-on-board underline underline-offset-4 hover:text-signal";
 
 /**
  * The footer of every page, on the board: links, the attribution to MLB Advanced Media, the non-commercial and
@@ -12,7 +13,7 @@ export default function SiteFooter() {
   return (
     <footer data-on-board className="bg-board pt-space-5 pb-space-6 text-caption text-on-board">
       <div className="mx-auto max-w-[1184px] px-space-4 bp-lg:px-space-6">
-        <nav aria-label={copy.navLabel} className="mb-space-4 flex flex-wrap gap-space-4 text-body-sm">
+        <nav aria-label={copy.navLabel} className="mb-space-4 flex flex-wrap gap-x-space-4 text-body-sm">
           <Link href={SITE_COPY.links.howItWorks} className={LINK}>{copy.howItWorks}</Link>
           <a href={SITE_COPY.links.github} className={LINK}>{copy.github}</a>
         </nav>

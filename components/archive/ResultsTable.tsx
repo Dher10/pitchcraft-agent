@@ -38,7 +38,7 @@ export default function ResultsTable({ games }: { games: ArchiveIndexRow[] }) {
                 </span>
               </td>
               <td className="border-t border-line px-space-3 py-space-3 align-middle">
-                <Link href={`/game/${game.game_pk}`} prefetch={false} className="font-bold text-ink no-underline hover:text-brand hover:underline">
+                <Link href={`/game/${game.game_pk}`} prefetch={false} className="inline-flex min-h-tap items-center font-bold text-ink no-underline hover:text-brand hover:underline">
                   {ARCHIVE_COPY.matchup(name(game.away), name(game.home))}
                 </Link>
                 <div className="text-label text-ink-2">{ARCHIVE_COPY.starters(game.starters.away ?? UNAVAILABLE, game.starters.home ?? UNAVAILABLE)}</div>

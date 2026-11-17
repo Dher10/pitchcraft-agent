@@ -34,7 +34,8 @@ export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
           </span>
         )}
       </div>
-      <div className="grid grid-cols-7 gap-0.5">
+      {/* On a phone the grid runs 8 px into the card padding on each side, so seven days are at least 44 px wide at 375 px. */}
+      <div className="-mx-space-2 grid grid-cols-7 gap-0.5 bp-md:mx-0">
         {calendar.weekdays.map((weekday) => (
           <div key={weekday} data-weekday className="py-1 text-center text-caption text-ink-3">{weekday}</div>
         ))}

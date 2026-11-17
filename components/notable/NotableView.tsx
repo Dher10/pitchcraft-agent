@@ -35,7 +35,7 @@ export default function NotableView({ index, query }: { index: ArchiveIndex; que
             {query.reasons.length > 0 && games.length > 0 ? (
               <>
                 {" "}
-                <Link href={notableHref([])} prefetch={false} className="inline-flex min-h-tap items-center font-semibold text-brand underline underline-offset-4">
+                <Link href={notableHref([])} prefetch={false} className="inline-flex min-h-tap min-w-tap items-center justify-center font-semibold text-brand underline underline-offset-4">
                   {NOTABLE_COPY.clear}
                 </Link>
               </>
