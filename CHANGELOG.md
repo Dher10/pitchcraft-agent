@@ -2,9 +2,7 @@
 
 All notable changes to PitchCraft are recorded here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versioning rule is decision D68 in `docs/DECISIONS.md`: MAJOR when the product changes shape, MINOR for new pages, new features or a change of visual identity, PATCH for fixes with no new feature. Every merge of code into `main` is a release with a tag `vX.Y.Z`.
 
-Note on dates: the newest entry says "Unreleased" until the owner merges its pull request into `main` and creates the tag; the date is filled in then. `package.json` carries the version of the newest entry (a test checks it). The daily data commits of the GitHub Actions bot carry no version. `schema_version` and `archive_version` in the published files are contract versions of the data and are independent of the app version.
-
-## [2.1.0] - Unreleased
+## [2.1.0] - 2026-11-17
 
 Offseason experience: a new visual identity and the pages that read the published 2026 archive. Covers pull requests #3, #4 and #6.
 
