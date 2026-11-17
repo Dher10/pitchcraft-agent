@@ -356,3 +356,31 @@ describe("the archive is not available", () => {
     expect(container.querySelector("h1")?.textContent).toBe("Archive");
   });
 });
+
+// Codex audit of PR #6 (2026-11-17): a valid index with zero games crashed calendarMonth(). The view handles it before the
+// mode line and the calendar are built, with the archive's own notice (docs/plans/R4-U.md 5.4, "index missing").
+describe("a valid index with no games", () => {
+  const empty = parseArchiveIndex({ ...JSON.parse(readFileSync(path.join(process.cwd(), "public/data/archive/index-2026.json"), "utf8")), count: 0, notable_count: 0, games: [] });
+
+  it("is a valid index, so the view can receive it", () => {
+    expect(empty).not.toBeNull();
+    expect(empty?.games).toEqual([]);
+  });
+
+  it("renders the archive's notice instead of the filters, the mode line and the calendar", () => {
+    const { container, getByRole, queryByRole, queryByTestId } = render(<ArchiveView index={empty!} query={parseArchiveQuery({}, empty!)} />);
+
+    expect(container.querySelector("h1")?.textContent).toBe("Archive");
+    expect(getByRole("status").textContent).toBe("The archive is not available right now.");
+    expect(queryByRole("form", { name: "Filter games" })).toBeNull();
+    expect(queryByTestId("mode-line")).toBeNull();
+    expect(container.querySelector("[data-calendar-title]")).toBeNull();
+    expect(text(container)).not.toMatch(/undefined|NaN/);
+  });
+
+  it("ignores any filter in the URL", () => {
+    const { getByRole } = render(<ArchiveView index={empty!} query={parseArchiveQuery({ team: "MIL", from: "2026-10-01", month: "2026-10" }, empty!)} />);
+
+    expect(getByRole("status").textContent).toBe("The archive is not available right now.");
+  });
+});

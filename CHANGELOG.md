@@ -24,6 +24,7 @@ Offseason experience: a new visual identity and the pages that read the publishe
 
 ### Fixed
 - The archive's team filter works without JavaScript: the Content Security Policy now allows same-origin form submissions (`form-action 'self'`).
+- The archive view shows its "not available" notice for a valid archive index with no games, instead of failing while building the calendar (the `/archive` page already guarded this case).
 
 ### Security
 - Nonce-based Content Security Policy and security headers.

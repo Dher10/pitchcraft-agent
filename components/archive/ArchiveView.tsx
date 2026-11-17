@@ -1,3 +1,4 @@
+import ArchiveUnavailable from "@/components/archive/ArchiveUnavailable";
 import Filters from "@/components/archive/Filters";
 import ResultsTable from "@/components/archive/ResultsTable";
 import ModeLine from "@/components/ModeLine";
@@ -14,6 +15,8 @@ import type { ArchiveIndex } from "@/lib/types";
  * what was asked.
  */
 export default function ArchiveView({ index, query }: { index: ArchiveIndex; query: ArchiveQuery }) {
+  // A valid index with no games has no last day and no month: the archive's notice, before the mode line and the calendar.
+  if (index.games.length === 0) return <ArchiveUnavailable />;
   const games = selectGames(index, query);
   const pages = pageCount(games.length);
   const shown = games.slice((query.page - 1) * PAGE_SIZE, query.page * PAGE_SIZE);
