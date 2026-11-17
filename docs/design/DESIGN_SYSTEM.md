@@ -88,7 +88,7 @@ Contrast as above; 12px floor; 44px targets; one focus style; winner, status, pi
 
 ## Constraints the system respects
 
-From the data contract and decisions D5, D16, D26, D31, D65: English only until v2.1; unavailable shown as unavailable; origin and mode always visible; no demo content in live pages; no predictions, betting, ads, trackers or cookies; same-origin fonts and images; static, server-rendered pages; MLB and Statcast attribution on every page.
+From the data contract and decisions D5, D16, D26, D31, D65: English only until the Spanish release (D68); unavailable shown as unavailable; origin and mode always visible; no demo content in live pages; no predictions, betting, ads, trackers or cookies; same-origin fonts and images; static, server-rendered pages; MLB and Statcast attribution on every page.
 
 ## Decisions recorded in D67 (2026-11-15)
 

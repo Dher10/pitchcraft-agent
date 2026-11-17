@@ -1,6 +1,6 @@
 /**
  * The text of the shell: header, footer and the labels shared by the primitives (docs/plans/R4-U.md, 5.1). Strings live in
- * one catalog so the Spanish version (v2.1) is a second column, not a rewrite. Each asserting string is registered in
+ * one catalog so the Spanish release is a second column, not a rewrite. Each asserting string is registered in
  * docs/DATA_CONTRACT.md, section 3.3.
  */
 export const SITE_COPY = {

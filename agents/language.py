@@ -4,7 +4,7 @@ The agents never hold a sentence: they ask a catalog for a message by key and fi
 parameters. `language` is a parameter of every agent's `run`, English is the default, and
 an unknown language is an error (it never falls back to English silently).
 
-Only English ships. Spanish arrives in v2.1 as one more entry in CATALOGS; nothing in the
+Only English ships. Spanish arrives in the Spanish release as one more entry in CATALOGS; nothing in the
 agents changes. A message is a str.format template; a value that is a tuple holds a list of
 terms (the words a language-specific check looks for), and a dict holds a vocabulary.
 """

@@ -1,7 +1,7 @@
 import { formatMonthDay } from "@/lib/format";
 
 /**
- * The text of the game page (docs/plans/R4-U.md, 5.3). One catalog, so Spanish (v2.1) is a second column. A sentence that
+ * The text of the game page (docs/plans/R4-U.md, 5.3). One catalog, so the Spanish release adds a second column. A sentence that
  * asserts something about data is registered in docs/DATA_CONTRACT.md, section 3.3, with the condition that prints it.
  */
 export const GAME_COPY = {

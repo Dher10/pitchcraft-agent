@@ -1,5 +1,5 @@
 /**
- * The text of the archive page (docs/plans/R4-U.md, 5.4). One catalog, so Spanish (v2.1) is a second column. Each sentence
+ * The text of the archive page (docs/plans/R4-U.md, 5.4). One catalog, so the Spanish release adds a second column. Each sentence
  * that asserts something about data is registered in docs/DATA_CONTRACT.md, section 3.3.
  */
 export const ARCHIVE_COPY = {

@@ -1,8 +1,8 @@
 """English messages of the text-writing agents (decision D6). One entry per sentence.
 
 Keys are `<agent>.<area>.<name>`. A str is a str.format template; a tuple is a list of
-terms (words a check looks for in the English text); a dict is a vocabulary. Spanish (v2.1)
-is a second file with the same keys. Words that belong to the DATA (pitch names, labels such
+terms (words a check looks for in the English text); a dict is a vocabulary. The Spanish release
+adds a second file with the same keys. Words that belong to the DATA (pitch names, labels such
 as "Above-average swing-and-miss ability") are not here: they come from the pipeline.
 """
 

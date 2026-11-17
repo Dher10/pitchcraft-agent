@@ -56,7 +56,7 @@ Examples:
 
 ## Claims
 
-Every sentence that asserts something about data is a **catalog claim with a registry condition** (data contract rule 4): it has a key, a fixed wording with slots, and the condition under which it may print. This holds for the report, for chips, for verdicts, for answers, for empty states that name data. A design may restyle a claim; a new sentence needs its entry first. Strings stay in the catalog so Spanish (v2.1) is a second column, not a rewrite.
+Every sentence that asserts something about data is a **catalog claim with a registry condition** (data contract rule 4): it has a key, a fixed wording with slots, and the condition under which it may print. This holds for the report, for chips, for verdicts, for answers, for empty states that name data. A design may restyle a claim; a new sentence needs its entry first. Strings stay in the catalog so the Spanish release adds a second column, not a rewrite.
 
 ## Labels, numbers, dates
 
