@@ -4,7 +4,8 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
 
 ## 2.1.1 in progress (plan `docs/plans/2.1.1.md`, owner's message of 2026-11-17)
 
-- Item 1 done: `proxy.ts` rewrites an unknown or malformed `/game/<id>` with status 404 to the server-rendered `/game/unknown` (`lib/gameRoute.ts`, ids from the bundled, validated index; an index that fails validation rewrites nothing). Red: 2 proxy tests (`expected 200 to be 404`), and `check_release_b_browser.mjs notfound` against the 2.1.0 build (empty `__next_error__` body). Proof: `notfound` PASS on the new build. **Open:** confirm the 404 status of the rewrite on the Vercel preview.
+- Item 1 done: `proxy.ts` rewrites an unknown or malformed `/game/<id>` with status 404 to the server-rendered `/game/unknown` (`lib/gameRoute.ts`, ids from the bundled, validated index; an index that fails validation rewrites nothing). Red: 2 proxy tests (`expected 200 to be 404`), and `check_release_b_browser.mjs notfound` against the 2.1.0 build (empty `__next_error__` body). Proof: `notfound` PASS on the new build. **Open:** confirm the 404 status of the rewrite on the Vercel preview. Commit `0c2a485`.
+- Item 2 done: the range on the `/archive` calendar (days between in signal-tint with a 3 px signal bar, the bar alone on a day without games; ", in your range" in their names; the instruction above the grid; the summary "{Mon D} to {Mon D}, {n} games" next to Clear, counting every game on those days). Red: 7 new tests; 3 older tests updated to the new day name. Proof: `check_release_b_browser.mjs targets` and `csp` PASS on the production build; screenshots at 375, 430 and 1280 px with JavaScript off.
 
 ## Next for 2.1.1 (owner, 2026-11-17)
 

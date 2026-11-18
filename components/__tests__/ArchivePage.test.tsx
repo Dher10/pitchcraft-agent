@@ -123,7 +123,7 @@ describe("the calendar", () => {
 
     expect(container.querySelector('a[aria-label="October 23, 1 game, start of your range"]')?.getAttribute("data-state")).toBe("end");
     expect(container.querySelector('a[aria-label="October 28, 1 game, end of your range"]')?.getAttribute("data-state")).toBe("end");
-    expect(container.querySelector('a[aria-label="October 26, 1 game"]')?.getAttribute("data-state")).toBe("range");
+    expect(container.querySelector('a[aria-label="October 26, 1 game, in your range"]')?.getAttribute("data-state")).toBe("range");
     expect(text(container.querySelector("[data-calendar-key]"))).toContain("Day with games (number of games)");
     expect(text(container.querySelector("[data-calendar-key]"))).toContain("Start and end of your range");
   });
@@ -134,7 +134,7 @@ describe("the calendar", () => {
     expect(getByRole("link", { name: "October 23, 1 game, start of your range" }).getAttribute("aria-current")).toBe("date");
     expect(getByRole("link", { name: "October 28, 1 game, end of your range" }).getAttribute("aria-current")).toBe("date");
     expect(container.querySelectorAll('a[aria-current="date"]')).toHaveLength(2);
-    expect(getByRole("link", { name: "October 26, 1 game" }).hasAttribute("aria-current")).toBe(false);
+    expect(getByRole("link", { name: "October 26, 1 game, in your range" }).hasAttribute("aria-current")).toBe(false);
   });
 
   it("names a single chosen day as selected", () => {
@@ -210,14 +210,15 @@ describe("the count, the range in words and Clear", () => {
     expect(text(container.querySelector("[data-count]"))).toBe("Showing 5 of 40 games, newest first");
   });
 
-  it("writes the chosen range in words and offers Clear, only when something is chosen", () => {
+  // Release 2.1.1 (docs/plans/2.1.1.md item 2): the words of the chosen days became the summary with its count of games.
+  it("writes the chosen days and their games in words and offers Clear, only when something is chosen", () => {
     const chosen = view({ from: "2026-10-23", to: "2026-10-28" });
-    expect(chosen.container.textContent).toContain("Oct 23 to Oct 28, 2026");
+    expect(text(chosen.container.querySelector("[data-days-summary]"))).toBe("Oct 23 to Oct 28, 5 games");
     expect(chosen.getByRole("link", { name: "Clear" }).getAttribute("href")).toBe("/archive");
     chosen.unmount();
 
     const oneDay = view({ from: "2026-10-28" });
-    expect(oneDay.container.textContent).toContain("Oct 28, 2026");
+    expect(text(oneDay.container.querySelector("[data-days-summary]"))).toBe("Oct 28, 1 game");
     oneDay.unmount();
 
     const none = view();
@@ -382,5 +383,81 @@ describe("a valid index with no games", () => {
     const { getByRole } = render(<ArchiveView index={empty!} query={parseArchiveQuery({ team: "MIL", from: "2026-10-01", month: "2026-10" }, empty!)} />);
 
     expect(getByRole("status").textContent).toBe("The archive is not available right now.");
+  });
+});
+
+// Release 2.1.1, item 2 (docs/plans/2.1.1.md; owner's feedback: the range was hard to read). Oct 23 to Oct 28 holds five
+// games and one day without games (Oct 25), so every kind of day of a range is in it.
+describe("the range on the calendar (2.1.1)", () => {
+  const RANGE = { from: "2026-10-23", to: "2026-10-28" };
+  const plain = (container: HTMLElement, day: number) =>
+    [...container.querySelectorAll("[data-day-plain]")].find((node) => text(node).trim() === String(day)) as HTMLElement;
+
+  it("tells how the calendar works, above the grid", () => {
+    const { container } = view();
+    const help = container.querySelector("[data-calendar-help]");
+
+    expect(text(help)).toBe("Tap a day to see its games. Tap a second day to see every game in between.");
+    expect(help!.compareDocumentPosition(container.querySelector("[data-weekday]")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("fills the days with games strictly inside the range with signal-tint and a 3 px signal bar", () => {
+    const { container } = view(RANGE);
+    for (const day of [24, 26, 27]) {
+      const link = container.querySelector(`a[aria-label^="October ${day}, "]`) as HTMLElement;
+      expect(link.getAttribute("data-state"), `Oct ${day}`).toBe("range");
+      expect(link.className, `Oct ${day}`).toContain("bg-signal-tint");
+      expect(link.className, `Oct ${day}`).toContain("border-b-[3px]");
+      expect(link.className, `Oct ${day}`).toContain("border-b-signal");
+    }
+  });
+
+  it("gives a day without games inside the range the bar only", () => {
+    const { container } = view(RANGE);
+    const day = plain(container, 25);
+
+    expect(day.getAttribute("data-in-range")).toBe("");
+    expect(day.className).toContain("border-b-[3px]");
+    expect(day.className).toContain("border-b-signal");
+    expect(day.className).not.toContain("bg-signal-tint");
+  });
+
+  it("leaves the start, the end and the days outside the range as they were (controls)", () => {
+    const { container } = view(RANGE);
+    for (const label of ["October 23, 1 game, start of your range", "October 28, 1 game, end of your range"]) {
+      const link = container.querySelector(`a[aria-label="${label}"]`) as HTMLElement;
+      expect(link.className).toContain("bg-board");
+      expect(link.className).not.toContain("border-b-signal");
+    }
+    const outside = container.querySelector('a[aria-label="October 19, 1 game"]') as HTMLElement;
+    expect(outside.className).not.toMatch(/signal/);
+    expect(plain(container, 22).hasAttribute("data-in-range")).toBe(false);
+    expect(plain(container, 22).className).not.toContain("border-b-signal");
+  });
+
+  it("adds \", in your range\" to the name of a day inside the range, and to nothing else", () => {
+    const { container, getByRole } = view(RANGE);
+
+    for (const day of [24, 26, 27]) expect(getByRole("link", { name: `October ${day}, 1 game, in your range` })).toBeTruthy();
+    expect(container.querySelectorAll('a[aria-label$=", in your range"]')).toHaveLength(3);
+    expect(getByRole("link", { name: "October 23, 1 game, start of your range" })).toBeTruthy();
+    expect(getByRole("link", { name: "October 28, 1 game, end of your range" })).toBeTruthy();
+    expect(container.querySelectorAll('a[aria-current="date"]')).toHaveLength(2);
+  });
+
+  it("names a day inside a range with a team picked the same way: the calendar counts every game", () => {
+    const { container } = view({ ...RANGE, team: "NYY" });
+
+    expect(container.querySelectorAll('a[aria-label$=", in your range"]')).toHaveLength(3);
+    expect(text(container.querySelector("[data-days-summary]"))).toBe("Oct 23 to Oct 28, 5 games");
+  });
+
+  it("counts a range that crosses months, and says nothing with no day chosen", () => {
+    const across = view({ from: "2026-09-30", to: "2026-10-03" });
+    expect(text(across.container.querySelector("[data-days-summary]"))).toBe("Sep 30 to Oct 3, 9 games");
+    across.unmount();
+
+    const none = view({ team: "MIL" });
+    expect(none.container.querySelector("[data-days-summary]")).toBeNull();
   });
 });

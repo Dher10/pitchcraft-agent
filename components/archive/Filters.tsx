@@ -4,8 +4,7 @@ import { ChevronDownIcon } from "@/components/ui/Icons";
 import Calendar from "@/components/archive/Calendar";
 import ReasonPills from "@/components/archive/ReasonPills";
 import { ARCHIVE_COPY } from "@/lib/copy/archive";
-import { formatDay } from "@/lib/format";
-import { calendarMonth, type ArchiveQuery } from "@/lib/archiveQuery";
+import { calendarMonth, daysSummary, type ArchiveQuery } from "@/lib/archiveQuery";
 import type { ArchiveIndex } from "@/lib/types";
 
 /** The clubs of the index, by name, once each. Their names are the index's own. */
@@ -17,21 +16,12 @@ function clubs(index: ArchiveIndex): { abbreviation: string; name: string }[] {
   return [...seen].map(([abbreviation, name]) => ({ abbreviation, name })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** The chosen days in words: one day, or a range ("Oct 23 to Oct 28, 2026"). */
-function chosenDays(query: ArchiveQuery): string | null {
-  if (query.from === null) return null;
-  if (query.to === null || query.to === query.from) return formatDay(query.from);
-  const start = formatDay(query.from);
-  const [startMonthDay] = [start.slice(0, start.lastIndexOf(","))];
-  return ARCHIVE_COPY.rangeTo(startMonthDay, formatDay(query.to));
-}
-
 /**
  * The archive's filters as one plain GET form: the team select (submitted with the button), the calendar and the reason
  * pills (links), and the other filters carried in hidden fields. Only validated values are written into the form.
  */
 export default function Filters({ index, query }: { index: ArchiveIndex; query: ArchiveQuery }) {
-  const words = chosenDays(query);
+  const words = daysSummary(index, query);
   const active = query.team !== null || query.from !== null || query.reasons.length > 0;
   return (
     <form method="get" action="/archive" aria-label={ARCHIVE_COPY.filtersLabel} className="grid gap-space-4 rounded-lg border border-line bg-surface p-space-4">
@@ -71,7 +61,7 @@ export default function Filters({ index, query }: { index: ArchiveIndex; query: 
       </div>
       {active ? (
         <div className="flex items-center gap-space-2">
-          <span className="flex-1 text-body-sm">{words ? <strong className="font-semibold">{words}</strong> : null}</span>
+          <span className="flex-1 text-body-sm">{words ? <strong data-days-summary className="font-semibold">{words}</strong> : null}</span>
           <Link
             href="/archive"
             prefetch={false}

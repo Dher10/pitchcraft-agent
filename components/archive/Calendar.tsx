@@ -4,11 +4,15 @@ import { ARCHIVE_COPY } from "@/lib/copy/archive";
 import type { CalendarMonth } from "@/lib/archiveQuery";
 
 const ARROW = "inline-flex size-11 items-center justify-center rounded-sm border text-ink no-underline";
+// A day strictly inside a range carries a 3 px signal bar at its foot, with or without games (release 2.1.1).
+const IN_RANGE_BAR = "border-b-[3px] border-b-signal";
 
 /**
  * A month of the archive: each day with games is a link (the day, and under it the number of games), so it works without
  * JavaScript and the URL is shareable. The first tap picks a day and the second the end of a range; the URL remembers the
- * first. A range is marked by words in the key and by fills; a day without games is plain text.
+ * first. A range is marked by words in the key and in each day's name, and by fills: the start and the end on the board,
+ * the days between in signal-tint with a signal bar (a day between without games keeps only the bar); a day without games
+ * is plain text.
  */
 export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
   return (
@@ -34,6 +38,7 @@ export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
           </span>
         )}
       </div>
+      <p data-calendar-help className="m-0 mb-space-2 text-body-sm text-ink-2">{ARCHIVE_COPY.calendarHelp}</p>
       {/* On a phone the grid runs 8 px into the card padding on each side, so seven days are at least 44 px wide at 375 px. */}
       <div className="-mx-space-2 grid grid-cols-7 gap-0.5 bp-md:mx-0">
         {calendar.weekdays.map((weekday) => (
@@ -49,13 +54,18 @@ export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
           }
           if (cell.href === null) {
             return (
-              <div key={cell.iso} data-day-plain className="flex h-[46px] items-center justify-center text-body-sm font-medium tabular-nums text-ink-3">
+              <div
+                key={cell.iso}
+                data-day-plain
+                data-in-range={cell.inRange ? "" : undefined}
+                className={`flex h-[46px] items-center justify-center text-body-sm font-medium tabular-nums text-ink-3 ${cell.inRange ? IN_RANGE_BAR : ""}`}
+              >
                 {cell.day}
               </div>
             );
           }
           const fill =
-            cell.state === "end" ? "bg-board text-on-board hover:text-on-board" : cell.state === "range" ? "bg-brand-tint text-ink" : "bg-surface-sunken text-ink hover:bg-brand-tint";
+            cell.state === "end" ? "bg-board text-on-board hover:text-on-board" : cell.state === "range" ? `bg-signal-tint text-ink hover:bg-signal-tint ${IN_RANGE_BAR}` : "bg-surface-sunken text-ink hover:bg-brand-tint";
           return (
             <Link
               key={cell.iso}
