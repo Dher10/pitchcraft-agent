@@ -2,6 +2,14 @@
 
 All notable changes to PitchCraft are recorded here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versioning rule is decision D68 in `docs/DECISIONS.md`: MAJOR when the product changes shape, MINOR for new pages, new features or a change of visual identity, PATCH for fixes with no new feature. Every merge of code into `main` is a release with a tag `vX.Y.Z`.
 
+## [2.1.1] - Unreleased
+
+Fixes after release 2.1.0: the game 404 without JavaScript and a clearer range on the archive calendar.
+
+### Fixed
+- An unknown or invalid game URL (`/game/<id>`) now shows its heading, "We could not find that game", and the links back to the archive and the notable games with JavaScript disabled, still with status 404. Before, the page body was empty without JavaScript.
+- The archive calendar shows a chosen range more clearly: the days between the start and the end are filled and underlined in the signal color (a day without games keeps only the line), their accessible names say "in your range", a line above the calendar explains the two taps, and the line next to "Clear" names the chosen days and how many games they hold.
+
 ## [2.1.0] - 2026-11-17
 
 Offseason experience: a new visual identity and the pages that read the published 2026 archive. Covers pull requests #3, #4 and #6.

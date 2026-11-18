@@ -5,7 +5,10 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
 ## 2.1.1 in progress (plan `docs/plans/2.1.1.md`, owner's message of 2026-11-17)
 
 - Item 1 done: `proxy.ts` rewrites an unknown or malformed `/game/<id>` with status 404 to the server-rendered `/game/unknown` (`lib/gameRoute.ts`, ids from the bundled, validated index; an index that fails validation rewrites nothing). Red: 2 proxy tests (`expected 200 to be 404`), and `check_release_b_browser.mjs notfound` against the 2.1.0 build (empty `__next_error__` body). Proof: `notfound` PASS on the new build. **Open:** confirm the 404 status of the rewrite on the Vercel preview. Commit `0c2a485`.
-- Item 2 done: the range on the `/archive` calendar (days between in signal-tint with a 3 px signal bar, the bar alone on a day without games; ", in your range" in their names; the instruction above the grid; the summary "{Mon D} to {Mon D}, {n} games" next to Clear, counting every game on those days). Red: 7 new tests; 3 older tests updated to the new day name. Proof: `check_release_b_browser.mjs targets` and `csp` PASS on the production build; screenshots at 375, 430 and 1280 px with JavaScript off.
+- Item 2 done: the range on the `/archive` calendar (days between in signal-tint with a 3 px signal bar, the bar alone on a day without games; ", in your range" in their names; the instruction above the grid; the summary "{Mon D} to {Mon D}, {n} games" next to Clear, counting every game on those days). Red: 7 new tests; 3 older tests updated to the new day name. Proof: `check_release_b_browser.mjs targets` and `csp` PASS on the production build; screenshots at 375, 430 and 1280 px with JavaScript off. Commit `37e3ed7`.
+- Item 3 done: `docs/releases/v2.1.0.md` is the text as published on GitHub. Commit `c15aef2`.
+- Item 4 **blocked on the owner**: the read-only token gets 403 on the Dependabot, code scanning and secret scanning alert endpoints, so the two alerts were not read. Local `npm audit` shows one advisory, GHSA-fc5q-39xc-vjpf (picomatch ReDoS, high, all versions up to 4.0.7, no patched version), reaching only dev tools (eslint-config-next, vite, vitest); picomatch 2.3.2 and 4.0.7 are both in the lock, which may be the two alerts. No non-major update fixes it, so nothing was changed.
+- Item 5 done: version 2.1.1 in `package.json`, `package-lock.json` and `CHANGELOG.md` ("Unreleased", Fixed only: no security fix ships); `docs/releases/v2.1.1.md` drafted. Red: `version.test.ts` (`expected '2.1.0' to be '2.1.1'`). Next: the owner's decision on item 4, then the PR `v2` into `main` (body in `C:/Dev/release-b-screenshots/PR_BODY_2.1.1.md`); confirm the game 404 status on the Vercel preview.
 
 ## Next for 2.1.1 (owner, 2026-11-17)
 
@@ -279,6 +282,7 @@ Separate evidence: `test_nonfinite_numbers.py` rejects malformed measurements/no
 
 ## Pending Notion sync
 
+- Nov 17 2.1.1: the game 404 is server-rendered (works without JavaScript); the archive calendar range is clearer (tint and bar, instruction, summary with the number of games); version 2.1.1 unreleased.
 - Nov 17 D68: app versioning (SemVer for a product; every merge into `main` is a release with a tag the owner creates; release B is v2.1.0; no `v2.0-b` release; Spanish is a minor release; `CHANGELOG.md` and `docs/releases/`).
 - Nov 15 R4-U0: D67 (design system v2; release B by 2026-12-06 on the published archive; R4-P, R5, Spanish, writer v3, Today in season and the AttackCard frozen until February 2027; the after-the-game layer recorded for R4-P). README rewritten for v2. Release B plan `docs/plans/R4-U.md`.
 - Nov 14 R4-A2: code prepared to read archive index scores, hide ungraded Grade, and keep the exact missing-index fallback/current visual style. No new routes or links, no grade or daily-schema change. Activation/release remains the owner's step after data is published.
