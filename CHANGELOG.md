@@ -8,7 +8,7 @@ Fixes after release 2.1.0: the game 404 without JavaScript and a clearer range o
 
 ### Fixed
 - An unknown or invalid game URL (`/game/<id>`) now shows its heading, "We could not find that game", and the links back to the archive and the notable games with JavaScript disabled, still with status 404. Before, the page body was empty without JavaScript.
-- The archive calendar shows a chosen range more clearly: the days between the start and the end are filled and underlined in the signal color (a day without games keeps only the line), their accessible names say "in your range", a line above the calendar explains the two taps, and the line next to "Clear" names the chosen days and how many games they hold.
+- The archive calendar shows a chosen range more clearly: the days between the start and the end are filled and underlined in the signal color (a day without games keeps only the line), their accessible names say "in your range", a line above the calendar explains the two taps, and a line right under the calendar, beside "Clear", names the chosen days and how many games the list shows for them with the team and reason filters picked.
 
 ## [2.1.0] - 2026-11-17
 

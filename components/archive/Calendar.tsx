@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { ARCHIVE_COPY } from "@/lib/copy/archive";
 import type { CalendarMonth } from "@/lib/archiveQuery";
@@ -14,7 +15,7 @@ const IN_RANGE_BAR = "border-b-[3px] border-b-signal";
  * the days between in signal-tint with a signal bar (a day between without games keeps only the bar); a day without games
  * is plain text.
  */
-export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
+export default function Calendar({ calendar, footer }: { calendar: CalendarMonth; footer?: ReactNode }) {
   return (
     <div>
       <div className="mb-space-2 flex items-center justify-between">
@@ -40,7 +41,7 @@ export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
       </div>
       <p data-calendar-help className="m-0 mb-space-2 text-body-sm text-ink-2">{ARCHIVE_COPY.calendarHelp}</p>
       {/* On a phone the grid runs 8 px into the card padding on each side, so seven days are at least 44 px wide at 375 px. */}
-      <div className="-mx-space-2 grid grid-cols-7 gap-0.5 bp-md:mx-0">
+      <div data-calendar-grid className="-mx-space-2 grid grid-cols-7 gap-0.5 bp-md:mx-0">
         {calendar.weekdays.map((weekday) => (
           <div key={weekday} data-weekday className="py-1 text-center text-caption text-ink-3">{weekday}</div>
         ))}
@@ -83,6 +84,7 @@ export default function Calendar({ calendar }: { calendar: CalendarMonth }) {
           );
         })}
       </div>
+      {footer}
       <div data-calendar-key className="mt-space-2 flex flex-wrap gap-x-space-4 gap-y-space-1 text-caption text-ink-2">
         <span className="inline-flex items-center gap-1.5">
           <i aria-hidden="true" className="inline-block size-3 rounded-[3px] bg-surface-sunken" />

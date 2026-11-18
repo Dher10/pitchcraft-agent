@@ -223,14 +223,15 @@ export function noMatchText(index: ArchiveIndex, query: ArchiveQuery): { title: 
 }
 
 /**
- * The chosen days in words with their games: "Oct 28, 1 game" or "Oct 23 to Oct 28, 5 games" (release 2.1.1). The count is
- * every index row on those days, whatever the team and the reasons, like the number under each day of the calendar.
+ * The chosen days in words with their games: "Oct 28, 1 game" or "Oct 23 to Oct 28, 5 games" (release 2.1.1). The count
+ * follows the team and the reasons too, so it is always the number the list shows (owner, 2026-11-17); only the number
+ * under each day of the calendar counts every game of that day.
  */
 export function daysSummary(index: ArchiveIndex, query: ArchiveQuery): string | null {
   const from = query.from;
   if (from === null) return null;
   const to = query.to ?? from;
-  const games = index.games.filter((row) => row.date >= from && row.date <= to).length;
+  const games = selectGames(index, query).length;
   const days = to === from ? formatMonthDay(from) : ARCHIVE_COPY.rangeTo(formatMonthDay(from), formatMonthDay(to));
   return ARCHIVE_COPY.daysSummary(days, games);
 }

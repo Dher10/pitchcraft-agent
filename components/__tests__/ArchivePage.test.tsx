@@ -449,7 +449,39 @@ describe("the range on the calendar (2.1.1)", () => {
     const { container } = view({ ...RANGE, team: "NYY" });
 
     expect(container.querySelectorAll('a[aria-label$=", in your range"]')).toHaveLength(3);
-    expect(text(container.querySelector("[data-days-summary]"))).toBe("Oct 23 to Oct 28, 5 games");
+    expect(container.querySelector('a[aria-label="October 26, 1 game, in your range"]')).not.toBeNull();
+  });
+
+  // Owner's decision (2.1.1): the summary follows the team and reason filters, so it always says the number the list shows.
+  // Oct 3 to Oct 8 holds 15 games; 4 have the Dodgers, 2 of those are strikeout duels.
+  it.each([
+    [{}, "Oct 3 to Oct 8, 15 games", 15],
+    [{ team: "LAD" }, "Oct 3 to Oct 8, 4 games", 4],
+    [{ team: "LAD", reason: "strikeout_duel" }, "Oct 3 to Oct 8, 2 games", 2],
+  ])("says the same number of games as the list, with filters %o", (filters, summary, shown) => {
+    const { container } = view({ from: "2026-10-03", to: "2026-10-08", ...filters });
+
+    expect(text(container.querySelector("[data-days-summary]"))).toBe(summary);
+    expect(text(container.querySelector("[data-count]"))).toBe(`Showing ${shown} of 40 games, newest first`);
+  });
+
+  it("says no games, like the list, when the team did not play on those days", () => {
+    const { container } = view({ ...RANGE, team: "NYY" });
+
+    expect(text(container.querySelector("[data-days-summary]"))).toBe("Oct 23 to Oct 28, 0 games");
+    expect(text(container.querySelector("[data-count]"))).toBe("Showing 0 of 40 games, newest first");
+  });
+
+  it("sits directly under the calendar grid, with Clear on the same row, before the reason filter", () => {
+    const { container, getByRole } = view(RANGE);
+    const row = container.querySelector("[data-days-row]") as HTMLElement;
+    const grid = container.querySelector("[data-calendar-grid]") as HTMLElement;
+
+    expect(grid.nextElementSibling).toBe(row);
+    expect(row.contains(container.querySelector("[data-days-summary]"))).toBe(true);
+    expect(row.contains(getByRole("link", { name: "Clear" }))).toBe(true);
+    const reasons = container.querySelector('nav[aria-label="Notable reason"]') as HTMLElement;
+    expect(row.compareDocumentPosition(reasons) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("counts a range that crosses months, and says nothing with no day chosen", () => {

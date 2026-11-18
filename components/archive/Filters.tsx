@@ -53,24 +53,28 @@ export default function Filters({ index, query }: { index: ArchiveIndex; query: 
       </div>
       <div className="grid gap-space-1">
         <span className="text-label text-ink-2">{ARCHIVE_COPY.dates}</span>
-        <Calendar calendar={calendarMonth(index, query)} />
+        <Calendar
+          calendar={calendarMonth(index, query)}
+          footer={
+            active ? (
+              <div data-days-row className="mt-space-2 flex items-center gap-space-2">
+                <span className="flex-1 text-body-sm">{words ? <strong data-days-summary className="font-semibold">{words}</strong> : null}</span>
+                <Link
+                  href="/archive"
+                  prefetch={false}
+                  className="inline-flex min-h-tap items-center rounded-sm px-space-2 text-body font-semibold text-brand underline underline-offset-4"
+                >
+                  {ARCHIVE_COPY.clear}
+                </Link>
+              </div>
+            ) : null
+          }
+        />
       </div>
       <div className="grid gap-space-1">
         <span className="text-label text-ink-2">{ARCHIVE_COPY.reasonLabel}</span>
         <ReasonPills index={index} query={query} />
       </div>
-      {active ? (
-        <div className="flex items-center gap-space-2">
-          <span className="flex-1 text-body-sm">{words ? <strong data-days-summary className="font-semibold">{words}</strong> : null}</span>
-          <Link
-            href="/archive"
-            prefetch={false}
-            className="inline-flex min-h-tap items-center rounded-sm px-space-2 text-body font-semibold text-brand underline underline-offset-4"
-          >
-            {ARCHIVE_COPY.clear}
-          </Link>
-        </div>
-      ) : null}
     </form>
   );
 }
