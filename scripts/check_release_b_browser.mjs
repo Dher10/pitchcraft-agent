@@ -3,7 +3,9 @@
 //   node scripts/check_release_b_browser.mjs [origin] [check ...]
 // Checks: csp (the archive team form submits with JavaScript off and logs no CSP violation);
 //         targets (every interactive element of the release B pages is at least 44x44 px, none overlap, no sideways
-//         scroll, at 375, 430 and 1280 px).
+//         scroll, at 375, 430 and 1280 px);
+//         notfound (with JavaScript off, an unknown and a malformed game id are a 404 whose HTML has the heading and the
+//         recovery links; a published game is a 200 with its page; release 2.1.1).
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
@@ -12,7 +14,7 @@ const origin = new URL(process.argv[2] ?? "http://127.0.0.1:3082");
 assert.equal(origin.protocol, "http:");
 assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname));
 assert.equal(origin.pathname, "/");
-const ALL = ["csp", "targets"];
+const ALL = ["csp", "targets", "notfound"];
 const wanted = process.argv.slice(3);
 const checks = wanted.length > 0 ? wanted : ALL;
 for (const check of checks) assert.ok(ALL.includes(check), `unknown check: ${check}`);
@@ -64,6 +66,35 @@ async function checkCsp(browser) {
     } finally {
       await context.close();
     }
+  }
+}
+
+async function checkNotFound(browser) {
+  const { context, page, log } = await pageWithoutJs(browser, { width: 375, height: 812 });
+  try {
+    for (const id of ["123", "abc"]) {
+      const response = await page.goto(url(`/game/${id}`));
+      assert.equal(response.status(), 404, `/game/${id}: status`);
+      const html = await response.text();
+      assert.match(html, /<h1[^>]*>We could not find that game<\/h1>/, `/game/${id}: the heading is in the server's HTML`);
+      assert.match(html, /<a[^>]*href="\/archive"[^>]*>[^<]*Back to the archive/, `/game/${id}: the archive link`);
+      assert.match(html, /<a[^>]*href="\/notable"[^>]*>[^<]*Notable duels of 2026/, `/game/${id}: the notable link`);
+      assert.match(html, /<meta name="robots" content="noindex/, `/game/${id}: noindex`);
+      assert.match(response.headers()["content-security-policy"], /script-src 'self' 'nonce-/, `/game/${id}: the CSP`);
+      assert.equal(await page.locator("h1").textContent(), "We could not find that game", `/game/${id}: the heading is shown`);
+      console.log(`notfound /game/${id}: 404, heading and both links in the HTML, noindex, JavaScript off`);
+    }
+    const game = index.games[0].game_pk;
+    const response = await page.goto(url(`/game/${game}`));
+    assert.equal(response.status(), 200, `/game/${game}: status`);
+    // The game page's flight data carries its not-found boundary, so the check is on the rendered heading, not the raw HTML.
+    assert.equal(await page.locator("h1").count(), 1, `/game/${game}: one heading`);
+    assert.notEqual((await page.locator("h1").textContent()).trim(), "We could not find that game", `/game/${game}: not the not-found page`);
+    assert.equal(await page.locator("main").first().isVisible(), true, `/game/${game}: the page renders`);
+    console.log(`notfound /game/${game}: 200 with the game page (h1 "${(await page.locator("h1").textContent()).trim()}"), JavaScript off`);
+    assert.deepEqual(cspViolations(log), [], "no CSP violation");
+  } finally {
+    await context.close();
   }
 }
 
@@ -174,6 +205,7 @@ const browser = await chromium.launch({ channel: "chrome", headless: true });
 try {
   if (checks.includes("csp")) await checkCsp(browser);
   if (checks.includes("targets")) await checkTargets(browser);
+  if (checks.includes("notfound")) await checkNotFound(browser);
   console.log(`PASS: ${checks.join(", ")}`);
 } finally {
   await browser.close();
