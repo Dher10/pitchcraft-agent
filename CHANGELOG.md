@@ -10,6 +10,10 @@ Fixes after release 2.1.0: the game 404 without JavaScript and a clearer range o
 - An unknown or invalid game URL (`/game/<id>`) now shows its heading, "We could not find that game", and the links back to the archive and the notable games with JavaScript disabled, still with status 404. Before, the page body was empty without JavaScript.
 - The archive calendar shows a chosen range more clearly: the days between the start and the end are filled and underlined in the signal color (a day without games keeps only the line), their accessible names say "in your range", a line above the calendar explains the two taps, and a line right under the calendar, beside "Clear", names the chosen days and how many games the list shows for them with the team and reason filters picked.
 
+### Security
+- soupsieve updated from 3.0.4 to 4.1.1, which fixes GHSA-mmhr-3c5m-f64f (CVE-2026-126190, high, polynomial-time denial of service in the descendant combinator). It is a transitive dependency of the data pipeline through pybaseball and beautifulsoup4, and the pipeline is not known to reach the affected code.
+- `npm audit` reports one high advisory in picomatch (GHSA-fc5q-39xc-vjpf), a development-only dependency with no fix yet; the served site is not affected.
+
 ## [2.1.0] - 2026-11-17
 
 Offseason experience: a new visual identity and the pages that read the published 2026 archive. Covers pull requests #3, #4 and #6.
