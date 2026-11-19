@@ -28,6 +28,7 @@ export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);
   headers.set("Content-Security-Policy", policy);
+  // The destination keeps the request's origin; `skipProxyUrlNormalize` in next.config.ts keeps a loopback host as sent.
   const response = isUnpublishedGamePath(request.nextUrl.pathname, GAME_IDS)
     ? NextResponse.rewrite(new URL(GAME_NOT_FOUND_PATH, request.url), { request: { headers }, status: 404 })
     : NextResponse.next({ request: { headers } });

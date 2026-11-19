@@ -1,8 +1,9 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import nextConfig from "../../next.config";
 import { GAME_NOT_FOUND_PATH, isUnpublishedGamePath, publishedGameIds } from "@/lib/gameRoute";
 
 // Release 2.1.1, item 1 (docs/plans/2.1.1.md; Codex audit of PR #6, finding 5). In Next 16.4.6 a notFound() thrown while
@@ -63,6 +64,36 @@ describe("proxy on /game/<id>", () => {
       expect(response.headers.get("cache-control")).toContain("no-store");
     });
   }
+
+  // Release 2.1.1, Codex verification of PR #8, finding 1. Next's URL normalization turns 127.0.0.1 and [::1] into
+  // localhost, so on a server bound to 127.0.0.1 the rewrite left the server's origin and was proxied as external, which
+  // hung. `skipProxyUrlNormalize` keeps the request URL as sent; the build defines this env flag from it (define-env.js).
+  // This pins the proxy's own output and the config key; that the adapter then passes the destination on as written is
+  // proved in a real server by `scripts/check_release_b_browser.mjs notfound` on next start -H 127.0.0.1.
+  describe("on a loopback host, with the env the build derives from next.config.ts", () => {
+    let saved: string | undefined;
+    beforeEach(() => {
+      saved = process.env.__NEXT_NO_MIDDLEWARE_URL_NORMALIZE;
+      if (nextConfig.skipProxyUrlNormalize) process.env.__NEXT_NO_MIDDLEWARE_URL_NORMALIZE = "true";
+      else delete process.env.__NEXT_NO_MIDDLEWARE_URL_NORMALIZE;
+    });
+    afterEach(() => {
+      if (saved === undefined) delete process.env.__NEXT_NO_MIDDLEWARE_URL_NORMALIZE;
+      else process.env.__NEXT_NO_MIDDLEWARE_URL_NORMALIZE = saved;
+    });
+
+    // localhost is the control: normalization maps it to itself, so it kept the origin before the fix too.
+    for (const origin of ["http://127.0.0.1:3082", "http://[::1]:3082", "http://localhost:3082"]) {
+      it(`keeps the rewrite of /game/123 on the request's origin ${origin}`, async () => {
+        const { proxy } = await import("../../proxy");
+        const response = proxy(new NextRequest(`${origin}/game/123`));
+        expect(response.status).toBe(404);
+        const destination = new URL(rewriteOf(response)!);
+        expect(destination.origin).toBe(origin);
+        expect(destination.pathname).toBe(GAME_NOT_FOUND_PATH);
+      });
+    }
+  });
 
   it("lets a published game through untouched (control)", async () => {
     const { proxy } = await import("../../proxy");

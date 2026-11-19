@@ -1,4 +1,4 @@
-// Opt-in browser checks of release B against a local production build (`npm run build`, then `npx next start -p 3082`).
+// Opt-in browser checks of release B against a local production build (`npm run build`, then `npx next start -H 127.0.0.1 -p 3082`).
 // No external service, credential or source request. Usage:
 //   node scripts/check_release_b_browser.mjs [origin] [check ...]
 // Checks: csp (the archive team form submits with JavaScript off and logs no CSP violation);
