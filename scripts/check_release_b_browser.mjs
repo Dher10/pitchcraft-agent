@@ -5,7 +5,9 @@
 //         targets (every interactive element of the release B pages is at least 44x44 px, none overlap, no sideways
 //         scroll, at 375, 430 and 1280 px);
 //         notfound (with JavaScript off, an unknown and a malformed game id are a 404 whose HTML has the heading and the
-//         recovery links; a published game is a 200 with its page; release 2.1.1).
+//         recovery links; a published game is a 200 with its page; release 2.1.1);
+//         inject (script and markup sent in per, page, team, month and reason never reach the response body raw, no
+//         script runs and no CSP violation is logged with JavaScript on; Codex audit of PR #10).
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
@@ -14,7 +16,7 @@ const origin = new URL(process.argv[2] ?? "http://127.0.0.1:3082");
 assert.equal(origin.protocol, "http:");
 assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname));
 assert.equal(origin.pathname, "/");
-const ALL = ["csp", "targets", "notfound"];
+const ALL = ["csp", "targets", "notfound", "inject"];
 const wanted = process.argv.slice(3);
 const checks = wanted.length > 0 ? wanted : ALL;
 for (const check of checks) assert.ok(ALL.includes(check), `unknown check: ${check}`);
@@ -98,6 +100,62 @@ async function checkNotFound(browser) {
   }
 }
 
+// Hostile query values. Next's router bootstrap repeats the request URL in the HTML; it must do so escaped (percent-encoded
+// or \u003c), so no raw "<" or ">" or quote of the query may appear. `/archive` itself is the baseline: its own scripts
+// are the only ones allowed.
+const HOSTILE = [
+  "/archive?per=%3C%2Fscript%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E",
+  "/archive?team=%3C%2Fscript%3E%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E&page=%22%3E%3Csvg%3E",
+  "/archive?month=%3C%2Fscript%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E&reason=%3C%2Fscript%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E",
+  "/archive?per=%3C%2Fscript%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E&page=%3C%2Fscript%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E",
+];
+const count = (body, needle) => body.split(needle).length - 1;
+/** Fails when a hostile value reached the body as markup: an extra script tag or any raw piece of the payloads. */
+function assertNoRawQuery(body, baseline, label) {
+  assert.equal(count(body, "<script"), count(baseline, "<script"), `${label}: no extra "<script" in the body`);
+  assert.equal(count(body, "</script"), count(baseline, "</script"), `${label}: no extra "</script" in the body`);
+  assert.equal(count(body, "<svg"), count(baseline, "<svg"), `${label}: no extra "<svg" in the body`);
+  for (const raw of ["<img src=x", "onerror=alert", "alert(1)</", "alert(1)>"]) {
+    assert.equal(body.includes(raw), false, `${label}: raw ${JSON.stringify(raw)} is not in the body`);
+  }
+}
+
+async function checkInject(browser) {
+  const context = await browser.newContext({ javaScriptEnabled: true, viewport: { width: 1280, height: 900 } });
+  await context.route("**/*", (route) =>
+    new URL(route.request().url()).origin === origin.origin ? route.fallback() : route.abort(),
+  );
+  try {
+    const baselineResponse = await context.request.get(url("/archive"));
+    assert.equal(baselineResponse.status(), 200, "baseline /archive: status");
+    const baseline = await baselineResponse.text();
+    assert.ok(count(baseline, "<script") > 0, "baseline: the page has its own scripts");
+    for (const path of HOSTILE) {
+      const response = await context.request.get(url(path));
+      assert.equal(response.status(), 200, `${path}: status`);
+      assertNoRawQuery(await response.text(), baseline, path);
+
+      const page = await context.newPage();
+      const log = [];
+      const dialogs = [];
+      page.on("dialog", (dialog) => { dialogs.push(dialog.message()); dialog.dismiss(); });
+      const cdp = await context.newCDPSession(page);
+      cdp.on("Log.entryAdded", ({ entry }) => log.push(entry));
+      await cdp.send("Log.enable");
+      await page.goto(url(path), { waitUntil: "networkidle" });
+      assert.deepEqual(dialogs, [], `${path}: no dialog opened, so no injected script ran`);
+      assert.deepEqual(cspViolations(log), [], `${path}: no CSP violation`);
+      assert.equal(await page.locator("img[src='x']").count(), 0, `${path}: no injected image`);
+      const shown = await page.locator("main").first().innerText();
+      assert.equal(/alert\(1\)|onerror|<script/.test(shown), false, `${path}: the visible text carries none of the query`);
+      await page.close();
+      console.log(`inject ${path.slice(0, 60)}...: 200, body has no raw query markup, no dialog, no CSP violation, JavaScript on`);
+    }
+  } finally {
+    await context.close();
+  }
+}
+
 const TARGET = 44;
 const WIDTHS = [375, 430, 1280];
 
@@ -117,6 +175,8 @@ function releaseBPages() {
     "/archive",
     `/archive?from=${days.at(-4)}&to=${days.at(-1)}`,
     `/archive?team=MIL&from=${absent}`,
+    "/archive?per=10&page=2",
+    "/archive?per=all",
     "/game/123",
   ];
 }
@@ -206,6 +266,7 @@ try {
   if (checks.includes("csp")) await checkCsp(browser);
   if (checks.includes("targets")) await checkTargets(browser);
   if (checks.includes("notfound")) await checkNotFound(browser);
+  if (checks.includes("inject")) await checkInject(browser);
   console.log(`PASS: ${checks.join(", ")}`);
 } finally {
   await browser.close();

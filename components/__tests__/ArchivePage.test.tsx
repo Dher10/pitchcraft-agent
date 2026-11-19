@@ -215,16 +215,35 @@ describe("the reason filter", () => {
 });
 
 describe("the count, the range in words and Clear", () => {
-  it("says how many games are shown of how many, newest first", () => {
+  it("says which games are shown of how many when the list has more than one page, newest first", () => {
     const { container } = view();
+    expect(text(container.querySelector("[data-count]"))).toBe("Showing 1 to 20 of 40 games, newest first");
+  });
 
-    expect(text(container.querySelector("[data-count]"))).toBe("Showing 40 of 40 games, newest first");
+  it("says which games the page shows, on the last page and with another page size", () => {
+    expect(text(view({ page: "2" }).container.querySelector("[data-count]"))).toBe("Showing 21 to 40 of 40 games, newest first");
+    const ten = view({ per: "10", page: "4" });
+    expect(text(ten.container.querySelector("[data-count]"))).toBe("Showing 31 to 40 of 40 games, newest first");
+  });
+
+  it("says how many are shown of how many when everything fits on one page", () => {
+    expect(text(view({ per: "all" }).container.querySelector("[data-count]"))).toBe("Showing 40 of 40 games, newest first");
+    expect(text(view({ per: "50" }).container.querySelector("[data-count]"))).toBe("Showing 40 of 40 games, newest first");
   });
 
   it("follows the filters", () => {
     const { container } = view({ from: "2026-10-23", to: "2026-10-28" });
 
     expect(text(container.querySelector("[data-count]"))).toBe("Showing 5 of 40 games, newest first");
+  });
+
+  it("uses the filtered count as n when a filter leaves more than one page", () => {
+    // MIL plays 13 of the 40 games; the total is the filtered one on both pages, never the archive-wide 40.
+    const first = view({ team: "MIL", per: "10" });
+    expect(text(first.container.querySelector("[data-count]"))).toBe("Showing 1 to 10 of 13 games, newest first");
+    first.unmount();
+    const second = view({ team: "MIL", per: "10", page: "2" });
+    expect(text(second.container.querySelector("[data-count]"))).toBe("Showing 11 to 13 of 13 games, newest first");
   });
 
   // Release 2.1.1 (docs/plans/2.1.1.md item 2): the words of the chosen days became the summary with its count of games.
@@ -244,8 +263,15 @@ describe("the count, the range in words and Clear", () => {
 });
 
 describe("the results", () => {
-  it("are a list of game rows on a phone and a table from the large breakpoint, 40 each", () => {
+  it("are a list of game rows on a phone and a table from the large breakpoint, 20 each by default", () => {
     const { container } = view();
+
+    expect(container.querySelectorAll('[data-results="rows"] a[href^="/game/"]')).toHaveLength(20);
+    expect(container.querySelectorAll('[data-results="table"] tbody tr')).toHaveLength(20);
+  });
+
+  it("show every game for All, 40 each", () => {
+    const { container } = view({ per: "all" });
 
     expect(container.querySelectorAll('[data-results="rows"] a[href^="/game/"]')).toHaveLength(40);
     expect(container.querySelectorAll('[data-results="table"] tbody tr')).toHaveLength(40);
@@ -304,37 +330,99 @@ describe("paging", () => {
     return { ...INDEX, count: games.length, games, notable_count: games.filter((g) => g.notable.length > 0).length };
   }
 
-  it("has no pager for 40 games", () => {
-    const { queryByRole } = view();
+  it("has no pager when everything fits on one page", () => {
+    expect(view({ per: "all" }).queryByRole("navigation", { name: "Pages" })).toBeNull();
+    expect(view({ per: "50" }).queryByRole("navigation", { name: "Pages" })).toBeNull();
+  });
 
-    expect(queryByRole("navigation", { name: "Pages" })).toBeNull();
+  it("has a pager for 40 games at 20 a page", () => {
+    const { getByRole } = view();
+    expect(text(getByRole("navigation", { name: "Pages" }))).toContain("Page 1 of 2");
   });
 
   it("shows 50 games a page and a pager with Previous and Next, for 120 games", () => {
     const index = manyGames(120);
-    const { container, getByRole } = render(<ArchiveView index={index} query={parseArchiveQuery({ page: "2" }, index)} />);
+    const { container, getByRole } = render(<ArchiveView index={index} query={parseArchiveQuery({ per: "50", page: "2" }, index)} />);
 
     expect(container.querySelectorAll('[data-results="rows"] a[href^="/game/"]')).toHaveLength(50);
     const pager = within(getByRole("navigation", { name: "Pages" }));
-    expect(pager.getByRole("link", { name: "Previous page" }).getAttribute("href")).toBe("/archive");
-    expect(pager.getByRole("link", { name: "Next page" }).getAttribute("href")).toBe("/archive?page=3");
+    expect(pager.getByRole("link", { name: "Previous page" }).getAttribute("href")).toBe("/archive?per=50");
+    expect(pager.getByRole("link", { name: "Next page" }).getAttribute("href")).toBe("/archive?per=50&page=3");
     expect(text(getByRole("navigation", { name: "Pages" }))).toContain("Page 2 of 3");
+    expect(text(container.querySelector("[data-count]"))).toBe("Showing 51 to 100 of 120 games, newest first");
   });
 
   it("shows the last page with what is left, and no Next", () => {
     const index = manyGames(120);
-    const { container, queryByRole } = render(<ArchiveView index={index} query={parseArchiveQuery({ page: "3" }, index)} />);
+    const { container, queryByRole } = render(<ArchiveView index={index} query={parseArchiveQuery({ per: "50", page: "3" }, index)} />);
 
     expect(container.querySelectorAll('[data-results="rows"] a[href^="/game/"]')).toHaveLength(20);
     expect(queryByRole("link", { name: "Next page" })).toBeNull();
+    expect(text(container.querySelector("[data-count]"))).toBe("Showing 101 to 120 of 120 games, newest first");
   });
 
-  it("links to the next page on the first page", () => {
+  it("links to the next page on the first page, with no per at the default size", () => {
     const index = manyGames(120);
     const { getByRole } = render(<ArchiveView index={index} query={parseArchiveQuery({}, index)} />);
 
     expect(getByRole("link", { name: "Next page" }).getAttribute("href")).toBe("/archive?page=2");
-    expect(text(getByRole("navigation", { name: "Pages" }))).toContain("Page 1 of 3");
+    expect(text(getByRole("navigation", { name: "Pages" }))).toContain("Page 1 of 6");
+  });
+
+  it("shows all 120 games on one page for All", () => {
+    const index = manyGames(120);
+    const { container } = render(<ArchiveView index={index} query={parseArchiveQuery({ per: "all" }, index)} />);
+    expect(container.querySelectorAll('[data-results="rows"] a[href^="/game/"]')).toHaveLength(120);
+  });
+});
+
+describe("the page size links", () => {
+  const group = (r: ReturnType<typeof view>) => within(r.getByRole("navigation", { name: "Games per page" }));
+
+  it("are a labelled group of four links near the count", () => {
+    const r = view();
+    expect(text(r.getByRole("navigation", { name: "Games per page" }))).toContain("Games per page");
+    expect(group(r).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
+      ["10", "/archive?per=10"],
+      ["20", "/archive"],
+      ["50", "/archive?per=50"],
+      ["All", "/archive?per=all"],
+    ]);
+  });
+
+  it("mark the current size with aria-current, and only that one", () => {
+    for (const [per, name] of [[undefined, "20"], ["10", "10"], ["50", "50"], ["all", "All"], ["bogus", "20"]] as const) {
+      const r = view(per === undefined ? {} : { per });
+      const current = group(r).getAllByRole("link").filter((a) => a.getAttribute("aria-current") === "true");
+      expect(current.map((a) => a.textContent), String(per)).toEqual([name]);
+      r.unmount();
+    }
+  });
+
+  it("keep team, dates, reasons and month, and reset to page 1", () => {
+    const r = view({ team: "MIL", from: "2026-10-23", to: "2026-10-28", reason: "world_series", month: "2026-10", per: "10" });
+    const base = "/archive?team=MIL&from=2026-10-23&to=2026-10-28&reason=world_series&month=2026-10";
+    expect(group(r).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual([`${base}&per=10`, base, `${base}&per=50`, `${base}&per=all`]);
+    r.unmount();
+    const second = view({ page: "2" });
+    expect(group(second).getAllByRole("link").every((a) => !/page=/.test(a.getAttribute("href") ?? ""))).toBe(true);
+  });
+
+  it("keep a 44 by 44 px target on every link", () => {
+    for (const a of group(view()).getAllByRole("link")) {
+      expect(a.className).toMatch(/min-h-tap/);
+      expect(a.className).toMatch(/min-w-tap/);
+    }
+  });
+
+  it("are not shown when no game matches", () => {
+    expect(view({ team: "NYY", from: "2026-10-23", to: "2026-10-28" }).queryByRole("navigation", { name: "Games per page" })).toBeNull();
+  });
+
+  it("are carried by the team form, so choosing a team keeps the size", () => {
+    const hidden = Array.from(view({ per: "10" }).container.querySelectorAll('form input[type="hidden"]')).map((i) => [i.getAttribute("name"), i.getAttribute("value")]);
+    expect(hidden).toContainEqual(["per", "10"]);
+    expect(view().container.querySelectorAll('form input[name="per"]')).toHaveLength(0);
   });
 });
 
@@ -359,10 +447,11 @@ describe("a hostile URL", () => {
       reason: ["<img src=x onerror=alert(1)>"],
       page: "<b>",
       month: "' onmouseover='x",
+      per: "<i>bogus</i>",
     });
 
-    expect(container.innerHTML).not.toMatch(/<script|onerror|onmouseover|javascript:/i);
-    expect(text(container.querySelector("[data-count]"))).toBe("Showing 40 of 40 games, newest first");
+    expect(container.innerHTML).not.toMatch(/<script|onerror|onmouseover|javascript:|bogus/i);
+    expect(text(container.querySelector("[data-count]"))).toBe("Showing 1 to 20 of 40 games, newest first");
   });
 });
 

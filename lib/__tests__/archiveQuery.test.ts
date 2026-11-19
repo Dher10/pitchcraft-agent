@@ -3,7 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseArchiveIndex } from "@/lib/archiveIndex";
 import {
-  PAGE_SIZE,
+  DEFAULT_PER,
+  PAGE_SIZES,
   calendarMonth,
   dayHref,
   hrefFor,
@@ -24,7 +25,7 @@ const pks = (query: ArchiveQuery) => selectGames(INDEX, query).map((row) => row.
 
 describe("parsing the URL", () => {
   it("is empty for no parameters", () => {
-    expect(q()).toEqual({ team: null, from: null, to: null, reasons: [], page: 1, month: null });
+    expect(q()).toEqual({ team: null, from: null, to: null, reasons: [], page: 1, month: null, per: 20 });
   });
 
   it("keeps a team that played in the index, in either side of a game", () => {
@@ -70,9 +71,12 @@ describe("parsing the URL", () => {
   });
 
   it.each([["2", 2], ["1", 1]])("reads the page %j", (page, expected) => {
-    // The index has 40 games: one page of 50, so a page beyond it is ignored; the reading itself is tested below.
-    expect(q({ page }).page).toBe(1);
-    expect(expected).toBeGreaterThan(0);
+    // The index has 40 games: two pages of 20 by default.
+    expect(q({ page }).page).toBe(expected);
+  });
+
+  it("ignores a page beyond the last", () => {
+    expect(q({ page: "3" }).page).toBe(1);
   });
 
   it.each(["0", "-1", "1.5", "abc", "", "99999", "1e3", " 2"])("ignores the page %j", (page) => {
@@ -148,13 +152,42 @@ describe("the count on each reason", () => {
 });
 
 describe("pages", () => {
-  it("are 50 games each, and the index of 40 games is one page", () => {
-    expect(PAGE_SIZE).toBe(50);
-    expect(pageCount(40)).toBe(1);
-    expect(pageCount(0)).toBe(1);
-    expect(pageCount(50)).toBe(1);
-    expect(pageCount(51)).toBe(2);
-    expect(pageCount(120)).toBe(3);
+  it("are 20 games each by default, and the index of 40 games is two pages", () => {
+    expect(DEFAULT_PER).toBe(20);
+    expect(PAGE_SIZES).toEqual([10, 20, 50, "all"]);
+    expect(pageCount(40, 20)).toBe(2);
+    expect(pageCount(0, 20)).toBe(1);
+    expect(pageCount(20, 20)).toBe(1);
+    expect(pageCount(21, 20)).toBe(2);
+    expect(pageCount(120, 50)).toBe(3);
+    expect(pageCount(40, 10)).toBe(4);
+  });
+
+  it("are one page for All, whatever the count", () => {
+    expect(pageCount(40, "all")).toBe(1);
+    expect(pageCount(5000, "all")).toBe(1);
+    expect(pageCount(0, "all")).toBe(1);
+  });
+
+  it.each([["10", 10], ["20", 20], ["50", 50], ["all", "all"]])("reads the page size %j", (per, expected) => {
+    expect(q({ per }).per).toBe(expected);
+  });
+
+  it.each(["", "5", "15", "100", "ALL", "All", "-10", "10.5", "abc", "<script>", "10 ", "0x10"])("ignores the page size %j and falls back to 20", (per) => {
+    expect(q({ per }).per).toBe(20);
+  });
+
+  it("takes the first value of a repeated per", () => {
+    expect(q({ per: ["10", "50"] }).per).toBe(10);
+  });
+
+  it("checks the page against the page size", () => {
+    expect(q({ per: "10", page: "4" }).page).toBe(4);
+    expect(q({ per: "10", page: "5" }).page).toBe(1);
+    expect(q({ page: "2" }).page).toBe(2);
+    expect(q({ page: "3" }).page).toBe(1);
+    expect(q({ per: "50", page: "2" }).page).toBe(1);
+    expect(q({ per: "all", page: "2" }).page).toBe(1);
   });
 });
 
@@ -174,8 +207,29 @@ describe("links", () => {
     expect(hrefFor(query, { month: "2026-09" })).toBe("/archive?team=MIL&reason=strikeout_duel&month=2026-09");
   });
 
+  it("write per only when it is not the default, after month and before page", () => {
+    const query = q({ team: "MIL", per: "10" });
+    expect(hrefFor(query, {})).toBe("/archive?team=MIL&per=10");
+    expect(hrefFor(query, { page: 2 })).toBe("/archive?team=MIL&per=10&page=2");
+    expect(hrefFor(q({ team: "MIL", per: "all", month: "2026-10" }), {})).toBe("/archive?team=MIL&month=2026-10&per=all");
+    expect(hrefFor(q({ per: "20" }), {})).toBe("/archive");
+    expect(hrefFor(q({ per: "bogus" }), {})).toBe("/archive");
+  });
+
+  it("change the page size, keep the filters and go back to page 1", () => {
+    const query = q({ team: "MIL", from: "2026-10-23", reason: "world_series", month: "2026-10", per: "10" });
+    expect(hrefFor(query, { per: 50 })).toBe("/archive?team=MIL&from=2026-10-23&reason=world_series&month=2026-10&per=50");
+    expect(hrefFor(query, { per: 20 })).toBe("/archive?team=MIL&from=2026-10-23&reason=world_series&month=2026-10");
+    expect(hrefFor({ ...query, page: 3 }, { per: "all" })).toBe("/archive?team=MIL&from=2026-10-23&reason=world_series&month=2026-10&per=all");
+  });
+
+  it("keep per on the links of the other filters", () => {
+    expect(hrefFor(q({ per: "50" }), { team: "TB" })).toBe("/archive?team=TB&per=50");
+    expect(dayHref(q({ per: "10" }), "2026-10-23")).toBe("/archive?from=2026-10-23&month=2026-10&per=10");
+  });
+
   it("never carry a value that was not validated", () => {
-    const query = q({ team: "<script>", from: "x", reason: "evil", page: "-3", month: "nope" });
+    const query = q({ team: "<script>", from: "x", reason: "evil", page: "-3", month: "nope", per: "<b>" });
     expect(hrefFor(query, {})).toBe("/archive");
   });
 });

@@ -336,3 +336,16 @@ The document policy is built in `proxy.ts`; `lib/__tests__/securityHeaders.test.
 | Date | Directive | From | To | Reason | Proof |
 |---|---|---|---|---|---|
 | 2026-11-17 | `form-action` | `'none'` | `'self'` | Codex audit of PR #6 (blocker): with JavaScript off, the archive's team filter (a plain GET form to `/archive`, `components/archive/Filters.tsx`) was blocked by the browser. Owner's decision: allow same-origin form targets only; no other directive changes. The static-asset policy in `next.config.ts` keeps `form-action 'none'` (those responses have no forms). | `scripts/check_release_b_browser.mjs csp` against the production build, JavaScript off, 375 and 1280 px: submitting MIL lists only the 13 MIL games and Chrome logs no CSP violation. The same check against a build with `'none'` fails with Chrome's "Sending form data ... violates ... form-action 'none'". |
+
+## Known limitations
+
+### The router bootstrap repeats the request URL (found 2026-11-19, Codex audit of PR #10)
+
+On every dynamic page, Next's router bootstrap (the inline flight-data script the framework adds to the HTML, with the CSP nonce) carries the request path and query string, so the raw `per`, `page`, `team`, `month` and `reason` values sent by a visitor appear in the production HTML, even when the page ignores them. This also happens on v2.1.1 and is framework behaviour, not code of this repo. What is measured, on the default production build (`npm run build`, `next start`, Next.js 16.4.6, 2026-11-19), with `/archive?per=%3C%2Fscript%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E` and `/archive?team=%3C%2Fscript%3E%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E&page=%22%3E%3Csvg%3E`:
+
+- The values are escaped. In the flight data they are percent-encoded inside JSON strings (`archive?per=%3C%2Fscript%3E%3Cscript%3Ealert%281%29%3C%2Fscript%3E`, `?per=%3C%2Fscript%3E...`), and `&` is written `\u0026`. No `<`, `>` or `"` of the query is in the body: the response has exactly as many `<script`, `</script` and `<svg` as `/archive` itself (10, 10 and 6), no `<img src=x` and no raw `onerror=`. Only the characters `(`, `)` and `=` stay unencoded in the flight data; they cannot close a string or a tag.
+- In Chrome with JavaScript on, none of the four hostile URLs of the check runs a script (no dialog), logs a Content Security Policy violation or adds an image, and the visible text carries none of the query.
+- The visible text, the links and the form use values validated against the index (`lib/archiveQuery.ts`) only; a value that fails validation is dropped, never written. The page does not use `dangerouslySetInnerHTML`.
+- Proof and regression test: `node scripts/check_release_b_browser.mjs <origin> inject` against a production build. It fails when the body of a hostile URL has an extra `<script`, `</script` or `<svg`, or a raw `<img src=x`, `onerror=alert`, `alert(1)</` or `alert(1)>`, or when a script runs or a CSP violation is logged. A control against a server that reflects the decoded query raw fails on "no extra `<script`".
+
+The limitation is the repetition itself, not an exploit. Closing it needs `proxy.ts` to redirect a request with an invalid or default-valued filter parameter to its canonical URL, which touches the routing and needs its own decision (proposed for 2.2.1 or 2.3.0, `docs/STATUS.md`).

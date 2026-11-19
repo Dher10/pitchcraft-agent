@@ -5,12 +5,15 @@ import type { ArchiveIndex, ArchiveIndexRow, ArchiveNotableReason } from "@/lib/
 
 /**
  * The archive's filters, from the URL and the index alone (docs/plans/R4-U.md, U4). The URL is the state:
- * `/archive?team=MIL&from=2026-10-23&to=2026-10-28&reason=strikeout_duel&month=2026-10&page=2`. Every value is validated
+ * `/archive?team=MIL&from=2026-10-23&to=2026-10-28&reason=strikeout_duel&month=2026-10&per=50&page=2`. Every value is validated
  * against the index; one that is not valid is ignored and never echoed, and nothing that was not validated is written
  * into a link. A game must have every reason picked.
  */
 
-export const PAGE_SIZE = 50;
+/** The page sizes the fan can pick (release 2.2.0). 20 is the default and is never written into a link. */
+export const PAGE_SIZES = [10, 20, 50, "all"] as const;
+export type PageSize = (typeof PAGE_SIZES)[number];
+export const DEFAULT_PER: PageSize = 20;
 export const REASON_ORDER: ArchiveNotableReason[] = ["series_clincher", "strikeout_duel", "veteran_duel", "world_series"];
 
 export interface ArchiveQuery {
@@ -20,6 +23,7 @@ export interface ArchiveQuery {
   reasons: ArchiveNotableReason[];
   page: number;
   month: string | null;
+  per: PageSize;
 }
 
 type Params = Record<string, string | string[] | undefined>;
@@ -57,9 +61,22 @@ export function indexMonths(index: ArchiveIndex): string[] {
   return months;
 }
 
-export function pageCount(total: number): number {
-  return Math.max(1, Math.ceil(total / PAGE_SIZE));
+export function pageCount(total: number, per: PageSize): number {
+  return per === "all" ? 1 : Math.max(1, Math.ceil(total / per));
 }
+
+/** The games of a page: the slice of the filtered list that the page size and the page number select. */
+export function pageSlice<T>(games: T[], query: ArchiveQuery): T[] {
+  return query.per === "all" ? games : games.slice((query.page - 1) * query.per, query.page * query.per);
+}
+
+/** The 1-based position of the first and the last game on the page, out of the filtered count. */
+export function pageRange(total: number, query: ArchiveQuery): { from: number; to: number } {
+  if (query.per === "all") return { from: total === 0 ? 0 : 1, to: total };
+  return { from: Math.min(total, (query.page - 1) * query.per + 1), to: Math.min(total, query.page * query.per) };
+}
+
+const PER_VALUES = new Map<string, PageSize>(PAGE_SIZES.map((size) => [String(size), size]));
 
 /** Read the URL's parameters against the index. Nothing that is not valid survives. */
 export function parseArchiveQuery(params: Params, index: ArchiveIndex): ArchiveQuery {
@@ -80,12 +97,13 @@ export function parseArchiveQuery(params: Params, index: ArchiveIndex): ArchiveQ
     reasons,
     page: 1,
     month: month !== undefined && MONTH.test(month) && indexMonths(index).includes(month) ? month : null,
+    per: PER_VALUES.get(first(params.per) ?? "") ?? DEFAULT_PER,
   };
   // An end needs a start and may not come before it.
   if (query.from !== null && to !== undefined && inIndex(to) && to >= query.from) query.to = to;
 
   const page = first(params.page);
-  if (page !== undefined && PAGE.test(page) && Number(page) <= pageCount(selectGames(index, query).length)) query.page = Number(page);
+  if (page !== undefined && PAGE.test(page) && Number(page) <= pageCount(selectGames(index, query).length, query.per)) query.page = Number(page);
   return query;
 }
 
@@ -120,6 +138,7 @@ export function hrefFor(query: ArchiveQuery, change: Partial<ArchiveQuery>): str
   if (next.to !== null) parts.push(`to=${next.to}`);
   for (const reason of REASON_ORDER) if (next.reasons.includes(reason)) parts.push(`reason=${reason}`);
   if (next.month !== null) parts.push(`month=${next.month}`);
+  if (next.per !== DEFAULT_PER) parts.push(`per=${next.per}`);
   if (next.page > 1) parts.push(`page=${next.page}`);
   return parts.length === 0 ? "/archive" : `/archive?${parts.join("&")}`;
 }

@@ -6,20 +6,22 @@ import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import GameRow from "@/components/ui/GameRow";
 import { ARCHIVE_COPY } from "@/lib/copy/archive";
-import { PAGE_SIZE, hrefFor, noMatchText, pageCount, selectGames, type ArchiveQuery } from "@/lib/archiveQuery";
+import PageSizeLinks from "@/components/archive/PageSizeLinks";
+import { hrefFor, noMatchText, pageCount, pageRange, pageSlice, selectGames, type ArchiveQuery } from "@/lib/archiveQuery";
 import type { ArchiveIndex } from "@/lib/types";
 
 /**
  * The archive page: the filters (team, calendar, reasons), the count, and the results as game rows on a phone and a table
- * from 1024 px, 50 a page. Everything comes from the validated query and the index; with no match the empty state names
+ * from 1024 px, 20 a page by default (10, 20, 50 or All). Everything comes from the validated query and the index; with no match the empty state names
  * what was asked.
  */
 export default function ArchiveView({ index, query }: { index: ArchiveIndex; query: ArchiveQuery }) {
   // A valid index with no games has no last day and no month: the archive's notice, before the mode line and the calendar.
   if (index.games.length === 0) return <ArchiveUnavailable />;
   const games = selectGames(index, query);
-  const pages = pageCount(games.length);
-  const shown = games.slice((query.page - 1) * PAGE_SIZE, query.page * PAGE_SIZE);
+  const pages = pageCount(games.length, query.per);
+  const shown = pageSlice(games, query);
+  const range = pageRange(games.length, query);
   const last = index.games.map((row) => row.date).sort().at(-1) as string;
   const none = noMatchText(index, query);
 
@@ -35,7 +37,12 @@ export default function ArchiveView({ index, query }: { index: ArchiveIndex; que
       <div className="grid items-start gap-space-4 bp-lg:grid-cols-[380px_1fr] bp-lg:gap-space-6">
         <Filters index={index} query={query} />
         <div className="grid gap-space-4">
-          <p data-count className="m-0 text-body-sm text-ink-2">{ARCHIVE_COPY.count(games.length, index.games.length)}</p>
+          <div className="grid gap-space-2">
+            <p data-count className="m-0 text-body-sm text-ink-2">
+              {pages > 1 ? ARCHIVE_COPY.countRange(range.from, range.to, games.length) : ARCHIVE_COPY.count(games.length, index.games.length)}
+            </p>
+            {games.length > 0 ? <PageSizeLinks query={query} /> : null}
+          </div>
           {games.length === 0 ? (
             <EmptyState title={none.title} action={<Button href="/archive" variant="secondary">{ARCHIVE_COPY.clearFilters}</Button>}>
               {none.body}
