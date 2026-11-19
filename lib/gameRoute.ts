@@ -21,9 +21,19 @@ export function publishedGameIds(index: unknown): ReadonlySet<string> | null {
   }
 }
 
-/** Is this path one game id under `/game/` that is not in the published index? */
+/**
+ * Is this path one game id under `/game/` that is not in the published index? The segment is decoded once, as the page
+ * reads it (`/game/%3849799` is game 849799, as in 2.1.0); a segment with an invalid escape is malformed, so it is unpublished.
+ */
 export function isUnpublishedGamePath(pathname: string, ids: ReadonlySet<string> | null): boolean {
   if (ids === null) return false;
   const match = ONE_GAME.exec(pathname);
-  return match !== null && !ids.has(match[1]);
+  if (match === null) return false;
+  let id: string;
+  try {
+    id = decodeURIComponent(match[1]);
+  } catch {
+    return true;
+  }
+  return !ids.has(id);
 }

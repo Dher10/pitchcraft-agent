@@ -42,6 +42,22 @@ describe("isUnpublishedGamePath", () => {
     }
   });
 
+  // Codex verification of PR #8, finding 2: 2.1.0 opened /game/%3849799 as game 849799, so the id is decoded once before
+  // the lookup; an invalid escape cannot be decoded and is malformed.
+  it("decodes the id once: a percent-encoded published id is a game, an encoded unknown id is not", () => {
+    const encoded = `/game/%${PUBLISHED[0].toString().charCodeAt(0).toString(16)}${PUBLISHED[0].toString().slice(1)}`;
+    expect(encoded).toBe("/game/%3849799");
+    expect(isUnpublishedGamePath(encoded, ids)).toBe(false);
+    expect(isUnpublishedGamePath("/game/%31%32%33", ids)).toBe(true);
+    expect(isUnpublishedGamePath("/game/%253849799", ids)).toBe(true);
+    expect(isUnpublishedGamePath("/game/%2F", ids)).toBe(true);
+    expect(isUnpublishedGamePath("/game/%75nknown", ids)).toBe(true);
+  });
+
+  it("is true for an id with an invalid escape (malformed)", () => {
+    for (const path of ["/game/%E0%A4%A", "/game/%", "/game/84979%9"]) expect(isUnpublishedGamePath(path, ids), path).toBe(true);
+  });
+
   it("is false for every path when the ids are unknown (an index that did not validate)", () => {
     expect(isUnpublishedGamePath("/game/123", null)).toBe(false);
   });
@@ -93,6 +109,16 @@ describe("proxy on /game/<id>", () => {
         expect(destination.pathname).toBe(GAME_NOT_FOUND_PATH);
       });
     }
+  });
+
+  it("lets a percent-encoded published id through and rewrites an invalid escape (finding 2)", async () => {
+    const { proxy } = await import("../../proxy");
+    const encoded = proxy(new NextRequest("http://localhost/game/%3849799"));
+    expect(encoded.status).toBe(200);
+    expect(rewriteOf(encoded)).toBeNull();
+    const malformed = proxy(new NextRequest("http://localhost/game/%E0%A4%A"));
+    expect(malformed.status).toBe(404);
+    expect(new URL(rewriteOf(malformed)!).pathname).toBe(GAME_NOT_FOUND_PATH);
   });
 
   it("lets a published game through untouched (control)", async () => {
