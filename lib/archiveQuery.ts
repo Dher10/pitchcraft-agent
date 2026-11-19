@@ -140,6 +140,8 @@ export interface CalendarDay {
   state: "none" | "range" | "end";
   /** What the chosen days say about this day: the start or the end of a range, or the one day chosen. */
   selection: "start" | "end" | "selected" | null;
+  /** Strictly between the start and the end of a range, with or without games (release 2.1.1). */
+  inRange: boolean;
 }
 export type CalendarCell = CalendarDay | { outside: number };
 
@@ -174,8 +176,9 @@ export function calendarMonth(index: ArchiveIndex, query: ArchiveQuery): Calenda
     const edge = iso === query.from || iso === end;
     const oneDay = query.from !== null && (query.to === null || query.to === query.from);
     const selection = iso === query.from ? (oneDay ? "selected" : "start") : iso === query.to && !oneDay ? "end" : null;
-    const label = games > 0 ? ARCHIVE_COPY.dayLabel(monthName, day, games) + (selection ? ARCHIVE_COPY.daySelection[selection] : "") : null;
     const between = query.from !== null && end !== null && iso > query.from && iso < end;
+    const suffix = selection ? ARCHIVE_COPY.daySelection[selection] : between ? ARCHIVE_COPY.inRange : "";
+    const label = games > 0 ? ARCHIVE_COPY.dayLabel(monthName, day, games) + suffix : null;
     cells.push({
       iso,
       day,
@@ -184,6 +187,7 @@ export function calendarMonth(index: ArchiveIndex, query: ArchiveQuery): Calenda
       href: games > 0 ? dayHref(query, iso) : null,
       state: edge ? "end" : between ? "range" : "none",
       selection,
+      inRange: between,
     });
   }
   for (let day = 1; cells.length % 7 !== 0; day += 1) cells.push({ outside: day });
@@ -216,4 +220,18 @@ export function noMatchText(index: ArchiveIndex, query: ArchiveQuery): { title: 
     return { title, body: `${ARCHIVE_COPY.noGameHasEveryReason(formatMonthDay(query.from as string), formatMonthDay(query.to as string))} ${tail}` };
   }
   return { title, body: tail };
+}
+
+/**
+ * The chosen days in words with their games: "Oct 28, 1 game" or "Oct 23 to Oct 28, 5 games" (release 2.1.1). The count
+ * follows the team and the reasons too, so it is always the number the list shows (owner, 2026-11-17); only the number
+ * under each day of the calendar counts every game of that day.
+ */
+export function daysSummary(index: ArchiveIndex, query: ArchiveQuery): string | null {
+  const from = query.from;
+  if (from === null) return null;
+  const to = query.to ?? from;
+  const games = selectGames(index, query).length;
+  const days = to === from ? formatMonthDay(from) : ARCHIVE_COPY.rangeTo(formatMonthDay(from), formatMonthDay(to));
+  return ARCHIVE_COPY.daysSummary(days, games);
 }

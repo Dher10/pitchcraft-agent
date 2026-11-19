@@ -266,9 +266,9 @@ describe("the calendar", () => {
 
     expect(day("2026-10-23")).toMatchObject({ label: "October 23, 1 game, start of your range", selection: "start" });
     expect(day("2026-10-28")).toMatchObject({ label: "October 28, 1 game, end of your range", selection: "end" });
-    expect(day("2026-10-26")).toMatchObject({ label: "October 26, 1 game", selection: null });
-    expect(day("2026-10-24")).toMatchObject({ label: "October 24, 1 game", selection: null });
-    expect(day("2026-10-22")).toMatchObject({ label: null, selection: null });
+    expect(day("2026-10-26")).toMatchObject({ label: "October 26, 1 game, in your range", selection: null, inRange: true });
+    expect(day("2026-10-24")).toMatchObject({ label: "October 24, 1 game, in your range", selection: null, inRange: true });
+    expect(day("2026-10-22")).toMatchObject({ label: null, selection: null, inRange: false });
   });
 
   it("names a single chosen day as selected, whether the end is missing or the same day", () => {

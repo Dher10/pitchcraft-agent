@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 
 import GameNotFound from "@/components/game/GameNotFound";
+import UnknownGamePage, { metadata as unknownGameMetadata } from "@/app/game/unknown/page";
 import GameView from "@/components/game/GameView";
 import { parseArchiveIndex } from "@/lib/archiveIndex";
 import { gameMetadata, parseArchiveGame, seriesNeighbors } from "@/lib/archiveGame";
@@ -390,5 +391,22 @@ describe("the page for a game that is not there", () => {
     expect(container.querySelector("h1")?.textContent).toBe("We could not find that game");
     expect(getByRole("link", { name: "Back to the archive" }).getAttribute("href")).toBe("/archive");
     expect(getByRole("link", { name: "Notable duels of 2026" }).getAttribute("href")).toBe("/notable");
+  });
+});
+
+// Release 2.1.1, item 1: the proxy rewrites an unknown or malformed id here with status 404, so the not-found content is in
+// the server's HTML (with JavaScript off the notFound() path of the game page sent an empty body).
+describe("the server-rendered route the proxy rewrites an unknown game to", () => {
+  it("shows the same heading and links as the game page's not-found", () => {
+    const { container, getByRole } = render(<UnknownGamePage />);
+
+    expect(container.querySelectorAll("h1")).toHaveLength(1);
+    expect(container.querySelector("h1")?.textContent).toBe("We could not find that game");
+    expect(getByRole("link", { name: "Back to the archive" }).getAttribute("href")).toBe("/archive");
+    expect(getByRole("link", { name: "Notable duels of 2026" }).getAttribute("href")).toBe("/notable");
+  });
+
+  it("asks search engines not to index it", () => {
+    expect(unknownGameMetadata.robots).toEqual({ index: false, follow: true });
   });
 });
