@@ -128,6 +128,23 @@ describe("the calendar", () => {
     expect(text(container.querySelector("[data-calendar-key]"))).toContain("Start and end of your range");
   });
 
+  it("explains the in-range style in the key with a swatch that has the signal-tint fill and the signal bar, always shown", () => {
+    for (const props of [{}, { from: "2026-10-23", to: "2026-10-28" }] as const) {
+      const { container, unmount } = view(props);
+      const items = [...container.querySelectorAll("[data-calendar-key] > span")];
+      expect(items.map((item) => text(item))).toEqual([
+        "Day with games (number of games)",
+        "Start and end of your range",
+        "Days in your range",
+      ]);
+      const swatch = items[2].querySelector("i") as HTMLElement;
+      expect(swatch.getAttribute("aria-hidden")).toBe("true");
+      expect(swatch.className).toContain("bg-signal-tint");
+      expect(swatch.className).toContain("border-b-signal");
+      unmount();
+    }
+  });
+
   it("says the selection to assistive tech: the name and aria-current on the start and the end, and on nothing else", () => {
     const { container, getByRole } = view({ from: "2026-10-23", to: "2026-10-28" });
 

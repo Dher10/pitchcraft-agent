@@ -21,6 +21,7 @@ export const ARCHIVE_COPY = {
   calendarHelp: "Tap a day to see its games. Tap a second day to see every game in between.",
   keyDay: "Day with games (number of games)",
   keyRange: "Start and end of your range",
+  keyInRange: "Days in your range",
   reasonLabel: "Notable reason",
   anyGame: "Any game",
   clear: "Clear",

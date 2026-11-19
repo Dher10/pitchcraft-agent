@@ -94,6 +94,10 @@ export default function Calendar({ calendar, footer }: { calendar: CalendarMonth
           <i aria-hidden="true" className="inline-block size-3 rounded-[3px] bg-board" />
           {ARCHIVE_COPY.keyRange}
         </span>
+        <span className="inline-flex items-center gap-1.5">
+          <i aria-hidden="true" className={`inline-block size-3 rounded-[3px] bg-signal-tint ${IN_RANGE_BAR}`} />
+          {ARCHIVE_COPY.keyInRange}
+        </span>
       </div>
     </div>
   );
