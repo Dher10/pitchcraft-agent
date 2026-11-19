@@ -2,7 +2,7 @@
 
 All notable changes to PitchCraft are recorded here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versioning rule is decision D68 in `docs/DECISIONS.md`: MAJOR when the product changes shape, MINOR for new pages, new features or a change of visual identity, PATCH for fixes with no new feature. Every merge of code into `main` is a release with a tag `vX.Y.Z`.
 
-## [2.2.0] - Unreleased
+## [2.2.0] - 2026-11-19
 
 A page size choice on the archive, and a site icon at the address browsers ask for.
 

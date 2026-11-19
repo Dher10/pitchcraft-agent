@@ -169,7 +169,7 @@ Title "Notable duels of 2026"; "Starting-pitcher matchups of the 2026 postseason
 | A guard flags many existing components at once | Named exceptions that only shrink; the last unit leaves none |
 | Calendar links multiply page views (D26, OQ6 accepted) | Plain links, no prefetch storm: `prefetch={false}` on calendar cells; measured in the preview |
 | Deadline | The order above with dates; a unit that slips is reported at once with what moves |
-| Windows Turbopack build panic | `next build --webpack` locally, stated in each run report; CI builds on Linux |
+| ~~Windows Turbopack build panic~~ (obsolete) | ~~`next build --webpack` locally, stated in each run report; CI builds on Linux~~ Obsolete: on 2026-11-19 the default `npm run build` (Turbopack) passed on Windows, and verification uses the default build (`docs/STATUS.md`). |
 
 ## 7. Approvals
 

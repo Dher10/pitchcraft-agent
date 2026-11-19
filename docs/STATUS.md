@@ -2,7 +2,12 @@
 
 Updated by whichever agent finishes a task. Keep it short: the current state, the next task, the pending items and the Notion sync list. The session log is in `docs/status-archive.md` (newest session on top).
 
-## 2.2.0 in review (plan `docs/plans/2.2.0.md`; the owner merges the PR `v2` into `main`)
+## 2.2.0 merged on 2026-11-19 (plan `docs/plans/2.2.0.md`; PR #10 `v2` into `main`, merged by the owner)
+
+- **External QA passed before the merge:** Codex audit at `de5577b` (two findings, fixed or verified in `7c3ce0f` and `7c30a26`) and Antigravity on the Vercel preview at `7c30a26` (25 checks pass at 375, 430 and 1280 px, zero site console errors, verdict ready for production). Record: `docs/qa/PR10-external-qa-2026-11-19.md`. `CHANGELOG.md` dates 2.2.0 2026-11-19; the R4-U risk row about the Windows Turbopack panic is marked obsolete.
+- **Owner's next steps:** (1) create the tag `v2.2.0` and the GitHub release with `docs/releases/v2.2.0.md`; (2) merge `main` into `v2` so the branches agree. Agents do not touch `main`, tags or PRs.
+
+### Detail of the review stage (kept for the record)
 
 - Item 1 done, commit `08e349f`: page size on `/archive` (10, 20, 50, All; 20 default; `per` parameter; links with `aria-current`; count "Showing {from} to {to} of {n} games, newest first" with more than one page). Red: 39 failing tests before the code. Proof: `check_release_b_browser.mjs csp targets notfound` PASS on the production build (11 pages, 2109 targets).
 - Item 2 done, commit `1526e83`: `app/favicon.ico` (16 and 32 px from `app/icon.svg`); `/favicon.ico` 200 `image/x-icon`, same CSP. Red: `lib/__tests__/favicon.test.ts` failed while the file was missing. The Shell test that banned any `.ico` now requires the small icon.
@@ -11,7 +16,7 @@ Updated by whichever agent finishes a task. Keep it short: the current state, th
 - `npm audit` and `npm audit --omit=dev` on 2026-11-19: both report 0 vulnerabilities at that moment (not claimed in the public text).
 - **Codex audit of PR #10 at `de5577b` ("merge after fixes", 2026-11-19):** (1) the filtered-count test now asserts "Showing 1 to 10 of 13 games, newest first" and "Showing 11 to 13 of 13 games, newest first" for `team=MIL&per=10`; it failed ("of 40") with the archive-wide total passed to `countRange` and passes on the real code (the break was not committed). (2) The router bootstrap repeats the request URL: measured on the default production build, the values are escaped (percent-encoded in JSON strings, `&` as `\u0026`), none is raw, no script runs and no CSP violation is logged in Chrome with JavaScript on; recorded in `docs/SECURITY.md` ("Known limitations"), with the regression check `check_release_b_browser.mjs inject` (red against a server that reflects the query raw). `proxy.ts` and the routing are unchanged.
 - **Proposed for 2.2.1 or 2.3.0 (needs its own decision; touches `proxy.ts`):** redirect a request whose filter parameters (`per`, `page`, `team`, `month`, `reason`, `from`, `to`) are invalid or equal to the default to its canonical URL, so the router bootstrap no longer repeats arbitrary query text. Open questions for the decision: 308 or 307, whether `page=1` and `per=20` count as default, and the effect on shared links.
-- Next: the owner reviews the PR, checks the preview (page size links, `/favicon.ico`), merges, tags `v2.2.0` and dates the changelog.
+- Next (done as far as the merge and the date; the tag, the release and `main` into `v2` remain with the owner): see the section above.
 - Pending Notion sync: archive page size (20 by default, 10/20/50/All) and `/favicon.ico`.
 
 ## 2.1.1 done (plan `docs/plans/2.1.1.md`; the owner merges PR #8 on 2026-11-18)
