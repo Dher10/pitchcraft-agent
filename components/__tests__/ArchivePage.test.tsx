@@ -238,7 +238,12 @@ describe("the count, the range in words and Clear", () => {
   });
 
   it("uses the filtered count as n when a filter leaves more than one page", () => {
-    expect(text(view({ team: "MIL", per: "10" }).container.querySelector("[data-count]"))).toMatch(/^Showing 1 to 10 of \d+ games, newest first$/);
+    // MIL plays 13 of the 40 games; the total is the filtered one on both pages, never the archive-wide 40.
+    const first = view({ team: "MIL", per: "10" });
+    expect(text(first.container.querySelector("[data-count]"))).toBe("Showing 1 to 10 of 13 games, newest first");
+    first.unmount();
+    const second = view({ team: "MIL", per: "10", page: "2" });
+    expect(text(second.container.querySelector("[data-count]"))).toBe("Showing 11 to 13 of 13 games, newest first");
   });
 
   // Release 2.1.1 (docs/plans/2.1.1.md item 2): the words of the chosen days became the summary with its count of games.
