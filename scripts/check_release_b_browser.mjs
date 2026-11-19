@@ -117,6 +117,8 @@ function releaseBPages() {
     "/archive",
     `/archive?from=${days.at(-4)}&to=${days.at(-1)}`,
     `/archive?team=MIL&from=${absent}`,
+    "/archive?per=10&page=2",
+    "/archive?per=all",
     "/game/123",
   ];
 }

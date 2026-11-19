@@ -4,7 +4,7 @@ import { ChevronDownIcon } from "@/components/ui/Icons";
 import Calendar from "@/components/archive/Calendar";
 import ReasonPills from "@/components/archive/ReasonPills";
 import { ARCHIVE_COPY } from "@/lib/copy/archive";
-import { calendarMonth, daysSummary, type ArchiveQuery } from "@/lib/archiveQuery";
+import { DEFAULT_PER, calendarMonth, daysSummary, type ArchiveQuery } from "@/lib/archiveQuery";
 import type { ArchiveIndex } from "@/lib/types";
 
 /** The clubs of the index, by name, once each. Their names are the index's own. */
@@ -47,6 +47,7 @@ export default function Filters({ index, query }: { index: ArchiveIndex; query: 
           <input key={reason} type="hidden" name="reason" value={reason} />
         ))}
         {query.month !== null ? <input type="hidden" name="month" value={query.month} /> : null}
+        {query.per !== DEFAULT_PER ? <input type="hidden" name="per" value={String(query.per)} /> : null}
         <div className="mt-space-1">
           <Button type="submit" variant="secondary">{ARCHIVE_COPY.apply}</Button>
         </div>
