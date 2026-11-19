@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, within } from "@testing-library/react";
@@ -113,13 +113,15 @@ describe("the logo", () => {
     expect(logo.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });
 
-  it("ships the favicon of the design and no old .ico", () => {
+  it("ships the favicon of the design, and its .ico is the 16 and 32 px mark, not the framework default", () => {
     const root = process.cwd();
     const icon = readFileSync(path.join(root, "app/icon.svg"), "utf8");
 
     expect(icon).toBe(readFileSync(path.join(root, "docs/design/assets/pitchcraft-favicon.svg"), "utf8"));
     expect(icon).not.toMatch(/<script|onload|href=/i);
-    expect(existsSync(path.join(root, "app/favicon.ico"))).toBe(false);
+    // Release 2.2.0: /favicon.ico is served from app/favicon.ico (lib/__tests__/favicon.test.ts checks its images). The old
+    // framework default was 25 KB with a 48 px image; ours is two small PNGs.
+    expect(statSync(path.join(root, "app/favicon.ico")).size).toBeLessThan(4096);
   });
 });
 
