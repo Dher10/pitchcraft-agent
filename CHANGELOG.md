@@ -2,6 +2,16 @@
 
 All notable changes to PitchCraft are recorded here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versioning rule is decision D68 in `docs/DECISIONS.md`: MAJOR when the product changes shape, MINOR for new pages, new features or a change of visual identity, PATCH for fixes with no new feature. Every merge of code into `main` is a release with a tag `vX.Y.Z`.
 
+## [2.2.0] - Unreleased
+
+A page size choice on the archive, and a site icon at the address browsers ask for.
+
+### Added
+- `/archive` lets you choose how many games each page shows: 10, 20, 50 or All, with a row of links, "Games per page", that works without JavaScript. The default is 20 (it was a fixed 50). The choice is the `per` parameter of the address (`10`, `20`, `50` or `all`; any other value is ignored and never printed); changing it keeps the team, days, reasons and month and goes back to the first page, and the pager, the calendar and the team form keep it. When the list has more than one page the count reads "Showing 21 to 40 of 40 games, newest first".
+
+### Fixed
+- `/favicon.ico` returned "not found". It now returns the site icon, the mark of `app/icon.svg` in 16 and 32 pixels.
+
 ## [2.1.1] - 2026-11-18
 
 Fixes after release 2.1.0: the game 404 without JavaScript and a clearer range on the archive calendar.

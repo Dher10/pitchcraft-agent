@@ -2,10 +2,14 @@
 
 Updated by whichever agent finishes a task. Keep it short: the current state, the next task, the pending items and the Notion sync list. The session log is in `docs/status-archive.md` (newest session on top).
 
-## Next minor release (2.2.0)
+## 2.2.0 in review (plan `docs/plans/2.2.0.md`; the owner merges the PR `v2` into `main`)
 
-- **Archive page-size selector:** `/archive` lets the fan pick 10, 20, 50 or All games per page; 20 by default (today the page size is fixed at 50); the choice is in the URL and works without JavaScript, like the other archive filters.
-- **`/favicon.ico`:** serve the existing icon (`app/icon.svg`) at `/favicon.ico`; today that URL returns 404.
+- Item 1 done, commit `08e349f`: page size on `/archive` (10, 20, 50, All; 20 default; `per` parameter; links with `aria-current`; count "Showing {from} to {to} of {n} games, newest first" with more than one page). Red: 39 failing tests before the code. Proof: `check_release_b_browser.mjs csp targets notfound` PASS on the production build (11 pages, 2109 targets).
+- Item 2 done, commit `1526e83`: `app/favicon.ico` (16 and 32 px from `app/icon.svg`); `/favicon.ico` 200 `image/x-icon`, same CSP. Red: `lib/__tests__/favicon.test.ts` failed while the file was missing. The Shell test that banned any `.ico` now requires the small icon.
+- Items 3 and 4: `docs/releases/v2.1.1.md` is the text as published; version 2.2.0 (dated "Unreleased"), `docs/releases/v2.2.0.md` drafted.
+- `npm audit` and `npm audit --omit=dev` on 2026-11-19: both report 0 vulnerabilities at that moment (not claimed in the public text).
+- Next: the owner reviews the PR, checks the preview (page size links, `/favicon.ico`), merges, tags `v2.2.0` and dates the changelog.
+- Pending Notion sync: archive page size (20 by default, 10/20/50/All) and `/favicon.ico`.
 
 ## 2.1.1 done (plan `docs/plans/2.1.1.md`; the owner merges PR #8 on 2026-11-18)
 
